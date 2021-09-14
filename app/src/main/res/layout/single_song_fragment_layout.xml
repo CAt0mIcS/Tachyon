@@ -63,7 +63,7 @@
         android:id="@+id/ssf_sbEndTime"
         android:layout_width="381dp"
         android:layout_height="27dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="144dp"
         android:progressTint="#03dac4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.466"
@@ -80,5 +80,85 @@
         app:layout_constraintHorizontal_bias="0.466"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ssf_lblSongName" />
+
+    <TextView
+        android:id="@+id/ssf_lblProgress"
+        android:layout_width="383dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="12dp"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ssf_sbProgress" />
+
+    <Button
+        android:id="@+id/ssf_btnStartTimeDec"
+        android:layout_width="69dp"
+        android:layout_height="66dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:text="Dec"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ssf_sbStartTime" />
+
+    <Button
+        android:id="@+id/ssf_btnEndTimeDec"
+        android:layout_width="69dp"
+        android:layout_height="66dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:text="Dec"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ssf_sbEndTime" />
+
+    <Button
+        android:id="@+id/ssf_btnStartTimeInc"
+        android:layout_width="69dp"
+        android:layout_height="66dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="16dp"
+        android:text="Inc"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ssf_sbStartTime" />
+
+    <Button
+        android:id="@+id/ssf_btnEndTimeInc"
+        android:layout_width="69dp"
+        android:layout_height="66dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="16dp"
+        android:text="Inc"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ssf_sbEndTime" />
+
+    <EditText
+        android:id="@+id/ssf_txtInterval"
+        android:layout_width="190dp"
+        android:layout_height="32dp"
+        android:layout_marginBottom="12dp"
+        android:ems="10"
+        android:inputType="number"
+        android:text="500"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textSize="11sp"
+        app:layout_constraintBottom_toTopOf="@+id/ssf_sbStartTime"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/ssf_lblTxtInterval"
+        android:layout_width="231dp"
+        android:layout_height="18dp"
+        android:layout_marginBottom="8dp"
+        android:text="Inc/Dec Interval"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/ssf_txtInterval"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.505"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

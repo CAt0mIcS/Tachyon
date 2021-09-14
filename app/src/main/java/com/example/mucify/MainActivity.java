@@ -53,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<File> mAvailableSongs = new ArrayList<>();
     public Song CurrentSong;
 
+    private String mSongName = "Last Time - Nerxa.mp3";
+
     public final List<String> SupportedExtensions = Arrays.asList(".3gp", ".mp4", ".m4a", ".aac", ".ts", ".amr", ".flac", ".ota", ".imy", "mp3", ".mkv", ".ogg", ".wav");
 
     // Register the permissions callback, which handles the user's response to the
@@ -103,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onSongOpen(View view) {
         // MY_TODO: Open window to select song
-        String file = "/storage/emulated/0/Music/Legends Never Die.mp3";
+        String file = "/storage/emulated/0/Music/" + mSongName;
 
         if(!new File(file).exists())
             return;
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onLoopLoad(View view) throws IOException {
         // MY_TODO: Open window to select loop
-        String file = "LOOP_Ending_Legends Never Die.txt";
+        String file = "LOOP_Ending_Last Time - Nerxa.txt";
 
         String loopName = file.split("_")[1];
 
