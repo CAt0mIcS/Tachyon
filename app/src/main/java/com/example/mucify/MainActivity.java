@@ -18,7 +18,13 @@ import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.Choreographer;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 
 import com.example.mucify.ui.main.SectionsPagerAdapter;
 import com.example.mucify.databinding.ActivityMainBinding;
@@ -39,8 +45,8 @@ import kotlin.NotImplementedError;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding mBinding;
-    private ArrayList<File> mAvailableSongs = new ArrayList<>();
-    private ArrayList<File> mAvailableLoops = new ArrayList<>();
+    private final ArrayList<File> mAvailableSongs = new ArrayList<>();
+    private final ArrayList<File> mAvailableLoops = new ArrayList<>();
     public Song CurrentSong;
 
     private String mSongName = "Last Time - Nerxa.mp3";
@@ -55,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     // Register the permissions callback, which handles the user's response to the
     // system permissions dialog. Save the return value, an instance of
     // ActivityResultLauncher, as an instance variable.
-    private ActivityResultLauncher<String> mRequestPermissionLauncher =
+    private final ActivityResultLauncher<String> mRequestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (!isGranted) {
                     throw new NotImplementedError();
@@ -85,8 +91,8 @@ public class MainActivity extends AppCompatActivity {
         DataDirectory = new File(getDataDir().getPath() + "/files");
         MusicDirectory = new File("/storage/emulated/0/Music");  // MY_TODO: Shouldn't be hard coded
 
-        LoadAvailableSongs(MusicDirectory);
-        LoadAvailableLoops(DataDirectory);
+        loadAvailableSongs(MusicDirectory);
+        loadAvailableLoops(DataDirectory);
 
         // Update Song
         Choreographer.FrameCallback callback = new Choreographer.FrameCallback() {
@@ -110,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
             return;
 
         if(CurrentSong != null)
-            CurrentSong.release();
+            CurrentSong.reset();
         CurrentSong = new Song(this, file.substring(file.lastIndexOf("/") + 1, file.lastIndexOf(".")), file);
         CurrentSong.play(0, CurrentSong.getDuration());
 
@@ -130,24 +136,55 @@ public class MainActivity extends AppCompatActivity {
         reader.close();
 
         if(CurrentSong != null)
-            CurrentSong.release();
+            CurrentSong.reset();
         CurrentSong = new Song(getApplicationContext(), file.substring(file.lastIndexOf("_") + 1, file.indexOf(LOOP_FILE_EXTENSION)), path);
         CurrentSong.play(loopStartTime, loopEndTime);
     }
 
-    public void onLoopSave(View view) throws IOException {
-        // MY_TODO: Open window to configure name. Should not contain _
-        String loopName = "Ending";
-
+    private String loopName = "";
+    public void onLoopSave(View view) {
         if(CurrentSong == null)
             return;
 
-        OutputStreamWriter writer = new OutputStreamWriter(
-                getApplicationContext().openFileOutput(LOOP_FILE_IDENTIFIER + loopName + "_" + CurrentSong.Name + LOOP_FILE_EXTENSION, Context.MODE_PRIVATE));
-        writer.write(CurrentSong.Path + "\n");  // Path to music file
-        writer.write(CurrentSong.getStartTime() + "\n");  // Loop start time in seconds
-        writer.write(CurrentSong.getEndTime() + "\n");  // Loop end time in seconds
-        writer.close();
+        // Create Dialog for loop name
+        LayoutInflater inflater = (LayoutInflater)
+                getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.save_loop_layout, null);
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
+
+        // show the popup window
+        // which view you pass in doesn't matter, it is only used for the window token
+        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
+
+        // dismiss the popup window when touched
+        popupView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                popupWindow.dismiss();
+                return true;
+            }
+        });
+        popupView.findViewById(R.id.ssf_btnSaveLoop).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loopName = ((EditText)popupView.findViewById(R.id.ssf_txtSaveLoop)).getText().toString();
+
+                if(!loopName.isEmpty() && !loopName.contains("_")) {
+                    try {
+                        OutputStreamWriter writer = new OutputStreamWriter(
+                                getApplicationContext().openFileOutput(LOOP_FILE_IDENTIFIER + loopName + "_" + CurrentSong.Name + LOOP_FILE_EXTENSION, Context.MODE_PRIVATE));
+                        writer.write(CurrentSong.Path + "\n");  // Path to music file
+                        writer.write(CurrentSong.getStartTime() + "\n");  // Loop start time in seconds
+                        writer.write(CurrentSong.getEndTime() + "\n");  // Loop end time in seconds
+                        writer.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 
     private Optional<String> getFileExtension(String filename) {
@@ -156,14 +193,14 @@ public class MainActivity extends AppCompatActivity {
                 .map(f -> f.substring(filename.lastIndexOf(".")));
     }
 
-    private void LoadAvailableSongs(File dir) {
+    private void loadAvailableSongs(File dir) {
         if (dir.exists()) {
             File[] files = dir.listFiles();
             if (files != null) {
 
                 for (File file : files) {
                     if (file.isDirectory()) {
-                        LoadAvailableSongs(file);
+                        loadAvailableSongs(file);
                     } else {
                         Optional<String> extension = getFileExtension(file.getName());
                         if(extension.isPresent() && SUPPORTED_EXTENSIONS.contains(extension.get()))
@@ -174,14 +211,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void LoadAvailableLoops(File dir) {
+    private void loadAvailableLoops(File dir) {
         if (dir.exists()) {
             File[] files = dir.listFiles();
             if (files != null) {
 
                 for (File file : files) {
                     if (file.isDirectory()) {
-                        LoadAvailableLoops(file);
+                        loadAvailableLoops(file);
                     } else {
                         Optional<String> extension = getFileExtension(file.getName());
                         if(extension.isPresent() && extension.get().equals(LOOP_FILE_EXTENSION) && file.getName().indexOf(LOOP_FILE_IDENTIFIER) == 0)

@@ -15,6 +15,8 @@ public class Song {
     private int mStartTime = 0;
     private int mEndTime = 0;
 
+    private final Object mLock = new Object();
+
     private MediaPlayer mMediaPlayer;
 
     public Song(Context context, String name, String path) {
@@ -22,7 +24,9 @@ public class Song {
         Path = path;
 
         Uri uri = Uri.parse(path);
-        mMediaPlayer = MediaPlayer.create(context, uri);
+        synchronized (mLock) {
+            mMediaPlayer = MediaPlayer.create(context, uri);
+        }
     }
 
     // Start and end times in milliseconds
@@ -30,12 +34,16 @@ public class Song {
         mStartTime = startTime;
         mEndTime = endTime;
 
-        mMediaPlayer.start();
-        mMediaPlayer.seekTo(mStartTime, MediaPlayer.SEEK_CLOSEST);
-        mMediaPlayer.setLooping(true);
+        synchronized (mLock) {
+            if(mMediaPlayer != null) {
+                mMediaPlayer.start();
+                mMediaPlayer.seekTo(mStartTime, MediaPlayer.SEEK_CLOSEST);
+                mMediaPlayer.setLooping(true);
+            }
+        }
     }
 
-    public void update() {
+    synchronized public void update() {
         if(mMediaPlayer != null) {
             if(mMediaPlayer.getCurrentPosition() >= mEndTime || mMediaPlayer.getCurrentPosition() < mStartTime || !mMediaPlayer.isPlaying()) {
                 mMediaPlayer.seekTo(mStartTime, MediaPlayer.SEEK_CLOSEST);
@@ -45,27 +53,33 @@ public class Song {
         }
     }
 
-    public void pause() {
+    synchronized public void pause() {
         mMediaPlayer.pause();
     }
 
-    public void seekTo(int millisec) {
-        mMediaPlayer.seekTo(millisec);
-        update();
+    synchronized public void seekTo(int millisec) {
+        if(mMediaPlayer != null) {
+            mMediaPlayer.seekTo(millisec);
+            update();
+        }
     }
 
-    public void release()
+    synchronized public void reset()
     {
-        mMediaPlayer.release();
+        mMediaPlayer.reset();
     }
 
     // In milliseconds
-    public int getDuration() {
-        return mMediaPlayer.getDuration();
+    synchronized public int getDuration() {
+        if(mMediaPlayer != null)
+            return mMediaPlayer.getDuration();
+        return 0;
     }
 
-    public int getCurrentPosition() {
-        return mMediaPlayer.getCurrentPosition();
+    synchronized public int getCurrentPosition() {
+        if(mMediaPlayer != null && mMediaPlayer.isPlaying())
+            return mMediaPlayer.getCurrentPosition();
+        return 0;
     }
 
     public int getStartTime() { return mStartTime; }

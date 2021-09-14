@@ -3,6 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_launcher_background.xml" value="0.15462962962962962" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_main.xml" value="0.2953125" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/save_loop_dialog.xml" value="0.2953125" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/save_loop_layout.xml" value="0.4" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/single_song_fragment_layout.xml" value="0.4041666666666667" />
       </map>
     </option>
