@@ -1,10 +1,8 @@
 package com.example.mucify;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 
 import com.example.mucify.program_objects.Song;
@@ -14,17 +12,11 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Choreographer;
 import android.view.View;
 
@@ -33,7 +25,6 @@ import com.example.mucify.databinding.ActivityMainBinding;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -42,8 +33,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import kotlin.NotImplementedError;
 
@@ -51,11 +40,17 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding mBinding;
     private ArrayList<File> mAvailableSongs = new ArrayList<>();
+    private ArrayList<File> mAvailableLoops = new ArrayList<>();
     public Song CurrentSong;
 
     private String mSongName = "Last Time - Nerxa.mp3";
 
-    public final List<String> SupportedExtensions = Arrays.asList(".3gp", ".mp4", ".m4a", ".aac", ".ts", ".amr", ".flac", ".ota", ".imy", "mp3", ".mkv", ".ogg", ".wav");
+    public File DataDirectory;
+    public File MusicDirectory;
+
+    public final List<String> SUPPORTED_EXTENSIONS = Arrays.asList(".3gp", ".mp4", ".m4a", ".aac", ".ts", ".amr", ".flac", ".ota", ".imy", ".mp3", ".mkv", ".ogg", ".wav");
+    public final String LOOP_FILE_EXTENSION = ".txt";
+    public final String LOOP_FILE_IDENTIFIER = "LOOP_";
 
     // Register the permissions callback, which handles the user's response to the
     // system permissions dialog. Save the return value, an instance of
@@ -87,7 +82,11 @@ public class MainActivity extends AppCompatActivity {
             mRequestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
 
-        LoadAvailableSongs(new File("/storage/emulated/0/Music"));
+        DataDirectory = new File(getDataDir().getPath() + "/files");
+        MusicDirectory = new File("/storage/emulated/0/Music");  // MY_TODO: Shouldn't be hard coded
+
+        LoadAvailableSongs(MusicDirectory);
+        LoadAvailableLoops(DataDirectory);
 
         // Update Song
         Choreographer.FrameCallback callback = new Choreographer.FrameCallback() {
@@ -132,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(CurrentSong != null)
             CurrentSong.release();
-        CurrentSong = new Song(getApplicationContext(), file.substring(file.lastIndexOf("_") + 1, file.indexOf(".txt")), path);
+        CurrentSong = new Song(getApplicationContext(), file.substring(file.lastIndexOf("_") + 1, file.indexOf(LOOP_FILE_EXTENSION)), path);
         CurrentSong.play(loopStartTime, loopEndTime);
     }
 
@@ -144,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
             return;
 
         OutputStreamWriter writer = new OutputStreamWriter(
-                getApplicationContext().openFileOutput("LOOP_" + loopName + "_" + CurrentSong.Name + ".txt", Context.MODE_PRIVATE));
+                getApplicationContext().openFileOutput(LOOP_FILE_IDENTIFIER + loopName + "_" + CurrentSong.Name + LOOP_FILE_EXTENSION, Context.MODE_PRIVATE));
         writer.write(CurrentSong.Path + "\n");  // Path to music file
         writer.write(CurrentSong.getStartTime() + "\n");  // Loop start time in seconds
         writer.write(CurrentSong.getEndTime() + "\n");  // Loop end time in seconds
@@ -154,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
     private Optional<String> getFileExtension(String filename) {
         return Optional.ofNullable(filename)
                 .filter(f -> f.contains("."))
-                .map(f -> f.substring(filename.lastIndexOf(".") + 1));
+                .map(f -> f.substring(filename.lastIndexOf(".")));
     }
 
     private void LoadAvailableSongs(File dir) {
@@ -167,8 +166,26 @@ public class MainActivity extends AppCompatActivity {
                         LoadAvailableSongs(file);
                     } else {
                         Optional<String> extension = getFileExtension(file.getName());
-                        if(extension.isPresent() && SupportedExtensions.contains(extension.get()))
+                        if(extension.isPresent() && SUPPORTED_EXTENSIONS.contains(extension.get()))
                             mAvailableSongs.add(file);
+                    }
+                }
+            }
+        }
+    }
+
+    private void LoadAvailableLoops(File dir) {
+        if (dir.exists()) {
+            File[] files = dir.listFiles();
+            if (files != null) {
+
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        LoadAvailableLoops(file);
+                    } else {
+                        Optional<String> extension = getFileExtension(file.getName());
+                        if(extension.isPresent() && extension.get().equals(LOOP_FILE_EXTENSION) && file.getName().indexOf(LOOP_FILE_IDENTIFIER) == 0)
+                            mAvailableLoops.add(file);
                     }
                 }
             }
