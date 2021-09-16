@@ -24,7 +24,7 @@
         android:id="@+id/ssf_btnOpen"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="10dp"
         android:onClick="onSongOpen"
         android:text="@string/open_btn"
         app:layout_constraintStart_toStartOf="parent"
@@ -52,7 +52,9 @@
         android:id="@+id/ssf_sbStartTime"
         android:layout_width="381dp"
         android:layout_height="27dp"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="104dp"
+        android:layout_marginEnd="10dp"
         android:progressTint="#03dac4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.466"
@@ -63,7 +65,9 @@
         android:id="@+id/ssf_sbEndTime"
         android:layout_width="381dp"
         android:layout_height="27dp"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="144dp"
+        android:layout_marginEnd="10dp"
         android:progressTint="#03dac4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.466"
@@ -74,7 +78,9 @@
         android:id="@+id/ssf_sbProgress"
         android:layout_width="381dp"
         android:layout_height="27dp"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="32dp"
+        android:layout_marginEnd="10dp"
         android:progressTint="#03dac4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.466"
@@ -85,7 +91,9 @@
         android:id="@+id/ssf_lblProgress"
         android:layout_width="383dp"
         android:layout_height="20dp"
+        android:layout_marginStart="10dp"
         android:layout_marginTop="12dp"
+        android:layout_marginEnd="10dp"
         android:textColor="@color/white"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -111,6 +119,20 @@
         android:text="Dec"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ssf_sbEndTime" />
+
+    <ImageButton
+        android:id="@+id/ssf_btnPause"
+        android:layout_width="69dp"
+        android:layout_height="66dp"
+        android:layout_marginTop="36dp"
+        android:background="@null"
+        android:contentDescription="Pause"
+        android:onClick="onPausePlayClick"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ssf_lblEndTime"
+        app:srcCompat="@drawable/ic_play_pause_btn" />
 
     <Button
         android:id="@+id/ssf_btnStartTimeInc"
@@ -160,5 +182,28 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.505"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/ssf_lblStartTime"
+        android:layout_width="207dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="28dp"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toStartOf="@+id/ssf_btnStartTimeInc"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toEndOf="@+id/ssf_btnStartTimeDec"
+        app:layout_constraintTop_toBottomOf="@+id/ssf_sbStartTime" />
+
+    <TextView
+        android:id="@+id/ssf_lblEndTime"
+        android:layout_width="207dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="28dp"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toStartOf="@+id/ssf_btnEndTimeInc"
+        app:layout_constraintStart_toEndOf="@+id/ssf_btnEndTimeDec"
+        app:layout_constraintTop_toBottomOf="@+id/ssf_sbEndTime" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,8 +1,13 @@
 package com.example.mucify;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.example.mucify.program_objects.Song;
@@ -12,28 +17,43 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.IdRes;
+import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.provider.Settings;
+import android.util.Pair;
 import android.view.Choreographer;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import com.example.mucify.ui.main.SectionsPagerAdapter;
 import com.example.mucify.databinding.ActivityMainBinding;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,8 +68,6 @@ public class MainActivity extends AppCompatActivity {
     private final ArrayList<File> mAvailableSongs = new ArrayList<>();
     private final ArrayList<File> mAvailableLoops = new ArrayList<>();
     public Song CurrentSong;
-
-    private String mSongName = "Last Time - Nerxa.mp3";
 
     public File DataDirectory;
     public File MusicDirectory;
@@ -69,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
             });
 
 
+    @RequiresApi(api = Build.VERSION_CODES.R)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,9 +106,21 @@ public class MainActivity extends AppCompatActivity {
                 PackageManager.PERMISSION_DENIED) {
             mRequestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
+        if (ContextCompat.checkSelfPermission(
+                this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                PackageManager.PERMISSION_DENIED) {
+            mRequestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        if (!Environment.isExternalStorageManager()) {
+            Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+            Uri uri = Uri.fromParts("package", getPackageName(), null);
+            intent.setData(uri);
+            startActivity(intent);
+        }
 
         DataDirectory = new File(getDataDir().getPath() + "/files");
-        MusicDirectory = new File("/storage/emulated/0/Music");  // MY_TODO: Shouldn't be hard coded
+//        MusicDirectory = new File("/storage/emulated/0/Music");  // MY_TODO: Shouldn't be hard coded
+        MusicDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
 
         loadAvailableSongs(MusicDirectory);
         loadAvailableLoops(DataDirectory);
@@ -109,39 +140,97 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSongOpen(View view) {
-        // MY_TODO: Open window to select song
-        String file = "/storage/emulated/0/Music/" + mSongName;
+        ArrayList<String> filenames = new ArrayList<>();
+        for(File file : mAvailableSongs)
+            filenames.add(file.getName());
 
-        if(!new File(file).exists())
+        Pair pair = openOpenFileLayout(filenames);
+        View openFileView = (View)pair.first;
+        PopupWindow openFileWindow = (PopupWindow)pair.second;
+
+        if(openFileView == null || openFileWindow == null) {
+            messageBox("Error", "Failed to open file dialog to open a song");
             return;
+        }
 
-        if(CurrentSong != null)
-            CurrentSong.reset();
-        CurrentSong = new Song(this, file.substring(file.lastIndexOf("/") + 1, file.lastIndexOf(".")), file);
-        CurrentSong.play(0, CurrentSong.getDuration());
+        ((ListView)openFileView.findViewById(R.id.lstboxFiles)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                openFileWindow.dismiss();
+                String file = mAvailableSongs.get(position).getPath();
 
-        Objects.requireNonNull(getSingleSongFragment()).openSong(this);
+                if(!new File(file).exists()) {
+                    messageBox("Error", "File '" + file + "' not found. Unable to open song");
+                    return;
+                }
+
+                if(CurrentSong != null)
+                    CurrentSong.reset();
+                CurrentSong = new Song(MainActivity.this, file.substring(file.lastIndexOf("/") + 1, file.lastIndexOf(".")), file);
+                CurrentSong.play(0, CurrentSong.getDuration());
+
+                Objects.requireNonNull(getSingleSongFragment()).openSong(MainActivity.this);
+            }
+        });
     }
 
-    public void onLoopLoad(View view) throws IOException {
-        // MY_TODO: Open window to select loop
-        String file = "LOOP_Ending_Last Time - Nerxa.txt";
+    public void onLoopLoad(View view) {
+        ArrayList<String> filenames = new ArrayList<>();
+        for(File file : mAvailableLoops)
+            filenames.add(file.getName().replace(LOOP_FILE_IDENTIFIER, "").replace(LOOP_FILE_EXTENSION, ""));
 
-        String loopName = file.split("_")[1];
+        Pair pair = openOpenFileLayout(filenames);
+        View openFileView = (View)pair.first;
+        PopupWindow openFileWindow = (PopupWindow)pair.second;
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(getApplicationContext().openFileInput(file)));
-        String path = reader.readLine();
-        int loopStartTime = Integer.parseInt(reader.readLine());
-        int loopEndTime = Integer.parseInt(reader.readLine());
-        reader.close();
+        if(openFileView == null || openFileWindow == null) {
+            messageBox("Error", "Failed to open dialog to load loop");
+            return;
+        }
 
-        if(CurrentSong != null)
-            CurrentSong.reset();
-        CurrentSong = new Song(getApplicationContext(), file.substring(file.lastIndexOf("_") + 1, file.indexOf(LOOP_FILE_EXTENSION)), path);
-        CurrentSong.play(loopStartTime, loopEndTime);
+        ((ListView)openFileView.findViewById(R.id.lstboxFiles)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                openFileWindow.dismiss();
+                String file = mAvailableLoops.get(position).getName();
+
+                String path = null;
+                int loopStartTime = 0;
+                int loopEndTime = 0;
+                try {
+                    BufferedReader reader = new BufferedReader(new FileReader(mAvailableLoops.get(position)));
+                    path = reader.readLine();
+                    loopStartTime = Integer.parseInt(reader.readLine());
+                    loopEndTime = Integer.parseInt(reader.readLine());
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    messageBox("Error", e.getMessage());
+                }
+
+                if(CurrentSong != null)
+                    CurrentSong.reset();
+                CurrentSong = new Song(getApplicationContext(), file.substring(file.lastIndexOf("_") + 1, file.indexOf(LOOP_FILE_EXTENSION)), path);
+                CurrentSong.play(loopStartTime, loopEndTime);
+                Objects.requireNonNull(getSingleSongFragment()).openSong(MainActivity.this);
+            }
+        });
+
+        ((ListView)openFileView.findViewById(R.id.lstboxFiles)).setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                // MY_TODO: Alert the user that they're about to delete a loop
+                File file = mAvailableLoops.get(position);
+                boolean result = file.delete();
+                mAvailableLoops.clear();
+                loadAvailableLoops(DataDirectory);
+                openFileWindow.dismiss();
+                return true;
+            }
+        });
+//        String loopName = file.split("_")[1];
     }
 
-    private String loopName = "";
     public void onLoopSave(View view) {
         if(CurrentSong == null)
             return;
@@ -159,17 +248,14 @@ public class MainActivity extends AppCompatActivity {
         popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
 
         // dismiss the popup window when touched
-        popupView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                popupWindow.dismiss();
-                return true;
-            }
+        popupView.setOnTouchListener((v, event) -> {
+            popupWindow.dismiss();
+            return true;
         });
         popupView.findViewById(R.id.ssf_btnSaveLoop).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loopName = ((EditText)popupView.findViewById(R.id.ssf_txtSaveLoop)).getText().toString();
+                String loopName = ((EditText)popupView.findViewById(R.id.ssf_txtSaveLoop)).getText().toString();
 
                 if(!loopName.isEmpty() && !loopName.contains("_")) {
                     try {
@@ -179,12 +265,68 @@ public class MainActivity extends AppCompatActivity {
                         writer.write(CurrentSong.getStartTime() + "\n");  // Loop start time in seconds
                         writer.write(CurrentSong.getEndTime() + "\n");  // Loop end time in seconds
                         writer.close();
+                        popupWindow.dismiss();
+                        mAvailableLoops.clear();
+                        loadAvailableLoops(DataDirectory);
                     } catch (IOException e) {
                         e.printStackTrace();
+                        messageBox("Error", e.getMessage());
                     }
                 }
             }
         });
+    }
+
+    public void onPausePlayClick(View view) {
+        if(CurrentSong != null) {
+            if(CurrentSong.isPlaying())
+                CurrentSong.pause();
+            else
+                CurrentSong.play();
+        }
+    }
+
+    private android.util.Pair openOpenFileLayout(List<String> items) {
+        if(items.isEmpty())
+            return new android.util.Pair<>(null, null);
+
+        // Create Dialog for loop name
+        LayoutInflater inflater = (LayoutInflater)
+                getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.open_file_layout, null);
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
+
+        // show the popup window
+        // which view you pass in doesn't matter, it is only used for the window token
+        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
+
+        // dismiss the popup window when touched
+        popupView.setOnTouchListener((v, event) -> {
+            popupWindow.dismiss();
+            return true;
+        });
+
+        ((ListView)popupView.findViewById(R.id.lstboxFiles)).setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, items) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view =super.getView(position, convertView, parent);
+                TextView textView = view.findViewById(android.R.id.text1);
+                textView.setTextColor(Color.WHITE);
+                return view;
+            }
+        });
+
+        return new android.util.Pair<>(popupView, popupWindow);
+    }
+
+    private void messageBox(String title, String msg) {
+        AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+        dlgAlert.setMessage(msg);
+        dlgAlert.setTitle(title);
+        dlgAlert.setCancelable(true);
+        dlgAlert.create().show();
     }
 
     private Optional<String> getFileExtension(String filename) {
@@ -197,6 +339,8 @@ public class MainActivity extends AppCompatActivity {
         if (dir.exists()) {
             File[] files = dir.listFiles();
             if (files != null) {
+                 if(files.length == 0)
+                     messageBox("Error", "No songs available to load in '" + dir.getAbsolutePath() + "'");
 
                 for (File file : files) {
                     if (file.isDirectory()) {
@@ -208,6 +352,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
+            else
+                messageBox("Error", "Failed to load available songs from '" + dir.getAbsolutePath() + "'");
         }
     }
 

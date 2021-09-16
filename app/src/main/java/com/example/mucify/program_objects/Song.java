@@ -43,12 +43,20 @@ public class Song {
         }
     }
 
+    synchronized public void play() {
+        if(mMediaPlayer != null) {
+            mMediaPlayer.start();
+            mMediaPlayer.setLooping(true);
+        }
+    }
+
     synchronized public void update() {
         if(mMediaPlayer != null) {
-            if(mMediaPlayer.getCurrentPosition() >= mEndTime || mMediaPlayer.getCurrentPosition() < mStartTime || !mMediaPlayer.isPlaying()) {
+            if(!mMediaPlayer.isPlaying())
+                return;
+
+            if(mMediaPlayer.getCurrentPosition() >= mEndTime || mMediaPlayer.getCurrentPosition() < mStartTime) {
                 mMediaPlayer.seekTo(mStartTime, MediaPlayer.SEEK_CLOSEST);
-                if (!mMediaPlayer.isPlaying())
-                    mMediaPlayer.start();
             }
         }
     }
@@ -77,7 +85,7 @@ public class Song {
     }
 
     synchronized public int getCurrentPosition() {
-        if(mMediaPlayer != null && mMediaPlayer.isPlaying())
+        if(mMediaPlayer != null)
             return mMediaPlayer.getCurrentPosition();
         return 0;
     }
@@ -94,4 +102,10 @@ public class Song {
     }
     public int getEndTime() { return mEndTime; }
     public void setEndTime(int t)  { mEndTime = t; update(); }
+
+    synchronized public boolean isPlaying() {
+        if(mMediaPlayer != null)
+            return mMediaPlayer.isPlaying();
+        return false;
+    }
 }

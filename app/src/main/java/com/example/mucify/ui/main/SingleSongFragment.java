@@ -77,7 +77,15 @@ public class SingleSongFragment extends Fragment {
 
         ((SeekBar)mView.findViewById(R.id.ssf_sbStartTime)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) { }
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                long millis = progress % 1000;
+                long second = (progress / 1000) % 60;
+                long minute = (progress / (1000 * 60)) % 60;
+                long hour = (progress / (1000 * 60 * 60)) % 24;
+
+                ((TextView)mView.findViewById(R.id.ssf_lblStartTime)).setText(String.format("%02d:%02d:%02d.%d", hour, minute, second, millis));
+            }
+
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 mStartTimeSeekbarUpdate = false;
@@ -91,8 +99,15 @@ public class SingleSongFragment extends Fragment {
         });
 
         ((SeekBar)mView.findViewById(R.id.ssf_sbEndTime)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) { }
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                long millis = progress % 1000;
+                long second = (progress / 1000) % 60;
+                long minute = (progress / (1000 * 60)) % 60;
+                long hour = (progress / (1000 * 60 * 60)) % 24;
+
+                ((TextView)mView.findViewById(R.id.ssf_lblEndTime)).setText(String.format("%02d:%02d:%02d.%d", hour, minute, second, millis));
+            }
+
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 mEndTimeSeekbarUpdate = false;
@@ -175,6 +190,8 @@ public class SingleSongFragment extends Fragment {
         mView.findViewById(R.id.ssf_btnStartTimeInc).setVisibility(visibility);
         mView.findViewById(R.id.ssf_btnEndTimeDec).setVisibility(visibility);
         mView.findViewById(R.id.ssf_btnEndTimeInc).setVisibility(visibility);
+
+        mView.findViewById(R.id.ssf_btnPause).setVisibility(visibility);
     }
 
     private void UpdateSeekbars() {
