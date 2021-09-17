@@ -29,6 +29,18 @@ public class Song {
         }
     }
 
+    public Song(Context context, String name, String path, int startTime, int endTime) {
+        Name = name;
+        Path = path;
+        mStartTime = startTime;
+        mEndTime = endTime;
+
+        Uri uri = Uri.parse(path);
+        synchronized (mLock) {
+            mMediaPlayer = MediaPlayer.create(context, uri);
+        }
+    }
+
     // Start and end times in milliseconds
     public void play(int startTime, int endTime) {
         mStartTime = startTime;
@@ -40,6 +52,13 @@ public class Song {
                 mMediaPlayer.seekTo(mStartTime, MediaPlayer.SEEK_CLOSEST);
                 mMediaPlayer.setLooping(true);
             }
+        }
+    }
+
+    synchronized public void play(boolean loop) {
+        if(mMediaPlayer != null) {
+            mMediaPlayer.start();
+            mMediaPlayer.setLooping(loop);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.example.mucify;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.IntentService;
 import android.app.Notification;
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     public File MusicDirectory;
 
     public final List<String> SUPPORTED_EXTENSIONS = Arrays.asList(".3gp", ".mp4", ".m4a", ".aac", ".ts", ".amr", ".flac", ".ota", ".imy", ".mp3", ".mkv", ".ogg", ".wav");
-    public final String LOOP_FILE_EXTENSION = ".txt";
+    public final String LOOP_FILE_EXTENSION = ".loop";
     public final String LOOP_FILE_IDENTIFIER = "LOOP_";
 
     // Register the permissions callback, which handles the user's response to the
@@ -159,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
         PopupWindow openFileWindow = (PopupWindow)pair.second;
 
         if(openFileView == null || openFileWindow == null) {
-            messageBox("Error", "Failed to open file dialog to open a song");
+            Util.messageBox(this, "Error", "Failed to open file dialog to open a song");
             return;
         }
 
@@ -170,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                 String file = mAvailableSongs.get(position).getPath();
 
                 if(!new File(file).exists()) {
-                    messageBox("Error", "File '" + file + "' not found. Unable to open song");
+                    Util.messageBox(MainActivity.this, "Error", "File '" + file + "' not found. Unable to open song");
                     return;
                 }
 
@@ -194,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         PopupWindow openFileWindow = (PopupWindow)pair.second;
 
         if(openFileView == null || openFileWindow == null) {
-            messageBox("Error", "Failed to open dialog to load loop");
+            Util.messageBox(this, "Error", "Failed to open dialog to load loop");
             return;
         }
 
@@ -215,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
                     reader.close();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    messageBox("Error", e.getMessage());
+                    Util.messageBox(MainActivity.this, "Error", e.getMessage());
                 }
 
                 if(CurrentSong != null)
@@ -280,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
                         loadAvailableLoops(DataDirectory);
                     } catch (IOException e) {
                         e.printStackTrace();
-                        messageBox("Error", e.getMessage());
+                        Util.messageBox(MainActivity.this, "Error", e.getMessage());
                     }
                 }
             }
@@ -296,6 +297,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void onStartPlaylistFragment(View view) {
+        getPlaylistFragment().create(this);
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
     private android.util.Pair openOpenFileLayout(List<String> items) {
         if(items.isEmpty())
             return new android.util.Pair<>(null, null);
@@ -331,39 +337,25 @@ public class MainActivity extends AppCompatActivity {
         return new android.util.Pair<>(popupView, popupWindow);
     }
 
-    private void messageBox(String title, String msg) {
-        AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
-        dlgAlert.setMessage(msg);
-        dlgAlert.setTitle(title);
-        dlgAlert.setCancelable(true);
-        dlgAlert.create().show();
-    }
-
-    private Optional<String> getFileExtension(String filename) {
-        return Optional.ofNullable(filename)
-                .filter(f -> f.contains("."))
-                .map(f -> f.substring(filename.lastIndexOf(".")));
-    }
-
     private void loadAvailableSongs(File dir) {
         if (dir.exists()) {
             File[] files = dir.listFiles();
             if (files != null) {
                  if(files.length == 0)
-                     messageBox("Error", "No songs available to load in '" + dir.getAbsolutePath() + "'");
+                     Util.messageBox(this, "Error", "No songs available to load in '" + dir.getAbsolutePath() + "'");
 
                 for (File file : files) {
                     if (file.isDirectory()) {
                         loadAvailableSongs(file);
                     } else {
-                        Optional<String> extension = getFileExtension(file.getName());
+                        Optional<String> extension = Util.getFileExtension(file.getName());
                         if(extension.isPresent() && SUPPORTED_EXTENSIONS.contains(extension.get()))
                             mAvailableSongs.add(file);
                     }
                 }
             }
             else
-                messageBox("Error", "Failed to load available songs from '" + dir.getAbsolutePath() + "'");
+                Util.messageBox(this, "Error", "Failed to load available songs from '" + dir.getAbsolutePath() + "'");
         }
     }
 
@@ -376,7 +368,7 @@ public class MainActivity extends AppCompatActivity {
                     if (file.isDirectory()) {
                         loadAvailableLoops(file);
                     } else {
-                        Optional<String> extension = getFileExtension(file.getName());
+                        Optional<String> extension = Util.getFileExtension(file.getName());
                         if(extension.isPresent() && extension.get().equals(LOOP_FILE_EXTENSION) && file.getName().indexOf(LOOP_FILE_IDENTIFIER) == 0)
                             mAvailableLoops.add(file);
                     }
@@ -397,7 +389,7 @@ public class MainActivity extends AppCompatActivity {
     private PlaylistFragment getPlaylistFragment() {
         ViewPager viewPager = findViewById(R.id.view_pager);
         Fragment page = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.view_pager + ":" + viewPager.getCurrentItem());
-        if(viewPager.getCurrentItem() == 0 && page != null)
+        if(viewPager.getCurrentItem() == 1 && page != null)
             return ((PlaylistFragment)page);
 
         return null;

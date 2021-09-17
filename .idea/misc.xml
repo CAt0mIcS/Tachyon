@@ -9,6 +9,10 @@
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/roundcorner.xml" value="0.1537037037037037" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_main.xml" value="0.2953125" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/open_file_layout.xml" value="0.4041666666666667" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/playlist_create_fragment.xml" value="0.29322916666666665" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/playlist_edit_fragment.xml" value="0.29322916666666665" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/playlist_fragment_layout.xml" value="0.29322916666666665" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/playlist_loaded_fragment.xml" value="0.29322916666666665" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/save_loop_dialog.xml" value="0.2953125" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/save_loop_layout.xml" value="0.4" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/single_song_fragment_layout.xml" value="0.4041666666666667" />
