@@ -1,27 +1,21 @@
 package com.example.mucify.ui.main;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
 import com.example.mucify.MainActivity;
 import com.example.mucify.R;
-import com.example.mucify.program_objects.Song;
-
+import com.example.mucify.program_objects.PlayerNotification;
 import org.jetbrains.annotations.NotNull;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -44,6 +38,11 @@ public class SingleSongFragment extends Fragment {
     public void onViewCreated(@NotNull View view, Bundle savedInstanceState) {
         mView = view;
         SetVisibilities(View.INVISIBLE);
+
+//        Intent i = new Intent(getActivity(), PlayerNotification.class);
+//        i.setData(Uri.parse(mActivity.CurrentSong.Name));
+//        getActivity().startService(i);
+//        getActivity().finish();
 
         new Timer().scheduleAtFixedRate(new TimerTask(){
             @Override

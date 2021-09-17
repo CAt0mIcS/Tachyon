@@ -2,6 +2,11 @@ package com.example.mucify;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,7 +22,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.IdRes;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -25,13 +30,11 @@ import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Pair;
 import android.view.Choreographer;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -47,15 +50,13 @@ import com.example.mucify.databinding.ActivityMainBinding;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -125,6 +126,15 @@ public class MainActivity extends AppCompatActivity {
         loadAvailableSongs(MusicDirectory);
         loadAvailableLoops(DataDirectory);
 
+        Comparator<File> comparator = new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        };
+        mAvailableSongs.sort(comparator);
+        mAvailableLoops.sort(comparator);
+
         // Update Song
         Choreographer.FrameCallback callback = new Choreographer.FrameCallback() {
             @Override
@@ -177,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
     public void onLoopLoad(View view) {
         ArrayList<String> filenames = new ArrayList<>();
         for(File file : mAvailableLoops)
-            filenames.add(file.getName().replace(LOOP_FILE_IDENTIFIER, "").replace(LOOP_FILE_EXTENSION, ""));
+            filenames.add(file.getName().replace(LOOP_FILE_IDENTIFIER, "").replace(LOOP_FILE_EXTENSION, "").replaceFirst("_", " | "));
 
         Pair pair = openOpenFileLayout(filenames);
         View openFileView = (View)pair.first;

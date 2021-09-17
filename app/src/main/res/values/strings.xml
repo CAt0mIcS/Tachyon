@@ -2,7 +2,7 @@
     <string name="app_name">Mucify</string>
     <string name="tab_text_songs">Songs</string>
     <string name="tab_text_playlists">Playlists</string>
-    <string name="open_btn">Open</string>
-    <string name="load_btn">Load</string>
-    <string name="save_btn">Save</string>
+    <string name="open_btn">Songs</string>
+    <string name="load_btn">Loops</string>
+    <string name="save_btn">Save Loop</string>
 </resources>
