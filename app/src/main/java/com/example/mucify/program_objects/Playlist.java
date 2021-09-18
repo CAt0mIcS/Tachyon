@@ -8,18 +8,18 @@ import com.example.mucify.ui.main.PlaylistFragment;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Playlist {
-    public ArrayList<Song> Songs = new ArrayList<>();
+    public final ArrayList<Song> Songs = new ArrayList<>();
     public String Name;
     private File mFilepath;
-
     private MainActivity mActivity;
+    private boolean mPaused = false;
 
     public Playlist(MainActivity activity, String name, File file) {
         if(!file.exists())
@@ -34,9 +34,41 @@ public class Playlist {
 
     public Playlist(MainActivity activity, String name, ArrayList<Song> songs) {
         mActivity = activity;
-        Songs = songs;
+
+        // Don't reference ArrayList
+        Songs.addAll(songs);
+
         Name = name;
         mFilepath = new File(PlaylistFragment.PLAYLIST_IDENTIFIER + name + PlaylistFragment.PLAYLIST_EXTENSION);
+    }
+
+    public void update(boolean randomizeOrder) {
+        if(!Songs.get(0).isPlaying() && !mPaused) {
+            if(randomizeOrder)
+                Collections.shuffle(Songs);
+
+            Songs.get(0).play(false);
+        }
+        // Song finished playing
+        if(Songs.get(0).updateOnce()) {
+            Songs.get(0).pause();
+        }
+    }
+
+    public void pause() {
+        if(Songs.get(0).isPlaying()) {
+            Songs.get(0).pause();
+            mPaused = true;
+        }
+    }
+
+    public boolean isPaused() {
+        return mPaused;
+    }
+
+    public void resume() {
+        mPaused = false;
+        Songs.get(0).play(false);
     }
 
     public void save() throws IOException {
@@ -67,7 +99,7 @@ public class Playlist {
                 int loopStartTime = Integer.parseInt(reader.readLine());
                 int loopEndTime = Integer.parseInt(reader.readLine());
 
-                Songs.add(new Song(mActivity, file.getName().substring(file.getName().lastIndexOf("_") + 1, file.getName().indexOf(PlaylistFragment.PLAYLIST_EXTENSION)), path, loopStartTime, loopEndTime));
+                Songs.add(new Song(mActivity, path.substring(path.lastIndexOf("/") + 1, path.indexOf(Util.getFileExtension(path).get())), path, loopStartTime, loopEndTime));
             }
             reader.close();
 

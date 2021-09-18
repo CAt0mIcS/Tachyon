@@ -4,40 +4,82 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/playlist_fragment"
     android:background="#232628">
-
-    <Button
-        android:id="@+id/pf_btnCreate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onStartPlaylistFragment"
-        android:text="Create New"
-        tools:layout_editor_absoluteX="17dp"
-        tools:layout_editor_absoluteY="19dp" />
-
-    <Button
-        android:id="@+id/pf_btnEdit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onStartPlaylistFragment"
-        android:text="Edit"
-        tools:layout_editor_absoluteX="161dp"
-        tools:layout_editor_absoluteY="19dp" />
-
-    <Button
-        android:id="@+id/pf_btnDelete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="onStartPlaylistFragment"
-        android:text="Delete"
-        tools:layout_editor_absoluteX="258dp"
-        tools:layout_editor_absoluteY="19dp" />
 
     <ListView
         android:id="@+id/pf_lstboxPlaylists"
-        android:layout_width="409dp"
-        android:layout_height="662dp"
-        android:layout_marginBottom="16dp"
+        android:layout_width="410dp"
+        android:layout_height="552dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/pf_btnCreate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:clickable="true"
+        android:contentDescription="Create new playlist"
         app:layout_constraintBottom_toBottomOf="parent"
-        tools:layout_editor_absoluteX="16dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pf_lstboxPlaylists"
+        app:layout_constraintVertical_bias="0.448"
+        app:srcCompat="@android:drawable/ic_input_add" />
+
+    <Button
+        android:id="@+id/pf_btnClosePlaylist"
+        android:visibility="invisible"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="X"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ListView
+        android:id="@+id/pf_lstboxPlaylistSongs"
+        android:layout_width="373dp"
+        android:layout_height="563dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="28dp"
+        android:paddingStart="10dp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pf_btnClosePlaylist" />
+
+    <Switch
+        android:id="@+id/pf_switchRandomizedPlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:text="Randomize Order"
+        android:textColor="@color/white"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/pf_lstboxPlaylistSongs"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.929"
+        app:layout_constraintStart_toEndOf="@+id/pf_btnClosePlaylist"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.464" />
+
+    <ImageButton
+        android:id="@+id/pf_btnPause"
+        android:layout_width="69dp"
+        android:layout_height="66dp"
+        android:layout_marginTop="12dp"
+        android:background="@null"
+        android:contentDescription="Pause"
+        android:onClick="onPausePlayClick"
+        android:scaleType="fitCenter"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toStartOf="@+id/pf_switchRandomizedPlay"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toEndOf="@+id/pf_btnClosePlaylist"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_play_pause_btn" />
 </androidx.constraintlayout.widget.ConstraintLayout>

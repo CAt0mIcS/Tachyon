@@ -2,12 +2,6 @@ package com.example.mucify;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.app.IntentService;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -23,7 +17,6 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -56,7 +49,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -67,8 +59,8 @@ import kotlin.NotImplementedError;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding mBinding;
-    private final ArrayList<File> mAvailableSongs = new ArrayList<>();
-    private final ArrayList<File> mAvailableLoops = new ArrayList<>();
+    public final ArrayList<File> AvailableSongs = new ArrayList<>();
+    public final ArrayList<File> AvailableLoops = new ArrayList<>();
     public Song CurrentSong;
 
     public File DataDirectory;
@@ -133,15 +125,26 @@ public class MainActivity extends AppCompatActivity {
                 return o1.getName().compareTo(o2.getName());
             }
         };
-        mAvailableSongs.sort(comparator);
-        mAvailableLoops.sort(comparator);
+        AvailableSongs.sort(comparator);
+        AvailableLoops.sort(comparator);
 
         // Update Song
         Choreographer.FrameCallback callback = new Choreographer.FrameCallback() {
             @Override
             public void doFrame(long frameTimeNanos) {
                 if (CurrentSong != null)
-                    CurrentSong.update();
+                    CurrentSong.loopedUpdate();
+
+                // MY_TODO: Android is a mess! How do I detect when the displayed fragment changes
+                PlaylistFragment fragment = getPlaylistFragment();
+                if(fragment != null) {
+                    fragment.create(MainActivity.this);
+                    if(CurrentSong != null)
+                        CurrentSong.pause();
+
+                    fragment.update();
+                }
+
 
                 Choreographer.getInstance().postFrameCallback(this);
             }
@@ -152,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onSongOpen(View view) {
         ArrayList<String> filenames = new ArrayList<>();
-        for(File file : mAvailableSongs)
+        for(File file : AvailableSongs)
             filenames.add(file.getName());
 
         Pair pair = openOpenFileLayout(filenames);
@@ -168,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 openFileWindow.dismiss();
-                String file = mAvailableSongs.get(position).getPath();
+                String file = AvailableSongs.get(position).getPath();
 
                 if(!new File(file).exists()) {
                     Util.messageBox(MainActivity.this, "Error", "File '" + file + "' not found. Unable to open song");
@@ -187,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onLoopLoad(View view) {
         ArrayList<String> filenames = new ArrayList<>();
-        for(File file : mAvailableLoops)
+        for(File file : AvailableLoops)
             filenames.add(file.getName().replace(LOOP_FILE_IDENTIFIER, "").replace(LOOP_FILE_EXTENSION, "").replaceFirst("_", " | "));
 
         Pair pair = openOpenFileLayout(filenames);
@@ -203,13 +206,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 openFileWindow.dismiss();
-                String file = mAvailableLoops.get(position).getName();
+                String file = AvailableLoops.get(position).getName();
 
                 String path = null;
                 int loopStartTime = 0;
                 int loopEndTime = 0;
                 try {
-                    BufferedReader reader = new BufferedReader(new FileReader(mAvailableLoops.get(position)));
+                    BufferedReader reader = new BufferedReader(new FileReader(AvailableLoops.get(position)));
                     path = reader.readLine();
                     loopStartTime = Integer.parseInt(reader.readLine());
                     loopEndTime = Integer.parseInt(reader.readLine());
@@ -231,9 +234,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 // MY_TODO: Alert the user that they're about to delete a loop
-                File file = mAvailableLoops.get(position);
+                File file = AvailableLoops.get(position);
                 boolean result = file.delete();
-                mAvailableLoops.clear();
+                AvailableLoops.clear();
                 loadAvailableLoops(DataDirectory);
                 openFileWindow.dismiss();
                 return true;
@@ -277,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
                         writer.write(CurrentSong.getEndTime() + "\n");  // Loop end time in seconds
                         writer.close();
                         popupWindow.dismiss();
-                        mAvailableLoops.clear();
+                        AvailableLoops.clear();
                         loadAvailableLoops(DataDirectory);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -295,10 +298,6 @@ public class MainActivity extends AppCompatActivity {
             else
                 CurrentSong.play();
         }
-    }
-
-    public void onStartPlaylistFragment(View view) {
-        getPlaylistFragment().create(this);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -350,7 +349,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         Optional<String> extension = Util.getFileExtension(file.getName());
                         if(extension.isPresent() && SUPPORTED_EXTENSIONS.contains(extension.get()))
-                            mAvailableSongs.add(file);
+                            AvailableSongs.add(file);
                     }
                 }
             }
@@ -370,7 +369,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         Optional<String> extension = Util.getFileExtension(file.getName());
                         if(extension.isPresent() && extension.get().equals(LOOP_FILE_EXTENSION) && file.getName().indexOf(LOOP_FILE_IDENTIFIER) == 0)
-                            mAvailableLoops.add(file);
+                            AvailableLoops.add(file);
                     }
                 }
             }

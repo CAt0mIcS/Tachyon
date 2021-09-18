@@ -1,13 +1,23 @@
 package com.example.mucify.ui.main;
 
+import static android.content.Context.LAYOUT_INFLATER_SERVICE;
+
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Pair;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.CheckedTextView;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -20,20 +30,29 @@ import com.example.mucify.Util;
 import com.example.mucify.program_objects.Playlist;
 import com.example.mucify.program_objects.Song;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class PlaylistFragment extends Fragment {
 
-    private MainActivity mActivity;
+    private MainActivity mActivity = null;
     private View mView;
 
     public static String PLAYLIST_IDENTIFIER = "PLAYLIST_";
     public static String PLAYLIST_EXTENSION = ".playlist";
 
     public Playlist CurrentPlaylist;
+
+    // Playlist where the layout edit_playlist_layout was activated from
+    private File mContextPlaylist;
+
+    private final ArrayList<Song> mSongsToAddToPlaylist = new ArrayList<>();
 
     private final ArrayList<File> mAvailablePlaylists = new ArrayList<>();
 
@@ -54,15 +73,204 @@ public class PlaylistFragment extends Fragment {
 
         mActivity = activity;
 
-        ((Button)mView.findViewById(R.id.pf_btnCreate)).setOnClickListener(this::onCreateNewPlaylistClicked);
-        ((Button)mView.findViewById(R.id.pf_btnEdit)).setOnClickListener(this::onEditPlaylistClicked);
-        ((Button)mView.findViewById(R.id.pf_btnDelete)).setOnClickListener(this::onDeletePlaylistClicked);
+        mView.findViewById(R.id.pf_btnCreate).setOnClickListener(this::onCreateNewPlaylistClicked);
+        ((ListView)mView.findViewById(R.id.pf_lstboxPlaylists)).setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Pair pair = openEditPlaylistWindow();
+                View popupView = (View)pair.first;
+                PopupWindow popupWindow = (PopupWindow)pair.second;
+
+                if(popupView == null || popupWindow == null) {
+                    Util.messageBox(mActivity, "Error", "Failed to open dialog to load loop");
+                    return false;
+                }
+
+                mContextPlaylist = mAvailablePlaylists.get(position);
+
+                popupView.findViewById(R.id.pf_btnEdit).setOnClickListener(v1 -> {
+                    popupWindow.dismiss();
+                    onEditPlaylistClicked(v1);
+                });
+                popupView.findViewById(R.id.pf_btnDelete).setOnClickListener(v1 -> {
+                    popupWindow.dismiss();
+                    onDeletePlaylistClicked(v1);
+                });
+
+                return false;
+            }
+        });
+
+        ((ListView) mView.findViewById(R.id.pf_lstboxPlaylists)).setOnItemClickListener(this::onPlayPlaylistClicked);
+
+        mView.findViewById(R.id.pf_btnPause).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(CurrentPlaylist != null) {
+                    if(CurrentPlaylist.isPaused())
+                        CurrentPlaylist.resume();
+                    else
+                        CurrentPlaylist.pause();
+                }
+
+            }
+        });
 
         loadAvailablePlaylists(mActivity.DataDirectory);
 
+        updatePlaylistListbox();
+    }
+
+    public void onCreateNewPlaylistClicked(View view) {
+        ArrayList<String> availableSongs = new ArrayList<>();
+        for(File file : mActivity.AvailableSongs) {
+            availableSongs.add(file.getName().replace(Util.getFileExtension(file.getName()).get(), ""));
+        }
+
+        ArrayList<String> availableLoops = new ArrayList<>();
+        for(File file : mActivity.AvailableLoops) {
+            availableLoops.add(file.getName().replace(mActivity.LOOP_FILE_IDENTIFIER, "").replace(mActivity.LOOP_FILE_EXTENSION, ""));
+        }
+
+        Pair pair = openCreatePlaylistWindow(availableSongs, availableLoops);
+        View createPlaylistView = (View)pair.first;
+        PopupWindow createPlaylistWindow = (PopupWindow)pair.second;
+
+        ((ListView)createPlaylistView.findViewById(R.id.pf_lstboxAvailableSongs)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                CheckedTextView v = (CheckedTextView) view;
+                if(v.isChecked()) {
+                    File path = mActivity.AvailableSongs.get(position);
+                    mSongsToAddToPlaylist.add(new Song(mActivity, path.getPath().substring(path.getPath().lastIndexOf("/") + 1, path.getPath().lastIndexOf(".")), path.getAbsolutePath()));
+                    mSongsToAddToPlaylist.get(mSongsToAddToPlaylist.size() - 1).setEndTime(mSongsToAddToPlaylist.get(mSongsToAddToPlaylist.size() - 1).getDuration());
+                }
+            }
+        });
+        ((ListView)createPlaylistView.findViewById(R.id.pf_lstboxAvailableLoops)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                CheckedTextView v = (CheckedTextView) view;
+                if(v.isChecked()) {
+                    File file = mActivity.AvailableLoops.get(position);
+
+                    try {
+                        BufferedReader reader = new BufferedReader(new FileReader(mActivity.AvailableLoops.get(position)));
+                        String path = reader.readLine();
+                        int loopStartTime = Integer.parseInt(reader.readLine());
+                        int loopEndTime = Integer.parseInt(reader.readLine());
+                        reader.close();
+                        mSongsToAddToPlaylist.add(new Song(mActivity, path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf(".")), path, loopStartTime, loopEndTime));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        createPlaylistView.findViewById(R.id.pf_btnCreatePlaylistOk).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mSongsToAddToPlaylist.isEmpty())
+                    return;
+
+                if(CurrentPlaylist != null)
+                    CurrentPlaylist.reset();
+
+                String name = ((EditText)createPlaylistView.findViewById(R.id.pf_txtPlaylistName)).getText().toString();
+                if(name.contains("_") || name.isEmpty()) {
+                    Util.messageBox(mActivity, "Error", "Playlist name mustn't contain '_' or be empty");
+                    return;
+                }
+
+                createPlaylistWindow.dismiss();
+
+                Playlist playlist = new Playlist(mActivity, name, mSongsToAddToPlaylist);
+                mSongsToAddToPlaylist.clear();
+                try {
+                    playlist.save();
+                } catch(IOException e) {
+                    e.printStackTrace();
+                }
+                playlist.reset();
+
+                File file = new File(mActivity.DataDirectory.getAbsolutePath() + "/" + PLAYLIST_IDENTIFIER + name + PLAYLIST_EXTENSION);
+                if(!mAvailablePlaylists.contains(file)) {
+                    mAvailablePlaylists.add(file);
+                    updatePlaylistListbox();
+                }
+            }
+        });
+
+
+    }
+
+    private void onPlayPlaylistClicked(AdapterView<?> adapterView, View view, int position, long l) {
+        mView.findViewById(R.id.pf_lstboxPlaylists).setVisibility(View.INVISIBLE);
+        mView.findViewById(R.id.pf_btnCreate).setVisibility(View.INVISIBLE);
+
+        mView.findViewById(R.id.pf_btnClosePlaylist).setVisibility(View.VISIBLE);
+        mView.findViewById(R.id.pf_switchRandomizedPlay).setVisibility(View.VISIBLE);
+        mView.findViewById(R.id.pf_btnPause).setVisibility(View.VISIBLE);
+
+        mView.findViewById(R.id.pf_btnClosePlaylist).setOnClickListener(v -> {
+            mView.findViewById(R.id.pf_lstboxPlaylists).setVisibility(View.VISIBLE);
+            mView.findViewById(R.id.pf_btnCreate).setVisibility(View.VISIBLE);
+            mView.findViewById(R.id.pf_btnClosePlaylist).setVisibility(View.INVISIBLE);
+            mView.findViewById(R.id.pf_lstboxPlaylistSongs).setVisibility(View.INVISIBLE);
+            mView.findViewById(R.id.pf_switchRandomizedPlay).setVisibility(View.INVISIBLE);
+            mView.findViewById(R.id.pf_btnPause).setVisibility(View.INVISIBLE);
+
+            if(CurrentPlaylist != null)
+                CurrentPlaylist.reset();
+        });
+
+        ListView playlistSongs  = (ListView)mView.findViewById(R.id.pf_lstboxPlaylistSongs);
+        playlistSongs.setVisibility(View.VISIBLE);
+
+
+        File playlistFile = mAvailablePlaylists.get(position);
+        String name = playlistFile.getName().replace(PLAYLIST_IDENTIFIER, "").replace(PLAYLIST_EXTENSION, "");
+
+        if(CurrentPlaylist != null)
+            CurrentPlaylist.reset();
+        CurrentPlaylist = new Playlist(mActivity, name, playlistFile);
+
+        playlistSongs.setAdapter(new ArrayAdapter<Song>(mActivity, android.R.layout.simple_list_item_1, CurrentPlaylist.Songs) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view =super.getView(position, convertView, parent);
+                TextView textView = view.findViewById(android.R.id.text1);
+                textView.setTextColor(Color.WHITE);
+                return view;
+            }
+        });
+    }
+
+    public void onEditPlaylistClicked(View view) {
+        if(mContextPlaylist == null)
+            return;
+    }
+
+    public void onDeletePlaylistClicked(View view) {
+        if(mContextPlaylist == null)
+            return;
+
+        if(mContextPlaylist.exists()) {
+            if(mContextPlaylist.delete()) {
+                mAvailablePlaylists.remove(mContextPlaylist);
+                updatePlaylistListbox();
+            }
+            else
+                Util.messageBox(mActivity, "Error", "Failed to delete file '" + mContextPlaylist.getAbsolutePath() + "'");
+        }
+    }
+
+
+    private void updatePlaylistListbox() {
         ArrayList<String> playlists = new ArrayList<>();
         for(File file : mAvailablePlaylists)
-            playlists.add(file.getName());
+            playlists.add(file.getName().replace(PLAYLIST_IDENTIFIER, "").replace(PLAYLIST_EXTENSION, ""));
 
         ((ListView)mView.findViewById(R.id.pf_lstboxPlaylists)).setAdapter(new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_1, playlists) {
             @Override
@@ -74,49 +282,6 @@ public class PlaylistFragment extends Fragment {
             }
         });
     }
-
-    public void onCreateNewPlaylistClicked(View view) {
-        ArrayList<Song> songs = new ArrayList<>();
-        songs.add(new Song(mActivity, "A Himitsu - Cosmic Storm", "/storage/emulated/0/Music/A Himitsu - Cosmic Storm.mp3"));
-        songs.add(new Song(mActivity, "ABT X Topic X A7S - Your Love", "/storage/emulated/0/Music/ABT X Topic X A7S - Your Love.mp3"));
-        songs.add(new Song(mActivity, "Cymatics - Nigel Stanford", "/storage/emulated/0/Music/Cymatics - Nigel Stanford.mp3"));
-        songs.add(new Song(mActivity, "Last Time - Nerxa", "/storage/emulated/0/Music/Last time - Nerxa.mp3"));
-        songs.add(new Song(mActivity, "Legends Never Die", "/storage/emulated/0/Music/Legends Never Die.mp3"));
-        songs.add(new Song(mActivity, "Sun Mother", "/storage/emulated/0/Music/Sun Mother.wav"));
-        songs.add(new Song(mActivity, "United Through Fire", "/storage/emulated/0/Music/United Through Fire.wav"));
-
-        if(CurrentPlaylist != null)
-            CurrentPlaylist.reset();
-        CurrentPlaylist = new Playlist(mActivity, "TestPlaylist", songs);
-        try {
-            CurrentPlaylist.save();
-        } catch(IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void onEditPlaylistClicked(View view) {
-        Object item = ((ListView)view.findViewById(R.id.pf_lstboxPlaylists)).getSelectedItem();
-        if(item == null)
-            return;
-
-        File file =  new File(PLAYLIST_IDENTIFIER + (String)item + PLAYLIST_EXTENSION);
-    }
-
-    public void onDeletePlaylistClicked(View view) {
-        Object item = ((ListView)view.findViewById(R.id.pf_lstboxPlaylists)).getSelectedItem();
-        if(item == null)
-            return;
-
-        File file =  new File(PLAYLIST_IDENTIFIER + (String)item + PLAYLIST_EXTENSION);
-        if(file.exists()) {
-            if(file.delete())
-                mAvailablePlaylists.remove(file);
-            else
-                Util.messageBox(mActivity, "Error", "Failed to delete file '" + file.getAbsolutePath() + "'");
-        }
-    }
-
 
     private void loadAvailablePlaylists(File dir) {
         if (dir.exists()) {
@@ -134,5 +299,75 @@ public class PlaylistFragment extends Fragment {
                 }
             }
         }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private android.util.Pair openEditPlaylistWindow() {
+        // Create Dialog for loop name
+        LayoutInflater inflater = (LayoutInflater)
+                mActivity.getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.playlist_context_menu_layout, null);
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
+
+        // show the popup window
+        // which view you pass in doesn't matter, it is only used for the window token
+        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
+
+        // dismiss the popup window when touched
+        popupView.setOnTouchListener((v, event) -> {
+            popupWindow.dismiss();
+            return true;
+        });
+
+        return new android.util.Pair<>(popupView, popupWindow);
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private android.util.Pair openCreatePlaylistWindow(List<String> availableSongs, List<String> availableLoops) {
+        // Create Dialog for loop name
+        LayoutInflater inflater = (LayoutInflater)
+                mActivity.getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.playlist_create_fragment, null);
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
+
+        // show the popup window
+        // which view you pass in doesn't matter, it is only used for the window token
+        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
+
+        // dismiss the popup window when touched
+        popupView.setOnTouchListener((v, event) -> {
+            popupWindow.dismiss();
+            return true;
+        });
+
+        ((ListView)popupView.findViewById(R.id.pf_lstboxAvailableSongs)).setAdapter(new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_checked, availableSongs) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view =super.getView(position, convertView, parent);
+                TextView textView = view.findViewById(android.R.id.text1);
+                textView.setTextColor(Color.WHITE);
+                return view;
+            }
+        });
+        ((ListView)popupView.findViewById(R.id.pf_lstboxAvailableLoops)).setAdapter(new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_checked, availableLoops) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view =super.getView(position, convertView, parent);
+                TextView textView = view.findViewById(android.R.id.text1);
+                textView.setTextColor(Color.WHITE);
+                return view;
+            }
+        });
+
+        return new android.util.Pair<>(popupView, popupWindow);
+    }
+
+    public void update() {
+        if(CurrentPlaylist != null)
+            CurrentPlaylist.update(((Switch)mView.findViewById(R.id.pf_switchRandomizedPlay)).isChecked());
     }
 }

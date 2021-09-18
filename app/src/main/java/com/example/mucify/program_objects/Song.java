@@ -3,9 +3,8 @@ package com.example.mucify.program_objects;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.util.Log;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 
 public class Song {
     public String Name;
@@ -41,6 +40,12 @@ public class Song {
         }
     }
 
+    @NonNull
+    @Override
+    public String toString() {
+        return Name;
+    }
+
     // Start and end times in milliseconds
     public void play(int startTime, int endTime) {
         mStartTime = startTime;
@@ -69,7 +74,7 @@ public class Song {
         }
     }
 
-    synchronized public void update() {
+    synchronized public void loopedUpdate() {
         if(mMediaPlayer != null) {
             if(!mMediaPlayer.isPlaying())
                 return;
@@ -80,6 +85,17 @@ public class Song {
         }
     }
 
+    // Returns true if song has finished playing
+    synchronized public boolean updateOnce() {
+        if(mMediaPlayer != null) {
+            if(!mMediaPlayer.isPlaying())
+                return true;
+
+            return mMediaPlayer.getCurrentPosition() >= mEndTime && mMediaPlayer.getCurrentPosition() < mStartTime;
+        }
+        return false;
+    }
+
     synchronized public void pause() {
         mMediaPlayer.pause();
     }
@@ -87,7 +103,7 @@ public class Song {
     synchronized public void seekTo(int millisec) {
         if(mMediaPlayer != null) {
             mMediaPlayer.seekTo(millisec);
-            update();
+            loopedUpdate();
         }
     }
 
@@ -120,7 +136,7 @@ public class Song {
         play(mStartTime, mEndTime);
     }
     public int getEndTime() { return mEndTime; }
-    public void setEndTime(int t)  { mEndTime = t; update(); }
+    public void setEndTime(int t)  { mEndTime = t; loopedUpdate(); }
 
     synchronized public boolean isPlaying() {
         if(mMediaPlayer != null)
