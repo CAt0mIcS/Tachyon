@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -55,6 +56,7 @@ public class PlaylistFragment extends Fragment {
     private final ArrayList<Song> mSongsToAddToPlaylist = new ArrayList<>();
 
     private final ArrayList<File> mAvailablePlaylists = new ArrayList<>();
+    private boolean mProgressSeekbarUpdate = true;
 
     @Nullable
     @Override
@@ -98,6 +100,34 @@ public class PlaylistFragment extends Fragment {
                 });
 
                 return false;
+            }
+        });
+        ((SeekBar)mView.findViewById(R.id.pf_sbProgress)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                long millis = progress % 1000;
+                long second = (progress / 1000) % 60;
+                long minute = (progress / (1000 * 60)) % 60;
+                long hour = (progress / (1000 * 60 * 60)) % 24;
+
+                ((TextView)mView.findViewById(R.id.pf_lblProgress)).setText(String.format("%02d:%02d:%02d.%d", hour, minute, second, millis));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                mProgressSeekbarUpdate = false;
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                mProgressSeekbarUpdate = true;
+                CurrentPlaylist.seekTo(seekBar.getProgress());
+            }
+        });
+        ((ListView)mView.findViewById(R.id.pf_lstboxPlaylistSongs)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                CurrentPlaylist.playSong(position);
             }
         });
 
@@ -212,7 +242,10 @@ public class PlaylistFragment extends Fragment {
         mView.findViewById(R.id.pf_btnClosePlaylist).setVisibility(View.VISIBLE);
         mView.findViewById(R.id.pf_switchRandomizedPlay).setVisibility(View.VISIBLE);
         mView.findViewById(R.id.pf_btnPause).setVisibility(View.VISIBLE);
+        mView.findViewById(R.id.pf_sbProgress).setVisibility(View.VISIBLE);
+        mView.findViewById(R.id.pf_lblProgress).setVisibility(View.VISIBLE);
 
+        // Deactivate player
         mView.findViewById(R.id.pf_btnClosePlaylist).setOnClickListener(v -> {
             mView.findViewById(R.id.pf_lstboxPlaylists).setVisibility(View.VISIBLE);
             mView.findViewById(R.id.pf_btnCreate).setVisibility(View.VISIBLE);
@@ -220,6 +253,8 @@ public class PlaylistFragment extends Fragment {
             mView.findViewById(R.id.pf_lstboxPlaylistSongs).setVisibility(View.INVISIBLE);
             mView.findViewById(R.id.pf_switchRandomizedPlay).setVisibility(View.INVISIBLE);
             mView.findViewById(R.id.pf_btnPause).setVisibility(View.INVISIBLE);
+            mView.findViewById(R.id.pf_sbProgress).setVisibility(View.INVISIBLE);
+            mView.findViewById(R.id.pf_lblProgress).setVisibility(View.INVISIBLE);
 
             if(CurrentPlaylist != null)
                 CurrentPlaylist.reset();
@@ -227,7 +262,6 @@ public class PlaylistFragment extends Fragment {
 
         ListView playlistSongs  = (ListView)mView.findViewById(R.id.pf_lstboxPlaylistSongs);
         playlistSongs.setVisibility(View.VISIBLE);
-
 
         File playlistFile = mAvailablePlaylists.get(position);
         String name = playlistFile.getName().replace(PLAYLIST_IDENTIFIER, "").replace(PLAYLIST_EXTENSION, "");
@@ -344,7 +378,7 @@ public class PlaylistFragment extends Fragment {
             return true;
         });
 
-        ((ListView)popupView.findViewById(R.id.pf_lstboxAvailableSongs)).setAdapter(new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_checked, availableSongs) {
+        ((ListView)popupView.findViewById(R.id.pf_lstboxAvailableSongs)).setAdapter(new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_multiple_choice, availableSongs) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view =super.getView(position, convertView, parent);
@@ -353,7 +387,7 @@ public class PlaylistFragment extends Fragment {
                 return view;
             }
         });
-        ((ListView)popupView.findViewById(R.id.pf_lstboxAvailableLoops)).setAdapter(new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_checked, availableLoops) {
+        ((ListView)popupView.findViewById(R.id.pf_lstboxAvailableLoops)).setAdapter(new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_multiple_choice, availableLoops) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view =super.getView(position, convertView, parent);
@@ -367,7 +401,12 @@ public class PlaylistFragment extends Fragment {
     }
 
     public void update() {
-        if(CurrentPlaylist != null)
+        if(CurrentPlaylist != null) {
             CurrentPlaylist.update(((Switch)mView.findViewById(R.id.pf_switchRandomizedPlay)).isChecked());
+            SeekBar seekBar = ((SeekBar)mView.findViewById(R.id.pf_sbProgress));
+            seekBar.setMax(CurrentPlaylist.getDuration());
+            if(mProgressSeekbarUpdate)
+                seekBar.setProgress(CurrentPlaylist.getCurrentPosition());
+        }
     }
 }

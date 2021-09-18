@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Playlist {
     public final ArrayList<Song> Songs = new ArrayList<>();
@@ -20,6 +23,7 @@ public class Playlist {
     private File mFilepath;
     private MainActivity mActivity;
     private boolean mPaused = false;
+    private int mSongID = 0;
 
     public Playlist(MainActivity activity, String name, File file) {
         if(!file.exists())
@@ -30,6 +34,12 @@ public class Playlist {
         mFilepath = file;
 
         parseFile(file);
+        Songs.sort(new Comparator<Song>() {
+            @Override
+            public int compare(Song o1, Song o2) {
+                return o1.Name.compareTo(o2.Name);
+            }
+        });
     }
 
     public Playlist(MainActivity activity, String name, ArrayList<Song> songs) {
@@ -43,21 +53,30 @@ public class Playlist {
     }
 
     public void update(boolean randomizeOrder) {
-        if(!Songs.get(0).isPlaying() && !mPaused) {
-            if(randomizeOrder)
-                Collections.shuffle(Songs);
+        if(!Songs.get(mSongID).isPlaying() && !mPaused) {
 
-            Songs.get(0).play(false);
+            Songs.get(mSongID).seekToOnce(0);
+
+            if(randomizeOrder)
+                mSongID = ThreadLocalRandom.current().nextInt(0, Songs.size());
+            else {
+                ++mSongID;
+                if(mSongID >= Songs.size())
+                    mSongID = 0;
+            }
+
+
+            Songs.get(mSongID).play(false);
         }
         // Song finished playing
-        if(Songs.get(0).updateOnce()) {
-            Songs.get(0).pause();
+        if(Songs.get(mSongID).updateOnce()) {
+            Songs.get(mSongID).pause();
         }
     }
 
     public void pause() {
-        if(Songs.get(0).isPlaying()) {
-            Songs.get(0).pause();
+        if(Songs.get(mSongID).isPlaying()) {
+            Songs.get(mSongID).pause();
             mPaused = true;
         }
     }
@@ -68,7 +87,17 @@ public class Playlist {
 
     public void resume() {
         mPaused = false;
-        Songs.get(0).play(false);
+        Songs.get(mSongID).play(false);
+    }
+
+    public void playSong(int position) {
+        mPaused = false;
+        Songs.get(mSongID).seekToOnce(0);
+        Songs.get(mSongID).pause();
+
+        mSongID = position;
+        Songs.get(mSongID).seekToOnce(Songs.get(mSongID).getStartTime());
+        Songs.get(mSongID).play(false);
     }
 
     public void save() throws IOException {
@@ -82,6 +111,23 @@ public class Playlist {
         }
         writer.close();
 
+    }
+
+    public int getCurrentPosition() {
+        if(Songs.get(mSongID).isPlaying())
+            return Songs.get(mSongID).getCurrentPosition();
+        return 0;
+    }
+
+    public int getDuration() {
+        if(Songs.get(mSongID).isPlaying())
+            return Songs.get(mSongID).getDuration();
+        return 0;
+    }
+
+    public void seekTo(int progress) {
+        if(Songs.get(mSongID).isPlaying())
+            Songs.get(mSongID).seekToOnce(progress);
     }
 
     public void reset() {

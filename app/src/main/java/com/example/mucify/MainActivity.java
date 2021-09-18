@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
+import com.example.mucify.program_objects.Playlist;
 import com.example.mucify.program_objects.Song;
 import com.example.mucify.ui.main.PlaylistFragment;
 import com.example.mucify.ui.main.SingleSongFragment;
@@ -62,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
     public final ArrayList<File> AvailableSongs = new ArrayList<>();
     public final ArrayList<File> AvailableLoops = new ArrayList<>();
     public Song CurrentSong;
+
+    private Playlist mCurrentPlaylist;
 
     public File DataDirectory;
     public File MusicDirectory;
@@ -136,13 +139,23 @@ public class MainActivity extends AppCompatActivity {
                     CurrentSong.loopedUpdate();
 
                 // MY_TODO: Android is a mess! How do I detect when the displayed fragment changes
-                PlaylistFragment fragment = getPlaylistFragment();
-                if(fragment != null) {
-                    fragment.create(MainActivity.this);
+                PlaylistFragment playlistFragment = getPlaylistFragment();
+                SingleSongFragment singleSongFragment = getSingleSongFragment();
+                if(playlistFragment != null) {
+                    playlistFragment.create(MainActivity.this);
+                    mCurrentPlaylist = playlistFragment.CurrentPlaylist;
                     if(CurrentSong != null)
                         CurrentSong.pause();
 
-                    fragment.update();
+                    playlistFragment.update();
+                }
+                else if(singleSongFragment != null) {
+                    if(mCurrentPlaylist != null) {
+                        mCurrentPlaylist.reset();
+                        mCurrentPlaylist = null;
+
+                        findViewById(R.id.pf_btnClosePlaylist).performClick();
+                    }
                 }
 
 

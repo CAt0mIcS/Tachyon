@@ -91,7 +91,7 @@ public class Song {
             if(!mMediaPlayer.isPlaying())
                 return true;
 
-            return mMediaPlayer.getCurrentPosition() >= mEndTime && mMediaPlayer.getCurrentPosition() < mStartTime;
+            return mMediaPlayer.getCurrentPosition() >= mEndTime || mMediaPlayer.getCurrentPosition() < mStartTime;
         }
         return false;
     }
@@ -105,6 +105,14 @@ public class Song {
             mMediaPlayer.seekTo(millisec);
             loopedUpdate();
         }
+    }
+
+    synchronized public boolean seekToOnce(int millisec) {
+        if(mMediaPlayer != null) {
+            mMediaPlayer.seekTo(millisec);
+            return updateOnce();
+        }
+        return false;
     }
 
     synchronized public void reset()
