@@ -28,6 +28,8 @@ public class OpenSongFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        if(container != null)
+            container.removeAllViews();
         return inflater.inflate(R.layout.open_song_layout, container, false);
     }
 
@@ -53,8 +55,5 @@ public class OpenSongFragment extends Fragment {
                 .replace(R.id.open_song_fragment, newFragment)
                 .addToBackStack(null)
                 .commit();
-
-        List<Fragment> fragments = getParentFragmentManager().getFragments();
-        int i = fragments.size();
     }
 }

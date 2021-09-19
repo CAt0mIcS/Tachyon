@@ -1,17 +1,24 @@
 package com.mucify;
 
 import android.Manifest;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.mucify.ui.OpenPlaylistFragment;
+import com.mucify.ui.OpenSongFragment;
 import com.mucify.ui.internal.ScreenSlidePagerAdapter;
 
 import java.io.IOException;
@@ -23,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         setContentView(R.layout.main_activity);
         setupViewPager();
 //        ((ViewPager2)findViewById(R.id.pager)).registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -56,6 +63,27 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    // onBackButtonClicked in action bar
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+
+        switch(((ViewPager2)findViewById(R.id.pager)).getCurrentItem()) {
+            case 0:
+                if(getOpenSongFragment() == null) {
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.play_song_fragment, new OpenSongFragment())
+                            .addToBackStack(null)
+                            .commit();
+                }
+                break;
+            case 1:
+                break;
+        }
+        return true;
     }
 
     private void setupViewPager() {
@@ -78,5 +106,23 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }).attach();
+    }
+
+    private OpenSongFragment getOpenSongFragment() {
+        ViewPager2 viewPager = findViewById(R.id.pager);
+        Fragment page = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.pager + ":" + viewPager.getCurrentItem());
+        if(viewPager.getCurrentItem() == 0 && page != null)
+            return ((OpenSongFragment)page);
+
+        return null;
+    }
+
+    private OpenPlaylistFragment getOpenPlaylistFragment() {
+        ViewPager2 viewPager = findViewById(R.id.pager);
+        Fragment page = getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.pager + ":" + viewPager.getCurrentItem());
+        if(viewPager.getCurrentItem() == 1 && page != null)
+            return ((OpenPlaylistFragment)page);
+
+        return null;
     }
 }

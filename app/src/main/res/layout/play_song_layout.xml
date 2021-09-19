@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/ps_scrollview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -19,7 +18,6 @@
             android:layout_marginTop="8dp"
             android:clickable="false"
             android:gravity="center"
-            android:textColor="@color/white"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.489"
@@ -30,9 +28,19 @@
             android:id="@+id/ps_btnSave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
             android:text="@string/save_btn"
+            app:layout_constraintStart_toEndOf="@+id/ps_btnBack"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Button
+            android:id="@+id/ps_btnBack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="Back"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -86,7 +94,6 @@
             android:layout_height="20dp"
             android:layout_marginTop="12dp"
             android:layout_marginEnd="10dp"
-            android:textColor="@color/white"
             android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -154,7 +161,6 @@
             android:inputType="number"
             android:text="500"
             android:textAlignment="center"
-            android:textColor="@color/white"
             android:textSize="11sp"
             app:layout_constraintBottom_toTopOf="@+id/ps_sbStartTime"
             app:layout_constraintEnd_toEndOf="parent"
@@ -168,7 +174,6 @@
             android:layout_marginBottom="8dp"
             android:text="Inc/Dec Interval"
             android:textAlignment="center"
-            android:textColor="@color/white"
             app:layout_constraintBottom_toTopOf="@+id/ps_txtInterval"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.505"
@@ -182,7 +187,6 @@
             android:layout_height="20dp"
             android:layout_marginTop="28dp"
             android:textAlignment="center"
-            android:textColor="@color/white"
             app:layout_constraintEnd_toStartOf="@+id/ps_btnStartTimeInc"
             app:layout_constraintHorizontal_bias="0.497"
             app:layout_constraintStart_toEndOf="@+id/ps_btnStartTimeDec"
@@ -196,7 +200,6 @@
             android:layout_height="20dp"
             android:layout_marginTop="28dp"
             android:textAlignment="center"
-            android:textColor="@color/white"
             app:layout_constraintEnd_toStartOf="@+id/ps_btnEndTimeInc"
             app:layout_constraintStart_toEndOf="@+id/ps_btnEndTimeDec"
             app:layout_constraintTop_toBottomOf="@+id/ps_sbEndTime" />

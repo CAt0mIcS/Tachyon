@@ -26,6 +26,8 @@ public class PlaySongFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        if(container != null)
+            container.removeAllViews();
         return inflater.inflate(R.layout.play_song_layout, container, false);
     }
 
@@ -36,5 +38,14 @@ public class PlaySongFragment extends Fragment {
         mView = view;
 
         ((TextView)mView.findViewById(R.id.ps_lblSongName)).setText(mSong.getName());
+        mView.findViewById(R.id.ps_btnBack).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.play_song_fragment, new OpenSongFragment())
+                        .addToBackStack(null)
+                        .commit();
+            }
+        });
     }
 }
