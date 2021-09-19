@@ -60,8 +60,7 @@ import kotlin.NotImplementedError;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding mBinding;
-    public final ArrayList<File> AvailableSongs = new ArrayList<>();
-    public final ArrayList<File> AvailableLoops = new ArrayList<>();
+
     public Song CurrentSong;
 
     private Playlist mCurrentPlaylist;
@@ -115,18 +114,6 @@ public class MainActivity extends AppCompatActivity {
             Util.messageBox(this, "Failed to load config", e.getMessage());
         }
 
-        loadAvailableSongs(GlobalConfig.MusicDirectory);
-        loadAvailableLoops(GlobalConfig.DataDirectory);
-
-        Comparator<File> comparator = new Comparator<File>() {
-            @Override
-            public int compare(File o1, File o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        };
-        AvailableSongs.sort(comparator);
-        AvailableLoops.sort(comparator);
-
         // Update Song
         Choreographer.FrameCallback callback = new Choreographer.FrameCallback() {
             @Override
@@ -164,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onSongOpen(View view) {
         ArrayList<String> filenames = new ArrayList<>();
-        for(File file : AvailableSongs)
+        for(File file : GlobalConfig.AvailableSongs)
             filenames.add(file.getName());
 
         Pair pair = openOpenFileLayout(filenames);
@@ -180,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 openFileWindow.dismiss();
-                String file = AvailableSongs.get(position).getPath();
+                String file = GlobalConfig.AvailableSongs.get(position).getPath();
 
                 if(!new File(file).exists()) {
                     Util.messageBox(MainActivity.this, "Error", "File '" + file + "' not found. Unable to open song");
@@ -199,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onLoopLoad(View view) {
         ArrayList<String> filenames = new ArrayList<>();
-        for(File file : AvailableLoops)
+        for(File file : GlobalConfig.AvailableLoops)
             filenames.add(file.getName().replace(GlobalConfig.LoopFileIdentifier, "").replace(GlobalConfig.LoopFileExtension, "").replaceFirst("_", " | "));
 
         Pair pair = openOpenFileLayout(filenames);
@@ -215,13 +202,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 openFileWindow.dismiss();
-                String file = AvailableLoops.get(position).getName();
+                String file = GlobalConfig.AvailableLoops.get(position).getName();
 
                 String path = null;
                 int loopStartTime = 0;
                 int loopEndTime = 0;
                 try {
-                    BufferedReader reader = new BufferedReader(new FileReader(AvailableLoops.get(position)));
+                    BufferedReader reader = new BufferedReader(new FileReader(GlobalConfig.AvailableLoops.get(position)));
                     path = reader.readLine();
                     loopStartTime = Integer.parseInt(reader.readLine());
                     loopEndTime = Integer.parseInt(reader.readLine());
@@ -243,10 +230,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 // MY_TODO: Alert the user that they're about to delete a loop
-                File file = AvailableLoops.get(position);
+                File file = GlobalConfig.AvailableLoops.get(position);
                 boolean result = file.delete();
-                AvailableLoops.clear();
-                loadAvailableLoops(GlobalConfig.DataDirectory);
+                GlobalConfig.AvailableLoops.clear();
+                GlobalConfig.loadAvailableLoops(GlobalConfig.DataDirectory);
                 openFileWindow.dismiss();
                 return true;
             }
@@ -289,8 +276,8 @@ public class MainActivity extends AppCompatActivity {
                         writer.write(CurrentSong.getEndTime() + "\n");  // Loop end time in seconds
                         writer.close();
                         popupWindow.dismiss();
-                        AvailableLoops.clear();
-                        loadAvailableLoops(GlobalConfig.DataDirectory);
+                        GlobalConfig.AvailableLoops.clear();
+                        GlobalConfig.loadAvailableLoops(GlobalConfig.DataDirectory);
                     } catch (IOException e) {
                         e.printStackTrace();
                         Util.messageBox(MainActivity.this, "Error", e.getMessage());
@@ -343,46 +330,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         return new android.util.Pair<>(popupView, popupWindow);
-    }
-
-    private void loadAvailableSongs(File dir) {
-        if (dir.exists()) {
-            File[] files = dir.listFiles();
-            if (files != null) {
-                 if(files.length == 0)
-                     Util.messageBox(this, "Error", "No songs available to load in '" + dir.getAbsolutePath() + "'");
-
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        loadAvailableSongs(file);
-                    } else {
-                        Optional<String> extension = Util.getFileExtension(file.getName());
-                        if(extension.isPresent() && GlobalConfig.SupportedAudioExtensions.contains(extension.get()))
-                            AvailableSongs.add(file);
-                    }
-                }
-            }
-            else
-                Util.messageBox(this, "Error", "Failed to load available songs from '" + dir.getAbsolutePath() + "'");
-        }
-    }
-
-    private void loadAvailableLoops(File dir) {
-        if (dir.exists()) {
-            File[] files = dir.listFiles();
-            if (files != null) {
-
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        loadAvailableLoops(file);
-                    } else {
-                        Optional<String> extension = Util.getFileExtension(file.getName());
-                        if(extension.isPresent() && extension.get().equals(GlobalConfig.LoopFileExtension) && file.getName().indexOf(GlobalConfig.LoopFileIdentifier) == 0)
-                            AvailableLoops.add(file);
-                    }
-                }
-            }
-        }
     }
 
     private SingleSongFragment getSingleSongFragment() {

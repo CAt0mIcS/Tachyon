@@ -55,7 +55,6 @@ public class PlaylistFragment extends Fragment {
 
     private final ArrayList<Song> mSongsToAddToPlaylist = new ArrayList<>();
 
-    private final ArrayList<File> mAvailablePlaylists = new ArrayList<>();
     private boolean mProgressSeekbarUpdate = true;
 
     @Nullable
@@ -88,7 +87,7 @@ public class PlaylistFragment extends Fragment {
                     return false;
                 }
 
-                mContextPlaylist = mAvailablePlaylists.get(position);
+                mContextPlaylist = GlobalConfig.AvailablePlaylists.get(position);
 
                 popupView.findViewById(R.id.pf_btnEdit).setOnClickListener(v1 -> {
                     popupWindow.dismiss();
@@ -154,19 +153,19 @@ public class PlaylistFragment extends Fragment {
             }
         });
 
-        loadAvailablePlaylists(GlobalConfig.DataDirectory);
+        GlobalConfig.loadAvailablePlaylists(GlobalConfig.DataDirectory);
 
         updatePlaylistListbox();
     }
 
     public void onCreateNewPlaylistClicked(View view) {
         ArrayList<String> availableSongs = new ArrayList<>();
-        for(File file : mActivity.AvailableSongs) {
+        for(File file : GlobalConfig.AvailableSongs) {
             availableSongs.add(file.getName().replace(Util.getFileExtension(file.getName()).get(), ""));
         }
 
         ArrayList<String> availableLoops = new ArrayList<>();
-        for(File file : mActivity.AvailableLoops) {
+        for(File file : GlobalConfig.AvailableLoops) {
             availableLoops.add(file.getName().replace(GlobalConfig.LoopFileIdentifier, "").replace(GlobalConfig.LoopFileExtension, ""));
         }
 
@@ -178,7 +177,7 @@ public class PlaylistFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 CheckedTextView v = (CheckedTextView) view;
-                File path = mActivity.AvailableSongs.get(position);
+                File path = GlobalConfig.AvailableSongs.get(position);
                 String songName = path.getPath().substring(path.getPath().lastIndexOf("/") + 1, path.getPath().lastIndexOf("."));
                 if(v.isChecked()) {
                     mSongsToAddToPlaylist.add(new Song(mActivity, songName, path.getAbsolutePath()));
@@ -198,7 +197,7 @@ public class PlaylistFragment extends Fragment {
                 int loopStartTime = 0;
                 int loopEndTime = 0;
                 try {
-                    BufferedReader reader = new BufferedReader(new FileReader(mActivity.AvailableLoops.get(position)));
+                    BufferedReader reader = new BufferedReader(new FileReader(GlobalConfig.AvailableLoops.get(position)));
                     path = reader.readLine();
                     loopStartTime = Integer.parseInt(reader.readLine());
                     loopEndTime = Integer.parseInt(reader.readLine());
@@ -244,8 +243,8 @@ public class PlaylistFragment extends Fragment {
                 playlist.reset();
 
                 File file = new File(GlobalConfig.DataDirectory.getAbsolutePath() + "/" + GlobalConfig.PlaylistFileIdentifier + name + GlobalConfig.PlaylistFileExtension);
-                if(!mAvailablePlaylists.contains(file)) {
-                    mAvailablePlaylists.add(file);
+                if(!GlobalConfig.AvailablePlaylists.contains(file)) {
+                    GlobalConfig.AvailablePlaylists.add(file);
                     updatePlaylistListbox();
                 }
             }
@@ -282,12 +281,11 @@ public class PlaylistFragment extends Fragment {
         ListView playlistSongs  = (ListView)mView.findViewById(R.id.pf_lstboxPlaylistSongs);
         playlistSongs.setVisibility(View.VISIBLE);
 
-        File playlistFile = mAvailablePlaylists.get(position);
-        String name = playlistFile.getName().replace(GlobalConfig.PlaylistFileIdentifier, "").replace(GlobalConfig.PlaylistFileExtension, "");
+        File playlistFile = GlobalConfig.AvailablePlaylists.get(position);
 
         if(CurrentPlaylist != null)
             CurrentPlaylist.reset();
-        CurrentPlaylist = new Playlist(mActivity, name, playlistFile);
+        CurrentPlaylist = new Playlist(mActivity, playlistFile);
 
         playlistSongs.setAdapter(new ArrayAdapter<Song>(mActivity, android.R.layout.simple_list_item_1, CurrentPlaylist.Songs) {
             @Override
@@ -309,7 +307,7 @@ public class PlaylistFragment extends Fragment {
             return;
 
         getParentFragmentManager().beginTransaction()
-                .replace(R.id.playlist_fragment, new EditPlaylistFragment())
+                .replace(R.id.playlist_fragment, new EditPlaylistFragment(new Playlist(mActivity, mContextPlaylist)))
                 .addToBackStack(null)
                 .commit();
     }
@@ -320,7 +318,7 @@ public class PlaylistFragment extends Fragment {
 
         if(mContextPlaylist.exists()) {
             if(mContextPlaylist.delete()) {
-                mAvailablePlaylists.remove(mContextPlaylist);
+                GlobalConfig.AvailablePlaylists.remove(mContextPlaylist);
                 updatePlaylistListbox();
             }
             else
@@ -346,7 +344,7 @@ public class PlaylistFragment extends Fragment {
 
     private void updatePlaylistListbox() {
         ArrayList<String> playlists = new ArrayList<>();
-        for(File file : mAvailablePlaylists)
+        for(File file : GlobalConfig.AvailablePlaylists)
             playlists.add(file.getName().replace(GlobalConfig.PlaylistFileIdentifier, "").replace(GlobalConfig.PlaylistFileExtension, ""));
 
         ((ListView)mView.findViewById(R.id.pf_lstboxPlaylists)).setAdapter(new ArrayAdapter<String>(mActivity, android.R.layout.simple_list_item_1, playlists) {
@@ -358,24 +356,6 @@ public class PlaylistFragment extends Fragment {
                 return view;
             }
         });
-    }
-
-    private void loadAvailablePlaylists(File dir) {
-        if (dir.exists()) {
-            File[] files = dir.listFiles();
-            if (files != null) {
-
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        loadAvailablePlaylists(file);
-                    } else {
-                        Optional<String> extension = Util.getFileExtension(file.getName());
-                        if(extension.isPresent() && extension.get().equals(GlobalConfig.PlaylistFileExtension) && file.getName().indexOf(GlobalConfig.PlaylistFileIdentifier) == 0)
-                            mAvailablePlaylists.add(file);
-                    }
-                }
-            }
-        }
     }
 
     @SuppressLint("ClickableViewAccessibility")

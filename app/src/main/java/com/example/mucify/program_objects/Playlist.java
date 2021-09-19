@@ -8,8 +8,10 @@ import com.example.mucify.Util;
 import com.example.mucify.ui.main.PlaylistFragment;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -21,7 +23,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class Playlist {
     public final ArrayList<Song> Songs = new ArrayList<>();
     public String Name;
-    private File mFilepath;
+    public File Path;
     private MainActivity mActivity;
     private boolean mPaused = false;
     private int mSongID = 0;
@@ -32,7 +34,18 @@ public class Playlist {
 
         mActivity = activity;
         Name = name;
-        mFilepath = file;
+        Path = file;
+
+        parseFile(file);
+    }
+
+    public Playlist(MainActivity activity, File file) {
+        if(!file.exists())
+            throw new IllegalArgumentException("Directory '" + file.getAbsolutePath() + "' does not exist.");
+
+        mActivity = activity;
+        Path = file;
+        Name = file.getName().replace(GlobalConfig.PlaylistFileExtension, "").replace(GlobalConfig.PlaylistFileIdentifier, "");
 
         parseFile(file);
     }
@@ -44,7 +57,7 @@ public class Playlist {
         Songs.addAll(songs);
 
         Name = name;
-        mFilepath = new File(GlobalConfig.PlaylistFileIdentifier + name + GlobalConfig.PlaylistFileExtension);
+        Path = new File(GlobalConfig.PlaylistFileIdentifier + name + GlobalConfig.PlaylistFileExtension);
     }
 
     public void update(boolean randomizeOrder) {
@@ -96,8 +109,7 @@ public class Playlist {
     }
 
     public void save() throws IOException {
-        OutputStreamWriter writer = new OutputStreamWriter(
-                mActivity.getApplicationContext().openFileOutput(mFilepath.getPath(), Context.MODE_PRIVATE));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(Path));
 
         for(Song song : Songs) {
             writer.write(song.Path + "\n");  // Path to music file
