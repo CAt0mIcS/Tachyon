@@ -65,7 +65,6 @@
             android:id="@+id/pf_switchRandomizedPlay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true"
             android:text="Randomize Order"
             android:textColor="@color/white"
             android:visibility="invisible"

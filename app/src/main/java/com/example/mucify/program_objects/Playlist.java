@@ -34,12 +34,6 @@ public class Playlist {
         mFilepath = file;
 
         parseFile(file);
-        Songs.sort(new Comparator<Song>() {
-            @Override
-            public int compare(Song o1, Song o2) {
-                return o1.Name.compareTo(o2.Name);
-            }
-        });
     }
 
     public Playlist(MainActivity activity, String name, ArrayList<Song> songs) {
@@ -69,7 +63,7 @@ public class Playlist {
             Songs.get(mSongID).play(false);
         }
         // Song finished playing
-        if(Songs.get(mSongID).updateOnce()) {
+        else if(Songs.get(mSongID).updateOnce()) {
             Songs.get(mSongID).pause();
         }
     }

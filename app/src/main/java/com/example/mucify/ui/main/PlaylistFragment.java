@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
@@ -131,7 +132,7 @@ public class PlaylistFragment extends Fragment {
             }
         });
 
-        ((ListView) mView.findViewById(R.id.pf_lstboxPlaylists)).setOnItemClickListener(this::onPlayPlaylistClicked);
+        ((ListView)mView.findViewById(R.id.pf_lstboxPlaylists)).setOnItemClickListener(this::onPlayPlaylistClicked);
 
         mView.findViewById(R.id.pf_btnPause).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -170,30 +171,41 @@ public class PlaylistFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 CheckedTextView v = (CheckedTextView) view;
+                File path = mActivity.AvailableSongs.get(position);
+                String songName = path.getPath().substring(path.getPath().lastIndexOf("/") + 1, path.getPath().lastIndexOf("."));
                 if(v.isChecked()) {
-                    File path = mActivity.AvailableSongs.get(position);
-                    mSongsToAddToPlaylist.add(new Song(mActivity, path.getPath().substring(path.getPath().lastIndexOf("/") + 1, path.getPath().lastIndexOf(".")), path.getAbsolutePath()));
+                    mSongsToAddToPlaylist.add(new Song(mActivity, songName, path.getAbsolutePath()));
                     mSongsToAddToPlaylist.get(mSongsToAddToPlaylist.size() - 1).setEndTime(mSongsToAddToPlaylist.get(mSongsToAddToPlaylist.size() - 1).getDuration());
                 }
+                else {
+                    mSongsToAddToPlaylist.remove(new Song(mActivity, songName, path.getAbsolutePath()));
+                }
+
             }
         });
         ((ListView)createPlaylistView.findViewById(R.id.pf_lstboxAvailableLoops)).setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 CheckedTextView v = (CheckedTextView) view;
-                if(v.isChecked()) {
-                    File file = mActivity.AvailableLoops.get(position);
+                String path = "";
+                int loopStartTime = 0;
+                int loopEndTime = 0;
+                try {
+                    BufferedReader reader = new BufferedReader(new FileReader(mActivity.AvailableLoops.get(position)));
+                    path = reader.readLine();
+                    loopStartTime = Integer.parseInt(reader.readLine());
+                    loopEndTime = Integer.parseInt(reader.readLine());
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-                    try {
-                        BufferedReader reader = new BufferedReader(new FileReader(mActivity.AvailableLoops.get(position)));
-                        String path = reader.readLine();
-                        int loopStartTime = Integer.parseInt(reader.readLine());
-                        int loopEndTime = Integer.parseInt(reader.readLine());
-                        reader.close();
-                        mSongsToAddToPlaylist.add(new Song(mActivity, path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf(".")), path, loopStartTime, loopEndTime));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                String name = path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf("."));
+                if(v.isChecked()) {
+                    mSongsToAddToPlaylist.add(new Song(mActivity, name, path, loopStartTime, loopEndTime));
+                }
+                else {
+                    mSongsToAddToPlaylist.remove(new Song(mActivity, name, path, loopStartTime, loopEndTime));
                 }
             }
         });
@@ -273,12 +285,16 @@ public class PlaylistFragment extends Fragment {
         playlistSongs.setAdapter(new ArrayAdapter<Song>(mActivity, android.R.layout.simple_list_item_1, CurrentPlaylist.Songs) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
-                View view =super.getView(position, convertView, parent);
+                View view = super.getView(position, convertView, parent);
                 TextView textView = view.findViewById(android.R.id.text1);
                 textView.setTextColor(Color.WHITE);
                 return view;
             }
         });
+
+        ViewGroup.LayoutParams params = playlistSongs.getLayoutParams();
+        params.height = getItemHeightofListView(playlistSongs, playlistSongs.getAdapter().getCount());
+        playlistSongs.setLayoutParams(params);
     }
 
     public void onEditPlaylistClicked(View view) {
@@ -300,6 +316,21 @@ public class PlaylistFragment extends Fragment {
         }
     }
 
+
+
+    // To calculate the total height of all items in ListView call with items = adapter.getCount()
+    public static int getItemHeightofListView(ListView listView, int items) {
+        ListAdapter adapter = listView.getAdapter();
+        final int UNBOUNDED = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+
+        int grossElementHeight = 0;
+        for (int i = 0; i < items; i++) {
+            View childView = adapter.getView(i, null, listView);
+            childView.measure(UNBOUNDED, UNBOUNDED);
+            grossElementHeight += childView.getMeasuredHeight();
+        }
+        return grossElementHeight;
+    }
 
     private void updatePlaylistListbox() {
         ArrayList<String> playlists = new ArrayList<>();
