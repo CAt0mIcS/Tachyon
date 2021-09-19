@@ -66,13 +66,6 @@ public class MainActivity extends AppCompatActivity {
 
     private Playlist mCurrentPlaylist;
 
-    public File DataDirectory;
-    public File MusicDirectory;
-
-    public final List<String> SUPPORTED_EXTENSIONS = Arrays.asList(".3gp", ".mp4", ".m4a", ".aac", ".ts", ".amr", ".flac", ".ota", ".imy", ".mp3", ".mkv", ".ogg", ".wav");
-    public final String LOOP_FILE_EXTENSION = ".loop";
-    public final String LOOP_FILE_IDENTIFIER = "LOOP_";
-
     // Register the permissions callback, which handles the user's response to the
     // system permissions dialog. Save the return value, an instance of
     // ActivityResultLauncher, as an instance variable.
@@ -115,12 +108,15 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
 
-        DataDirectory = new File(getDataDir().getPath() + "/files");
-//        MusicDirectory = new File("/storage/emulated/0/Music");  // MY_TODO: Shouldn't be hard coded
-        MusicDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
+        try {
+            GlobalConfig.load(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Util.messageBox(this, "Failed to load config", e.getMessage());
+        }
 
-        loadAvailableSongs(MusicDirectory);
-        loadAvailableLoops(DataDirectory);
+        loadAvailableSongs(GlobalConfig.MusicDirectory);
+        loadAvailableLoops(GlobalConfig.DataDirectory);
 
         Comparator<File> comparator = new Comparator<File>() {
             @Override
@@ -204,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
     public void onLoopLoad(View view) {
         ArrayList<String> filenames = new ArrayList<>();
         for(File file : AvailableLoops)
-            filenames.add(file.getName().replace(LOOP_FILE_IDENTIFIER, "").replace(LOOP_FILE_EXTENSION, "").replaceFirst("_", " | "));
+            filenames.add(file.getName().replace(GlobalConfig.LoopFileIdentifier, "").replace(GlobalConfig.LoopFileExtension, "").replaceFirst("_", " | "));
 
         Pair pair = openOpenFileLayout(filenames);
         View openFileView = (View)pair.first;
@@ -237,7 +233,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if(CurrentSong != null)
                     CurrentSong.reset();
-                CurrentSong = new Song(getApplicationContext(), file.substring(file.lastIndexOf("_") + 1, file.indexOf(LOOP_FILE_EXTENSION)), path);
+                CurrentSong = new Song(getApplicationContext(), file.substring(file.lastIndexOf("_") + 1, file.indexOf(GlobalConfig.LoopFileExtension)), path);
                 CurrentSong.play(loopStartTime, loopEndTime);
                 Objects.requireNonNull(getSingleSongFragment()).openSong(MainActivity.this);
             }
@@ -250,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
                 File file = AvailableLoops.get(position);
                 boolean result = file.delete();
                 AvailableLoops.clear();
-                loadAvailableLoops(DataDirectory);
+                loadAvailableLoops(GlobalConfig.DataDirectory);
                 openFileWindow.dismiss();
                 return true;
             }
@@ -287,14 +283,14 @@ public class MainActivity extends AppCompatActivity {
                 if(!loopName.isEmpty() && !loopName.contains("_")) {
                     try {
                         OutputStreamWriter writer = new OutputStreamWriter(
-                                getApplicationContext().openFileOutput(LOOP_FILE_IDENTIFIER + loopName + "_" + CurrentSong.Name + LOOP_FILE_EXTENSION, Context.MODE_PRIVATE));
+                                getApplicationContext().openFileOutput(GlobalConfig.LoopFileIdentifier + loopName + "_" + CurrentSong.Name + GlobalConfig.LoopFileExtension, Context.MODE_PRIVATE));
                         writer.write(CurrentSong.Path + "\n");  // Path to music file
                         writer.write(CurrentSong.getStartTime() + "\n");  // Loop start time in seconds
                         writer.write(CurrentSong.getEndTime() + "\n");  // Loop end time in seconds
                         writer.close();
                         popupWindow.dismiss();
                         AvailableLoops.clear();
-                        loadAvailableLoops(DataDirectory);
+                        loadAvailableLoops(GlobalConfig.DataDirectory);
                     } catch (IOException e) {
                         e.printStackTrace();
                         Util.messageBox(MainActivity.this, "Error", e.getMessage());
@@ -361,7 +357,7 @@ public class MainActivity extends AppCompatActivity {
                         loadAvailableSongs(file);
                     } else {
                         Optional<String> extension = Util.getFileExtension(file.getName());
-                        if(extension.isPresent() && SUPPORTED_EXTENSIONS.contains(extension.get()))
+                        if(extension.isPresent() && GlobalConfig.SupportedAudioExtensions.contains(extension.get()))
                             AvailableSongs.add(file);
                     }
                 }
@@ -381,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
                         loadAvailableLoops(file);
                     } else {
                         Optional<String> extension = Util.getFileExtension(file.getName());
-                        if(extension.isPresent() && extension.get().equals(LOOP_FILE_EXTENSION) && file.getName().indexOf(LOOP_FILE_IDENTIFIER) == 0)
+                        if(extension.isPresent() && extension.get().equals(GlobalConfig.LoopFileExtension) && file.getName().indexOf(GlobalConfig.LoopFileIdentifier) == 0)
                             AvailableLoops.add(file);
                     }
                 }

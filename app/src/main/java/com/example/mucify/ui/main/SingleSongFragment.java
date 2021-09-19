@@ -3,15 +3,21 @@ package com.example.mucify.ui.main;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.EditText;
+import android.widget.ListAdapter;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.example.mucify.GlobalConfig;
 import com.example.mucify.MainActivity;
 import com.example.mucify.R;
 import com.example.mucify.program_objects.PlayerNotification;
@@ -146,6 +152,18 @@ public class SingleSongFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mActivity.CurrentSong.setEndTime(mActivity.CurrentSong.getEndTime() + getInterval());
+            }
+        });
+
+        ((EditText)mView.findViewById(R.id.ssf_txtInterval)).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                GlobalConfig.SongIncDecInterval = Integer.parseInt(s.toString());
             }
         });
     }

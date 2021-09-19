@@ -2,6 +2,7 @@ package com.example.mucify.program_objects;
 
 import android.content.Context;
 
+import com.example.mucify.GlobalConfig;
 import com.example.mucify.MainActivity;
 import com.example.mucify.Util;
 import com.example.mucify.ui.main.PlaylistFragment;
@@ -43,7 +44,7 @@ public class Playlist {
         Songs.addAll(songs);
 
         Name = name;
-        mFilepath = new File(PlaylistFragment.PLAYLIST_IDENTIFIER + name + PlaylistFragment.PLAYLIST_EXTENSION);
+        mFilepath = new File(GlobalConfig.PlaylistFileIdentifier + name + GlobalConfig.PlaylistFileExtension);
     }
 
     public void update(boolean randomizeOrder) {
