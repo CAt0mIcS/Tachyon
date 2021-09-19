@@ -1,13 +1,18 @@
 package com.mucify.ui;
 
 import android.app.ActivityManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -144,7 +149,6 @@ public class PlaySongFragment extends Fragment {
             ((SeekBar)mView.findViewById(R.id.ps_sbStartTime)).setProgress(mSong.getStartTime());
         });
 
-
         mView.findViewById(R.id.ps_btnEndTimeDec).setOnClickListener(v -> {
             mSong.setEndTime(mSong.getEndTime() - Globals.SongIncDecInterval);
             ((SeekBar)mView.findViewById(R.id.ps_sbEndTime)).setProgress(mSong.getEndTime());
@@ -153,6 +157,13 @@ public class PlaySongFragment extends Fragment {
         mView.findViewById(R.id.ps_btnEndTimeInc).setOnClickListener(v -> {
             mSong.setEndTime(mSong.getEndTime() + Globals.SongIncDecInterval);
             ((SeekBar)mView.findViewById(R.id.ps_sbEndTime)).setProgress(mSong.getEndTime());
+        });
+
+        mView.findViewById(R.id.ps_btnPause).setOnClickListener(v -> {
+            if(mSong.isPlaying())
+                mSong.pause();
+            else
+                mSong.start();
         });
 
         mView.findViewById(R.id.ps_btnSave).setOnClickListener(this::onLoopSaveClicked);
@@ -175,7 +186,7 @@ public class PlaySongFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                Globals.SongIncDecInterval = Integer.parseInt(s.toString());
+                Globals.SongIncDecInterval = !s.toString().isEmpty() ? Integer.parseInt(s.toString()) : 500;
             }
         });
         //endregion
@@ -187,13 +198,32 @@ public class PlaySongFragment extends Fragment {
     }
 
     private void onLoopSaveClicked(View view) {
-        String name = "Test";
+        LayoutInflater inflater = (LayoutInflater)
+                getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.save_loop_dialog, null);
+        final PopupWindow popupWindow = new PopupWindow(popupView, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true);
+        popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
 
-        try {
-            Loop.save(mSong, Loop.toFile(name));
-        } catch(IOException e) {
-            Utils.messageBox(getContext(), "Failed to save loop " + name, e.getMessage());
-        }
+        // dismiss the popup window when touched
+        popupView.setOnTouchListener((v, event) -> {
+            popupWindow.dismiss();
+            return true;
+        });
+
+        popupView.findViewById(R.id.sld_btnSaveLoop).setOnClickListener(v -> {
+            String name = ((EditText)popupView.findViewById(R.id.sld_txtSaveLoop)).getText().toString();
+            if(name.isEmpty() || name.contains("_"))
+                return;
+
+            popupWindow.dismiss();
+
+            try {
+                Loop.save(mSong, Loop.toFile(mSong.getName(), name));
+                Globals.loadAvailableLoops();
+            } catch(IOException e) {
+                Utils.messageBox(getContext(), "Failed to save loop " + name, e.getMessage());
+            }
+        });
     }
 
     public void unload() {

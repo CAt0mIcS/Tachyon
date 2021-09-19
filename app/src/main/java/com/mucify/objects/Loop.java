@@ -13,11 +13,11 @@ import java.io.IOException;
 
 public class Loop {
     public static String toName(File file) {
-        return file.getName().replace(Globals.LoopFileIdentifier, "").replace(Globals.LoopFileExtension, "");
+        return file.getName().replace(Globals.LoopFileIdentifier, "").replace(Globals.LoopFileExtension, "").replace("_", " | ");
     }
 
-    public static File toFile(String name) {
-        return new File(Globals.DataDirectory + "/" + Globals.LoopFileIdentifier + name + Globals.LoopFileExtension);
+    public static File toFile(String songName, String name) {
+        return new File(Globals.DataDirectory + "/" + Globals.LoopFileIdentifier + songName + "_" + name + Globals.LoopFileExtension);
     }
 
     public static void save(Song song, File file) throws IOException {

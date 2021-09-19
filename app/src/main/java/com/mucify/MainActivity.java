@@ -23,6 +23,7 @@ import com.mucify.ui.PlaySongFragment;
 import com.mucify.ui.internal.ScreenSlidePagerAdapter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -75,14 +76,25 @@ public class MainActivity extends AppCompatActivity {
         switch(((ViewPager2)findViewById(R.id.pager)).getCurrentItem()) {
             case 0:
                 if(getOpenSongFragment() == null) {
+                    PlaySongFragment playSongFragment = null;
                     for(Fragment f : getSupportFragmentManager().getFragments()) {
-                        if(f instanceof PlaySongFragment)
-                            ((PlaySongFragment)f).unload();
+                        if(f instanceof PlaySongFragment) {
+                            playSongFragment = (PlaySongFragment) f;
+                            break;
+                        }
                     }
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.play_song_fragment, new OpenSongFragment())
-                            .addToBackStack(null)
-                            .commit();
+
+                    // Removing and adding it works better. Replacing it causes open_song_fragment to have two scrollbars?
+                    // And the ListView to not be scrollable anymore?
+                    if(playSongFragment != null) {
+                        getSupportFragmentManager().beginTransaction()
+                                .remove(playSongFragment)
+                                .add(R.id.open_song_fragment, new OpenSongFragment())
+                                .addToBackStack(null)
+                                .commit();
+
+                        playSongFragment.unload();
+                    }
                 }
                 break;
             case 1:

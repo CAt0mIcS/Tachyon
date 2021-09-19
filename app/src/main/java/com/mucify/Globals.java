@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 public class Globals {
     public static File DataDirectory;
@@ -44,6 +43,9 @@ public class Globals {
     public final static ArrayList<String> AvailableLoopNames = new ArrayList<>();
     public final static ArrayList<String> AvailablePlaylistNames = new ArrayList<>();
 
+    public final static Comparator<File> FileNameAlphabeticalComparator = Comparator.comparing(File::getName);
+
+
     public static void load(ContextWrapper context) throws IOException {
         DataDirectory = new File(context.getDataDir().getPath() + "/files");
         MusicDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
@@ -56,11 +58,6 @@ public class Globals {
         loadAvailableSongs();
         loadAvailableLoops();
         loadAvailablePlaylists();
-
-        // Sort songs and loops alphabetically
-        Comparator<File> comparator = Comparator.comparing(File::getName);
-        AvailableSongs.sort(comparator);
-        AvailableLoops.sort(comparator);
 
         if(!DataDirectory.exists())
             DataDirectory.mkdir();
@@ -93,18 +90,24 @@ public class Globals {
         AvailablePlaylists.clear();
         AvailablePlaylistNames.clear();
         loadFiles(DataDirectory, false, false, true);
+        AvailablePlaylists.sort(FileNameAlphabeticalComparator);
+        AvailablePlaylistNames.sort(Comparator.naturalOrder());
     }
 
     public static void loadAvailableSongs() {
         AvailableSongs.clear();
         AvailableSongNames.clear();
         loadFiles(MusicDirectory, true, false, false);
+        AvailableSongs.sort(FileNameAlphabeticalComparator);
+        AvailableSongNames.sort(Comparator.naturalOrder());
     }
 
     public static void loadAvailableLoops() {
         AvailableLoops.clear();
         AvailableLoopNames.clear();
         loadFiles(DataDirectory, false, true, false);
+        AvailableLoops.sort(FileNameAlphabeticalComparator);
+        AvailableLoopNames.sort(Comparator.naturalOrder());
     }
 
     private static void loadFiles(File dir, boolean song, boolean loop, boolean playlist) {

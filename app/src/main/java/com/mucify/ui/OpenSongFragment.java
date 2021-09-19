@@ -42,12 +42,17 @@ public class OpenSongFragment extends Fragment {
         ListView lstSongs = mView.findViewById(R.id.os_lstSongs);
         lstSongs.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, Globals.AvailableSongNames));
         lstSongs.setOnItemClickListener(this::onSongClicked);
+
+        ListView lstLoops = mView.findViewById(R.id.os_lstLoops);
+        lstLoops.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, Globals.AvailableLoopNames));
+        lstLoops.setOnItemClickListener(this::onSongClicked);
     }
 
     private void onSongClicked(AdapterView<?> adapterView, View view, int position, long id) {
         PlaySongFragment newFragment;
         try {
-            newFragment = new PlaySongFragment(new Song(getContext(), Globals.AvailableSongs.get(position)));
+            newFragment = new PlaySongFragment(new Song(getContext(),
+                    adapterView == ((ListView)mView.findViewById(R.id.os_lstSongs)) ? Globals.AvailableSongs.get(position) : Globals.AvailableLoops.get(position)));
         } catch(IOException e) {
             Utils.messageBox(getContext(), "Failed to read file", e.getMessage());
             return;
