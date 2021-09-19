@@ -3,6 +3,10 @@ package com.mucify;
 import android.content.ContextWrapper;
 import android.os.Environment;
 
+import com.mucify.objects.Loop;
+import com.mucify.objects.Playlist;
+import com.mucify.objects.Song;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -36,6 +40,9 @@ public class Globals {
     public final static ArrayList<File> AvailableLoops = new ArrayList<>();
     public final static ArrayList<File> AvailablePlaylists = new ArrayList<>();
 
+    public final static ArrayList<String> AvailableSongNames = new ArrayList<>();
+    public final static ArrayList<String> AvailableLoopNames = new ArrayList<>();
+    public final static ArrayList<String> AvailablePlaylistNames = new ArrayList<>();
 
     public static void load(ContextWrapper context) throws IOException {
         DataDirectory = new File(context.getDataDir().getPath() + "/files");
@@ -46,7 +53,17 @@ public class Globals {
         RandomizePlaylistSongOrder = false;
         SongIncDecInterval = 500;
 
-        // Set default values if the settings file doesn't exist
+        loadAvailableSongs();
+        loadAvailableLoops();
+        loadAvailablePlaylists();
+
+        // Sort songs and loops alphabetically
+        Comparator<File> comparator = Comparator.comparing(File::getName);
+        AvailableSongs.sort(comparator);
+        AvailableLoops.sort(comparator);
+
+        if(!DataDirectory.exists())
+            DataDirectory.mkdir();
         if(!SettingsFile.exists()) {
             SettingsFile.createNewFile();
         }
@@ -63,15 +80,6 @@ public class Globals {
                 save();
             }
         }
-
-        loadAvailableSongs();
-        loadAvailableLoops();
-        loadAvailablePlaylists();
-
-        // Sort songs and loops alphabetically
-        Comparator<File> comparator = Comparator.comparing(File::getName);
-        AvailableSongs.sort(comparator);
-        AvailableLoops.sort(comparator);
     }
 
     public static void save() throws IOException {
@@ -82,17 +90,22 @@ public class Globals {
     }
 
     public static void loadAvailablePlaylists() {
+        AvailablePlaylists.clear();
+        AvailablePlaylistNames.clear();
         loadFiles(DataDirectory, false, false, true);
     }
 
     public static void loadAvailableSongs() {
+        AvailableSongs.clear();
+        AvailableSongNames.clear();
         loadFiles(MusicDirectory, true, false, false);
     }
 
     public static void loadAvailableLoops() {
+        AvailableLoops.clear();
+        AvailableLoopNames.clear();
         loadFiles(DataDirectory, false, true, false);
     }
-
 
     private static void loadFiles(File dir, boolean song, boolean loop, boolean playlist) {
         if (dir.exists()) {
@@ -105,18 +118,24 @@ public class Globals {
                     } else {
                         if(song) {
                             String extension = Utils.getFileExtension(file.getName());
-                            if(SupportedAudioExtensions.contains(extension))
+                            if(SupportedAudioExtensions.contains(extension)) {
                                 AvailableSongs.add(file);
+                                AvailableSongNames.add(Song.toName(file));
+                            }
                         }
                         else if(loop) {
                             String extension = Utils.getFileExtension(file.getName());
-                            if(extension.equals(LoopFileExtension) && file.getName().indexOf(LoopFileIdentifier) == 0)
+                            if(extension.equals(LoopFileExtension) && file.getName().indexOf(LoopFileIdentifier) == 0) {
                                 AvailableLoops.add(file);
+                                AvailableLoopNames.add(Loop.toName(file));
+                            }
                         }
                         else if(playlist) {
                             String extension = Utils.getFileExtension(file.getName());
-                            if(extension.equals(PlaylistFileExtension) && file.getName().indexOf(PlaylistFileIdentifier) == 0)
+                            if(extension.equals(PlaylistFileExtension) && file.getName().indexOf(PlaylistFileIdentifier) == 0) {
                                 AvailablePlaylists.add(file);
+                                AvailablePlaylistNames.add(Playlist.toName(file));
+                            }
                         }
                     }
                 }

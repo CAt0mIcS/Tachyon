@@ -2,6 +2,9 @@ package com.mucify;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.view.View;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import java.util.Optional;
 
@@ -22,5 +25,18 @@ public class Utils {
         dlgAlert.setTitle(title);
         dlgAlert.setCancelable(true);
         dlgAlert.create().show();
+    }
+
+    public static int getItemHeightOfListView(ListView listView, int items) {
+        ListAdapter adapter = listView.getAdapter();
+        final int UNBOUNDED = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+
+        int grossElementHeight = 0;
+        for (int i = 0; i < items; i++) {
+            View childView = adapter.getView(i, null, listView);
+            childView.measure(UNBOUNDED, UNBOUNDED);
+            grossElementHeight += childView.getMeasuredHeight();
+        }
+        return grossElementHeight;
     }
 }
