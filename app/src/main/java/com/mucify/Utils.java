@@ -6,6 +6,7 @@ import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import java.io.File;
 import java.util.Optional;
 
 public class Utils {
@@ -38,5 +39,26 @@ public class Utils {
             grossElementHeight += childView.getMeasuredHeight();
         }
         return grossElementHeight;
+    }
+
+    public static String millisecondsToReadableString(int progress) {
+        long millis = progress % 1000;
+        long second = (progress / 1000) % 60;
+        long minute = (progress / (1000 * 60)) % 60;
+        long hour = (progress / (1000 * 60 * 60)) % 24;
+
+        return String.format("%02d:%02d:%02d.%d", hour, minute, second, millis);
+    }
+
+    public static boolean isLoopFile(File path) {
+        return path.isFile() && getFileExtension(path.getName()).equals(Globals.LoopFileExtension) && path.getName().indexOf(Globals.LoopFileIdentifier) == 0;
+    }
+
+    public static boolean isSongFile(File path) {
+        return path.isFile() && Globals.SupportedAudioExtensions.contains(getFileExtension(path.getName()));
+    }
+
+    public static boolean isPlaylistFile(File path) {
+        return path.isFile() && getFileExtension(path.getName()).equals(Globals.PlaylistFileExtension) && path.getName().indexOf(Globals.PlaylistFileIdentifier) == 0;
     }
 }

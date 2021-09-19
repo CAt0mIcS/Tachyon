@@ -41,15 +41,17 @@ public class OpenSongFragment extends Fragment {
 
         ListView lstSongs = mView.findViewById(R.id.os_lstSongs);
         lstSongs.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, Globals.AvailableSongNames));
-        ViewGroup.LayoutParams params = lstSongs.getLayoutParams();
-        params.height = Utils.getItemHeightOfListView(lstSongs, lstSongs.getAdapter().getCount());
-        lstSongs.setLayoutParams(params);
-
         lstSongs.setOnItemClickListener(this::onSongClicked);
     }
 
     private void onSongClicked(AdapterView<?> adapterView, View view, int position, long id) {
-        PlaySongFragment newFragment = new PlaySongFragment(new Song(getContext(), Globals.AvailableSongs.get(position)));
+        PlaySongFragment newFragment;
+        try {
+            newFragment = new PlaySongFragment(new Song(getContext(), Globals.AvailableSongs.get(position)));
+        } catch(IOException e) {
+            Utils.messageBox(getContext(), "Failed to read file", e.getMessage());
+            return;
+        }
 
         getParentFragmentManager().beginTransaction()
                 .replace(R.id.open_song_fragment, newFragment)

@@ -5,34 +5,26 @@ import android.content.Context;
 import com.mucify.Globals;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
-public class Loop extends Song {
-    private int mStartTime;
-    private int mEndTime;
-    private File mLoopFilePath;
-
-    public Loop(Context context, File file) throws IOException {
-        mLoopFilePath = file;
-        if(!mLoopFilePath.exists())
-            throw new IllegalArgumentException("File '" + mLoopFilePath.getPath() + "' doesn't exist");
-
-        super.create(context, parseFile());
-    }
-
+public class Loop {
     public static String toName(File file) {
         return file.getName().replace(Globals.LoopFileIdentifier, "").replace(Globals.LoopFileExtension, "");
     }
 
-    // Returns path to song file
-    private File parseFile() throws IOException {
-            BufferedReader reader = new BufferedReader(new FileReader(mLoopFilePath));
-            File file = new File(reader.readLine());
-            mStartTime = Integer.parseInt(reader.readLine());
-            mEndTime = Integer.parseInt(reader.readLine());
-            reader.close();
-            return file;
+    public static File toFile(String name) {
+        return new File(Globals.DataDirectory + "/" + Globals.LoopFileIdentifier + name + Globals.LoopFileExtension);
+    }
+
+    public static void save(Song song, File file) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        writer.write(song.getPath().getPath() + '\n');
+        writer.write(String.valueOf(song.getStartTime()) + '\n');
+        writer.write(String.valueOf(song.getEndTime()) + '\n');
+        writer.close();
     }
 }

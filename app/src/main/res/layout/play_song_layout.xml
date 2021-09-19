@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/ps_scrollview"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -13,9 +14,11 @@
 
         <TextView
             android:id="@+id/ps_lblSongName"
-            android:layout_width="362dp"
+            android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
             android:clickable="false"
             android:gravity="center"
             android:textSize="16sp"
@@ -31,41 +34,31 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:text="@string/save_btn"
-            app:layout_constraintStart_toEndOf="@+id/ps_btnBack"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <Button
-            android:id="@+id/ps_btnBack"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:text="Back"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <SeekBar
             android:id="@+id/ps_sbStartTime"
-            android:layout_marginStart="10dp"
-            android:paddingStart="10dp"
-            android:layout_width="381dp"
+            android:layout_width="match_parent"
             android:layout_height="27dp"
-            android:layout_marginTop="104dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:progressTint="#03dac4"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.466"
+            app:layout_constraintHorizontal_bias="0.4"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ps_sbProgress" />
+            app:layout_constraintTop_toBottomOf="@+id/ps_txtInterval" />
 
         <SeekBar
             android:id="@+id/ps_sbEndTime"
-            android:layout_marginStart="10dp"
-            android:paddingStart="10dp"
-            android:layout_width="381dp"
+            android:layout_width="match_parent"
             android:layout_height="27dp"
             android:layout_marginTop="144dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:progressTint="#03dac4"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.466"
@@ -74,12 +67,12 @@
 
         <SeekBar
             android:id="@+id/ps_sbProgress"
-            android:layout_marginStart="10dp"
-            android:paddingStart="10dp"
-            android:layout_width="381dp"
+            android:layout_width="match_parent"
             android:layout_height="27dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:progressTint="#03dac4"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.466"
@@ -88,42 +81,25 @@
 
         <TextView
             android:id="@+id/ps_lblProgress"
-            android:layout_marginStart="10dp"
-            android:paddingStart="10dp"
-            android:layout_width="383dp"
+            android:layout_width="match_parent"
             android:layout_height="20dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ps_sbProgress" />
 
-        <Button
-            android:id="@+id/ps_btnStartTimeDec"
-            android:layout_width="69dp"
-            android:layout_height="66dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="4dp"
-            android:text="Dec"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ps_sbStartTime" />
-
-        <Button
-            android:id="@+id/ps_btnEndTimeDec"
-            android:layout_width="69dp"
-            android:layout_height="66dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="4dp"
-            android:text="Dec"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ps_sbEndTime" />
-
         <ImageButton
             android:id="@+id/ps_btnPause"
             android:layout_width="69dp"
             android:layout_height="66dp"
-            android:layout_marginTop="36dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
             android:background="@null"
             android:contentDescription="Pause"
             android:scaleType="fitCenter"
@@ -133,12 +109,41 @@
             app:srcCompat="@drawable/ic_play_pause_btn" />
 
         <Button
+            android:id="@+id/ps_btnStartTimeDec"
+            android:layout_width="69dp"
+            android:layout_height="66dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:text="@string/dec_btn"
+            android:textSize="@dimen/inc_dec_btn_text_size"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ps_sbStartTime" />
+
+        <Button
+            android:id="@+id/ps_btnEndTimeDec"
+            android:layout_width="69dp"
+            android:layout_height="66dp"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:text="@string/dec_btn"
+            android:textSize="@dimen/inc_dec_btn_text_size"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ps_sbEndTime" />
+
+        <Button
             android:id="@+id/ps_btnStartTimeInc"
             android:layout_width="69dp"
             android:layout_height="66dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="16dp"
-            android:text="Inc"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:text="@string/inc_btn"
+            android:textSize="@dimen/inc_dec_btn_text_size"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ps_sbStartTime" />
 
@@ -146,9 +151,12 @@
             android:id="@+id/ps_btnEndTimeInc"
             android:layout_width="69dp"
             android:layout_height="66dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="16dp"
-            android:text="Inc"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:text="@string/inc_btn"
+            android:textSize="@dimen/inc_dec_btn_text_size"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ps_sbEndTime" />
 
@@ -156,28 +164,28 @@
             android:id="@+id/ps_txtInterval"
             android:layout_width="190dp"
             android:layout_height="32dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginTop="8dp"
             android:ems="10"
             android:inputType="number"
             android:text="500"
             android:textAlignment="center"
             android:textSize="11sp"
-            app:layout_constraintBottom_toTopOf="@+id/ps_sbStartTime"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.497"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ps_lblTxtInterval" />
 
         <TextView
             android:id="@+id/ps_lblTxtInterval"
             android:layout_width="231dp"
             android:layout_height="18dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginTop="8dp"
             android:text="Inc/Dec Interval"
             android:textAlignment="center"
-            app:layout_constraintBottom_toTopOf="@+id/ps_txtInterval"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.505"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintHorizontal_bias="0.527"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ps_lblProgress" />
 
         <TextView
             android:id="@+id/ps_lblStartTime"

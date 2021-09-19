@@ -19,6 +19,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.mucify.ui.OpenPlaylistFragment;
 import com.mucify.ui.OpenSongFragment;
+import com.mucify.ui.PlaySongFragment;
 import com.mucify.ui.internal.ScreenSlidePagerAdapter;
 
 import java.io.IOException;
@@ -74,6 +75,10 @@ public class MainActivity extends AppCompatActivity {
         switch(((ViewPager2)findViewById(R.id.pager)).getCurrentItem()) {
             case 0:
                 if(getOpenSongFragment() == null) {
+                    for(Fragment f : getSupportFragmentManager().getFragments()) {
+                        if(f instanceof PlaySongFragment)
+                            ((PlaySongFragment)f).unload();
+                    }
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.play_song_fragment, new OpenSongFragment())
                             .addToBackStack(null)

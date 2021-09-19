@@ -3,4 +3,6 @@
     <string name="tab_text_songs">Songs</string>
     <string name="tab_text_playlists">Playlists</string>
     <string name="save_btn">Save as Loop</string>
+    <string name="inc_btn"><![CDATA[>]]></string>
+    <string name="dec_btn"><![CDATA[<]]></string>
 </resources>
