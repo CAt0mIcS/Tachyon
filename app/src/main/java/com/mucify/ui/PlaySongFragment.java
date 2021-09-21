@@ -1,6 +1,5 @@
 package com.mucify.ui;
 
-import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.text.Editable;
@@ -11,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -26,7 +24,6 @@ import com.mucify.Utils;
 import com.mucify.objects.Loop;
 import com.mucify.objects.Song;
 
-import java.io.File;
 import java.io.IOException;
 
 public class PlaySongFragment extends Fragment {
@@ -200,7 +197,7 @@ public class PlaySongFragment extends Fragment {
     private void onLoopSaveClicked(View view) {
         LayoutInflater inflater = (LayoutInflater)
                 getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View popupView = inflater.inflate(R.layout.save_loop_dialog, null);
+        View popupView = inflater.inflate(R.layout.save_dialog, null);
         final PopupWindow popupWindow = new PopupWindow(popupView, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT, true);
         popupWindow.showAtLocation(popupView, Gravity.CENTER, 0, 0);
 
@@ -210,8 +207,8 @@ public class PlaySongFragment extends Fragment {
             return true;
         });
 
-        popupView.findViewById(R.id.sld_btnSaveLoop).setOnClickListener(v -> {
-            String name = ((EditText)popupView.findViewById(R.id.sld_txtSaveLoop)).getText().toString();
+        popupView.findViewById(R.id.sd_btnSave).setOnClickListener(v -> {
+            String name = ((EditText)popupView.findViewById(R.id.sd_txtSave)).getText().toString();
             if(name.isEmpty() || name.contains("_"))
                 return;
 

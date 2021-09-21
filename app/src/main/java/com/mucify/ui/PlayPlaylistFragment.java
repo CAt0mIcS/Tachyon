@@ -88,12 +88,7 @@ public class PlayPlaylistFragment extends Fragment {
         });
 
         ListView lstSongs = mView.findViewById(R.id.pp_lstSongs);
-
         lstSongs.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, mPlaylist.getSongs()));
-        ViewGroup.LayoutParams params = lstSongs.getLayoutParams();
-        params.height = Utils.getItemHeightOfListView(lstSongs, lstSongs.getAdapter().getCount());
-        lstSongs.setLayoutParams(params);
-
         lstSongs.setOnItemClickListener((parent, view1, position, id) -> mPlaylist.play(position));
     }
 
