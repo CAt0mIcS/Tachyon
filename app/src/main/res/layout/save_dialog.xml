@@ -6,7 +6,7 @@
     android:layout_height="200dp">
 
     <TextView
-        android:id="@+id/sld_lblInfo"
+        android:id="@+id/sd_lblInfo"
         android:layout_width="307dp"
         android:layout_height="32dp"
         android:layout_centerInParent="true"
@@ -20,7 +20,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/sld_txtSaveLoop"
+        android:id="@+id/sd_txtSave"
         android:layout_width="306dp"
         android:layout_height="62dp"
         android:layout_marginTop="16dp"
@@ -30,10 +30,10 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.493"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sld_lblInfo" />
+        app:layout_constraintTop_toBottomOf="@+id/sd_lblInfo" />
 
     <Button
-        android:id="@+id/sld_btnSaveLoop"
+        android:id="@+id/sd_btnSave"
         android:layout_width="101dp"
         android:layout_height="48dp"
         android:layout_marginTop="20dp"
@@ -41,6 +41,6 @@
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sld_txtSaveLoop" />
+        app:layout_constraintTop_toBottomOf="@+id/sd_txtSave" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
