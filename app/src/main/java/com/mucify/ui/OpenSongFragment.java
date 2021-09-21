@@ -38,6 +38,8 @@ public class OpenSongFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         mView = view;
+        // Only needed for create playlist fragment where we're using the same layout
+        mView.findViewById(R.id.os_btnConfirm).setVisibility(View.INVISIBLE);
 
         ListView lstSongs = mView.findViewById(R.id.os_lstSongs);
         lstSongs.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, Globals.AvailableSongNames));

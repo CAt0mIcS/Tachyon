@@ -33,6 +33,13 @@ public class Song {
         create(context, path);
     }
 
+    public Song(Context context, File songFilePath, int startTime, int endTime) throws IOException {
+        mStartTime = startTime;
+        mEndTime = endTime;
+
+        create(context, songFilePath);
+    }
+
     protected void create(Context context, File path) throws IOException {
         if(!path.exists()) {
             Utils.messageBox(context, "Error","File '" + path.getPath() + "' doesn't exist");

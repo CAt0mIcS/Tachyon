@@ -17,8 +17,10 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.mucify.ui.CreatePlaylistFragment;
 import com.mucify.ui.OpenPlaylistFragment;
 import com.mucify.ui.OpenSongFragment;
+import com.mucify.ui.PlayPlaylistFragment;
 import com.mucify.ui.PlaySongFragment;
 import com.mucify.ui.internal.ScreenSlidePagerAdapter;
 
@@ -72,18 +74,21 @@ public class MainActivity extends AppCompatActivity {
     // onBackButtonClicked in action bar
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
+        PlaySongFragment playSongFragment = null;
+        PlayPlaylistFragment playPlaylistFragment = null;
+        CreatePlaylistFragment createPlaylistFragment = null;
+        for(Fragment f : getSupportFragmentManager().getFragments()) {
+            if(f instanceof PlaySongFragment)
+                playSongFragment = (PlaySongFragment)f;
+            else if(f instanceof PlayPlaylistFragment)
+                playPlaylistFragment = (PlayPlaylistFragment)f;
+            else if(f instanceof  CreatePlaylistFragment)
+                createPlaylistFragment = (CreatePlaylistFragment)f;
+        }
 
         switch(((ViewPager2)findViewById(R.id.pager)).getCurrentItem()) {
             case 0:
                 if(getOpenSongFragment() == null) {
-                    PlaySongFragment playSongFragment = null;
-                    for(Fragment f : getSupportFragmentManager().getFragments()) {
-                        if(f instanceof PlaySongFragment) {
-                            playSongFragment = (PlaySongFragment) f;
-                            break;
-                        }
-                    }
-
                     // Removing and adding it works better. Replacing it causes open_song_fragment to have two scrollbars?
                     // And the ListView to not be scrollable anymore?
                     if(playSongFragment != null) {
@@ -98,6 +103,25 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case 1:
+                if(getOpenPlaylistFragment() == null) {
+                    Fragment fragmentToUnload = null;
+                    if(playPlaylistFragment != null)
+                        fragmentToUnload = playPlaylistFragment;
+                    else if(createPlaylistFragment != null)
+                        fragmentToUnload = createPlaylistFragment;
+
+
+                    if(fragmentToUnload != null) {
+                        getSupportFragmentManager().beginTransaction()
+                                .remove(fragmentToUnload)
+                                .add(R.id.open_playlist_fragment, new OpenPlaylistFragment())
+                                .addToBackStack(null)
+                                .commit();
+
+                        if(fragmentToUnload == playPlaylistFragment)
+                            playPlaylistFragment.unload();
+                    }
+                }
                 break;
         }
         return true;
