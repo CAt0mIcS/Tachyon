@@ -76,6 +76,7 @@ public class Song {
 
     public void start() {
         mMediaPlayer.start();
+        seekTo(mStartTime);
     }
 
     public void seekTo(int millis) {
@@ -112,6 +113,12 @@ public class Song {
 
     public int getEndTime() {
         return mEndTime;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return toName(mSongFilePath);
     }
 
     public void setOnMediaPlayerFinishedListener(@NonNull MediaPlayerFinishedListener listener) {

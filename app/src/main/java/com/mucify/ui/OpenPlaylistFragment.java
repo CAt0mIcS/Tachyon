@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -14,8 +15,10 @@ import androidx.fragment.app.Fragment;
 import com.mucify.Globals;
 import com.mucify.R;
 import com.mucify.Utils;
+import com.mucify.objects.Playlist;
 import com.mucify.objects.Song;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class OpenPlaylistFragment extends Fragment {
@@ -42,6 +45,17 @@ public class OpenPlaylistFragment extends Fragment {
                     .replace(R.id.open_playlist_fragment, new CreatePlaylistFragment())
                     .addToBackStack(null)
                     .commit();
+        });
+
+        ((ListView)mView.findViewById(R.id.op_lstPlaylists)).setOnItemClickListener((parent, view1, position, id) -> {
+            try {
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.open_playlist_fragment, new PlayPlaylistFragment(new Playlist(getContext(), Globals.AvailablePlaylists.get(position))))
+                        .addToBackStack(null)
+                        .commit();
+            } catch (IOException e) {
+                Utils.messageBox(getContext(), "Failed to load playlist", e.getMessage());
+            }
         });
     }
 

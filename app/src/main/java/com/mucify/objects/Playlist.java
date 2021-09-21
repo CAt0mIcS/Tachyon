@@ -17,18 +17,61 @@ public class Playlist {
     private final ArrayList<Song> mSongs = new ArrayList<>();
     private File mPath;
     private String mName;
+    private int mSongID = 0;
+    private NewSongListener mNewSongListener = null;
+
+    public interface NewSongListener {
+        void onStarted(Song song);
+    }
 
     public Playlist(String name, ArrayList<Song> songs) {
         mName = name;
         mPath = Playlist.toFile(mName);
         mSongs.addAll(songs);
+
+        setup();
     }
 
-    public Playlist(Context context, String name, File path) throws IOException {
-        mPath = path;
+    public Playlist(Context context, String name) throws IOException {
+        mPath = Playlist.toFile(name);
         mName = name;
         parseFile(context);
+
+        setup();
     }
+
+    public Playlist(Context context, File file) throws IOException {
+        mPath = file;
+        mName = Playlist.toName(file);
+        parseFile(context);
+
+        setup();
+    }
+
+    public void start() {
+        mSongs.get(mSongID).start();
+        if(mNewSongListener != null)
+            mNewSongListener.onStarted(mSongs.get(mSongID));
+    }
+
+    public void update() {
+        mSongs.get(mSongID).update();
+    }
+
+    public void play(int position) {
+        if(mSongs.get(mSongID).isPlaying()) {
+            mSongs.get(mSongID).pause();
+            mSongs.get(mSongID).seekTo(0);
+        }
+        mSongID = position;
+        start();
+    }
+
+    public Song getCurrentSong() {
+        return mSongs.get(mSongID);
+    }
+
+    public void setOnNewSongListener(NewSongListener l) { mNewSongListener = l; }
 
     public void save() throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(mPath));
@@ -50,6 +93,23 @@ public class Playlist {
 
     public ArrayList<Song> getSongs() {
         return mSongs;
+    }
+
+    private void setup() {
+        for(Song song : mSongs) {
+            song.setOnMediaPlayerFinishedListener(mediaPlayer -> {
+                ++mSongID;
+                if(mSongID >= mSongs.size())
+                    mSongID = 0;
+
+                if(mediaPlayer.isPlaying())
+                    mediaPlayer.pause();
+                mediaPlayer.seekTo(song.getStartTime());
+                mSongs.get(mSongID).start();
+                if(mNewSongListener != null)
+                    mNewSongListener.onStarted(mSongs.get(mSongID));
+            });
+        }
     }
 
     private void parseFile(Context context) throws IOException {
