@@ -6,5 +6,5 @@
     <string name="inc_btn"><![CDATA[>]]></string>
     <string name="dec_btn"><![CDATA[<]]></string>
     <string name="save">Save</string>
-    <string name="loop_name_info">Enter loop name. Mustn\'t contain \'_\' or be empty</string>
+    <string name="loop_name_info">Enter name. Mustn\'t contain \'_\' or be empty</string>
 </resources>
