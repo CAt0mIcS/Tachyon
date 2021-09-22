@@ -88,23 +88,13 @@ public class PlayPlaylistFragment extends Fragment {
             }
         });
 
-        GridView lstSongs = mView.findViewById(R.id.pp_lstSongs);
-        lstSongs.setAdapter(new ArrayAdapter<Song>(getContext(), android.R.layout.simple_list_item_1, mPlaylist.getSongsAndLoops()) {
-            @NonNull
-            @Override
-            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-                View v = super.getView(position, convertView, parent);
-
-                TextView txt = v.findViewById(android.R.id.text1);
-                if(mPlaylist.isSong(position))
-                    txt.setText("SONG: " + txt.getText().toString());
-                else
-                    txt.setText("LOOP: " + txt.getText().toString());
-
-                return v;
-            }
-        });
+        ListView lstSongs = mView.findViewById(R.id.pp_lstSongs);
+        lstSongs.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, mPlaylist.getSongs()));
         lstSongs.setOnItemClickListener((parent, view1, position, id) -> mPlaylist.play(position));
+
+        ListView lstLoops = mView.findViewById(R.id.pp_lstLoops);
+        lstLoops.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, mPlaylist.getLoops()));
+        lstLoops.setOnItemClickListener((parent, view1, position, id) -> mPlaylist.play(mPlaylist.getSongs().size() + position));
     }
 
     public void unload() {
