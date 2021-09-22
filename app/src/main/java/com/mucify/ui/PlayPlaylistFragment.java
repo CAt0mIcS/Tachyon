@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -87,8 +88,22 @@ public class PlayPlaylistFragment extends Fragment {
             }
         });
 
-        ListView lstSongs = mView.findViewById(R.id.pp_lstSongs);
-        lstSongs.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, mPlaylist.getSongs()));
+        GridView lstSongs = mView.findViewById(R.id.pp_lstSongs);
+        lstSongs.setAdapter(new ArrayAdapter<Song>(getContext(), android.R.layout.simple_list_item_1, mPlaylist.getSongsAndLoops()) {
+            @NonNull
+            @Override
+            public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+                View v = super.getView(position, convertView, parent);
+
+                TextView txt = v.findViewById(android.R.id.text1);
+                if(mPlaylist.isSong(position))
+                    txt.setText("SONG: " + txt.getText().toString());
+                else
+                    txt.setText("LOOP: " + txt.getText().toString());
+
+                return v;
+            }
+        });
         lstSongs.setOnItemClickListener((parent, view1, position, id) -> mPlaylist.play(position));
     }
 

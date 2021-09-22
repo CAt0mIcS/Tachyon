@@ -146,6 +146,5 @@ public class Song {
 
     public void setEndTime(int millis) {
         mEndTime = millis;
-
     }
 }

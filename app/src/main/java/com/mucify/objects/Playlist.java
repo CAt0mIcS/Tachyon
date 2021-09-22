@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class Playlist {
@@ -67,6 +68,10 @@ public class Playlist {
         start();
     }
 
+    public boolean isSong(int position) {
+        return mSongs.get(position).getStartTime() == 0;
+    }
+
     public Song getCurrentSong() {
         return mSongs.get(mSongID);
     }
@@ -92,6 +97,24 @@ public class Playlist {
     }
 
     public ArrayList<Song> getSongs() {
+        ArrayList<Song> songs = new ArrayList<>();
+        for(Song s : mSongs) {
+            if(s.getStartTime() == 0)
+                songs.add(s);
+        }
+        return songs;
+    }
+
+    public ArrayList<Song> getLoops() {
+        ArrayList<Song> loops = new ArrayList<>();
+        for(Song s : mSongs) {
+            if(s.getStartTime() != 0)
+                loops.add(s);
+        }
+        return loops;
+    }
+
+    public ArrayList<Song> getSongsAndLoops() {
         return mSongs;
     }
 
