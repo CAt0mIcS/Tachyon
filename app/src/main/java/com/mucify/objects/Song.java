@@ -40,6 +40,10 @@ public class Song {
         create(context, songFilePath);
     }
 
+    public boolean isSame(Song song) {
+        return mSongFilePath == song.mSongFilePath && mStartTime == song.mStartTime && mEndTime == song.mEndTime;
+    }
+
     protected void create(Context context, File path) throws IOException {
         if(!path.exists()) {
             Utils.messageBox(context, "Error","File '" + path.getPath() + "' doesn't exist");

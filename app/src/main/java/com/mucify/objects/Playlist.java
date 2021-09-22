@@ -12,13 +12,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Playlist {
 
     private final ArrayList<Song> mSongs = new ArrayList<>();
+    private ArrayList<Song> mSongsToPlay = new ArrayList<>();
     private File mPath;
     private String mName;
-    private int mSongID = 0;
     private NewSongListener mNewSongListener = null;
 
     public interface NewSongListener {
@@ -50,21 +51,22 @@ public class Playlist {
     }
 
     public void start() {
-        mSongs.get(mSongID).start();
+        mSongsToPlay.get(0).start();
         if(mNewSongListener != null)
-            mNewSongListener.onStarted(mSongs.get(mSongID));
+            mNewSongListener.onStarted(mSongsToPlay.get(0));
     }
 
     public void update() {
-        mSongs.get(mSongID).update();
+        mSongsToPlay.get(0).update();
     }
 
     public void play(int position) {
-        if(mSongs.get(mSongID).isPlaying()) {
-            mSongs.get(mSongID).pause();
-            mSongs.get(mSongID).seekTo(0);
+        if(mSongsToPlay.get(0).isPlaying()) {
+            mSongsToPlay.get(0).pause();
+            mSongsToPlay.get(0).seekTo(0);
         }
-        mSongID = position;
+        mSongsToPlay.remove(mSongs.get(position));
+        mSongsToPlay.add(0, mSongs.get(position));
         start();
     }
 
@@ -73,7 +75,7 @@ public class Playlist {
     }
 
     public Song getCurrentSong() {
-        return mSongs.get(mSongID);
+        return mSongsToPlay.get(0);
     }
 
     public void setOnNewSongListener(NewSongListener l) { mNewSongListener = l; }
@@ -99,7 +101,7 @@ public class Playlist {
     public ArrayList<Song> getSongs() {
         ArrayList<Song> songs = new ArrayList<>();
         for(Song s : mSongs) {
-            if(s.getStartTime() == 0)
+            if(s.getStartTime() == 0 && s.getEndTime() == s.getDuration())
                 songs.add(s);
         }
         return songs;
@@ -108,7 +110,7 @@ public class Playlist {
     public ArrayList<Song> getLoops() {
         ArrayList<Song> loops = new ArrayList<>();
         for(Song s : mSongs) {
-            if(s.getStartTime() != 0)
+            if(s.getStartTime() != 0 || s.getEndTime() != s.getDuration())
                 loops.add(s);
         }
         return loops;
@@ -119,18 +121,29 @@ public class Playlist {
     }
 
     private void setup() {
+        mSongsToPlay.addAll(mSongs);
+        Collections.shuffle(mSongsToPlay);
+
         for(Song song : mSongs) {
             song.setOnMediaPlayerFinishedListener(mediaPlayer -> {
-                ++mSongID;
-                if(mSongID >= mSongs.size())
-                    mSongID = 0;
+                mSongsToPlay.remove(0);
 
-                if(mediaPlayer.isPlaying())
-                    mediaPlayer.pause();
-                mediaPlayer.seekTo(song.getStartTime());
-                mSongs.get(mSongID).start();
+                if(mSongsToPlay.size() == 0) {
+                    mSongsToPlay.addAll(mSongs);
+                    Collections.shuffle(mSongsToPlay);
+                }
+
+                // Pause all still playing media players
+                for(Song s : getSongsAndLoops()) {
+                    if(s.isPlaying()) {
+                        s.seekTo(s.getStartTime());
+                        s.pause();
+                    }
+                }
+
+                mSongsToPlay.get(0).start();
                 if(mNewSongListener != null)
-                    mNewSongListener.onStarted(mSongs.get(mSongID));
+                    mNewSongListener.onStarted(mSongsToPlay.get(0));
             });
         }
     }

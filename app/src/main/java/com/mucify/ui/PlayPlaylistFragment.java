@@ -98,7 +98,7 @@ public class PlayPlaylistFragment extends Fragment {
     }
 
     public void unload() {
-        for(Song song : mPlaylist.getSongs()) {
+        for(Song song : mPlaylist.getSongsAndLoops()) {
             if(song.isPlaying()) {
                 song.pause();
                 song.seekTo(0);
