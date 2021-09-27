@@ -61,4 +61,16 @@ public class Utils {
     public static boolean isPlaylistFile(File path) {
         return path.isFile() && getFileExtension(path.getName()).equals(Globals.PlaylistFileExtension) && path.getName().indexOf(Globals.PlaylistFileIdentifier) == 0;
     }
+
+    public static View getViewByPosition(ListView listView, int pos) {
+        final int firstListItemPosition = listView.getFirstVisiblePosition();
+        final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
+
+        if (pos < firstListItemPosition || pos > lastListItemPosition ) {
+            return listView.getAdapter().getView(pos, null, listView);
+        } else {
+            final int childIndex = pos - firstListItemPosition;
+            return listView.getChildAt(childIndex);
+        }
+    }
 }

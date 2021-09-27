@@ -45,6 +45,7 @@ public class OpenSongFragment extends Fragment {
         mView = view;
         // Only needed for create playlist fragment where we're using the same layout
         mView.findViewById(R.id.os_btnConfirm).setVisibility(View.INVISIBLE);
+        mView.findViewById(R.id.os_txtPlaylistName).setVisibility(View.INVISIBLE);
 
         ListView lstSongs = mView.findViewById(R.id.os_lstSongs);
         lstSongs.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, Globals.AvailableSongNames));
@@ -58,8 +59,10 @@ public class OpenSongFragment extends Fragment {
     private void onSongClicked(AdapterView<?> adapterView, View view, int position, long id) {
         PlaySongFragment newFragment;
         try {
-            newFragment = new PlaySongFragment(new Song(getContext(),
-                    adapterView == ((ListView)mView.findViewById(R.id.os_lstSongs)) ? Globals.AvailableSongs.get(position) : Globals.AvailableLoops.get(position)));
+            newFragment = new PlaySongFragment(
+                    adapterView == ((ListView)mView.findViewById(R.id.os_lstSongs)) ?
+                            new Song(getContext(), Globals.AvailableSongs.get(position)) :
+                            new Loop(getContext(), Globals.AvailableLoops.get(position)));
         } catch(IOException e) {
             Utils.messageBox(getContext(), "Failed to read file", e.getMessage());
             return;

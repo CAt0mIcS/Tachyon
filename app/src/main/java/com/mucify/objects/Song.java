@@ -17,6 +17,7 @@ import java.io.IOException;
 
 public class Song {
     private File mSongFilePath;
+    protected File mLoopFilePath = null;
     private int mStartTime;
     private int mEndTime;
 
@@ -52,6 +53,7 @@ public class Song {
 
         if(Utils.isLoopFile(path)) {
             parseLoopFile(path);
+            mLoopFilePath = path;
         }
         else if(Utils.isSongFile(path)) {
             mSongFilePath = path;
@@ -101,6 +103,10 @@ public class Song {
 
     public File getPath() {
         return mSongFilePath;
+    }
+
+    public File getLoopPath() {
+        return mLoopFilePath;
     }
 
     public int getCurrentPosition() {

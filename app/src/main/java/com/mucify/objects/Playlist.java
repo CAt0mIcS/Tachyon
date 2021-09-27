@@ -3,6 +3,7 @@ package com.mucify.objects;
 import android.content.Context;
 
 import com.mucify.Globals;
+import com.mucify.Utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -60,13 +61,20 @@ public class Playlist {
         mSongsToPlay.get(0).update();
     }
 
-    public void play(int position) {
+    public void play(String name) {
         if(mSongsToPlay.get(0).isPlaying()) {
             mSongsToPlay.get(0).pause();
             mSongsToPlay.get(0).seekTo(0);
         }
-        mSongsToPlay.remove(mSongs.get(position));
-        mSongsToPlay.add(0, mSongs.get(position));
+
+        mSongsToPlay.removeIf(s -> s.toString().equals(name));
+        for(Song s : mSongs) {
+            if(s.toString().equals(name)) {
+                mSongsToPlay.add(0, s);
+                break;
+            }
+        }
+
         start();
     }
 
@@ -78,14 +86,17 @@ public class Playlist {
         return mSongsToPlay.get(0);
     }
 
+    public String getName() { return mName; }
+
     public void setOnNewSongListener(NewSongListener l) { mNewSongListener = l; }
 
     public void save() throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(mPath));
         for(Song song : mSongs) {
-            writer.write(song.getPath().getPath() + '\n');
-            writer.write(String.valueOf(song.getStartTime()) + '\n');
-            writer.write(String.valueOf(song.getEndTime()) + '\n');
+            if(song instanceof Loop)
+                writer.write(song.getLoopPath().getPath() + '\n');
+            else
+                writer.write(song.getPath().getPath() + '\n');
         }
         writer.close();
     }
@@ -101,17 +112,17 @@ public class Playlist {
     public ArrayList<Song> getSongs() {
         ArrayList<Song> songs = new ArrayList<>();
         for(Song s : mSongs) {
-            if(s.getStartTime() == 0 && s.getEndTime() == s.getDuration())
+            if(!(s instanceof Loop))
                 songs.add(s);
         }
         return songs;
     }
 
-    public ArrayList<Song> getLoops() {
-        ArrayList<Song> loops = new ArrayList<>();
+    public ArrayList<Loop> getLoops() {
+        ArrayList<Loop> loops = new ArrayList<>();
         for(Song s : mSongs) {
-            if(s.getStartTime() != 0 || s.getEndTime() != s.getDuration())
-                loops.add(s);
+            if(s instanceof Loop)
+                loops.add((Loop)s);
         }
         return loops;
     }
@@ -151,11 +162,11 @@ public class Playlist {
     private void parseFile(Context context) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(mPath));
         while(reader.ready()) {
-            File songFilePath = new File(reader.readLine());
-            int startTime = Integer.parseInt(reader.readLine());
-            int endTime = Integer.parseInt(reader.readLine());
-
-            mSongs.add(new Song(context, songFilePath, startTime, endTime));
+            File path = new File(reader.readLine());
+            if(Utils.getFileExtension(path.getName()).equals(Globals.LoopFileExtension))
+                mSongs.add(new Loop(context, path));
+            else
+                mSongs.add(new Song(context, path));
         }
         reader.close();
     }

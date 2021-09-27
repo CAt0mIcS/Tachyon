@@ -18,6 +18,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.mucify.ui.CreatePlaylistFragment;
+import com.mucify.ui.EditPlaylistFragment;
 import com.mucify.ui.OpenPlaylistFragment;
 import com.mucify.ui.OpenSongFragment;
 import com.mucify.ui.PlayPlaylistFragment;
@@ -77,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
         PlaySongFragment playSongFragment = null;
         PlayPlaylistFragment playPlaylistFragment = null;
         CreatePlaylistFragment createPlaylistFragment = null;
+        EditPlaylistFragment editPlaylistFragment = null;
         for(Fragment f : getSupportFragmentManager().getFragments()) {
             if(f instanceof PlaySongFragment)
                 playSongFragment = (PlaySongFragment)f;
@@ -84,6 +86,8 @@ public class MainActivity extends AppCompatActivity {
                 playPlaylistFragment = (PlayPlaylistFragment)f;
             else if(f instanceof  CreatePlaylistFragment)
                 createPlaylistFragment = (CreatePlaylistFragment)f;
+            else if(f instanceof EditPlaylistFragment)
+                editPlaylistFragment = (EditPlaylistFragment)f;
         }
 
         switch(((ViewPager2)findViewById(R.id.pager)).getCurrentItem()) {
@@ -109,6 +113,8 @@ public class MainActivity extends AppCompatActivity {
                         fragmentToUnload = playPlaylistFragment;
                     else if(createPlaylistFragment != null)
                         fragmentToUnload = createPlaylistFragment;
+                    else if(editPlaylistFragment != null)
+                        fragmentToUnload = editPlaylistFragment;
 
 
                     if(fragmentToUnload != null) {

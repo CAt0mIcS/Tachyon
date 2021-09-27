@@ -90,11 +90,11 @@ public class PlayPlaylistFragment extends Fragment {
 
         ListView lstSongs = mView.findViewById(R.id.pp_lstSongs);
         lstSongs.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, mPlaylist.getSongs()));
-        lstSongs.setOnItemClickListener((parent, view1, position, id) -> mPlaylist.play(position));
+        lstSongs.setOnItemClickListener((parent, view1, position, id) -> mPlaylist.play(((TextView)view1).getText().toString()));
 
         ListView lstLoops = mView.findViewById(R.id.pp_lstLoops);
         lstLoops.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, mPlaylist.getLoops()));
-        lstLoops.setOnItemClickListener((parent, view1, position, id) -> mPlaylist.play(mPlaylist.getSongs().size() + position));
+        lstLoops.setOnItemClickListener((parent, view1, position, id) -> mPlaylist.play(((TextView)view1).getText().toString()));
     }
 
     public void unload() {

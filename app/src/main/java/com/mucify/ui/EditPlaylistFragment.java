@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -21,13 +22,21 @@ import com.mucify.objects.Loop;
 import com.mucify.objects.Playlist;
 import com.mucify.objects.Song;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class CreatePlaylistFragment extends Fragment {
+public class EditPlaylistFragment extends Fragment {
     private View mView;
-    private final ArrayList<Song> mSongsToAddToPlaylist = new ArrayList<>();
+    private final String mPlaylistName;
+    private final ArrayList<Song> mPlaylistSongs;
+
+    public EditPlaylistFragment(String playlistName, ArrayList<Song> songsInPlaylist) {
+        mPlaylistSongs = songsInPlaylist;
+        mPlaylistName = playlistName;
+    }
 
     @Nullable
     @Override
@@ -43,6 +52,8 @@ public class CreatePlaylistFragment extends Fragment {
 
         mView = view;
 
+        ((EditText)mView.findViewById(R.id.os_txtPlaylistName)).setText(mPlaylistName);
+
         ListView lstSongs = mView.findViewById(R.id.os_lstSongs);
         ListView lstLoops = mView.findViewById(R.id.os_lstLoops);
 
@@ -50,6 +61,13 @@ public class CreatePlaylistFragment extends Fragment {
         lstLoops.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_multiple_choice, Globals.AvailableLoopNames));
         lstSongs.setOnItemClickListener(this::addSongOrLoop);
         lstLoops.setOnItemClickListener(this::addSongOrLoop);
+
+        for(Song s : mPlaylistSongs) {
+            if(s instanceof Loop)
+                lstLoops.setItemChecked(Globals.AvailableLoops.indexOf(s.getLoopPath()), true);
+            else
+                lstSongs.setItemChecked(Globals.AvailableSongs.indexOf(s.getPath()), true);
+        }
 
         mView.findViewById(R.id.os_btnConfirm).setOnClickListener(this::onPlaylistSaveClicked);
     }
@@ -68,15 +86,15 @@ public class CreatePlaylistFragment extends Fragment {
         try {
             if(v.isChecked()) {
                 if(isLoop)
-                    mSongsToAddToPlaylist.add(new Loop(getContext(), path));
+                    mPlaylistSongs.add(new Loop(getContext(), path));
                 else
-                    mSongsToAddToPlaylist.add(new Song(getContext(), path));
+                    mPlaylistSongs.add(new Song(getContext(), path));
             }
             else {
                 if(isLoop)
-                    mSongsToAddToPlaylist.remove(new Loop(getContext(), path));
+                    mPlaylistSongs.remove(new Loop(getContext(), path));
                 else
-                    mSongsToAddToPlaylist.remove(new Song(getContext(), path));
+                    mPlaylistSongs.remove(new Song(getContext(), path));
             }
         } catch(IOException e) {
             Utils.messageBox(getContext(), "Failed to load song/loop", e.getMessage());
@@ -92,7 +110,8 @@ public class CreatePlaylistFragment extends Fragment {
 
         // Write playlist and add to global playlist index
         try {
-            new Playlist(name, mSongsToAddToPlaylist).save();
+            Playlist.toFile(mPlaylistName).delete();
+            new Playlist(name, mPlaylistSongs).save();
             Globals.loadAvailablePlaylists();
         } catch (IOException e) {
             Utils.messageBox(getContext(), "Failed to save playlist", e.getMessage());
@@ -102,5 +121,5 @@ public class CreatePlaylistFragment extends Fragment {
                 .replace(R.id.open_song_fragment, new OpenPlaylistFragment())
                 .addToBackStack(null)
                 .commit();
-    };
+    }
 }

@@ -7,24 +7,33 @@
     android:orientation="vertical"
     android:id="@+id/open_song_fragment">
 
+    <EditText
+        android:id="@+id/os_txtPlaylistName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin" />
+
     <ListView
         android:id="@+id/os_lstSongs"
         android:layout_width="match_parent"
-        android:choiceMode="multipleChoice"
-        android:layout_height="240dp"
+        android:layout_height="210dp"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:choiceMode="multipleChoice" />
 
     <ListView
         android:id="@+id/os_lstLoops"
         android:layout_width="match_parent"
-        android:choiceMode="multipleChoice"
-        android:layout_height="240dp"
+        android:layout_height="210dp"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginTop="35dp"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"/>
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:choiceMode="multipleChoice" />
 
     <Button
         android:id="@+id/os_btnConfirm"
