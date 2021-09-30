@@ -133,7 +133,8 @@ public class Playlist {
 
     private void setup() {
         mSongsToPlay.addAll(mSongs);
-        Collections.shuffle(mSongsToPlay);
+        if(Globals.RandomizePlaylistSongOrder)
+            Collections.shuffle(mSongsToPlay);
 
         for(Song song : mSongs) {
             song.setOnMediaPlayerFinishedListener(mediaPlayer -> {
@@ -141,7 +142,8 @@ public class Playlist {
 
                 if(mSongsToPlay.size() == 0) {
                     mSongsToPlay.addAll(mSongs);
-                    Collections.shuffle(mSongsToPlay);
+                    if(Globals.RandomizePlaylistSongOrder)
+                        Collections.shuffle(mSongsToPlay);
                 }
 
                 // Pause all still playing media players

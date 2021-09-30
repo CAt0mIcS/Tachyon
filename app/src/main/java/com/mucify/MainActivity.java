@@ -3,6 +3,7 @@ package com.mucify;
 import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;

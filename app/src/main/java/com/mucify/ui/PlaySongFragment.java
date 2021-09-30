@@ -160,7 +160,7 @@ public class PlaySongFragment extends Fragment {
             if(mSong.isPlaying())
                 mSong.pause();
             else
-                mSong.start();
+                mSong.getMediaPlayer().start();
         });
 
         mView.findViewById(R.id.ps_btnSave).setOnClickListener(this::onLoopSaveClicked);
@@ -184,6 +184,11 @@ public class PlaySongFragment extends Fragment {
             @Override
             public void afterTextChanged(Editable s) {
                 Globals.SongIncDecInterval = !s.toString().isEmpty() ? Integer.parseInt(s.toString()) : 500;
+                try {
+                    Globals.save();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
         //endregion

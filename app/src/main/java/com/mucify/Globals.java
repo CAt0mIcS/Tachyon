@@ -22,8 +22,8 @@ public class Globals {
     public static File DataDirectory;
     public static File MusicDirectory;
 
-    public static boolean RandomizePlaylistSongOrder;
-    public static int SongIncDecInterval;
+    public static boolean RandomizePlaylistSongOrder = true;
+    public static int SongIncDecInterval = 500;
 
     public final static String LoopFileExtension = ".loop";
     public final static String LoopFileIdentifier = "LOOP_";
@@ -50,10 +50,6 @@ public class Globals {
         DataDirectory = new File(context.getDataDir().getPath() + "/files");
         MusicDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
         SettingsFile = new File(DataDirectory.getPath() + "/Settings.settings");
-
-        // Default values in case of read failure
-        RandomizePlaylistSongOrder = false;
-        SongIncDecInterval = 500;
 
         loadAvailableSongs();
         loadAvailableLoops();

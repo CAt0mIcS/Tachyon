@@ -125,6 +125,10 @@ public class Song {
         return mEndTime;
     }
 
+    public MediaPlayer getMediaPlayer() {
+        return mMediaPlayer;
+    }
+
     @NonNull
     @Override
     public String toString() {
