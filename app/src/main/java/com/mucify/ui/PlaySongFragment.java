@@ -52,17 +52,16 @@ public class PlaySongFragment extends Fragment {
         mSong.start();
 
         // Repeat song once it's finished
-        mSong.setOnMediaPlayerFinishedListener(song -> {
-            song.seekTo(mSong.getStartTime());
-            song.start();
-        });
+        mSong.setOnMediaPlayerFinishedListener(Song::start);
 
         // Set maximum values for seekbars
         ((SeekBar)mView.findViewById(R.id.ps_sbProgress)).setMax(mSong.getDuration());
+        EditText txtInterval = mView.findViewById(R.id.ps_txtInterval);
         SeekBar sbStartTime = mView.findViewById(R.id.ps_sbStartTime);
         SeekBar sbEndTime = mView.findViewById(R.id.ps_sbEndTime);
         sbStartTime.setMax(mSong.getDuration());
         sbEndTime.setMax(mSong.getDuration());
+        txtInterval.setText(String.valueOf(Globals.SongIncDecInterval));
 
         // Update progress seekbar with media player position as well as update the song
         mView.findViewById(R.id.ps_sbProgress).post(new Runnable() {
@@ -175,7 +174,7 @@ public class PlaySongFragment extends Fragment {
             ((SeekBar)mView.findViewById(R.id.ps_sbEndTime)).setProgress(mSong.getEndTime());
         });
 
-        ((EditText)mView.findViewById(R.id.ps_txtInterval)).addTextChangedListener(new TextWatcher() {
+        txtInterval.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
             @Override

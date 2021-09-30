@@ -59,6 +59,7 @@ public class Globals {
             DataDirectory.mkdir();
         if(!SettingsFile.exists()) {
             SettingsFile.createNewFile();
+            save();
         }
         else {
             try {

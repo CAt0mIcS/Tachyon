@@ -74,7 +74,8 @@ public class Song {
         if(!mMediaPlayer.isPlaying())
             return;
 
-        if(mMediaPlayer.getCurrentPosition() >= mEndTime || mMediaPlayer.getCurrentPosition() < mStartTime) {
+        int currentPos = mMediaPlayer.getCurrentPosition();
+        if(currentPos >= mEndTime || currentPos < mStartTime) {
             if(mMediaPlayerFinishedListener != null)
                 mMediaPlayerFinishedListener.onFinished(this);
         }
@@ -82,7 +83,9 @@ public class Song {
 
     public void start() {
         mMediaPlayer.start();
-        seekTo(mStartTime);
+        // If MediaPlayer.SEEK_CLOSEST can't seek close enough, the song will "finish" at the beginning.
+        // Threshold to prevent this
+        seekTo(mStartTime + 20);
     }
 
     public void seekTo(int millis) {
