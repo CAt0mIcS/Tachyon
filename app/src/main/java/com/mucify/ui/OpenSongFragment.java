@@ -47,13 +47,7 @@ public class OpenSongFragment extends Fragment {
         mView.findViewById(R.id.os_btnConfirm).setVisibility(View.INVISIBLE);
         mView.findViewById(R.id.os_txtPlaylistName).setVisibility(View.INVISIBLE);
 
-        ListView lstSongs = mView.findViewById(R.id.os_lstSongs);
-        lstSongs.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, Globals.AvailableSongNames));
-        lstSongs.setOnItemClickListener(this::onSongClicked);
-
-        ListView lstLoops = mView.findViewById(R.id.os_lstLoops);
-        lstLoops.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, Globals.AvailableLoopNames));
-        lstLoops.setOnItemClickListener(this::onSongClicked);
+        updateLists();
     }
 
     private void onSongClicked(AdapterView<?> adapterView, View view, int position, long id) {
@@ -72,5 +66,15 @@ public class OpenSongFragment extends Fragment {
                 .replace(R.id.open_song_fragment, newFragment)
                 .addToBackStack(null)
                 .commit();
+    }
+
+    public void updateLists() {
+        ListView lstSongs = mView.findViewById(R.id.os_lstSongs);
+        lstSongs.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, Globals.AvailableSongNames));
+        lstSongs.setOnItemClickListener(this::onSongClicked);
+
+        ListView lstLoops = mView.findViewById(R.id.os_lstLoops);
+        lstLoops.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, Globals.AvailableLoopNames));
+        lstLoops.setOnItemClickListener(this::onSongClicked);
     }
 }

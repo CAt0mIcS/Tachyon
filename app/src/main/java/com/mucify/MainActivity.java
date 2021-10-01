@@ -1,18 +1,16 @@
 package com.mucify;
 
 import android.Manifest;
-import android.content.Intent;
 import android.os.Bundle;
-import android.provider.Settings;
+import android.os.Environment;
+import android.os.FileUtils;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
-import androidx.viewpager.widget.ViewPager;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -26,8 +24,16 @@ import com.mucify.ui.PlayPlaylistFragment;
 import com.mucify.ui.PlaySongFragment;
 import com.mucify.ui.internal.ScreenSlidePagerAdapter;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -70,12 +76,54 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu_layout, menu);
+        return true;
     }
 
     // onBackButtonClicked in action bar
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
+        int id = item.getItemId();
+        if(id == R.id.mm_btnBack) {
+            return onHomeButtonClicked();
+        }
+        else if(id == R.id.mm_btnImport) {
+            return onImportClicked();
+        }
+        else if(id == R.id.mm_btnExport) {
+            return onExportClicked();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void setupViewPager() {
+        ViewPager2 viewPager = findViewById(R.id.pager);
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        FragmentStateAdapter pagerAdapter = new ScreenSlidePagerAdapter(this);
+        viewPager.setAdapter(pagerAdapter);
+        new TabLayoutMediator(tabLayout, viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
+            @Override
+            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                switch(position) {
+                    case 0:
+                        tab.setText(R.string.tab_text_songs);
+                        break;
+                    case 1:
+                        tab.setText(R.string.tab_text_playlists);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Invalid number of tabs (" + position + ")");
+                }
+            }
+        }).attach();
+    }
+
+    private boolean onHomeButtonClicked() {
         PlaySongFragment playSongFragment = null;
         PlayPlaylistFragment playPlaylistFragment = null;
         CreatePlaylistFragment createPlaylistFragment = null;
@@ -134,26 +182,69 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    private void setupViewPager() {
-        ViewPager2 viewPager = findViewById(R.id.pager);
-        TabLayout tabLayout = findViewById(R.id.tabs);
-        FragmentStateAdapter pagerAdapter = new ScreenSlidePagerAdapter(this);
-        viewPager.setAdapter(pagerAdapter);
-        new TabLayoutMediator(tabLayout, viewPager, new TabLayoutMediator.TabConfigurationStrategy() {
-            @Override
-            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
-                switch(position) {
-                    case 0:
-                        tab.setText(R.string.tab_text_songs);
-                        break;
-                    case 1:
-                        tab.setText(R.string.tab_text_playlists);
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Invalid number of tabs (" + position + ")");
-                }
+    private boolean onImportClicked() {
+        for(File file : Globals.DataDirectory.listFiles()) {
+            file.delete();
+        }
+
+        try {
+            File saveDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Documents/com.mucify/");
+            if(!saveDir.exists()) {
+                Utils.messageBox(this, "Error", "Import directory " + saveDir + " doesn't exist.");
+                return true;
             }
-        }).attach();
+
+            for(File file : saveDir.listFiles()) {
+                copyFile(file, new File(Globals.DataDirectory.getPath() + "/" + file.getName()));
+            }
+
+            Globals.loadAvailableLoops();
+            Globals.loadAvailablePlaylists();
+            for(Fragment f : getSupportFragmentManager().getFragments()) {
+                if(f instanceof OpenSongFragment)
+                    ((OpenSongFragment)f).updateLists();
+                else if(f instanceof OpenPlaylistFragment)
+                    ((OpenPlaylistFragment)f).updateLists();
+            }
+        } catch(IOException e) {
+                Utils.messageBox(this, "Failed to import data", e.getMessage());
+            }
+
+        return true;
+    }
+
+    private boolean onExportClicked() {
+        String destDirPath = Globals.MusicDirectory + "/com.mucify/";
+        File destDir = new File(destDirPath);
+        if(destDir.exists())
+            destDir.delete();
+        destDir.mkdirs();
+
+        try {
+            for(File file : Globals.DataDirectory.listFiles()) {
+                copyFile(file, new File(destDirPath + file.getName()));
+            }
+        } catch(IOException e) {
+            Utils.messageBox(this, "Failed to export data", e.getMessage());
+        }
+
+        return true;
+    }
+
+    private void copyFile(File src, File dst) throws IOException {
+        StringBuilder srcStr = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new FileReader(src));
+        while(reader.ready())
+            srcStr.append(reader.readLine()).append('\n');
+        reader.close();
+        srcStr.deleteCharAt(srcStr.lastIndexOf("\n"));
+
+        if(!dst.exists())
+            dst.createNewFile();
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(dst));
+        writer.write(srcStr.toString());
+        writer.close();
     }
 
     private OpenSongFragment getOpenSongFragment() {

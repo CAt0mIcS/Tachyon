@@ -1,0 +1,20 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
+
+    <item
+        android:id="@+id/mm_btnBack"
+        android:icon="@drawable/ic_baseline_arrow_back_24"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/mm_btnImport"
+        app:showAsAction="never"
+        android:title="@string/import_data"/>
+
+    <item
+        android:id="@+id/mm_btnExport"
+        app:showAsAction="never"
+        android:title="@string/export_data"/>
+
+</menu>

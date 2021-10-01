@@ -43,7 +43,7 @@ public class OpenPlaylistFragment extends Fragment {
 
         mView = view;
 
-        loadPlaylists();
+        updateLists();
 
         mView.findViewById(R.id.op_btnCreate).setOnClickListener(v -> {
             getParentFragmentManager().beginTransaction()
@@ -68,14 +68,6 @@ public class OpenPlaylistFragment extends Fragment {
             openContextMenu(Globals.AvailablePlaylists.get(position));
             return true;
         });
-    }
-
-    private void loadPlaylists() {
-        ListView playlists = mView.findViewById(R.id.op_lstPlaylists);
-        playlists.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, Globals.AvailablePlaylistNames));
-//        ViewGroup.LayoutParams params = playlists.getLayoutParams();
-//        params.height = Utils.getItemHeightOfListView(playlists, playlists.getAdapter().getCount());
-//        playlists.setLayoutParams(params);
     }
 
     private void openContextMenu(File playlist) {
@@ -110,7 +102,15 @@ public class OpenPlaylistFragment extends Fragment {
 
             playlist.delete();
             Globals.loadAvailablePlaylists();
-            loadPlaylists();
+            updateLists();
         });
+    }
+
+    public void updateLists() {
+        ListView playlists = mView.findViewById(R.id.op_lstPlaylists);
+        playlists.setAdapter(new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, Globals.AvailablePlaylistNames));
+//        ViewGroup.LayoutParams params = playlists.getLayoutParams();
+//        params.height = Utils.getItemHeightOfListView(playlists, playlists.getAdapter().getCount());
+//        playlists.setLayoutParams(params);
     }
 }

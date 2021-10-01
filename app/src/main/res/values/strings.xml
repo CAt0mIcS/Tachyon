@@ -9,4 +9,6 @@
     <string name="loop_name_info">Enter name. Mustn\'t contain \'_\' or be empty</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="import_data">Import Data</string>
+    <string name="export_data">Export Data</string>
 </resources>
