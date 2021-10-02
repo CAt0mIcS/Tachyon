@@ -3,6 +3,8 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_arrow_back_white_24.xml" value="0.21481481481481482" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.21481481481481482" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_screen_slide.xml" value="1.7178571428571427" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/create_playlist_layout.xml" value="0.2546875" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/empty_layout.xml" value="0.2552083333333333" />

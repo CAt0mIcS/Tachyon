@@ -1,15 +1,16 @@
 package com.mucify;
 
 import android.Manifest;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.FileUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
@@ -30,10 +31,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -82,6 +79,20 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu_layout, menu);
+
+        int nightModeFlags =
+                getResources().getConfiguration().uiMode &
+                        Configuration.UI_MODE_NIGHT_MASK;
+        switch (nightModeFlags) {
+            case Configuration.UI_MODE_NIGHT_YES:
+            case Configuration.UI_MODE_NIGHT_UNDEFINED:
+                menu.getItem(0).setIcon(R.drawable.ic_arrow_back_white_24);
+                break;
+            case Configuration.UI_MODE_NIGHT_NO:
+                menu.getItem(0).setIcon(R.drawable.ic_arrow_back_black_24);
+                break;
+        }
+
         return true;
     }
 
