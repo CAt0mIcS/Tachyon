@@ -138,27 +138,31 @@ public class Playlist {
 
         for(Song song : mSongs) {
             song.setOnMediaPlayerFinishedListener(mediaPlayer -> {
-                mSongsToPlay.remove(0);
-
-                if(mSongsToPlay.size() == 0) {
-                    mSongsToPlay.addAll(mSongs);
-                    if(Globals.RandomizePlaylistSongOrder)
-                        Collections.shuffle(mSongsToPlay);
-                }
-
-                // Pause all still playing media players
-                for(Song s : getSongsAndLoops()) {
-                    if(s.isPlaying()) {
-                        s.seekTo(s.getStartTime());
-                        s.pause();
-                    }
-                }
-
-                mSongsToPlay.get(0).start();
-                if(mNewSongListener != null)
-                    mNewSongListener.onStarted(mSongsToPlay.get(0));
+                next();
             });
         }
+    }
+
+    public void next() {
+        mSongsToPlay.remove(0);
+
+        if(mSongsToPlay.size() == 0) {
+            mSongsToPlay.addAll(mSongs);
+            if(Globals.RandomizePlaylistSongOrder)
+                Collections.shuffle(mSongsToPlay);
+        }
+
+        // Pause all still playing media players
+        for(Song s : getSongsAndLoops()) {
+            if(s.isPlaying()) {
+                s.seekTo(s.getStartTime());
+                s.pause();
+            }
+        }
+
+        mSongsToPlay.get(0).start();
+        if(mNewSongListener != null)
+            mNewSongListener.onStarted(mSongsToPlay.get(0));
     }
 
     private void parseFile(Context context) throws IOException {

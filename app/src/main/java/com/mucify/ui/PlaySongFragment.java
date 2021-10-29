@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -230,5 +231,9 @@ public class PlaySongFragment extends Fragment {
     public void unload() {
         mSong.pause();
         mSong.seekTo(0);
+    }
+
+    public Song getSong() {
+        return mSong;
     }
 }

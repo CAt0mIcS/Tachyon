@@ -1,11 +1,16 @@
 package com.mucify;
 
 import android.Manifest;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.media.browse.MediaBrowser;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,6 +28,7 @@ import com.mucify.ui.OpenPlaylistFragment;
 import com.mucify.ui.OpenSongFragment;
 import com.mucify.ui.PlayPlaylistFragment;
 import com.mucify.ui.PlaySongFragment;
+import com.mucify.ui.internal.MediaButtonIntentReceiver;
 import com.mucify.ui.internal.ScreenSlidePagerAdapter;
 
 import java.io.BufferedReader;
@@ -74,6 +80,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
 //        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        IntentFilter filter = new IntentFilter(Intent.ACTION_MEDIA_BUTTON);
+        MediaButtonIntentReceiver r = new MediaButtonIntentReceiver();
+        filter.setPriority(1000);
+        registerReceiver(r, filter);
     }
 
     @Override
@@ -279,5 +290,27 @@ public class MainActivity extends AppCompatActivity {
             return ((OpenPlaylistFragment)page);
 
         return null;
+    }
+
+    private PlaySongFragment getPlaySongFragment() {
+        PlaySongFragment playSongFragment = null;
+        for(Fragment f : getSupportFragmentManager().getFragments()) {
+            if(f instanceof PlaySongFragment) {
+                playSongFragment = (PlaySongFragment)f;
+                break;
+            }
+        }
+        return playSongFragment;
+    }
+
+    private PlayPlaylistFragment getPlayPlaylistFragment() {
+        PlayPlaylistFragment playPlaylistFragment = null;
+        for(Fragment f : getSupportFragmentManager().getFragments()) {
+            if(f instanceof PlayPlaylistFragment) {
+                playPlaylistFragment = (PlayPlaylistFragment)f;
+                break;
+            }
+        }
+        return playPlaylistFragment;
     }
 }

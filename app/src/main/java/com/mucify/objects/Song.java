@@ -1,6 +1,10 @@
 package com.mucify.objects;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 
@@ -21,7 +25,17 @@ public class Song {
     private int mStartTime;
     private int mEndTime;
 
+    private BroadcastReceiver mNoisyAudioReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction()))
+                pause();
+        }
+    };
+    private IntentFilter mNoisyAudioIntent = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+
     protected MediaPlayer mMediaPlayer;
+    private Context mContext;
 
     public interface MediaPlayerFinishedListener {
         void onFinished(Song song);
@@ -46,6 +60,8 @@ public class Song {
     }
 
     protected void create(Context context, File path) throws IOException {
+        mContext = context;
+
         if(!path.exists()) {
             Utils.messageBox(context, "Error","File '" + path.getPath() + "' doesn't exist");
             return;
@@ -76,13 +92,16 @@ public class Song {
 
         int currentPos = mMediaPlayer.getCurrentPosition();
         if(currentPos >= mEndTime || currentPos < mStartTime) {
-
-            if(mMediaPlayerFinishedListener != null)
+            if(mMediaPlayerFinishedListener != null) {
+                mContext.unregisterReceiver(mNoisyAudioReceiver);
                 mMediaPlayerFinishedListener.onFinished(this);
+            }
         }
     }
 
     public void start() {
+        mContext.registerReceiver(mNoisyAudioReceiver, mNoisyAudioIntent);
+
         mMediaPlayer.start();
         // If MediaPlayer.SEEK_CLOSEST can't seek close enough, the song will "finish" at the beginning.
         // Threshold to prevent this

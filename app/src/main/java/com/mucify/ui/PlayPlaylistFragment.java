@@ -20,6 +20,8 @@ import com.mucify.Utils;
 import com.mucify.objects.Playlist;
 import com.mucify.objects.Song;
 
+import java.util.Iterator;
+
 public class PlayPlaylistFragment extends Fragment {
     private View mView;
     private Playlist mPlaylist;
@@ -104,5 +106,9 @@ public class PlayPlaylistFragment extends Fragment {
                 song.seekTo(0);
             }
         }
+    }
+
+    public Playlist getPlaylist() {
+        return mPlaylist;
     }
 }
