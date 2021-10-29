@@ -112,6 +112,11 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onBackPressed() {
+        onHomeButtonClicked();
+    }
+
     private void setupViewPager() {
         ViewPager2 viewPager = findViewById(R.id.pager);
         TabLayout tabLayout = findViewById(R.id.tabs);

@@ -76,6 +76,7 @@ public class Song {
 
         int currentPos = mMediaPlayer.getCurrentPosition();
         if(currentPos >= mEndTime || currentPos < mStartTime) {
+
             if(mMediaPlayerFinishedListener != null)
                 mMediaPlayerFinishedListener.onFinished(this);
         }
