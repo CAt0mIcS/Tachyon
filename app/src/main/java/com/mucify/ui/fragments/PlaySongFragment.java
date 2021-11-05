@@ -1,6 +1,8 @@
-package com.mucify.ui;
+package com.mucify.ui.fragments;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -13,7 +15,6 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,59 +25,62 @@ import com.mucify.R;
 import com.mucify.Utils;
 import com.mucify.objects.Loop;
 import com.mucify.objects.Song;
+import com.mucify.ui.internal.PlaySongService;
 
 import java.io.IOException;
 
 public class PlaySongFragment extends Fragment {
-    private View mView;
-    private final Song mSong;
-
     private boolean mProgressSeekbarUpdate = true;
-
-    public PlaySongFragment(Song song) {
-        mSong = song;
-    }
+    private Intent mForegroundIntent;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if(container != null)
             container.removeAllViews();
-        return inflater.inflate(R.layout.play_song_layout, container, false);
+        return inflater.inflate(R.layout.play_audio_layout, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mView = view;
-        mSong.start();
+        mForegroundIntent = new Intent(getActivity(), PlaySongService.class);
 
         // Repeat song once it's finished
-        mSong.setOnMediaPlayerFinishedListener(Song::start);
+        Song.get().addOnMediaPlayerFinishedListener(song -> {
+//            getActivity().stopService(mForegroundIntent);
+            song.start();
+        });
+        Song.get().addOnMediaPlayerStartedListener(song -> {
+            getActivity().startService(mForegroundIntent);
+        });
+
+        Song.get().start();
 
         // Set maximum values for seekbars
-        ((SeekBar)mView.findViewById(R.id.ps_sbProgress)).setMax(mSong.getDuration());
-        EditText txtInterval = mView.findViewById(R.id.ps_txtInterval);
-        SeekBar sbStartTime = mView.findViewById(R.id.ps_sbStartTime);
-        SeekBar sbEndTime = mView.findViewById(R.id.ps_sbEndTime);
-        sbStartTime.setMax(mSong.getDuration());
-        sbEndTime.setMax(mSong.getDuration());
+        SeekBar sbProgress = view.findViewById(R.id.pa_sbProgress);
+        EditText txtInterval = view.findViewById(R.id.pa_txtInterval);
+        SeekBar sbStartTime = view.findViewById(R.id.pa_sbStartTime);
+        SeekBar sbEndTime = view.findViewById(R.id.pa_sbEndTime);
+        sbProgress.setMax(Song.get().getDuration());
+        sbStartTime.setMax(Song.get().getDuration());
+        sbEndTime.setMax(Song.get().getDuration());
         txtInterval.setText(String.valueOf(Globals.SongIncDecInterval));
 
         // Update progress seekbar with media player position as well as update the song
-        mView.findViewById(R.id.ps_sbProgress).post(new Runnable() {
+        sbProgress.post(new Runnable() {
             @Override
             public void run() {
-                mSong.update();
+                Song.get().update();
 
-                SeekBar progress = mView.findViewById(R.id.ps_sbProgress);
+                SeekBar progress = view.findViewById(R.id.pa_sbProgress);
                 if(progress == null)
                     return;
 
-                if(mSong.isPlaying()) {
+                if(Song.get().isPlaying()) {
                     if(mProgressSeekbarUpdate) {
-                        progress.setProgress(mSong.getCurrentPosition());
+                        progress.setProgress(Song.get().getCurrentPosition());
                     }
                     progress.post(this);
                 }
@@ -86,13 +90,13 @@ public class PlaySongFragment extends Fragment {
         });
 
         // region Listeners
-        ((TextView)mView.findViewById(R.id.ps_lblSongName)).setText(mSong.getName());
+        ((TextView)view.findViewById(R.id.pa_lblSongName)).setText(Song.get().getName());
 
 
-        ((SeekBar)mView.findViewById(R.id.ps_sbProgress)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        ((SeekBar)view.findViewById(R.id.pa_sbProgress)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                TextView lblProgress = mView.findViewById(R.id.ps_lblProgress);
+                TextView lblProgress = view.findViewById(R.id.pa_lblProgress);
                 lblProgress.setText(Utils.millisecondsToReadableString(progress));
             }
 
@@ -102,14 +106,14 @@ public class PlaySongFragment extends Fragment {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 mProgressSeekbarUpdate = true;
-                mSong.seekTo(seekBar.getProgress());
+                Song.get().seekTo(seekBar.getProgress());
             }
         });
 
-        ((SeekBar)mView.findViewById(R.id.ps_sbStartTime)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        ((SeekBar)view.findViewById(R.id.pa_sbStartTime)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                ((TextView)mView.findViewById(R.id.ps_lblStartTime)).setText(Utils.millisecondsToReadableString(progress));
+                ((TextView)view.findViewById(R.id.pa_lblStartTime)).setText(Utils.millisecondsToReadableString(progress));
             }
 
             @Override
@@ -117,13 +121,13 @@ public class PlaySongFragment extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mSong.setStartTime(seekBar.getProgress());
+                Song.get().setStartTime(seekBar.getProgress());
             }
         });
 
-        ((SeekBar)mView.findViewById(R.id.ps_sbEndTime)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        ((SeekBar)view.findViewById(R.id.pa_sbEndTime)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                ((TextView)mView.findViewById(R.id.ps_lblEndTime)).setText(Utils.millisecondsToReadableString(progress));
+                ((TextView)view.findViewById(R.id.pa_lblEndTime)).setText(Utils.millisecondsToReadableString(progress));
             }
 
             @Override
@@ -131,48 +135,48 @@ public class PlaySongFragment extends Fragment {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mSong.setEndTime(seekBar.getProgress());
+                Song.get().setEndTime(seekBar.getProgress());
             }
         });
 
 
-        mView.findViewById(R.id.ps_btnStartTimeDec).setOnClickListener(v -> {
-            mSong.setStartTime(mSong.getStartTime() - Globals.SongIncDecInterval);
-            ((SeekBar)mView.findViewById(R.id.ps_sbStartTime)).setProgress(mSong.getStartTime());
+        view.findViewById(R.id.pa_btnStartTimeDec).setOnClickListener(v -> {
+            Song.get().setStartTime(Song.get().getStartTime() - Globals.SongIncDecInterval);
+            ((SeekBar)view.findViewById(R.id.pa_sbStartTime)).setProgress(Song.get().getStartTime());
         });
 
-        mView.findViewById(R.id.ps_btnStartTimeInc).setOnClickListener(v -> {
-            mSong.setStartTime(mSong.getStartTime() + Globals.SongIncDecInterval);
-            ((SeekBar)mView.findViewById(R.id.ps_sbStartTime)).setProgress(mSong.getStartTime());
+        view.findViewById(R.id.pa_btnStartTimeInc).setOnClickListener(v -> {
+            Song.get().setStartTime(Song.get().getStartTime() + Globals.SongIncDecInterval);
+            ((SeekBar)view.findViewById(R.id.pa_sbStartTime)).setProgress(Song.get().getStartTime());
         });
 
-        mView.findViewById(R.id.ps_btnEndTimeDec).setOnClickListener(v -> {
-            mSong.setEndTime(mSong.getEndTime() - Globals.SongIncDecInterval);
-            ((SeekBar)mView.findViewById(R.id.ps_sbEndTime)).setProgress(mSong.getEndTime());
+        view.findViewById(R.id.pa_btnEndTimeDec).setOnClickListener(v -> {
+            Song.get().setEndTime(Song.get().getEndTime() - Globals.SongIncDecInterval);
+            ((SeekBar)view.findViewById(R.id.pa_sbEndTime)).setProgress(Song.get().getEndTime());
         });
 
-        mView.findViewById(R.id.ps_btnEndTimeInc).setOnClickListener(v -> {
-            mSong.setEndTime(mSong.getEndTime() + Globals.SongIncDecInterval);
-            ((SeekBar)mView.findViewById(R.id.ps_sbEndTime)).setProgress(mSong.getEndTime());
+        view.findViewById(R.id.pa_btnEndTimeInc).setOnClickListener(v -> {
+            Song.get().setEndTime(Song.get().getEndTime() + Globals.SongIncDecInterval);
+            ((SeekBar)view.findViewById(R.id.pa_sbEndTime)).setProgress(Song.get().getEndTime());
         });
 
-        mView.findViewById(R.id.ps_btnPause).setOnClickListener(v -> {
-            if(mSong.isPlaying())
-                mSong.pause();
+        view.findViewById(R.id.pa_btnPause).setOnClickListener(v -> {
+            if(Song.get().isPlaying())
+                Song.get().pause();
             else
-                mSong.getMediaPlayer().start();
+                Song.get().getMediaPlayer().start();
         });
 
-        mView.findViewById(R.id.ps_btnSave).setOnClickListener(this::onLoopSaveClicked);
+        view.findViewById(R.id.pa_btnSave).setOnClickListener(this::onLoopSaveClicked);
 
-        mView.findViewById(R.id.ps_lblStartTime).setOnClickListener(v -> {
-            mSong.setStartTime(((SeekBar)mView.findViewById(R.id.ps_sbProgress)).getProgress());
-            ((SeekBar)mView.findViewById(R.id.ps_sbStartTime)).setProgress(mSong.getStartTime());
+        view.findViewById(R.id.pa_lblStartTime).setOnClickListener(v -> {
+            Song.get().setStartTime(((SeekBar)view.findViewById(R.id.pa_sbProgress)).getProgress());
+            ((SeekBar)view.findViewById(R.id.pa_sbStartTime)).setProgress(Song.get().getStartTime());
         });
 
-        mView.findViewById(R.id.ps_lblEndTime).setOnClickListener(v -> {
-            mSong.setEndTime(((SeekBar)mView.findViewById(R.id.ps_sbProgress)).getProgress());
-            ((SeekBar)mView.findViewById(R.id.ps_sbEndTime)).setProgress(mSong.getEndTime());
+        view.findViewById(R.id.pa_lblEndTime).setOnClickListener(v -> {
+            Song.get().setEndTime(((SeekBar)view.findViewById(R.id.pa_sbProgress)).getProgress());
+            ((SeekBar)view.findViewById(R.id.pa_sbEndTime)).setProgress(Song.get().getEndTime());
         });
 
         txtInterval.addTextChangedListener(new TextWatcher() {
@@ -195,8 +199,8 @@ public class PlaySongFragment extends Fragment {
 
         // Set progresses of seekbars so that the listeners get activated and the labels are updated
         sbStartTime.setProgress(1);
-        sbStartTime.setProgress(mSong.getStartTime());
-        sbEndTime.setProgress(mSong.getEndTime());
+        sbStartTime.setProgress(Song.get().getStartTime());
+        sbEndTime.setProgress(Song.get().getEndTime());
     }
 
     private void onLoopSaveClicked(View view) {
@@ -220,7 +224,7 @@ public class PlaySongFragment extends Fragment {
             popupWindow.dismiss();
 
             try {
-                Loop.save(mSong, Loop.toFile(mSong.getName(), name));
+                Loop.save(Song.get(), Loop.toFile(Song.get().getName(), name));
                 Globals.loadAvailableLoops();
             } catch(IOException e) {
                 Utils.messageBox(getContext(), "Failed to save loop " + name, e.getMessage());
@@ -229,11 +233,11 @@ public class PlaySongFragment extends Fragment {
     }
 
     public void unload() {
-        mSong.pause();
-        mSong.seekTo(0);
+        Song.get().pause();
+        Song.get().seekTo(0);
     }
 
     public Song getSong() {
-        return mSong;
+        return Song.get();
     }
 }

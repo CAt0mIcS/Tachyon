@@ -137,7 +137,7 @@ public class Playlist {
             Collections.shuffle(mSongsToPlay);
 
         for(Song song : mSongs) {
-            song.setOnMediaPlayerFinishedListener(mediaPlayer -> {
+            song.addOnMediaPlayerFinishedListener(mediaPlayer -> {
                 next();
             });
         }

@@ -7,6 +7,8 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,8 +20,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class Song {
+    static Song sInstance = null;
+
     private File mSongFilePath;
     protected File mLoopFilePath = null;
     private int mStartTime;
@@ -37,29 +42,50 @@ public class Song {
     protected MediaPlayer mMediaPlayer;
     private Context mContext;
 
+    public static Song get() {
+        return sInstance;
+    }
+
+    // After song is started or repeated
+    public interface MediaPlayerStartedListener {
+        void onStarted(Song song);
+    }
+    // After song finished, also after repeat finished
     public interface MediaPlayerFinishedListener {
         void onFinished(Song song);
     }
 
-    private MediaPlayerFinishedListener mMediaPlayerFinishedListener;
+    private ArrayList<MediaPlayerStartedListener> mMediaPlayerStartedListeners = new ArrayList<>();
+    private ArrayList<MediaPlayerFinishedListener> mMediaPlayerFinishedListeners = new ArrayList<>();
+
+    // path can be either a loop file or a song file
+    public static Song create(Context context, File path) throws IOException {
+        sInstance = new Song(context, path);
+        return sInstance;
+    }
+
+    public static Song create(Context context, File songFilePath, int startTime, int endTime) throws IOException {
+        sInstance = new Song(context, songFilePath, startTime, endTime);
+        return sInstance;
+    }
 
     // path can be either a loop file or a song file
     public Song(Context context, File path) throws IOException {
-        create(context, path);
+        createInternal(context, path);
     }
 
     public Song(Context context, File songFilePath, int startTime, int endTime) throws IOException {
         mStartTime = startTime;
         mEndTime = endTime;
 
-        create(context, songFilePath);
+        createInternal(context, songFilePath);
     }
 
     public boolean isSame(Song song) {
         return mSongFilePath == song.mSongFilePath && mStartTime == song.mStartTime && mEndTime == song.mEndTime;
     }
 
-    protected void create(Context context, File path) throws IOException {
+    protected void createInternal(Context context, File path) throws IOException {
         mContext = context;
 
         if(!path.exists()) {
@@ -92,9 +118,9 @@ public class Song {
 
         int currentPos = mMediaPlayer.getCurrentPosition();
         if(currentPos >= mEndTime || currentPos < mStartTime) {
-            if(mMediaPlayerFinishedListener != null) {
-                mContext.unregisterReceiver(mNoisyAudioReceiver);
-                mMediaPlayerFinishedListener.onFinished(this);
+            mContext.unregisterReceiver(mNoisyAudioReceiver);
+            for(MediaPlayerFinishedListener listener : mMediaPlayerFinishedListeners) {
+                listener.onFinished(this);
             }
         }
     }
@@ -106,6 +132,10 @@ public class Song {
         // If MediaPlayer.SEEK_CLOSEST can't seek close enough, the song will "finish" at the beginning.
         // Threshold to prevent this
         seekTo(mStartTime + 20);
+
+        for(MediaPlayerStartedListener listener : mMediaPlayerStartedListeners) {
+            listener.onStarted(this);
+        }
     }
 
     public void seekTo(int millis) {
@@ -158,13 +188,36 @@ public class Song {
         return toName(mSongFilePath);
     }
 
-    public void setOnMediaPlayerFinishedListener(@NonNull MediaPlayerFinishedListener listener) {
-        mMediaPlayerFinishedListener = listener;
-        mMediaPlayer.setOnCompletionListener(mediaPlayer -> listener.onFinished(Song.this));
+    public void addOnMediaPlayerStartedListener(@NonNull MediaPlayerStartedListener listener) {
+        mMediaPlayerStartedListeners.add(listener);
+    }
+
+    public void addOnMediaPlayerFinishedListener(@NonNull MediaPlayerFinishedListener listener) {
+        mMediaPlayerFinishedListeners.add(listener);
+        mMediaPlayer.setOnCompletionListener(mediaPlayer -> {
+            for(MediaPlayerFinishedListener lstnr : mMediaPlayerFinishedListeners)
+                lstnr.onFinished(Song.this);
+        });
+    }
+
+    public void addOnMediaPlayerStartedListener(int index, @NonNull MediaPlayerStartedListener listener) {
+        mMediaPlayerStartedListeners.add(index, listener);
+    }
+
+    public void addOnMediaPlayerFinishedListener(int index, @NonNull MediaPlayerFinishedListener listener) {
+        mMediaPlayerFinishedListeners.add(index, listener);
+        mMediaPlayer.setOnCompletionListener(mediaPlayer -> {
+            for(MediaPlayerFinishedListener lstnr : mMediaPlayerFinishedListeners)
+                lstnr.onFinished(Song.this);
+        });
+    }
+
+    public static String toName(String file) {
+        return file.replace(Utils.getFileExtension(file), "");
     }
 
     public static String toName(File file) {
-        return file.getName().replace(Utils.getFileExtension(file.getName()), "");
+        return toName(file.getName());
     }
 
 
