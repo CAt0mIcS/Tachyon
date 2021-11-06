@@ -1,5 +1,6 @@
 package com.mucify.ui.fragments;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -61,13 +62,15 @@ public class PlaySongFragment extends Fragment {
 
         // Repeat song once it's finished
         Song.get().addOnMediaPlayerFinishedListener(song -> {
-//            getActivity().stopService(mForegroundIntent);
             song.start();
+        });
+        Song.get().addOnMediaPlayerStoppedListener(song -> {
             getContext().unregisterReceiver(mNoisyAudioReceiver);
         });
         Song.get().addOnMediaPlayerStartedListener(song -> {
+            if(!isServiceRunning(PlaySongService.class))
+                getActivity().startService(mForegroundIntent);
             getContext().registerReceiver(mNoisyAudioReceiver, mNoisyAudioIntent);
-            getActivity().startService(mForegroundIntent);
         });
 
         Song.get().start();
@@ -178,7 +181,7 @@ public class PlaySongFragment extends Fragment {
             if(Song.get().isPlaying())
                 Song.get().pause();
             else
-                Song.get().getMediaPlayer().start();
+                Song.get().unpause();
         });
 
         view.findViewById(R.id.pa_btnSave).setOnClickListener(this::onLoopSaveClicked);
@@ -251,7 +254,13 @@ public class PlaySongFragment extends Fragment {
         Song.get().seekTo(0);
     }
 
-    public Song getSong() {
-        return Song.get();
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager)getContext().getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

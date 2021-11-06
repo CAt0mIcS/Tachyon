@@ -37,7 +37,7 @@ public class PlaySongService extends IntentService {
             else
                 startForeground(1, new Notification());
 
-            Song.get().addOnMediaPlayerFinishedListener(0, song1 -> {
+            Song.get().addOnMediaPlayerStoppedListener(0, song1 -> {
                 stopForeground(true);
                 synchronized (mMutex) {
                     mMutex.notify();
@@ -55,7 +55,7 @@ public class PlaySongService extends IntentService {
     private void startCustomForegroundService() {
         String NOTIFICATION_CHANNEL_ID = "com.mucify";
         String channelName = "Music playing background service";
-        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_DEFAULT);
+        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
         chan.setLightColor(Color.BLUE);
         chan.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
         NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);

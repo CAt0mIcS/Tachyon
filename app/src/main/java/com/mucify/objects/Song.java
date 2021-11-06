@@ -28,9 +28,13 @@ public class Song {
         return sInstance;
     }
 
-    // After song is started or repeated
+    // After song is started/repeated/unpaused
     public interface MediaPlayerStartedListener {
         void onStarted(Song song);
+    }
+    // Paused/reset
+    public interface MediaPlayerStoppedListener {
+        void onStopped(Song song);
     }
     // After song finished, also after repeat finished
     public interface MediaPlayerFinishedListener {
@@ -39,6 +43,7 @@ public class Song {
 
     private final ArrayList<MediaPlayerStartedListener> mMediaPlayerStartedListeners = new ArrayList<>();
     private final ArrayList<MediaPlayerFinishedListener> mMediaPlayerFinishedListeners = new ArrayList<>();
+    private final ArrayList<MediaPlayerStoppedListener> mMediaPlayerStoppedListeners = new ArrayList<>();
 
     // path can be either a loop file or a song file
     public static Song create(Context context, File path) throws IOException {
@@ -125,12 +130,23 @@ public class Song {
         }
     }
 
+    public void unpause() {
+        mMediaPlayer.start();
+
+        for(MediaPlayerStartedListener listener : mMediaPlayerStartedListeners) {
+            listener.onStarted(this);
+        }
+    }
+
     public void seekTo(int millis) {
         mMediaPlayer.seekTo(millis, MediaPlayer.SEEK_CLOSEST);
     }
 
     public void pause() {
         mMediaPlayer.pause();
+
+        for(MediaPlayerStoppedListener listener : mMediaPlayerStoppedListeners)
+            listener.onStopped(this);
     }
 
     public String getName() {
@@ -165,10 +181,6 @@ public class Song {
         return mEndTime;
     }
 
-    public MediaPlayer getMediaPlayer() {
-        return mMediaPlayer;
-    }
-
     @NonNull
     @Override
     public String toString() {
@@ -199,6 +211,14 @@ public class Song {
         });
     }
 
+    public void addOnMediaPlayerStoppedListener(@NonNull MediaPlayerStoppedListener listener) {
+        mMediaPlayerStoppedListeners.add(listener);
+    }
+
+    public void addOnMediaPlayerStoppedListener(int index, @NonNull MediaPlayerStoppedListener listener) {
+        mMediaPlayerStoppedListeners.add(index, listener);
+    }
+
     public static String toName(String file) {
         return file.replace(Utils.getFileExtension(file), "");
     }
@@ -227,5 +247,8 @@ public class Song {
 
     public void reset() {
         mMediaPlayer.reset();
+
+        for(MediaPlayerFinishedListener listener : mMediaPlayerFinishedListeners)
+            listener.onFinished(this);
     }
 }

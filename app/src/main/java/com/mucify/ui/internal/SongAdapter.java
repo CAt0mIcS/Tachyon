@@ -41,8 +41,10 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongViewHolder
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
 
         try {
-            metaRetriever.setDataSource(song.getName());
-        } catch(IllegalArgumentException ignored) {}
+            metaRetriever.setDataSource(song.getAbsolutePath());
+        } catch(IllegalArgumentException e) {
+            e.printStackTrace();
+        }
         String artist =  metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
         String title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
 

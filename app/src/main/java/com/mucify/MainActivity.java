@@ -11,7 +11,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.mucify.objects.Song;
 import com.mucify.ui.fragments.LoopSelectFragment;
+import com.mucify.ui.fragments.PlaySongFragment;
 import com.mucify.ui.fragments.PlaylistSelectFragment;
 import com.mucify.ui.fragments.SettingsFragment;
 import com.mucify.ui.fragments.SongSelectFragment;
@@ -55,6 +57,10 @@ public class MainActivity extends AppCompatActivity {
         btmNav.setOnNavigationItemSelectedListener(menuItem -> {
             switch (menuItem.getItemId()) {
                 case R.id.songs:
+                    // Switch to PlaySongFragment if song is already playing
+                    if(Song.get() != null && Song.get().isPlaying()) {
+                        return loadFragment(new PlaySongFragment());
+                    }
                     return loadFragment(new SongSelectFragment());
                 case R.id.loops:
                     return loadFragment(new LoopSelectFragment());
