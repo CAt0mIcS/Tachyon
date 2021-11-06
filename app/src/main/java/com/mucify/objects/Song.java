@@ -1,19 +1,11 @@
 package com.mucify.objects;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Parcel;
-import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
-import com.mucify.Globals;
 import com.mucify.Utils;
 
 import java.io.BufferedReader;
@@ -30,17 +22,7 @@ public class Song {
     private int mStartTime;
     private int mEndTime;
 
-    private BroadcastReceiver mNoisyAudioReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if(AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction()))
-                pause();
-        }
-    };
-    private IntentFilter mNoisyAudioIntent = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-
     protected MediaPlayer mMediaPlayer;
-    private Context mContext;
 
     public static Song get() {
         return sInstance;
@@ -55,16 +37,22 @@ public class Song {
         void onFinished(Song song);
     }
 
-    private ArrayList<MediaPlayerStartedListener> mMediaPlayerStartedListeners = new ArrayList<>();
-    private ArrayList<MediaPlayerFinishedListener> mMediaPlayerFinishedListeners = new ArrayList<>();
+    private final ArrayList<MediaPlayerStartedListener> mMediaPlayerStartedListeners = new ArrayList<>();
+    private final ArrayList<MediaPlayerFinishedListener> mMediaPlayerFinishedListeners = new ArrayList<>();
 
     // path can be either a loop file or a song file
     public static Song create(Context context, File path) throws IOException {
+        if(sInstance != null)
+            sInstance.reset();
+
         sInstance = new Song(context, path);
         return sInstance;
     }
 
     public static Song create(Context context, File songFilePath, int startTime, int endTime) throws IOException {
+        if(sInstance != null)
+            sInstance.reset();
+
         sInstance = new Song(context, songFilePath, startTime, endTime);
         return sInstance;
     }
@@ -86,7 +74,8 @@ public class Song {
     }
 
     protected void createInternal(Context context, File path) throws IOException {
-        mContext = context;
+        mMediaPlayerStartedListeners.clear();
+        mMediaPlayerFinishedListeners.clear();
 
         if(!path.exists()) {
             Utils.messageBox(context, "Error","File '" + path.getPath() + "' doesn't exist");
@@ -118,7 +107,6 @@ public class Song {
 
         int currentPos = mMediaPlayer.getCurrentPosition();
         if(currentPos >= mEndTime || currentPos < mStartTime) {
-            mContext.unregisterReceiver(mNoisyAudioReceiver);
             for(MediaPlayerFinishedListener listener : mMediaPlayerFinishedListeners) {
                 listener.onFinished(this);
             }
@@ -126,12 +114,11 @@ public class Song {
     }
 
     public void start() {
-        mContext.registerReceiver(mNoisyAudioReceiver, mNoisyAudioIntent);
-
         mMediaPlayer.start();
         // If MediaPlayer.SEEK_CLOSEST can't seek close enough, the song will "finish" at the beginning.
         // Threshold to prevent this
-        seekTo(mStartTime + 20);
+        if(mStartTime != 0)
+            seekTo(mStartTime + 20);
 
         for(MediaPlayerStartedListener listener : mMediaPlayerStartedListeners) {
             listener.onStarted(this);
@@ -236,5 +223,9 @@ public class Song {
 
     public void setEndTime(int millis) {
         mEndTime = millis;
+    }
+
+    public void reset() {
+        mMediaPlayer.reset();
     }
 }

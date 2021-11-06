@@ -1,7 +1,10 @@
 package com.mucify.ui.fragments;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
@@ -33,6 +36,15 @@ public class PlaySongFragment extends Fragment {
     private boolean mProgressSeekbarUpdate = true;
     private Intent mForegroundIntent;
 
+    private final BroadcastReceiver mNoisyAudioReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction()))
+                Song.get().pause();
+        }
+    };
+    private final IntentFilter mNoisyAudioIntent = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -51,8 +63,10 @@ public class PlaySongFragment extends Fragment {
         Song.get().addOnMediaPlayerFinishedListener(song -> {
 //            getActivity().stopService(mForegroundIntent);
             song.start();
+            getContext().unregisterReceiver(mNoisyAudioReceiver);
         });
         Song.get().addOnMediaPlayerStartedListener(song -> {
+            getContext().registerReceiver(mNoisyAudioReceiver, mNoisyAudioIntent);
             getActivity().startService(mForegroundIntent);
         });
 
