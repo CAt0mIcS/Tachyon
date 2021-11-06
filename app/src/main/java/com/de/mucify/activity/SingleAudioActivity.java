@@ -1,4 +1,4 @@
-package com.de.mucify.activities;
+package com.de.mucify.activity;
 
 import android.Manifest;
 import android.content.Intent;
@@ -7,19 +7,22 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.de.mucify.R;
-import com.de.mucify.services.SongPlayForegroundService;
-import com.de.mucify.utils.PermissionManager;
+import com.de.mucify.activity.dispatcher.AudioSelectDispatcher;
+import com.de.mucify.util.MediaLibrary;
+import com.de.mucify.util.PermissionManager;
+import com.de.mucify.util.Utils;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class SingleAudioActivity extends AppCompatActivity {
     private static SingleAudioActivity sInstance = null;
 
-    private Intent mSongPlayForegroundIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sInstance = this;
+
+        Utils.enableDarkMode();
 
         try {
             PermissionManager.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -29,6 +32,7 @@ public class SingleAudioActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.song_loop_playlist_select_activity);
+        MediaLibrary.load(this);
 
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
 
@@ -51,14 +55,12 @@ public class SingleAudioActivity extends AppCompatActivity {
             return true;
         });
 
-        mSongPlayForegroundIntent = new Intent(this, SongPlayForegroundService.class);
-        mSongPlayForegroundIntent.putExtra("SongFilePath", "/data/user/0/com.de.mucify/files/Match In The Rain - Alec Benjamin.mp3");
-        startService(mSongPlayForegroundIntent);
+        new AudioSelectDispatcher(this);
     }
 
-    public static SingleAudioActivity get() {
-        return sInstance;
-    }
+    public static SingleAudioActivity get() { return sInstance; }
+    public boolean isInSongTab() { return ((BottomNavigationView)findViewById(R.id.btmNav)).getSelectedItemId() == R.id.songs; }
+    public boolean isInLoopTab() { return !isInSongTab(); }
 
     @Override
     protected void onDestroy() {

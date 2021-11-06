@@ -4,9 +4,8 @@ import android.content.Context;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.provider.MediaStore;
 
-import com.de.mucify.utils.FileManager;
+import com.de.mucify.util.FileManager;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,14 +30,18 @@ public class Song {
      * @param  path path to either a song audio file or a loop file
      */
     public Song(Context context, File path) {
-        create(context, path);
+        createInternal(context, path);
+    }
+
+    public Song(File path) {
+        createInternal(path);
     }
 
     public Song(Context context, File songFilePath, int startTime, int endTime) {
         mStartTime = startTime;
         mEndTime = endTime;
 
-        create(context, songFilePath);
+        createInternal(context, songFilePath);
     }
 
     public void reset() { mMediaPlayer.reset(); }
@@ -55,11 +58,30 @@ public class Song {
         mMediaPlayer.seekTo(milliseconds, MediaPlayer.SEEK_CLOSEST);
     }
 
+    /**
+     * Needs to be called only after @Song(File path) constructor was used
+     */
+    public void create(Context context) {
+        createInternal(context, mSongFilePath);
+    }
+
+    public boolean isPlaying() { return mMediaPlayer.isPlaying(); }
+    public void pause() { mMediaPlayer.pause(); }
+    public void unpause() { mMediaPlayer.start(); }
     public String getTitle() { return mTitle; }
     public String getArtist() { return mArtist; }
+    public File getSongPath() { return mSongFilePath; }
 
 
-    private void create(Context context, File path) {
+    private void createInternal(Context context, File path) {
+        createInternal(path);
+        mMediaPlayer = MediaPlayer.create(context, Uri.parse(mSongFilePath.getPath()));
+
+        if(mEndTime == 0)
+            mEndTime = mMediaPlayer.getDuration();
+    }
+
+    private void createInternal(File path) {
         if(!path.exists()) {
             // MY_TODO: Add error message for user
             return;
@@ -84,10 +106,6 @@ public class Song {
             return;
             // MY_TODO: Add error message for user
         }
-        mMediaPlayer = MediaPlayer.create(context, Uri.parse(mSongFilePath.getPath()));
-
-        if(mEndTime == 0)
-            mEndTime = mMediaPlayer.getDuration();
 
         mTitle = mSongFilePath.getName().replace(FileManager.getFileExtension(mSongFilePath.getName()), "");
 
@@ -101,6 +119,8 @@ public class Song {
         String title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         if(artist != null)
             mArtist = artist;
+        else
+            mArtist = "Unknown Artist";
         if(title != null)
             mTitle = title;
     }

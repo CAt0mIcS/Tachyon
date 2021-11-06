@@ -1,4 +1,4 @@
-package com.de.mucify.activities;
+package com.de.mucify.activity;
 
 import android.content.Intent;
 import android.os.Bundle;

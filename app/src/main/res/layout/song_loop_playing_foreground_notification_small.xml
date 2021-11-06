@@ -1,0 +1,34 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/notification_txtTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/notification_txtArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"/>
+
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/notification_btnPlayPause"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/audio_playing_notification_background"
+        android:src="@drawable/ic_pause"
+        android:contentDescription="@string/play_pause_audio"/>
+
+</LinearLayout>

@@ -1,4 +1,4 @@
-package com.de.mucify.utils;
+package com.de.mucify.util;
 
 import android.Manifest;
 import android.content.pm.PackageManager;

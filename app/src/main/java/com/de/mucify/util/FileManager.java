@@ -1,4 +1,4 @@
-package com.de.mucify.utils;
+package com.de.mucify.util;
 
 import java.io.File;
 import java.util.Optional;
