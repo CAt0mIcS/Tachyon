@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.de.mucify.R;
+import com.de.mucify.activities.SingleAudioActivity;
 import com.de.mucify.playable.Song;
 
 import java.io.File;
@@ -39,10 +40,11 @@ public class SongPlayForegroundService extends IntentService {
             else
                 startForeground(1, new Notification());
 
-            mSong = new Song(this, intent.getStringExtra("SongFilePath"));
+            mSong = new Song(this, new File(intent.getStringExtra("SongFilePath")));
+            mSong.start();
 
             try {
-                Thread.sleep(10000);
+                Thread.sleep(50000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
