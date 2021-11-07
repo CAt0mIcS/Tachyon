@@ -13,6 +13,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.widget.RemoteViews;
 
+import androidx.annotation.DrawableRes;
+import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.res.ResourcesCompat;
@@ -50,7 +52,7 @@ public class SongPlayForegroundService extends IntentService {
     protected void onHandleIntent(@Nullable Intent intent) {
         synchronized (mMutex) {
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            startCustomForegroundService();
+            startCustomForegroundService(R.drawable.ic_black_pause);
 //            else
 //                startForeground(1, new Notification());
 
@@ -62,10 +64,17 @@ public class SongPlayForegroundService extends IntentService {
                 }
             }, 0);
             AudioController.get().addOnSongPausedListener(song -> {
-                stopForeground(false);  // MY_TODO: Let user swipe notification away
-                synchronized (mMutex) {
-                    mMutex.notify();
-                }
+//                stopForeground(false);  // MY_TODO: Let user swipe notification away
+//                synchronized (mMutex) {
+//                    mMutex.notify();
+//                }
+
+//                stopForeground(true);
+                startCustomForegroundService(R.drawable.ic_black_play);
+            }, 0);
+            AudioController.get().addOnSongUnpausedListener(song -> {
+//                stopForeground(true);
+                startCustomForegroundService(R.drawable.ic_black_pause);
             }, 0);
 
             // Wait until song reset/paused
@@ -85,7 +94,7 @@ public class SongPlayForegroundService extends IntentService {
 
     public static SongPlayForegroundService get() { return sInstance; }
 
-    private void startCustomForegroundService() {
+    private void startCustomForegroundService(@DrawableRes int playPauseIconID) {
         String NOTIFICATION_CHANNEL_ID = "com.mucify";
         String channelName = "Music playing background service";
         NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
@@ -105,23 +114,23 @@ public class SongPlayForegroundService extends IntentService {
         notificationLayout.setTextColor(R.id.notification_txtTitle, ResourcesCompat.getColor(getResources(), R.color.black_text_color, null));
         notificationLayout.setTextColor(R.id.notification_txtArtist, ResourcesCompat.getColor(getResources(), R.color.black_secondary_text_color, null));
 
+        notificationLayout.setImageViewResource(R.id.notification_btnPlayPause, playPauseIconID);
+
         ForegroundNotificationClickReceiver receiver = new ForegroundNotificationClickReceiver();
-        IntentFilter filter = new IntentFilter("com.de.mucify.YES_ACTION");
+        IntentFilter filter = new IntentFilter("com.de.mucify.PLAY_PAUSE");
         registerReceiver(receiver, filter);
 
-        Intent yesReceive = new Intent();
-        yesReceive.setAction("com.de.mucify.YES_ACTION");
-        Bundle yesBundle = new Bundle();
-        yesBundle.putInt("userAnswer", 1);
-        yesReceive.putExtras(yesBundle);
-        PendingIntent pendingIntentYes = PendingIntent.getBroadcast(this, 12345, yesReceive, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent pauseIntent = new Intent("com.de.mucify.PLAY_PAUSE");
+        pauseIntent.putExtra("PlayPause", playPauseIconID);
+        PendingIntent pendingIntentYes = PendingIntent.getBroadcast(this, 12345, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        notificationLayout.setOnClickPendingIntent(R.id.notification_btnPlayPause, pendingIntentYes);
 
         // Apply the layouts to the notification
         Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
                 .setCustomContentView(notificationLayout)
-                .addAction(R.drawable.ic_black_play, "Yes", pendingIntentYes)
+//                .addAction(R.drawable.ic_black_play, "Yes", pendingIntentYes)
 //                .setCustomBigContentView(notificationLayoutExpanded)
                 .setColorized(true)
                 .setColor(ResourcesCompat.getColor(getResources(), R.color.audio_playing_notification_background, null))
