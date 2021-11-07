@@ -58,7 +58,6 @@ public class SongPlayForegroundService extends IntentService {
 
             AudioController.get().addOnSongResetListener(song -> {
                 stopForeground(true);
-                AudioController.get().reset();
                 synchronized (mMutex) {
                     mMutex.notify();
                 }
@@ -118,12 +117,17 @@ public class SongPlayForegroundService extends IntentService {
 
         ForegroundNotificationClickReceiver receiver = new ForegroundNotificationClickReceiver();
         IntentFilter filter = new IntentFilter("com.de.mucify.PLAY_PAUSE");
+        filter.addAction("com.de.mucify.FOREGROUND_CLOSE");
         registerReceiver(receiver, filter);
 
         Intent pauseIntent = new Intent("com.de.mucify.PLAY_PAUSE");
         pauseIntent.putExtra("PlayPause", playPauseIconID);
-        PendingIntent pendingIntentYes = PendingIntent.getBroadcast(this, 12345, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        notificationLayout.setOnClickPendingIntent(R.id.notification_btnPlayPause, pendingIntentYes);
+        PendingIntent pendingIntentPause = PendingIntent.getBroadcast(this, 12345, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        notificationLayout.setOnClickPendingIntent(R.id.notification_btnPlayPause, pendingIntentPause);
+
+        Intent closeIntent = new Intent("com.de.mucify.FOREGROUND_CLOSE");
+        PendingIntent pendingIntentClose = PendingIntent.getBroadcast(this, 12345, closeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        notificationLayout.setOnClickPendingIntent(R.id.notification_btnRemove, pendingIntentClose);
 
         // Apply the layouts to the notification
         Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)

@@ -57,4 +57,9 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
 
         new SingleAudioPlayController(this);
     }
+
+    public int getNavItemID() {
+        BottomNavigationView btmNav = findViewById(R.id.btmNav);
+        return btmNav.getSelectedItemId();
+    }
 }

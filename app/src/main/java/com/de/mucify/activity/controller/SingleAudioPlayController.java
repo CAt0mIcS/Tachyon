@@ -2,6 +2,7 @@ package com.de.mucify.activity.controller;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Handler;
 import android.view.View;
@@ -11,6 +12,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.de.mucify.R;
+import com.de.mucify.activity.MultiAudioActivity;
+import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.util.MediaLibrary;
@@ -109,15 +112,19 @@ public class SingleAudioPlayController {
             }
         });
         mBtnPlayPause.setOnClickListener(v -> {
-            if(AudioController.get().isSongPlaying()) {
+            if(AudioController.get().isSongPlaying())
                 AudioController.get().pauseSong();
-                mBtnPlayPause.setImageResource(R.drawable.ic_black_play);
-            }
-            else {
+            else
                 AudioController.get().unpauseSong();
-                mBtnPlayPause.setImageResource(R.drawable.ic_black_pause);
-            }
         });
+        AudioController.get().addOnSongPausedListener(song -> mBtnPlayPause.setImageResource(R.drawable.ic_black_play), AudioController.INDEX_DONT_CARE);
+        AudioController.get().addOnSongUnpausedListener(song -> mBtnPlayPause.setImageResource(R.drawable.ic_black_pause), AudioController.INDEX_DONT_CARE);
+        AudioController.get().addOnSongResetListener(song -> {
+            Intent i = new Intent(mActivity, SingleAudioActivity.class);
+            i.putExtra("NavItemID", mActivity.getNavItemID());
+            mActivity.startActivity(i);
+            mActivity.finish();
+        }, AudioController.INDEX_DONT_CARE);
         mActivity.findViewById(R.id.pa_btnStartTimeDec).setOnClickListener(v -> {
             AudioController.get().setSongStartTime(AudioController.get().getSongStartTime() - UserSettings.SongIncDecInterval);
             mSbStartTime.setProgress(AudioController.get().getSongStartTime() / UserSettings.AudioUpdateInterval);
