@@ -15,12 +15,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.io.File;
 
 public class SingleAudioPlayActivity extends AppCompatActivity {
+    private Intent mSongPlayForegroundIntent;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.song_loop_play_activity);
 
-
+        mSongPlayForegroundIntent = new Intent(this, SongPlayForegroundService.class);
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
 
         // When switching to this activity, we need to know if we want the Song
@@ -47,13 +49,11 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
         AudioController.get().setSong(new Song(this, new File(getIntent().getStringExtra("AudioFilePath"))));
         AudioController.get().startSong();
         AudioController.get().addOnSongUnpausedListener(song -> {
-            Intent songPlayForegroundIntent = new Intent(this, SongPlayForegroundService.class);
-            startService(songPlayForegroundIntent);
+            startService(mSongPlayForegroundIntent);
         }, AudioController.INDEX_DONT_CARE);
 
-        Intent songPlayForegroundIntent = new Intent(this, SongPlayForegroundService.class);
-        stopService(songPlayForegroundIntent);
-        startService(songPlayForegroundIntent);
+        stopService(mSongPlayForegroundIntent);
+        startService(mSongPlayForegroundIntent);
 
         new SingleAudioPlayController(this);
     }

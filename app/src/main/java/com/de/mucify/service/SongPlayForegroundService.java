@@ -29,9 +29,13 @@ import java.io.File;
 public class SongPlayForegroundService extends IntentService {
     static SongPlayForegroundService sInstance = null;
 
+    private final ForegroundNotificationClickReceiver mNotificationReceiver = new ForegroundNotificationClickReceiver();
+
     private static final int NOTIFY_ID = 1337;
     private static final int FOREGROUND_ID = 1338;
     private static final int SERVICE_ID = 1339;
+
+    private boolean mAlreadyReset = false;
 
     private final Object mMutex = new Object();
 
@@ -50,32 +54,27 @@ public class SongPlayForegroundService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        synchronized (mMutex) {
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+        if(AudioController.get().isSongNull() || mAlreadyReset)
+            return;
+
+        if(!startCustomForegroundService(R.drawable.ic_black_pause))
+            return;
+
+        AudioController.get().addOnSongResetListener(song -> {
+            stopForeground(true);
+            mAlreadyReset = true;
+            synchronized (mMutex) {
+                mMutex.notify();
+            }
+        }, 0);
+        AudioController.get().addOnSongPausedListener(song -> {
+            startCustomForegroundService(R.drawable.ic_black_play);
+        }, 0);
+        AudioController.get().addOnSongUnpausedListener(song -> {
             startCustomForegroundService(R.drawable.ic_black_pause);
-//            else
-//                startForeground(1, new Notification());
+        }, 0);
 
-            AudioController.get().addOnSongResetListener(song -> {
-                stopForeground(true);
-                synchronized (mMutex) {
-                    mMutex.notify();
-                }
-            }, 0);
-            AudioController.get().addOnSongPausedListener(song -> {
-//                stopForeground(false);  // MY_TODO: Let user swipe notification away
-//                synchronized (mMutex) {
-//                    mMutex.notify();
-//                }
-
-//                stopForeground(true);
-                startCustomForegroundService(R.drawable.ic_black_play);
-            }, 0);
-            AudioController.get().addOnSongUnpausedListener(song -> {
-//                stopForeground(true);
-                startCustomForegroundService(R.drawable.ic_black_pause);
-            }, 0);
-
+        synchronized (mMutex) {
             // Wait until song reset/paused
             try {
                 mMutex.wait();
@@ -88,12 +87,13 @@ public class SongPlayForegroundService extends IntentService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(mNotificationReceiver);
         sInstance = null;
     }
 
     public static SongPlayForegroundService get() { return sInstance; }
 
-    private void startCustomForegroundService(@DrawableRes int playPauseIconID) {
+    private boolean startCustomForegroundService(@DrawableRes int playPauseIconID) {
         String NOTIFICATION_CHANNEL_ID = "com.mucify";
         String channelName = "Music playing background service";
         NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
@@ -115,10 +115,10 @@ public class SongPlayForegroundService extends IntentService {
 
         notificationLayout.setImageViewResource(R.id.notification_btnPlayPause, playPauseIconID);
 
-        ForegroundNotificationClickReceiver receiver = new ForegroundNotificationClickReceiver();
+
         IntentFilter filter = new IntentFilter("com.de.mucify.PLAY_PAUSE");
         filter.addAction("com.de.mucify.FOREGROUND_CLOSE");
-        registerReceiver(receiver, filter);
+        registerReceiver(mNotificationReceiver, filter);
 
         Intent pauseIntent = new Intent("com.de.mucify.PLAY_PAUSE");
         pauseIntent.putExtra("PlayPause", playPauseIconID);
@@ -141,5 +141,6 @@ public class SongPlayForegroundService extends IntentService {
                 .build();
 
         startForeground(NOTIFY_ID, notification);
+        return true;
     }
 }
