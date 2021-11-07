@@ -28,7 +28,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/audio_playing_notification_background"
-        android:src="@drawable/ic_pause"
+        android:src="@drawable/ic_white_pause"
         android:contentDescription="@string/play_pause_audio"/>
 
 </LinearLayout>

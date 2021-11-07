@@ -5,4 +5,8 @@
     <string name="playlists">Playlists</string>
     <string name="settings">Settings</string>
     <string name="play_pause_audio">Play/Pause Audio</string>
+    <string name="inc_btn"><![CDATA[>]]></string>
+    <string name="dec_btn"><![CDATA[<]]></string>
+    <string name="play_pause">Play/Pause</string>
+    <string name="save">Save</string>
 </resources>

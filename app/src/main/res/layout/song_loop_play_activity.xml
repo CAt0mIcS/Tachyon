@@ -4,6 +4,217 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <ScrollView
+        android:id="@+id/pa_scrollview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/play_song_fragment">
+
+            <TextView
+                android:id="@+id/pa_lblSongName"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:clickable="false"
+                android:gravity="center"
+                android:textSize="16sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.489"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_btnSave" />
+
+            <Button
+                android:id="@+id/pa_btnSave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/save"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <SeekBar
+                android:id="@+id/pa_sbStartTime"
+                android:layout_width="match_parent"
+                android:layout_height="27dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.4"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_txtInterval" />
+
+            <SeekBar
+                android:id="@+id/pa_sbEndTime"
+                android:layout_width="match_parent"
+                android:layout_height="27dp"
+                android:layout_marginTop="144dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.466"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_sbStartTime" />
+
+            <SeekBar
+                android:id="@+id/pa_sbProgress"
+                android:layout_width="match_parent"
+                android:layout_height="27dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.466"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_lblSongName" />
+
+            <TextView
+                android:id="@+id/pa_lblProgress"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:textSize="12sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_sbProgress" />
+
+            <ImageButton
+                android:id="@+id/pa_btnPause"
+                android:layout_width="69dp"
+                android:layout_height="66dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:background="@null"
+                android:contentDescription="@string/play_pause"
+                android:scaleType="fitCenter"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_lblEndTime"/>
+
+            <Button
+                android:id="@+id/pa_btnStartTimeDec"
+                android:layout_width="69dp"
+                android:layout_height="66dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:text="@string/dec_btn"
+                android:textSize="@dimen/inc_dec_btn_text_size"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_sbStartTime" />
+
+            <Button
+                android:id="@+id/pa_btnEndTimeDec"
+                android:layout_width="69dp"
+                android:layout_height="66dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:text="@string/dec_btn"
+                android:textSize="@dimen/inc_dec_btn_text_size"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_sbEndTime" />
+
+            <Button
+                android:id="@+id/pa_btnStartTimeInc"
+                android:layout_width="69dp"
+                android:layout_height="66dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:text="@string/inc_btn"
+                android:textSize="@dimen/inc_dec_btn_text_size"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_sbStartTime" />
+
+            <Button
+                android:id="@+id/pa_btnEndTimeInc"
+                android:layout_width="69dp"
+                android:layout_height="66dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:text="@string/inc_btn"
+                android:textSize="@dimen/inc_dec_btn_text_size"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_sbEndTime" />
+
+            <EditText
+                android:id="@+id/pa_txtInterval"
+                android:layout_width="190dp"
+                android:layout_height="32dp"
+                android:layout_marginTop="8dp"
+                android:ems="10"
+                android:inputType="number"
+                android:text="500"
+                android:textAlignment="center"
+                android:textSize="11sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.497"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_lblTxtInterval" />
+
+            <TextView
+                android:id="@+id/pa_lblTxtInterval"
+                android:layout_width="231dp"
+                android:layout_height="18dp"
+                android:layout_marginTop="8dp"
+                android:text="Inc/Dec Interval"
+                android:textAlignment="center"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.527"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/pa_lblProgress" />
+
+            <TextView
+                android:id="@+id/pa_lblStartTime"
+                android:layout_marginStart="10dp"
+                android:paddingStart="10dp"
+                android:layout_width="207dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="28dp"
+                android:textAlignment="center"
+                app:layout_constraintEnd_toStartOf="@+id/pa_btnStartTimeInc"
+                app:layout_constraintHorizontal_bias="0.497"
+                app:layout_constraintStart_toEndOf="@+id/pa_btnStartTimeDec"
+                app:layout_constraintTop_toBottomOf="@+id/pa_sbStartTime" />
+
+            <TextView
+                android:id="@+id/pa_lblEndTime"
+                android:layout_marginStart="10dp"
+                android:paddingStart="10dp"
+                android:layout_width="207dp"
+                android:layout_height="20dp"
+                android:layout_marginTop="28dp"
+                android:textAlignment="center"
+                app:layout_constraintEnd_toStartOf="@+id/pa_btnEndTimeInc"
+                app:layout_constraintStart_toEndOf="@+id/pa_btnEndTimeDec"
+                app:layout_constraintTop_toBottomOf="@+id/pa_sbEndTime" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
     <FrameLayout
         android:id="@+id/container"
         android:layout_width="match_parent"

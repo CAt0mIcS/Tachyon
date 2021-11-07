@@ -25,7 +25,11 @@
 
         <activity
             android:name=".activity.MultiAudioActivity"
-            android:exported="true">
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".activity.SingleAudioPlayActivity"
+            android:exported="false">
         </activity>
 
         <service android:name=".service.SongPlayForegroundService"/>

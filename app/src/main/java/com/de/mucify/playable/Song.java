@@ -50,8 +50,7 @@ public class Song {
         mMediaPlayer.start();
         // If MediaPlayer.SEEK_CLOSEST can't seek close enough, the song will "finish" at the beginning.
         // Threshold to prevent this
-        if(mStartTime != 0)
-            seekTo(mStartTime + 20);
+        seekTo(mStartTime + 20);
     }
 
     public void seekTo(int milliseconds) {
@@ -71,6 +70,13 @@ public class Song {
     public String getTitle() { return mTitle; }
     public String getArtist() { return mArtist; }
     public File getSongPath() { return mSongFilePath; }
+    public int getCurrentPosition() { return mMediaPlayer.getCurrentPosition(); }
+    public int getDuration() { return mMediaPlayer.getDuration(); }
+    public void setStartTime(int startTime) { mStartTime = startTime; }
+    public void setEndTime(int endTime) { mEndTime = endTime; }
+    public int getStartTime() { return mStartTime; }
+    public int getEndTime() { return mEndTime; }
+    public MediaPlayer getMediaPlayer() { return mMediaPlayer; }
 
 
     private void createInternal(Context context, File path) {

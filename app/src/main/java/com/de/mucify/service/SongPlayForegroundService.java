@@ -16,6 +16,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.de.mucify.R;
+import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Song;
 
 import java.io.File;
@@ -27,7 +28,6 @@ public class SongPlayForegroundService extends IntentService {
     private static final int FOREGROUND_ID = 1338;
 
     private final Object mMutex = new Object();
-    private Song mSong;
 
     public SongPlayForegroundService() {
         super("com.de.mucify.SongPlayForegroundService");
@@ -39,7 +39,7 @@ public class SongPlayForegroundService extends IntentService {
     }
 
     public void reset() {
-        mSong.reset();
+        AudioController.get().reset();
     }
 
     @Override
@@ -47,14 +47,11 @@ public class SongPlayForegroundService extends IntentService {
         if(intent == null)
             return;
 
-        mSong = new Song(this, new File(intent.getStringExtra("SongFilePath")));
-        mSong.start();
-
         synchronized (mMutex) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                startCustomForegroundService();
-            else
-                startForeground(1, new Notification());
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            startCustomForegroundService();
+//            else
+//                startForeground(1, new Notification());
 
             try {
                 Thread.sleep(50000);
@@ -62,20 +59,26 @@ public class SongPlayForegroundService extends IntentService {
                 e.printStackTrace();
             }
 
-            stopForeground(true);
-            mSong.reset();
+            AudioController.get().addOnSongResetListener(song -> {
+                stopForeground(true);
+                AudioController.get().reset();
+                synchronized (mMutex) {
+                    mMutex.notify();
+                }
+            }, 0);
+            AudioController.get().addOnSongPausedListener(song -> {
+                stopForeground(false);
+                synchronized (mMutex) {
+                    mMutex.notify();
+                }
+            }, 0);
 
-//            Song.get().addOnMediaPlayerStoppedListener(0, song1 -> {
-//                stopForeground(true);
-//                synchronized (mMutex) {
-//                    mMutex.notify();
-//                }
-//            });
-//            try {
-//                mMutex.wait();
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+            // Wait until song reset/paused
+            try {
+                mMutex.wait();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
     }
@@ -84,11 +87,9 @@ public class SongPlayForegroundService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         sInstance = null;
-        mSong.reset();
     }
 
     public static SongPlayForegroundService get() { return sInstance; }
-    public Song getSong() { return mSong; }
 
     private void startCustomForegroundService() {
         String NOTIFICATION_CHANNEL_ID = "com.mucify";
@@ -104,8 +105,8 @@ public class SongPlayForegroundService extends IntentService {
         RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.song_loop_playing_foreground_notification_small);
         RemoteViews notificationLayoutExpanded = new RemoteViews(getPackageName(), R.layout.song_loop_playing_foreground_notification_large);
 
-        notificationLayout.setTextViewText(R.id.notification_txtTitle, mSong.getTitle());
-        notificationLayout.setTextViewText(R.id.notification_txtArtist, mSong.getArtist());
+        notificationLayout.setTextViewText(R.id.notification_txtTitle, AudioController.get().getSongTitle());
+        notificationLayout.setTextViewText(R.id.notification_txtArtist, AudioController.get().getSongArtist());
 
         notificationLayout.setTextColor(R.id.notification_txtTitle, ResourcesCompat.getColor(getResources(), R.color.black_text_color, null));
         notificationLayout.setTextColor(R.id.notification_txtArtist, ResourcesCompat.getColor(getResources(), R.color.black_secondary_text_color, null));

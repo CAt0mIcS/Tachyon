@@ -7,7 +7,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.de.mucify.R;
-import com.de.mucify.activity.dispatcher.AudioSelectDispatcher;
+import com.de.mucify.activity.controller.AudioSelectController;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.PermissionManager;
 import com.de.mucify.util.Utils;
@@ -22,7 +22,7 @@ public class SingleAudioActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         sInstance = this;
 
-        Utils.enableDarkMode();
+//        Utils.enableDarkMode();
 
         try {
             PermissionManager.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -55,7 +55,7 @@ public class SingleAudioActivity extends AppCompatActivity {
             return true;
         });
 
-        new AudioSelectDispatcher(this);
+        new AudioSelectController(this);
     }
 
     public static SingleAudioActivity get() { return sInstance; }
