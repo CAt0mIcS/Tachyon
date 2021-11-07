@@ -5,6 +5,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Handler;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -150,6 +152,22 @@ public class SingleAudioPlayController {
             mSbEndTime.setProgress(AudioController.get().getSongEndTime() / UserSettings.AudioUpdateInterval);
         });
         mActivity.findViewById(R.id.pa_btnSave).setOnClickListener(this::onLoopSave);
+        ((TextView)mActivity.findViewById(R.id.pa_txtInterval)).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+            @Override
+            public void afterTextChanged(Editable s) {
+                UserSettings.SongIncDecInterval = !s.toString().isEmpty() ? Integer.parseInt(s.toString()) : 500;
+                try {
+                    UserSettings.save();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Snackbar.make(mActivity.findViewById(R.id.pa_scrollview), "Unable to save settings: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         // Perform click to update image
         mBtnPlayPause.performClick();
