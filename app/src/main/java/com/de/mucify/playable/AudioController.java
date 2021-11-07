@@ -1,7 +1,5 @@
 package com.de.mucify.playable;
 
-import android.media.MediaPlayer;
-
 import com.de.mucify.util.UserSettings;
 import com.de.mucify.util.Utils;
 
@@ -13,8 +11,7 @@ import java.util.ArrayList;
 public class AudioController {
     private static final AudioController sInstance = new AudioController();
     private Song mSong;
-    private boolean mWasSongPaused = false;
-
+    private boolean mIsSongPaused = false;
 
     public static final int INDEX_DONT_CARE = -1;
 
@@ -31,7 +28,7 @@ public class AudioController {
                     int currentPos = getCurrentSongPosition();
                     if(currentPos >= getSongEndTime() || currentPos < getSongStartTime()) {
                         mSong.start();
-                        if(mWasSongPaused)
+                        if(mIsSongPaused)
                             mSong.pause();
                     }
                 }
@@ -77,14 +74,14 @@ public class AudioController {
 
     public void pauseSong() {
         mSong.pause();
-        mWasSongPaused = true;
+        mIsSongPaused = true;
         for(SongPausedListener listener : mSongPausedListeners)
             listener.onPause(mSong);
     }
 
     public void unpauseSong() {
         mSong.unpause();
-        mWasSongPaused = false;
+        mIsSongPaused = false;
         for(SongUnpausedListener listener : mSongUnpausedListeners)
             listener.onUnpause(mSong);
     }

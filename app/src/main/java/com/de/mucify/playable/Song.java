@@ -87,6 +87,7 @@ public class Song {
     private void createInternal(Context context, File path) {
         createInternal(path);
         mMediaPlayer = MediaPlayer.create(context, Uri.parse(mSongFilePath.getPath()));
+//        mMediaPlayer.setLooping(true);
 
         if(mEndTime == 0)
             mEndTime = mMediaPlayer.getDuration();

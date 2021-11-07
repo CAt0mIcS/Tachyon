@@ -44,20 +44,11 @@ public class SongPlayForegroundService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        if(intent == null)
-            return;
-
         synchronized (mMutex) {
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             startCustomForegroundService();
 //            else
 //                startForeground(1, new Notification());
-
-            try {
-                Thread.sleep(50000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
 
             AudioController.get().addOnSongResetListener(song -> {
                 stopForeground(true);
@@ -67,7 +58,7 @@ public class SongPlayForegroundService extends IntentService {
                 }
             }, 0);
             AudioController.get().addOnSongPausedListener(song -> {
-                stopForeground(false);
+                stopForeground(true);  // MY_TODO: Let user swipe notification away
                 synchronized (mMutex) {
                     mMutex.notify();
                 }
@@ -80,7 +71,6 @@ public class SongPlayForegroundService extends IntentService {
                 e.printStackTrace();
             }
         }
-
     }
 
     @Override
