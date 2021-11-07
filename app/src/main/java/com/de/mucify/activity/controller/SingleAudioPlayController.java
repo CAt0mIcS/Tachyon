@@ -1,14 +1,12 @@
 package com.de.mucify.activity.controller;
 
+import android.media.AudioManager;
 import android.os.Handler;
-import android.view.MenuItem;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.de.mucify.R;
-import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.util.MediaLibrary;
@@ -22,7 +20,9 @@ public class SingleAudioPlayController {
     private final SingleAudioPlayActivity mActivity;
 
     private final Handler mHandler = new Handler();
-    private final SeekBar mProgressSeekBar;
+    private final SeekBar mSbProgress;
+    private final SeekBar mSbStartTime;
+    private final SeekBar mSbEndTime;
     private final TextView mLblProgress;
     private final TextView mLblStartTime;
     private final TextView mLblEndTime;
@@ -33,9 +33,9 @@ public class SingleAudioPlayController {
     public SingleAudioPlayController(SingleAudioPlayActivity activity) {
         mActivity = activity;
 
-        mProgressSeekBar = mActivity.findViewById(R.id.pa_sbProgress);
-        SeekBar startTimeSeekBar = mActivity.findViewById(R.id.pa_sbStartTime);
-        SeekBar endTimeSeekBar = mActivity.findViewById(R.id.pa_sbEndTime);
+        mSbProgress = mActivity.findViewById(R.id.pa_sbProgress);
+        mSbStartTime = mActivity.findViewById(R.id.pa_sbStartTime);
+        mSbEndTime = mActivity.findViewById(R.id.pa_sbEndTime);
         mLblProgress = mActivity.findViewById(R.id.pa_lblProgress);
         mLblStartTime = mActivity.findViewById(R.id.pa_lblStartTime);
         mLblEndTime = mActivity.findViewById(R.id.pa_lblEndTime);
@@ -43,9 +43,9 @@ public class SingleAudioPlayController {
 
 
         int duration = AudioController.get().getSongDuration() / UserSettings.AudioUpdateInterval;
-        mProgressSeekBar.setMax(duration);
-        startTimeSeekBar.setMax(duration);
-        endTimeSeekBar.setMax(duration);
+        mSbProgress.setMax(duration);
+        mSbStartTime.setMax(duration);
+        mSbEndTime.setMax(duration);
 
         ((TextView)mActivity.findViewById(R.id.pa_lblSongName)).setText(AudioController.get().getSongTitle() + " by " + AudioController.get().getSongArtist());
 
@@ -54,14 +54,14 @@ public class SingleAudioPlayController {
             public void run() {
                 if(!AudioController.get().isSongNull() && AudioController.get().isSongPlaying()) {
                     int mCurrentPosition = AudioController.get().getCurrentSongPosition() / UserSettings.AudioUpdateInterval;
-                    mProgressSeekBar.setProgress(mCurrentPosition);
+                    mSbProgress.setProgress(mCurrentPosition);
                     mLblProgress.setText(Utils.millisecondsToReadableString(AudioController.get().getCurrentSongPosition()));
                 }
                 mHandler.postDelayed(this, UserSettings.AudioUpdateInterval);
             }
         });
 
-        mProgressSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mSbProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) { if(!mWasSongPaused) AudioController.get().unpauseSong(); }
             @Override
@@ -77,7 +77,7 @@ public class SingleAudioPlayController {
                 }
             }
         });
-        startTimeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mSbStartTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) { }
             @Override
@@ -90,7 +90,7 @@ public class SingleAudioPlayController {
                 mLblStartTime.setText(Utils.millisecondsToReadableString(progress * UserSettings.AudioUpdateInterval));
             }
         });
-        endTimeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        mSbEndTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) { }
             @Override
@@ -113,6 +113,30 @@ public class SingleAudioPlayController {
                 mBtnPlayPause.setImageResource(R.drawable.ic_black_pause);
             }
         });
+        mActivity.findViewById(R.id.pa_btnStartTimeDec).setOnClickListener(v -> {
+            AudioController.get().setSongStartTime(AudioController.get().getSongStartTime() - UserSettings.SongIncDecInterval);
+            mSbStartTime.setProgress(AudioController.get().getSongStartTime() / UserSettings.AudioUpdateInterval);
+        });
+        mActivity.findViewById(R.id.pa_btnStartTimeInc).setOnClickListener(v -> {
+            AudioController.get().setSongStartTime(AudioController.get().getSongStartTime() + UserSettings.SongIncDecInterval);
+            mSbStartTime.setProgress(AudioController.get().getSongStartTime() / UserSettings.AudioUpdateInterval);
+        });
+        mActivity.findViewById(R.id.pa_btnEndTimeDec).setOnClickListener(v -> {
+            AudioController.get().setSongEndTime(AudioController.get().getSongEndTime() - UserSettings.SongIncDecInterval);
+            mSbEndTime.setProgress(AudioController.get().getSongEndTime() / UserSettings.AudioUpdateInterval);
+        });
+        mActivity.findViewById(R.id.pa_btnEndTimeInc).setOnClickListener(v -> {
+            AudioController.get().setSongEndTime(AudioController.get().getSongEndTime() + UserSettings.SongIncDecInterval);
+            mSbEndTime.setProgress(AudioController.get().getSongEndTime() / UserSettings.AudioUpdateInterval);
+        });
+        mLblStartTime.setOnClickListener(v -> {
+            AudioController.get().setSongStartTime(mSbProgress.getProgress() * UserSettings.AudioUpdateInterval);
+            mSbStartTime.setProgress(AudioController.get().getSongStartTime() / UserSettings.AudioUpdateInterval);
+        });
+        mLblEndTime.setOnClickListener(v -> {
+            AudioController.get().setSongEndTime(mSbProgress.getProgress() * UserSettings.AudioUpdateInterval);
+            mSbEndTime.setProgress(AudioController.get().getSongEndTime() / UserSettings.AudioUpdateInterval);
+        });
         mActivity.findViewById(R.id.pa_btnSave).setOnClickListener(v -> {
             try {
                 AudioController.get().saveAsLoop("LoopName");
@@ -127,8 +151,8 @@ public class SingleAudioPlayController {
         mBtnPlayPause.performClick();
 
         // Call listeners to set label text
-        startTimeSeekBar.setProgress(1);
-        startTimeSeekBar.setProgress(AudioController.get().getSongStartTime() != 0 ? AudioController.get().getSongStartTime() / UserSettings.AudioUpdateInterval : 0);
-        endTimeSeekBar.setProgress(AudioController.get().getSongEndTime() != 0 ? AudioController.get().getSongEndTime() / UserSettings.AudioUpdateInterval : 0);
+        mSbStartTime.setProgress(1);
+        mSbStartTime.setProgress(AudioController.get().getSongStartTime() != 0 ? AudioController.get().getSongStartTime() / UserSettings.AudioUpdateInterval : 0);
+        mSbEndTime.setProgress(AudioController.get().getSongEndTime() != 0 ? AudioController.get().getSongEndTime() / UserSettings.AudioUpdateInterval : 0);
     }
 }

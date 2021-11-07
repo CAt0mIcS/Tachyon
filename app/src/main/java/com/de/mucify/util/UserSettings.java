@@ -6,4 +6,5 @@ public class UserSettings {
      * Runnable updates all labels displaying media player position and seekbars
      */
     public static int AudioUpdateInterval = 100;
+    public static int SongIncDecInterval = 100;
 }
