@@ -6,10 +6,13 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 
 import com.de.mucify.util.FileManager;
+import com.de.mucify.util.MediaLibrary;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class Song {
@@ -77,6 +80,8 @@ public class Song {
     public int getStartTime() { return mStartTime; }
     public int getEndTime() { return mEndTime; }
     public MediaPlayer getMediaPlayer() { return mMediaPlayer; }
+    public File getLoopPath() { return mLoopFilePath; }
+    public String getLoopName() { return mLoopFilePath.getName().replace(MediaLibrary.LoopFileIdentifier, "").replace(MediaLibrary.LoopFileExtension, "").replace("_", " | "); }
 
 
     private void createInternal(Context context, File path) {

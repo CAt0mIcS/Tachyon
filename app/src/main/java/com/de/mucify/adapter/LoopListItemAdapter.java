@@ -18,13 +18,13 @@ import com.de.mucify.playable.Song;
 
 import java.util.ArrayList;
 
-public class SongListItemAdapter extends RecyclerView.Adapter<SongListItemAdapter.SongViewHolder> {
+public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapter.LoopViewHolder> {
 
     private final Context mContext;
     private final ArrayList<Song> mSongs;
-    private final SongViewHolder.OnItemClickListener mOnItemClickListener;
+    private final LoopViewHolder.OnItemClickListener mOnItemClickListener;
 
-    public SongListItemAdapter(Context context, ArrayList<Song> songs, SongViewHolder.OnItemClickListener onItemClickListener) {
+    public LoopListItemAdapter(Context context, ArrayList<Song> songs, LoopViewHolder.OnItemClickListener onItemClickListener) {
         mContext = context;
         mSongs = songs;
         mOnItemClickListener = onItemClickListener;
@@ -32,14 +32,15 @@ public class SongListItemAdapter extends RecyclerView.Adapter<SongListItemAdapte
 
     @NonNull
     @Override
-    public SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new SongViewHolder(LayoutInflater.from(mContext)
-                .inflate(R.layout.recycler_song_item_layout, parent, false), mOnItemClickListener);
+    public LoopViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return new LoopViewHolder(LayoutInflater.from(mContext)
+                .inflate(R.layout.recycler_loop_item_layout, parent, false), mOnItemClickListener);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SongViewHolder holder, int i) {
+    public void onBindViewHolder(@NonNull LoopViewHolder holder, int i) {
         Song song = mSongs.get(i);
+        holder.mName.setText(song.getLoopName());
         holder.mTitle.setText(song.getTitle());
         holder.mArtist.setText(song.getArtist());
     }
@@ -49,19 +50,21 @@ public class SongListItemAdapter extends RecyclerView.Adapter<SongListItemAdapte
         return mSongs.size();
     }
 
-    public static class SongViewHolder extends RecyclerView.ViewHolder {
+    public static class LoopViewHolder extends RecyclerView.ViewHolder {
 
         private final LinearLayout mItemLayout;
+        private final TextView mName;
         private final TextView mTitle;
         private final TextView mArtist;
         private final OnItemClickListener mOnItemClickListener;
 
-        public SongViewHolder(@NonNull View itemView, OnItemClickListener onItemClickListener) {
+        public LoopViewHolder(@NonNull View itemView, OnItemClickListener onItemClickListener) {
             super(itemView);
 
             mOnItemClickListener = onItemClickListener;
 
             mItemLayout = itemView.findViewById(R.id.rvItemLayout);
+            mName = itemView.findViewById(R.id.txtName);
             mTitle = itemView.findViewById(R.id.txtTitle);
             mArtist = itemView.findViewById(R.id.txtArtist);
 
@@ -69,7 +72,7 @@ public class SongListItemAdapter extends RecyclerView.Adapter<SongListItemAdapte
         }
 
         public interface OnItemClickListener {
-            void onItemClicked(SongViewHolder holder);
+            void onItemClicked(LoopViewHolder holder);
         }
     }
 }

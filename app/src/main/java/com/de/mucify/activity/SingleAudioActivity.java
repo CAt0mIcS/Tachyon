@@ -3,6 +3,7 @@ package com.de.mucify.activity;
 import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -16,13 +17,17 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 public class SingleAudioActivity extends AppCompatActivity {
     private static SingleAudioActivity sInstance = null;
 
+    public interface MenuItemChangedListener {
+        void onItemChanged(MenuItem item);
+    }
+    public MenuItemChangedListener menuItemChangedListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sInstance = this;
 
-//        Utils.enableDarkMode();
+        Utils.enableDarkMode();
 
         try {
             PermissionManager.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
@@ -43,6 +48,11 @@ public class SingleAudioActivity extends AppCompatActivity {
 
         btmNav.setOnItemSelectedListener(item -> {
             switch(item.getItemId()) {
+                case R.id.songs:
+                case R.id.loops:
+                    if(menuItemChangedListener != null)
+                        menuItemChangedListener.onItemChanged(item);
+                    break;
                 case R.id.playlists:
                     Intent i = new Intent(SingleAudioActivity.this, MultiAudioActivity.class);
                     startActivity(i);

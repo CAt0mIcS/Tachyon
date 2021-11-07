@@ -5,6 +5,8 @@ import android.content.res.Configuration;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
+import java.io.File;
+
 public class Utils {
     public static String millisecondsToReadableString(int progress) {
         long millis = progress % 1000;
@@ -24,5 +26,9 @@ public class Utils {
 
     public static void enableDarkMode() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+    }
+
+    public static File loopNameToFile(String songName, String loopName) {
+        return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.LoopFileIdentifier + songName + "_" + loopName + MediaLibrary.LoopFileExtension);
     }
 }

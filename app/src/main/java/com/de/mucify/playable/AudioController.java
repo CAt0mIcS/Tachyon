@@ -3,7 +3,11 @@ package com.de.mucify.playable;
 import android.media.MediaPlayer;
 
 import com.de.mucify.util.UserSettings;
+import com.de.mucify.util.Utils;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class AudioController {
@@ -102,6 +106,14 @@ public class AudioController {
             mSongUnpausedListeners.add(i, listener);
         else
             mSongUnpausedListeners.add(listener);
+    }
+
+    public void saveAsLoop(String loopName) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(Utils.loopNameToFile(getSongTitle(), loopName)));
+        writer.write(mSong.getSongPath().getPath() + '\n');
+        writer.write(String.valueOf(getSongStartTime()) + '\n');
+        writer.write(String.valueOf(getSongEndTime()) + '\n');
+        writer.close();
     }
 
     public interface SongResetListener {

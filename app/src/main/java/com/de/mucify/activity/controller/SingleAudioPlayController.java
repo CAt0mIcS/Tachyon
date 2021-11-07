@@ -1,15 +1,21 @@
 package com.de.mucify.activity.controller;
 
 import android.os.Handler;
+import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.de.mucify.R;
+import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
+import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.UserSettings;
 import com.de.mucify.util.Utils;
+
+import java.io.IOException;
 
 
 public class SingleAudioPlayController {
@@ -41,6 +47,7 @@ public class SingleAudioPlayController {
         startTimeSeekBar.setMax(duration);
         endTimeSeekBar.setMax(duration);
 
+        ((TextView)mActivity.findViewById(R.id.pa_lblSongName)).setText(AudioController.get().getSongTitle() + " by " + AudioController.get().getSongArtist());
 
         mActivity.runOnUiThread(new Runnable() {
             @Override
@@ -99,17 +106,19 @@ public class SingleAudioPlayController {
         mBtnPlayPause.setOnClickListener(v -> {
             if(AudioController.get().isSongPlaying()) {
                 AudioController.get().pauseSong();
-                if(Utils.isAndroidNightModeEnabled(mActivity))
-                    mBtnPlayPause.setImageResource(R.drawable.ic_white_play);
-                else
-                    mBtnPlayPause.setImageResource(R.drawable.ic_black_play);
+                mBtnPlayPause.setImageResource(R.drawable.ic_black_play);
             }
             else {
                 AudioController.get().unpauseSong();
-                if(Utils.isAndroidNightModeEnabled(mActivity))
-                    mBtnPlayPause.setImageResource(R.drawable.ic_white_pause);
-                else
-                    mBtnPlayPause.setImageResource(R.drawable.ic_black_pause);
+                mBtnPlayPause.setImageResource(R.drawable.ic_black_pause);
+            }
+        });
+        mActivity.findViewById(R.id.pa_btnSave).setOnClickListener(v -> {
+            try {
+                AudioController.get().saveAsLoop("LoopName");
+                MediaLibrary.loadAvailableLoops();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
 
@@ -119,7 +128,7 @@ public class SingleAudioPlayController {
 
         // Call listeners to set label text
         startTimeSeekBar.setProgress(1);
-        startTimeSeekBar.setProgress(0);
-        endTimeSeekBar.setProgress(AudioController.get().getSongDuration() / UserSettings.AudioUpdateInterval);
+        startTimeSeekBar.setProgress(AudioController.get().getSongStartTime() != 0 ? AudioController.get().getSongStartTime() / UserSettings.AudioUpdateInterval : 0);
+        endTimeSeekBar.setProgress(AudioController.get().getSongEndTime() != 0 ? AudioController.get().getSongEndTime() / UserSettings.AudioUpdateInterval : 0);
     }
 }
