@@ -7,8 +7,10 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
 import android.widget.RemoteViews;
 
 import androidx.annotation.Nullable;
@@ -18,6 +20,7 @@ import androidx.core.content.res.ResourcesCompat;
 import com.de.mucify.R;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Song;
+import com.de.mucify.receiver.ForegroundNotificationClickReceiver;
 
 import java.io.File;
 
@@ -26,6 +29,7 @@ public class SongPlayForegroundService extends IntentService {
 
     private static final int NOTIFY_ID = 1337;
     private static final int FOREGROUND_ID = 1338;
+    private static final int SERVICE_ID = 1339;
 
     private final Object mMutex = new Object();
 
@@ -58,7 +62,7 @@ public class SongPlayForegroundService extends IntentService {
                 }
             }, 0);
             AudioController.get().addOnSongPausedListener(song -> {
-                stopForeground(true);  // MY_TODO: Let user swipe notification away
+                stopForeground(false);  // MY_TODO: Let user swipe notification away
                 synchronized (mMutex) {
                     mMutex.notify();
                 }
@@ -101,20 +105,28 @@ public class SongPlayForegroundService extends IntentService {
         notificationLayout.setTextColor(R.id.notification_txtTitle, ResourcesCompat.getColor(getResources(), R.color.black_text_color, null));
         notificationLayout.setTextColor(R.id.notification_txtArtist, ResourcesCompat.getColor(getResources(), R.color.black_secondary_text_color, null));
 
-        Intent testIntent = new Intent("com.de.mucify.test_intent");
-        PendingIntent pendIntent = PendingIntent.getBroadcast(this, 0, testIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-//        notificationLayout.setOnClickPendingIntent(R.id.notification_btnPlayPause, pendIntent);
+        ForegroundNotificationClickReceiver receiver = new ForegroundNotificationClickReceiver();
+        IntentFilter filter = new IntentFilter("com.de.mucify.YES_ACTION");
+        registerReceiver(receiver, filter);
+
+        Intent yesReceive = new Intent();
+        yesReceive.setAction("com.de.mucify.YES_ACTION");
+        Bundle yesBundle = new Bundle();
+        yesBundle.putInt("userAnswer", 1);
+        yesReceive.putExtras(yesBundle);
+        PendingIntent pendingIntentYes = PendingIntent.getBroadcast(this, 12345, yesReceive, PendingIntent.FLAG_UPDATE_CURRENT);
 
         // Apply the layouts to the notification
         Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
                 .setCustomContentView(notificationLayout)
+                .addAction(R.drawable.ic_black_play, "Yes", pendingIntentYes)
 //                .setCustomBigContentView(notificationLayoutExpanded)
                 .setColorized(true)
                 .setColor(ResourcesCompat.getColor(getResources(), R.color.audio_playing_notification_background, null))
                 .build();
 
-        startForeground(2, notification);
+        startForeground(NOTIFY_ID, notification);
     }
 }

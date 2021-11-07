@@ -25,14 +25,21 @@
 
         <activity
             android:name=".activity.MultiAudioActivity"
-            android:exported="false">
+            android:exported="true">
         </activity>
         <activity
             android:name=".activity.SingleAudioPlayActivity"
-            android:exported="false">
+            android:exported="true">
         </activity>
 
         <service android:name=".service.SongPlayForegroundService"/>
+
+<!--        <receiver android:name=".receiver.ForegroundNotificationClickReceiver"-->
+<!--            android:exported="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="com.de.mucify.YES_ACTION"/>-->
+<!--            </intent-filter>-->
+<!--        </receiver>-->
 
     </application>
 
