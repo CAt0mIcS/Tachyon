@@ -9,4 +9,6 @@
     <string name="dec_btn"><![CDATA[<]]></string>
     <string name="play_pause">Play/Pause</string>
     <string name="save">Save</string>
+    <string name="dialog_loop_name">Loop Name</string>
+    <string name="cancel">Cancel</string>
 </resources>

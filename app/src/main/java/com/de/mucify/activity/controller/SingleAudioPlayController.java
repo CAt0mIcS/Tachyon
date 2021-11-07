@@ -1,7 +1,11 @@
 package com.de.mucify.activity.controller;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.media.AudioManager;
 import android.os.Handler;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -12,6 +16,7 @@ import com.de.mucify.playable.AudioController;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.UserSettings;
 import com.de.mucify.util.Utils;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
 
@@ -137,14 +142,7 @@ public class SingleAudioPlayController {
             AudioController.get().setSongEndTime(mSbProgress.getProgress() * UserSettings.AudioUpdateInterval);
             mSbEndTime.setProgress(AudioController.get().getSongEndTime() / UserSettings.AudioUpdateInterval);
         });
-        mActivity.findViewById(R.id.pa_btnSave).setOnClickListener(v -> {
-            try {
-                AudioController.get().saveAsLoop("LoopName");
-                MediaLibrary.loadAvailableLoops();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        mActivity.findViewById(R.id.pa_btnSave).setOnClickListener(this::onLoopSave);
 
         // Perform click to update image
         mBtnPlayPause.performClick();
@@ -154,5 +152,34 @@ public class SingleAudioPlayController {
         mSbStartTime.setProgress(1);
         mSbStartTime.setProgress(AudioController.get().getSongStartTime() != 0 ? AudioController.get().getSongStartTime() / UserSettings.AudioUpdateInterval : 0);
         mSbEndTime.setProgress(AudioController.get().getSongEndTime() != 0 ? AudioController.get().getSongEndTime() / UserSettings.AudioUpdateInterval : 0);
+    }
+
+    private void onLoopSave(View v) {
+
+        // Use the Builder class for convenient dialog construction
+        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+        builder.setMessage(R.string.dialog_loop_name)
+                .setView(mActivity.getLayoutInflater().inflate(R.layout.save_loop_alert_dialog_layout, null))
+                .setPositiveButton(R.string.save, (dialog, id) -> {
+
+                    String loopName = ((EditText)((AlertDialog)dialog).findViewById(R.id.dialog_txtLoopName)).getText().toString();
+                    if(loopName.isEmpty() || loopName.contains("_")) {
+                        Snackbar.make(v, "Failed to save loop: Name mustn't contain '_' or be empty", Snackbar.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    try {
+                        AudioController.get().saveAsLoop(loopName);
+                    } catch (IOException e) {
+                        Snackbar.make(v, "Failed to save loop: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    MediaLibrary.loadAvailableLoops();
+                })
+                .setNegativeButton(R.string.cancel, (dialog, id) -> {
+                    dialog.dismiss();
+                });
+        builder.create().show();
     }
 }
