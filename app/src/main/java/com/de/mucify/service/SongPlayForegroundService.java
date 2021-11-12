@@ -129,13 +129,16 @@ public class SongPlayForegroundService extends IntentService {
         PendingIntent pendingIntentClose = PendingIntent.getBroadcast(this, 12345, closeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         notificationLayout.setOnClickPendingIntent(R.id.notification_btnRemove, pendingIntentClose);
 
+//        Intent notificationClickIntent = new Intent("com.de.mucify.NOTIFICATION_CLICK");
+//        PendingIntent notificationClickPendingIntent = PendingIntent.getBroadcast(this, 12345, notificationClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         // Apply the layouts to the notification
         Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
                 .setCustomContentView(notificationLayout)
-//                .addAction(R.drawable.ic_black_play, "Yes", pendingIntentYes)
 //                .setCustomBigContentView(notificationLayoutExpanded)
+//                .setContentIntent(notificationClickPendingIntent)
                 .setColorized(true)
                 .setColor(ResourcesCompat.getColor(getResources(), R.color.audio_playing_notification_background, null))
                 .build();

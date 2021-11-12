@@ -7,6 +7,7 @@ import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
 import com.de.mucify.activity.controller.AudioSelectController;
 import com.de.mucify.util.MediaLibrary;
@@ -37,7 +38,9 @@ public class SingleAudioActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.song_loop_playlist_select_activity);
-        MediaLibrary.load(this);
+
+        if(!getIntent().hasExtra("NavItemID"))
+            MediaLibrary.load(this);
 
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
 
@@ -76,5 +79,17 @@ public class SingleAudioActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         sInstance = null;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MucifyApplication.activityResumed(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MucifyApplication.activityPaused(this);
     }
 }

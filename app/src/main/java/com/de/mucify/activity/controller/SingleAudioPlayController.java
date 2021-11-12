@@ -13,6 +13,7 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
 import com.de.mucify.activity.MultiAudioActivity;
 import com.de.mucify.activity.SingleAudioActivity;
@@ -122,11 +123,21 @@ public class SingleAudioPlayController {
         AudioController.get().addOnSongPausedListener(song -> mBtnPlayPause.setImageResource(R.drawable.ic_black_play), AudioController.INDEX_DONT_CARE);
         AudioController.get().addOnSongUnpausedListener(song -> mBtnPlayPause.setImageResource(R.drawable.ic_black_pause), AudioController.INDEX_DONT_CARE);
         AudioController.get().addOnSongResetListener(song -> {
-            Intent i = new Intent(mActivity, SingleAudioActivity.class);
-            i.putExtra("NavItemID", mActivity.getNavItemID());
-            mActivity.startActivity(i);
-            mActivity.finish();
+            if(MucifyApplication.isActivityVisible()) {
+                Intent i = new Intent(mActivity, SingleAudioActivity.class);
+                i.putExtra("NavItemID", mActivity.getNavItemID());
+                mActivity.startActivity(i);
+                mActivity.finish();
+            }
         }, AudioController.INDEX_DONT_CARE);
+        MucifyApplication.addOnActivityVisibilityChangedListener((act, becameVisible) -> {
+            if(becameVisible && AudioController.get().isSongNull() && act instanceof SingleAudioPlayActivity) {
+                Intent i = new Intent(mActivity, SingleAudioActivity.class);
+                i.putExtra("NavItemID", mActivity.getNavItemID());
+                mActivity.startActivity(i);
+                mActivity.finish();
+            }
+        });
         mActivity.findViewById(R.id.pa_btnStartTimeDec).setOnClickListener(v -> {
             AudioController.get().setSongStartTime(AudioController.get().getSongStartTime() - UserSettings.SongIncDecInterval);
             mSbStartTime.setProgress(AudioController.get().getSongStartTime() / UserSettings.AudioUpdateInterval);

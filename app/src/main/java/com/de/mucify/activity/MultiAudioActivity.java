@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -30,6 +31,18 @@ public class MultiAudioActivity extends AppCompatActivity {
 
             return true;
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MucifyApplication.activityResumed(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MucifyApplication.activityPaused(this);
     }
 
 }

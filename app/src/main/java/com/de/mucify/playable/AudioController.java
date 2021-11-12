@@ -48,6 +48,7 @@ public class AudioController {
             for(SongResetListener listener : mSongResetListeners)
                 listener.onReset(mSong);
             mSong.reset();
+            mSong = null;
         }
     }
 

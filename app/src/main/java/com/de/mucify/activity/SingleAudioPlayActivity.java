@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
 import com.de.mucify.activity.controller.SingleAudioPlayController;
 import com.de.mucify.playable.AudioController;
@@ -61,5 +62,17 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
     public int getNavItemID() {
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
         return btmNav.getSelectedItemId();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        MucifyApplication.activityResumed(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        MucifyApplication.activityPaused(this);
     }
 }

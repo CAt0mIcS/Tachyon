@@ -20,6 +20,9 @@ public class ForegroundNotificationClickReceiver extends BroadcastReceiver {
         else if(intent.getAction().equals("com.de.mucify.FOREGROUND_CLOSE")) {
             AudioController.get().reset();
         }
+//        else if (intent.getAction().equals("com.de.mucify.NOTIFICATION_CLICK")) {
+//            AudioController.get().pauseSong();
+//        }
 
     }
 }
