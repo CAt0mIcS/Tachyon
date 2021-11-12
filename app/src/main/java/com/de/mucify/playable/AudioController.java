@@ -1,6 +1,9 @@
 package com.de.mucify.playable;
 
+import android.content.Context;
 import android.content.IntentFilter;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 
 import com.de.mucify.activity.SingleAudioPlayActivity;
@@ -22,6 +25,16 @@ public class AudioController {
 
     private final IntentFilter mNoisyAudioIntent = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final BecomingNoisyReceiver mNoisyAudioReceiver = new BecomingNoisyReceiver();
+
+    private final AudioFocusRequest mAudioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setAudioAttributes(new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build())
+            .setAcceptsDelayedFocusGain(false)
+            .setOnAudioFocusChangeListener(this::onAudioFocusChange)
+            .build();
+    private boolean mPlaybackAuthorized = false;
 
     private final ArrayList<SongResetListener> mSongResetListeners = new ArrayList<>();
     private final ArrayList<SongPausedListener> mSongPausedListeners = new ArrayList<>();
@@ -51,8 +64,10 @@ public class AudioController {
         }).start();
 
         addOnSongResetListener(song -> unregisterNoisy(), INDEX_DONT_CARE);
-        addOnSongPausedListener(song -> unregisterNoisy(), INDEX_DONT_CARE);
-        addOnSongUnpausedListener(song -> registerNoisy(), INDEX_DONT_CARE);
+        addOnSongUnpausedListener(song -> {
+            if(!mPlaybackAuthorized && !requestAudioFocus())
+                pauseSong();
+        }, INDEX_DONT_CARE);
     }
 
     public void reset() {
@@ -61,6 +76,9 @@ public class AudioController {
                 listener.onReset(mSong);
             mSong.reset();
             mSong = null;
+
+            getAudioManager().abandonAudioFocusRequest(mAudioFocusRequest);
+            mPlaybackAuthorized = false;
         }
     }
 
@@ -70,7 +88,14 @@ public class AudioController {
         mSong = song;
     }
 
-    synchronized public void startSong() { mSong.start(); registerNoisy(); }
+    synchronized public void startSong() {
+        if(requestAudioFocus()) {
+            mSong.start();
+            registerNoisy();
+        }
+        else
+            pauseSong();
+    }
     public boolean isSongPlaying() {
         return mSong.isPlaying();
     }
@@ -141,8 +166,44 @@ public class AudioController {
         SingleAudioPlayActivity.get().registerReceiver(mNoisyAudioReceiver, mNoisyAudioIntent);
     }
 
+    private boolean requestAudioFocus() {
+        int result = getAudioManager().requestAudioFocus(mAudioFocusRequest);
+
+        switch(result) {
+            case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
+            case AudioManager.AUDIOFOCUS_REQUEST_DELAYED:
+                mPlaybackAuthorized = false;
+                break;
+            case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
+                mPlaybackAuthorized = true;
+                break;
+        }
+
+        return mPlaybackAuthorized;
+    }
+
+    private void onAudioFocusChange(int focusChange) {
+        switch (focusChange) {
+            case AudioManager.AUDIOFOCUS_GAIN:
+                mPlaybackAuthorized = true;
+                unpauseSong();
+                mSong.setVolume(1.0f, 1.0f);
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS:  // focus loss for long time: should free resources
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: // focus loss for short time
+                mPlaybackAuthorized = false;
+                pauseSong();
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                mSong.setVolume(0.1f, 0.1f);
+                break;
+        }
+    }
+
     private void unregisterNoisy() {
         SingleAudioPlayActivity.get().unregisterReceiver(mNoisyAudioReceiver);
     }
+
+    private AudioManager getAudioManager() { return (AudioManager)SingleAudioPlayActivity.get().getSystemService(Context.AUDIO_SERVICE); }
 
 }

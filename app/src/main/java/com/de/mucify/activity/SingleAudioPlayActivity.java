@@ -83,6 +83,7 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         MucifyApplication.activityResumed(this);
+        sInstance = this;
     }
 
     @Override
