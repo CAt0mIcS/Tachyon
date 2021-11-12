@@ -1,5 +1,10 @@
 package com.de.mucify.playable;
 
+import android.content.IntentFilter;
+import android.media.AudioManager;
+
+import com.de.mucify.activity.SingleAudioPlayActivity;
+import com.de.mucify.receiver.BecomingNoisyReceiver;
 import com.de.mucify.util.UserSettings;
 import com.de.mucify.util.Utils;
 
@@ -14,6 +19,9 @@ public class AudioController {
     private boolean mIsSongPaused = false;
 
     public static final int INDEX_DONT_CARE = -1;
+
+    private final IntentFilter mNoisyAudioIntent = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+    private final BecomingNoisyReceiver mNoisyAudioReceiver = new BecomingNoisyReceiver();
 
     private final ArrayList<SongResetListener> mSongResetListeners = new ArrayList<>();
     private final ArrayList<SongPausedListener> mSongPausedListeners = new ArrayList<>();
@@ -41,6 +49,10 @@ public class AudioController {
                 }
             }
         }).start();
+
+        addOnSongResetListener(song -> unregisterNoisy(), INDEX_DONT_CARE);
+        addOnSongPausedListener(song -> unregisterNoisy(), INDEX_DONT_CARE);
+        addOnSongUnpausedListener(song -> registerNoisy(), INDEX_DONT_CARE);
     }
 
     public void reset() {
@@ -58,7 +70,7 @@ public class AudioController {
         mSong = song;
     }
 
-    synchronized public void startSong() { mSong.start(); }
+    synchronized public void startSong() { mSong.start(); registerNoisy(); }
     public boolean isSongPlaying() {
         return mSong.isPlaying();
     }
@@ -122,6 +134,15 @@ public class AudioController {
     }
     public interface SongUnpausedListener {
         void onUnpause(Song song);
+    }
+
+
+    private void registerNoisy() {
+        SingleAudioPlayActivity.get().registerReceiver(mNoisyAudioReceiver, mNoisyAudioIntent);
+    }
+
+    private void unregisterNoisy() {
+        SingleAudioPlayActivity.get().unregisterReceiver(mNoisyAudioReceiver);
     }
 
 }

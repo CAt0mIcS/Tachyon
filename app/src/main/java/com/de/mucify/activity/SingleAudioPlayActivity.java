@@ -1,6 +1,8 @@
 package com.de.mucify.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,9 +20,13 @@ import java.io.File;
 public class SingleAudioPlayActivity extends AppCompatActivity {
     private Intent mSongPlayForegroundIntent;
 
+    private static SingleAudioPlayActivity sInstance = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        sInstance = this;
+
         setContentView(R.layout.song_loop_play_activity);
 
         mSongPlayForegroundIntent = new Intent(this, SongPlayForegroundService.class);
@@ -56,12 +62,21 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
         stopService(mSongPlayForegroundIntent);
         startService(mSongPlayForegroundIntent);
 
+        // MY_TODO: Test if needs to be called in onResume?
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
         new SingleAudioPlayController(this);
     }
 
     public int getNavItemID() {
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
         return btmNav.getSelectedItemId();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sInstance = null;
     }
 
     @Override
@@ -74,5 +89,9 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         MucifyApplication.activityPaused(this);
+    }
+
+    public static SingleAudioPlayActivity get() {
+        return sInstance;
     }
 }
