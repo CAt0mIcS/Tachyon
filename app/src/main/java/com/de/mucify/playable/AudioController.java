@@ -107,7 +107,7 @@ public class AudioController {
     }
 
     public void saveAsLoop(String loopName) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(Utils.loopNameToFile(getSongTitle(), loopName)));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(Utils.loopNameToFile(loopName)));
         writer.write(mSong.getSongPath().getPath() + '\n');
         writer.write(String.valueOf(getSongStartTime()) + '\n');
         writer.write(String.valueOf(getSongEndTime()) + '\n');

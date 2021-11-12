@@ -28,7 +28,7 @@ public class Utils {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
     }
 
-    public static File loopNameToFile(String songName, String loopName) {
-        return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.LoopFileIdentifier + songName + "_" + loopName + MediaLibrary.LoopFileExtension);
+    public static File loopNameToFile(String loopName) {
+        return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.LoopFileIdentifier + loopName + MediaLibrary.LoopFileExtension);
     }
 }

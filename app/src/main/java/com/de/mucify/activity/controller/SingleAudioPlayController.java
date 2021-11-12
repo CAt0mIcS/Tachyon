@@ -58,7 +58,7 @@ public class SingleAudioPlayController {
         mSbStartTime.setMax(duration);
         mSbEndTime.setMax(duration);
 
-        ((TextView)mActivity.findViewById(R.id.pa_lblSongName)).setText(AudioController.get().getSongTitle() + " by " + AudioController.get().getSongArtist());
+        ((TextView)mActivity.findViewById(R.id.pa_lblSongName)).setText(AudioController.get().getSongTitle() + " " + mActivity.getString(R.string.by) + " " + AudioController.get().getSongArtist());
 
         mActivity.runOnUiThread(new Runnable() {
             @Override

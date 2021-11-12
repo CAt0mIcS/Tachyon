@@ -79,7 +79,6 @@ public class Song {
     public void setEndTime(int endTime) { mEndTime = endTime; }
     public int getStartTime() { return mStartTime; }
     public int getEndTime() { return mEndTime; }
-    public MediaPlayer getMediaPlayer() { return mMediaPlayer; }
     public File getLoopPath() { return mLoopFilePath; }
     public String getLoopName() { return mLoopFilePath.getName().replace(MediaLibrary.LoopFileIdentifier, "").replace(MediaLibrary.LoopFileExtension, "").replace("_", " | "); }
 
