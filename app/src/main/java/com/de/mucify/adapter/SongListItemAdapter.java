@@ -22,24 +22,24 @@ public class SongListItemAdapter extends RecyclerView.Adapter<SongListItemAdapte
 
     private final Context mContext;
     private final ArrayList<Song> mSongs;
-    private final SongViewHolder.OnItemClickListener mOnItemClickListener;
+    private SongViewHolder.OnItemClickListener mOnItemClickListener;
 
-    public SongListItemAdapter(Context context, ArrayList<Song> songs, SongViewHolder.OnItemClickListener onItemClickListener) {
+    public SongListItemAdapter(Context context, ArrayList<Song> songs) {
         mContext = context;
         mSongs = songs;
-        mOnItemClickListener = onItemClickListener;
     }
 
     @NonNull
     @Override
     public SongViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new SongViewHolder(LayoutInflater.from(mContext)
-                .inflate(R.layout.recycler_song_item_layout, parent, false), mOnItemClickListener);
+                .inflate(R.layout.recycler_song_item_layout, parent, false));
     }
 
     @Override
     public void onBindViewHolder(@NonNull SongViewHolder holder, int i) {
         Song song = mSongs.get(i);
+        holder.mOnItemClickListener = mOnItemClickListener;
         holder.mTitle.setText(song.getTitle());
         holder.mArtist.setText(song.getArtist());
     }
@@ -49,23 +49,28 @@ public class SongListItemAdapter extends RecyclerView.Adapter<SongListItemAdapte
         return mSongs.size();
     }
 
+    public void setOnItemClicked(SongViewHolder.OnItemClickListener listener) {
+        mOnItemClickListener = listener;
+    }
+
     public static class SongViewHolder extends RecyclerView.ViewHolder {
 
         private final LinearLayout mItemLayout;
         private final TextView mTitle;
         private final TextView mArtist;
-        private final OnItemClickListener mOnItemClickListener;
+        private OnItemClickListener mOnItemClickListener;
 
-        public SongViewHolder(@NonNull View itemView, OnItemClickListener onItemClickListener) {
+        public SongViewHolder(@NonNull View itemView) {
             super(itemView);
-
-            mOnItemClickListener = onItemClickListener;
 
             mItemLayout = itemView.findViewById(R.id.rvItemLayout);
             mTitle = itemView.findViewById(R.id.txtTitle);
             mArtist = itemView.findViewById(R.id.txtArtist);
 
-            mItemLayout.setOnClickListener(v -> mOnItemClickListener.onItemClicked(this));
+            mItemLayout.setOnClickListener(v -> {
+                if(mOnItemClickListener != null)
+                    mOnItemClickListener.onItemClicked(this);
+            });
         }
 
         public interface OnItemClickListener {

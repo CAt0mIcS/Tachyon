@@ -1,7 +1,9 @@
 package com.de.mucify.activity.controller;
 
+import android.app.AlertDialog;
 import android.content.Intent;
-import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -11,9 +13,14 @@ import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.adapter.LoopListItemAdapter;
 import com.de.mucify.adapter.SongListItemAdapter;
+import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Song;
 import com.de.mucify.util.MediaLibrary;
+import com.de.mucify.util.Utils;
+import com.google.android.material.snackbar.Snackbar;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class AudioSelectController {
@@ -52,7 +59,11 @@ public class AudioSelectController {
         RecyclerView rv = mActivity.findViewById(R.id.rvFiles);
         rv.setLayoutManager(new LinearLayoutManager(mActivity));
         mListItems = MediaLibrary.AvailableSongs;
-        rv.setAdapter(new SongListItemAdapter(mActivity, mListItems, this::onFileClicked));
+
+        SongListItemAdapter adapter = new SongListItemAdapter(mActivity, mListItems);
+        adapter.setOnItemClicked(this::onFileClicked);
+        rv.setAdapter(adapter);
+
         rv.getAdapter().notifyDataSetChanged();
     }
 
@@ -60,7 +71,12 @@ public class AudioSelectController {
         RecyclerView rv = mActivity.findViewById(R.id.rvFiles);
         rv.setLayoutManager(new LinearLayoutManager(mActivity));
         mListItems = MediaLibrary.AvailableLoops;
-        rv.setAdapter(new LoopListItemAdapter(mActivity, mListItems, this::onFileClicked));
+
+        LoopListItemAdapter adapter = new LoopListItemAdapter(mActivity, mListItems);
+        adapter.setOnItemClicked(this::onFileClicked);
+        adapter.setOnItemLongClicked(this::onLoopLongClicked);
+        rv.setAdapter(adapter);
+
         rv.getAdapter().notifyDataSetChanged();
     }
 
@@ -74,5 +90,23 @@ public class AudioSelectController {
         i.putExtra("NavItemID", mActivity.isInSongTab() ? R.id.songs : R.id.loops);
         mActivity.startActivity(i);
         mActivity.finish();
+    }
+
+
+    private void onLoopLongClicked(RecyclerView.ViewHolder v) {
+
+        LoopListItemAdapter.LoopViewHolder holder = (LoopListItemAdapter.LoopViewHolder)v;
+
+        // Use the Builder class for convenient dialog construction
+        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
+        builder.setMessage(mActivity.getString(R.string.delete_loop) + " \"" + holder.getName() + "\"?")
+                .setPositiveButton(mActivity.getString(R.string.yes), (dialog, id) -> {
+                    File loopFile = Utils.loopNameToFile(holder.getName());
+                    if(!loopFile.delete())
+                        Toast.makeText(mActivity,
+                                "Failed to delete loop: " + holder.getName(), Toast.LENGTH_LONG).show();
+                })
+                .setNegativeButton(R.string.cancel, (dialog, id) -> dialog.dismiss());
+        builder.create().show();
     }
 }

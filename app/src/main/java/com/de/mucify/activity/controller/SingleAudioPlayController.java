@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
@@ -200,22 +201,20 @@ public class SingleAudioPlayController {
 
                     String loopName = ((EditText)((AlertDialog)dialog).findViewById(R.id.dialog_txtLoopName)).getText().toString();
                     if(loopName.isEmpty() || loopName.contains("_")) {
-                        Snackbar.make(v, "Failed to save loop: Name mustn't contain '_' or be empty", Snackbar.LENGTH_SHORT).show();
+                        Toast.makeText(mActivity, "Failed to save loop: Name mustn't contain '_' or be empty", Toast.LENGTH_LONG).show();
                         return;
                     }
 
                     try {
                         AudioController.get().saveAsLoop(loopName);
                     } catch (IOException e) {
-                        Snackbar.make(v, "Failed to save loop: " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                        Toast.makeText(mActivity, "Failed to save loop: " + e.getMessage(), Toast.LENGTH_LONG).show();
                         return;
                     }
 
                     MediaLibrary.loadAvailableLoops();
                 })
-                .setNegativeButton(R.string.cancel, (dialog, id) -> {
-                    dialog.dismiss();
-                });
+                .setNegativeButton(R.string.cancel, (dialog, id) -> dialog.dismiss());
         builder.create().show();
     }
 }
