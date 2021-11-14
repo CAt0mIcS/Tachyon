@@ -126,7 +126,6 @@ public class SongPlayForegroundService extends IntentService {
 
         notificationLayout.setImageViewResource(R.id.notification_btnPlayPause, playPauseIconID);
 
-
         IntentFilter filter = new IntentFilter("com.de.mucify.PLAY_PAUSE");
         filter.addAction("com.de.mucify.FOREGROUND_CLOSE");
         registerReceiver(mNotificationReceiver, filter);
@@ -142,7 +141,6 @@ public class SongPlayForegroundService extends IntentService {
 
         Intent clickIntent = new Intent(this, SingleAudioPlayActivity.class);
         clickIntent.putExtra("PreserveSong", true);
-        clickIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         PendingIntent pendingClickIntent = PendingIntent.getActivity(this, 0, clickIntent, 0);
 
 //        Intent notificationClickIntent = new Intent("com.de.mucify.NOTIFICATION_CLICK");
