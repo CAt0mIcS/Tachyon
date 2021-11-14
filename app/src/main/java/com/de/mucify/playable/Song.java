@@ -21,7 +21,6 @@ public class Song {
     private String mTitle;
     private String mArtist;
 
-    private Context mContext;
     private MediaPlayer mMediaPlayer;
 
     private int mStartTime;

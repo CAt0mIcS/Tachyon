@@ -40,18 +40,6 @@ public class SingleAudioPlayController {
     private final TextView mLblEndTime;
     private final ImageButton mBtnPlayPause;
 
-    private final PhoneStateListener mPhoneStateListener = new PhoneStateListener() {
-        @Override
-        public void onCallStateChanged(int state, String incomingNumber) {
-            // Incoming call || A call is dialing, active or on hold
-            if (state == TelephonyManager.CALL_STATE_RINGING || state == TelephonyManager.CALL_STATE_OFFHOOK) {
-                if(!AudioController.get().isSongNull())
-                    AudioController.get().pauseSong();
-            }
-            super.onCallStateChanged(state, incomingNumber);
-        }
-    };
-
     private boolean mWasSongPaused = false;
 
     public SingleAudioPlayController(SingleAudioPlayActivity activity) {
@@ -59,7 +47,18 @@ public class SingleAudioPlayController {
 
         TelephonyManager mgr = (TelephonyManager)mActivity.getSystemService(Context.TELEPHONY_SERVICE);
         if(mgr != null) {
-            mgr.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+            // Incoming call || A call is dialing, active or on hold
+            mgr.listen(new PhoneStateListener() {
+                @Override
+                public void onCallStateChanged(int state, String incomingNumber) {
+                    // Incoming call || A call is dialing, active or on hold
+                    if (state == TelephonyManager.CALL_STATE_RINGING || state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                        if (!AudioController.get().isSongNull())
+                            AudioController.get().pauseSong();
+                    }
+                    super.onCallStateChanged(state, incomingNumber);
+                }
+            }, PhoneStateListener.LISTEN_CALL_STATE);
         }
 
         mSbProgress = mActivity.findViewById(R.id.pa_sbProgress);

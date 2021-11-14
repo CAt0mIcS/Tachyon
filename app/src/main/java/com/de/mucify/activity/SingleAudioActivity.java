@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
-import com.de.mucify.activity.controller.AudioSelectController;
+import com.de.mucify.activity.controller.SingleAudioSelectController;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.PermissionManager;
 import com.de.mucify.util.Utils;
@@ -68,7 +68,7 @@ public class SingleAudioActivity extends AppCompatActivity {
             return true;
         });
 
-        new AudioSelectController(this);
+        new SingleAudioSelectController(this);
     }
 
     public static SingleAudioActivity get() { return sInstance; }

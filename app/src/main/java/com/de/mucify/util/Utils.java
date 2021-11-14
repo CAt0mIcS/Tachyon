@@ -17,7 +17,7 @@ public class Utils {
         return String.format("%02d:%02d:%02d.%d", hour, minute, second, millis);
     }
 
-    public static boolean isAndroidNightModeEnabled(Context context) {
+    public static boolean isDarkModeEnabled(Context context) {
         int nightModeFlags =
                 context.getResources().getConfiguration().uiMode &
                         Configuration.UI_MODE_NIGHT_MASK;
@@ -26,9 +26,5 @@ public class Utils {
 
     public static void enableDarkMode() {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-    }
-
-    public static File loopNameToFile(String loopName) {
-        return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.LoopFileIdentifier + loopName + MediaLibrary.LoopFileExtension);
     }
 }

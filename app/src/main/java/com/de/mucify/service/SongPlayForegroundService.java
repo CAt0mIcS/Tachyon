@@ -95,7 +95,9 @@ public class SongPlayForegroundService extends IntentService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mNotificationReceiver);
+        try {
+            unregisterReceiver(mNotificationReceiver);
+        } catch(IllegalArgumentException ignored) {}
         sInstance = null;
     }
 

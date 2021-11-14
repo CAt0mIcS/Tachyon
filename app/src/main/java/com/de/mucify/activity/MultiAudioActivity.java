@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
+import com.de.mucify.activity.controller.MultiAudioSelectController;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MultiAudioActivity extends AppCompatActivity {
@@ -31,6 +32,8 @@ public class MultiAudioActivity extends AppCompatActivity {
 
             return true;
         });
+
+        new MultiAudioSelectController(this);
     }
 
     @Override

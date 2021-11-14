@@ -5,6 +5,7 @@ import android.media.AudioManager;
 
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.receiver.BecomingNoisyReceiver;
+import com.de.mucify.util.FileManager;
 import com.de.mucify.util.UserSettings;
 import com.de.mucify.util.Utils;
 
@@ -25,6 +26,7 @@ public class AudioController {
     private final ArrayList<SongPausedListener> mSongPausedListeners = new ArrayList<>();
     private final ArrayList<SongUnpausedListener> mSongUnpausedListeners = new ArrayList<>();
     private final ArrayList<SongStartedListener> mSongStartedListeners = new ArrayList<>();
+    private final ArrayList<SongFinishedListener> mSongFinishedListeners = new ArrayList<>();
 
     public static AudioController get() { return sInstance; }
 
@@ -34,6 +36,10 @@ public class AudioController {
                 if(!isSongNull()) {
                     int currentPos = getCurrentSongPosition();
                     if(currentPos >= getSongEndTime() || currentPos < getSongStartTime()) {
+                        for(SongFinishedListener listener : mSongFinishedListeners) {
+                            listener.onFinished(mSong);
+                        }
+
                         mSong.start();
                         if(mIsSongPaused)
                             mSong.pause();
@@ -65,15 +71,17 @@ public class AudioController {
         mSong = song;
     }
 
+    public void setSongUndestroyed(Song song) {
+        mSong = song;
+    }
+
     synchronized public void startSong() {
         mSong.start();
         for(SongStartedListener listener : mSongStartedListeners)
             listener.onStarted(mSong);
     }
 
-    public boolean isSongPlaying() {
-        return mSong.isPlaying();
-    }
+    public boolean isSongPlaying() { return mSong.isPlaying(); }
     public int getCurrentSongPosition() { return mSong.getCurrentPosition(); }
     public boolean isSongNull() { return mSong == null; }
     public int getSongDuration() { return mSong.getDuration(); }
@@ -117,9 +125,15 @@ public class AudioController {
         else
             mSongUnpausedListeners.add(listener);
     }
+    public void addOnSongFinishedListener(SongFinishedListener listener, int i) {
+        if(i != INDEX_DONT_CARE)
+            mSongFinishedListeners.add(i, listener);
+        else
+            mSongFinishedListeners.add(listener);
+    }
 
     public void saveAsLoop(String loopName) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(Utils.loopNameToFile(loopName)));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(FileManager.loopNameToFile(loopName)));
         writer.write(mSong.getSongPath().getPath() + '\n');
         writer.write(String.valueOf(getSongStartTime()) + '\n');
         writer.write(String.valueOf(getSongEndTime()) + '\n');
@@ -136,7 +150,9 @@ public class AudioController {
     public interface SongStartedListener {
         void onStarted(Song song);
     }
-
+    public interface SongFinishedListener {
+        void onFinished(Song song);
+    }
     public interface SongResetListener {
         void onReset(Song song);
     }

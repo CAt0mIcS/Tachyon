@@ -1,5 +1,7 @@
 package com.de.mucify.util;
 
+import android.provider.MediaStore;
+
 import java.io.File;
 import java.util.Optional;
 
@@ -22,5 +24,13 @@ public class FileManager {
 
     public static boolean isPlaylistFile(File path) {
         return path.isFile() && getFileExtension(path.getName()).equals(MediaLibrary.PlaylistFileExtension) && path.getName().indexOf(MediaLibrary.PlaylistFileIdentifier) == 0;
+    }
+
+    public static String playlistNameFromFile(File path) {
+        return path.getName().replace(MediaLibrary.PlaylistFileExtension, "").replace(MediaLibrary.PlaylistFileIdentifier, "");
+    }
+
+    public static File loopNameToFile(String loopName) {
+        return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.LoopFileIdentifier + loopName + MediaLibrary.LoopFileExtension);
     }
 }

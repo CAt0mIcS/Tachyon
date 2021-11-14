@@ -15,6 +15,7 @@ import com.de.mucify.adapter.LoopListItemAdapter;
 import com.de.mucify.adapter.SongListItemAdapter;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Song;
+import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.Utils;
 import com.google.android.material.snackbar.Snackbar;
@@ -23,11 +24,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class AudioSelectController {
+public class SingleAudioSelectController {
     private final SingleAudioActivity mActivity;
     private ArrayList<Song> mListItems;
 
-    public AudioSelectController(SingleAudioActivity activity) {
+    public SingleAudioSelectController(SingleAudioActivity activity) {
         mActivity = activity;
 
         MediaLibrary.loadAvailableSongs();
@@ -101,7 +102,7 @@ public class AudioSelectController {
         AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
         builder.setMessage(mActivity.getString(R.string.delete_loop) + " \"" + holder.getName() + "\"?")
                 .setPositiveButton(mActivity.getString(R.string.yes), (dialog, id) -> {
-                    File loopFile = Utils.loopNameToFile(holder.getName());
+                    File loopFile = FileManager.loopNameToFile(holder.getName());
                     if(!loopFile.delete())
                         Toast.makeText(mActivity,
                                 "Failed to delete loop: " + holder.getName(), Toast.LENGTH_LONG).show();

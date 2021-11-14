@@ -1,21 +1,78 @@
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".activity.SingleAudioActivity">
+    android:orientation="vertical">
 
-    <TextView
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World"
-        android:id="@+id/mainTextView"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"/>
-</RelativeLayout>
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/notification_txtTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/notification_txtArtist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="13sp"/>
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageButton
+            android:id="@+id/notification_btnPlayPause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@+id/view"
+            android:background="@color/audio_playing_notification_background"
+            android:contentDescription="@string/play_pause_audio"
+            style="?android:attr/borderlessButtonStyle"/>
+
+        <Button
+            android:id="@+id/view"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_centerHorizontal="true"
+            style="?android:attr/borderlessButtonStyle"/>
+
+        <ImageButton
+            android:id="@+id/notification_btnRemove"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@+id/view"
+            android:layout_alignParentRight="true"
+            android:background="@color/audio_playing_notification_background"
+            android:src="@drawable/ic_black_close"
+            style="?android:attr/borderlessButtonStyle"/>
+
+    </RelativeLayout>
+
+    <SeekBar
+        android:id="@+id/notification_sbProgress"
+        android:layout_width="match_parent"
+        android:layout_height="27dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"/>
+
+    <TextView
+        android:id="@+id/notification_lblProgress"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:textSize="12sp"/>
+
+</LinearLayout>
