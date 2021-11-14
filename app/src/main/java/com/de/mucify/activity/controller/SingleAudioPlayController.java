@@ -47,7 +47,6 @@ public class SingleAudioPlayController {
     private final TextView mLblStartTime;
     private final TextView mLblEndTime;
     private final ImageButton mBtnPlayPause;
-    private final Button mBtnAddToPlaylist;
 
     private boolean mWasSongPaused = false;
 
@@ -77,7 +76,6 @@ public class SingleAudioPlayController {
         mLblStartTime = mActivity.findViewById(R.id.pa_lblStartTime);
         mLblEndTime = mActivity.findViewById(R.id.pa_lblEndTime);
         mBtnPlayPause = mActivity.findViewById(R.id.pa_btnPause);
-        mBtnAddToPlaylist = mActivity.findViewById(R.id.pa_btnAddToPlaylist);
 
 
         int duration = AudioController.get().getSongDuration() / UserSettings.AudioUpdateInterval;
@@ -206,7 +204,7 @@ public class SingleAudioPlayController {
                 }
             }
         });
-        mBtnAddToPlaylist.setOnClickListener(this::onAddToPlaylist);
+        mActivity.findViewById(R.id.pa_btnAddToPlaylist).setOnClickListener(this::onAddToPlaylist);
 
         // Perform click to update image
         mBtnPlayPause.performClick();
@@ -255,8 +253,8 @@ public class SingleAudioPlayController {
             arrayAdapter.add(playlist.getName());
 
         AlertDialog dialog = new AlertDialog.Builder(mActivity)
-                .setTitle("Add to playlist")
-                .setPositiveButton("Ok", (dial, id) -> {
+                .setTitle(mActivity.getString(R.string.add_to_playlist))
+                .setPositiveButton(mActivity.getString(R.string.ok), (dial, id) -> {
                     for(int i = 0; i < arrayAdapter.getCount(); ++i) {
                         if(checkedItems.contains(arrayAdapter.getItem(i))) {
                             Playlist playlist = MediaLibrary.AvailablePlaylists.get(i);
@@ -271,7 +269,7 @@ public class SingleAudioPlayController {
                         }
                     }
                 })
-                .setNegativeButton("Cancel", (dial, i) -> dial.dismiss())
+                .setNegativeButton(mActivity.getString(R.string.cancel), (dial, i) -> dial.dismiss())
                 .setAdapter(arrayAdapter, null)
                 .create();
 
