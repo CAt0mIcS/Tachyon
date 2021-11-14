@@ -58,14 +58,16 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
             return true;
         });
 
-        AudioController.get().setSong(new Song(this, new File(getIntent().getStringExtra("AudioFilePath"))));
-        AudioController.get().startSong();
-        AudioController.get().addOnSongUnpausedListener(song -> {
-            startService(mSongPlayForegroundIntent);
-        }, AudioController.INDEX_DONT_CARE);
+        if(!getIntent().getBooleanExtra("PreserveSong", false)) {
+            AudioController.get().setSong(new Song(this, new File(getIntent().getStringExtra("AudioFilePath"))));
+            AudioController.get().startSong();
+            AudioController.get().addOnSongUnpausedListener(song -> {
+                startService(mSongPlayForegroundIntent);
+            }, AudioController.INDEX_DONT_CARE);
 
-        stopService(mSongPlayForegroundIntent);
-        startService(mSongPlayForegroundIntent);
+            stopService(mSongPlayForegroundIntent);
+            startService(mSongPlayForegroundIntent);
+        }
 
         // MY_TODO: Test if needs to be called in onResume?
         setVolumeControlStream(AudioManager.STREAM_MUSIC);

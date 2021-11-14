@@ -21,6 +21,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.de.mucify.R;
+import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Song;
 import com.de.mucify.receiver.BecomingNoisyReceiver;
@@ -139,6 +140,11 @@ public class SongPlayForegroundService extends IntentService {
         PendingIntent pendingIntentClose = PendingIntent.getBroadcast(this, 12345, closeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         notificationLayout.setOnClickPendingIntent(R.id.notification_btnRemove, pendingIntentClose);
 
+        Intent clickIntent = new Intent(this, SingleAudioPlayActivity.class);
+        clickIntent.putExtra("PreserveSong", true);
+        clickIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingClickIntent = PendingIntent.getActivity(this, 0, clickIntent, 0);
+
 //        Intent notificationClickIntent = new Intent("com.de.mucify.NOTIFICATION_CLICK");
 //        PendingIntent notificationClickPendingIntent = PendingIntent.getBroadcast(this, 12345, notificationClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -148,7 +154,7 @@ public class SongPlayForegroundService extends IntentService {
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
                 .setCustomContentView(notificationLayout)
 //                .setCustomBigContentView(notificationLayoutExpanded)
-//                .setContentIntent(notificationClickPendingIntent)
+                .setContentIntent(pendingClickIntent)
                 .setColorized(true)
                 .setColor(ResourcesCompat.getColor(getResources(), R.color.audio_playing_notification_background, null))
                 .build();
