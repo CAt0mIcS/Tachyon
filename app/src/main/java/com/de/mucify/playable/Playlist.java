@@ -6,8 +6,10 @@ import com.de.mucify.util.FileManager;
 import com.de.mucify.util.UserSettings;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -81,5 +83,21 @@ public class Playlist {
             e.printStackTrace();
             // MY_TODO: Error message, invalid file
         }
+    }
+
+    public void addSong(Song song) {
+        mSongs.add(song);
+        mPlayingSongs.add(song);
+    }
+
+    public void save() throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(mPlaylistFilePath));
+
+        for(Song song : mSongs) {
+            writer.write(song.getSongPath() + "\n");  // Path to music file
+            writer.write(song.getStartTime() + "\n");  // Loop start time
+            writer.write(song.getEndTime() + "\n");  // Loop end time
+        }
+        writer.close();
     }
 }

@@ -38,9 +38,6 @@ public class SongPlayForegroundService extends IntentService {
     private final BecomingNoisyReceiver mNoisyAudioReceiver = new BecomingNoisyReceiver();
 
     private static final int NOTIFY_ID = 1337;
-    private static final int FOREGROUND_ID = 1338;
-    private static final int SERVICE_ID = 1339;
-
     private boolean mAlreadyReset = false;
 
     private final Object mMutex = new Object();
@@ -98,6 +95,7 @@ public class SongPlayForegroundService extends IntentService {
         super.onDestroy();
         try {
             unregisterReceiver(mNotificationReceiver);
+            unregisterReceiver(mNoisyAudioReceiver);
         } catch(IllegalArgumentException ignored) {}
         sInstance = null;
     }
@@ -107,16 +105,16 @@ public class SongPlayForegroundService extends IntentService {
     private boolean startCustomForegroundService(@DrawableRes int playPauseIconID) {
         String NOTIFICATION_CHANNEL_ID = "com.mucify";
         String channelName = "Music playing background service";
-        NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
-        chan.setLightColor(Color.BLUE);
-        chan.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
+        channel.setLightColor(Color.BLUE);
+        channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
         NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
         assert manager != null;
-        manager.createNotificationChannel(chan);
+        manager.createNotificationChannel(channel);
 
         // Get the layouts to use in the custom notification
         RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.song_loop_playing_foreground_notification_small);
-        RemoteViews notificationLayoutExpanded = new RemoteViews(getPackageName(), R.layout.song_loop_playing_foreground_notification_large);
+//        RemoteViews notificationLayoutExpanded = new RemoteViews(getPackageName(), R.layout.song_loop_playing_foreground_notification_large);
 
         notificationLayout.setTextViewText(R.id.notification_txtTitle, AudioController.get().getSongTitle());
         notificationLayout.setTextViewText(R.id.notification_txtArtist, AudioController.get().getSongArtist());
@@ -143,9 +141,6 @@ public class SongPlayForegroundService extends IntentService {
         clickIntent.putExtra("PreserveSong", true);
         PendingIntent pendingClickIntent = PendingIntent.getActivity(this, 0, clickIntent, 0);
 
-//        Intent notificationClickIntent = new Intent("com.de.mucify.NOTIFICATION_CLICK");
-//        PendingIntent notificationClickPendingIntent = PendingIntent.getBroadcast(this, 12345, notificationClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-
         // Apply the layouts to the notification
         Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -154,6 +149,8 @@ public class SongPlayForegroundService extends IntentService {
 //                .setCustomBigContentView(notificationLayoutExpanded)
                 .setContentIntent(pendingClickIntent)
                 .setColorized(true)
+//                .setProgress(AudioController.get().getSongDuration(), AudioController.get().getCurrentSongPosition(), false)
+//                .setCategory(Notification.CATEGORY_SERVICE)  // MY_TODO: Check which category fits needs https://developer.android.com/reference/androidx/core/app/NotificationCompat#CATEGORY_ALARM
                 .setColor(ResourcesCompat.getColor(getResources(), R.color.audio_playing_notification_background, null))
                 .build();
 

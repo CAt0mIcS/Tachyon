@@ -99,6 +99,8 @@ public class AudioController {
     public int getSongStartTime() { return mSong.getStartTime(); }
     public int getSongEndTime() { return mSong.getEndTime(); }
     public boolean isPaused() { return mIsSongPaused; }
+    public Song getSong() { return mSong; }
+
 
     public void pauseSong() {
         if(!isPaused()) {

@@ -2,6 +2,7 @@ package com.de.mucify.activity.controller;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 import android.telephony.PhoneStateListener;
@@ -9,8 +10,13 @@ import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,12 +26,14 @@ import com.de.mucify.R;
 import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
+import com.de.mucify.playable.Playlist;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.UserSettings;
 import com.de.mucify.util.Utils;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class SingleAudioPlayController {
@@ -39,6 +47,7 @@ public class SingleAudioPlayController {
     private final TextView mLblStartTime;
     private final TextView mLblEndTime;
     private final ImageButton mBtnPlayPause;
+    private final Button mBtnAddToPlaylist;
 
     private boolean mWasSongPaused = false;
 
@@ -68,6 +77,7 @@ public class SingleAudioPlayController {
         mLblStartTime = mActivity.findViewById(R.id.pa_lblStartTime);
         mLblEndTime = mActivity.findViewById(R.id.pa_lblEndTime);
         mBtnPlayPause = mActivity.findViewById(R.id.pa_btnPause);
+        mBtnAddToPlaylist = mActivity.findViewById(R.id.pa_btnAddToPlaylist);
 
 
         int duration = AudioController.get().getSongDuration() / UserSettings.AudioUpdateInterval;
@@ -196,6 +206,7 @@ public class SingleAudioPlayController {
                 }
             }
         });
+        mBtnAddToPlaylist.setOnClickListener(this::onAddToPlaylist);
 
         // Perform click to update image
         mBtnPlayPause.performClick();
@@ -232,5 +243,47 @@ public class SingleAudioPlayController {
                 })
                 .setNegativeButton(R.string.cancel, (dialog, id) -> dialog.dismiss());
         builder.create().show();
+    }
+
+    private void onAddToPlaylist(View v) {
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(mActivity, android.R.layout.select_dialog_multichoice);
+        MediaLibrary.loadAvailablePlaylists();
+
+        ArrayList<String> checkedItems = new ArrayList<>();
+
+        for(Playlist playlist : MediaLibrary.AvailablePlaylists)
+            arrayAdapter.add(playlist.getName());
+
+        AlertDialog dialog = new AlertDialog.Builder(mActivity)
+                .setTitle("Add to playlist")
+                .setPositiveButton("Ok", (dial, id) -> {
+                    for(int i = 0; i < arrayAdapter.getCount(); ++i) {
+                        if(checkedItems.contains(arrayAdapter.getItem(i))) {
+                            Playlist playlist = MediaLibrary.AvailablePlaylists.get(i);
+                            playlist.create(mActivity);
+                            playlist.addSong(AudioController.get().getSong());
+                            try {
+                                playlist.save();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                Toast.makeText(mActivity, "Error saving playlist: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", (dial, i) -> dial.dismiss())
+                .setAdapter(arrayAdapter, null)
+                .create();
+
+        dialog.getListView().setItemsCanFocus(false);
+        dialog.getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        dialog.getListView().setOnItemClickListener((parent, view, position, id) -> {
+            CheckedTextView textView = (CheckedTextView)view;
+            if(textView.isChecked())
+                checkedItems.add(MediaLibrary.AvailablePlaylists.get(position).getName());
+            else
+                checkedItems.remove(MediaLibrary.AvailablePlaylists.get(position).getName());
+        });
+        dialog.show();
     }
 }
