@@ -9,7 +9,7 @@ public class PlaylistAudioController {
     PlaylistAudioController() {
         AudioController.get().addOnSongFinishedListener(song -> {
             if(mPlaylist != null) {
-                mPlaylist.start();
+                startPlaylist();
             }
         }, AudioController.INDEX_DONT_CARE);
     }
@@ -23,11 +23,15 @@ public class PlaylistAudioController {
     }
 
     public void startPlaylist() {
-        mPlaylist.start();
+        Song song = mPlaylist.start();
+        if(!AudioController.get().isSongNull())
+            AudioController.get().pauseSong();
+        AudioController.get().setSongNoReset(song);
         AudioController.get().startSong();
     }
 
     public void reset() {
+        AudioController.get().reset();
         mPlaylist.reset();
         mPlaylist = null;
     }

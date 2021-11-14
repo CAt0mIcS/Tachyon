@@ -47,7 +47,9 @@ public class Song {
         createInternal(context, songFilePath);
     }
 
-    public void reset() { mMediaPlayer.reset(); }
+    public void reset() {
+        mMediaPlayer.reset();
+    }
 
     public void start() {
         mMediaPlayer.start();

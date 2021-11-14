@@ -45,18 +45,15 @@ public class Playlist {
     public String getName() { return mName; }
     public File getPlaylistFilePath() { return mPlaylistFilePath; }
 
-    public void start() {
+    public Song start() {
         if(mPlayingSongs.size() == 0)
             addAllSongs();
-        if(!AudioController.get().isSongNull())
-            AudioController.get().pauseSong();
-        AudioController.get().setSongUndestroyed(mPlayingSongs.get(0));
-        AudioController.get().unpauseSong();
+        Song newSong = mPlayingSongs.get(0);
         mPlayingSongs.remove(0);
+        return newSong;
     }
 
     public void reset() {
-        AudioController.get().reset();
         for(Song song : mSongs)
             song.reset();
     }

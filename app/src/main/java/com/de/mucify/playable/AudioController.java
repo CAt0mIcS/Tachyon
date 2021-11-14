@@ -41,7 +41,7 @@ public class AudioController {
                         }
 
                         mSong.start();
-                        if(mIsSongPaused)
+                        if(isPaused())
                             mSong.pause();
                     }
                 }
@@ -68,17 +68,23 @@ public class AudioController {
     public void setSong(Song song) {
         if(mSong != null)
             mSong.reset();
-        mSong = song;
+        setSongNoReset(song);
     }
 
-    public void setSongUndestroyed(Song song) {
+    public void setSongNoReset(Song song) {
         mSong = song;
     }
 
     synchronized public void startSong() {
         mSong.start();
-        for(SongStartedListener listener : mSongStartedListeners)
-            listener.onStarted(mSong);
+        if(mIsSongPaused) {
+            for(SongUnpausedListener listener : mSongUnpausedListeners)
+                listener.onUnpause(mSong);
+            mIsSongPaused = false;
+        }
+        else
+            for(SongStartedListener listener : mSongStartedListeners)
+                listener.onStarted(mSong);
     }
 
     public boolean isSongPlaying() { return mSong.isPlaying(); }
@@ -92,19 +98,24 @@ public class AudioController {
     public void setSongEndTime(int endTime) { mSong.setEndTime(endTime); }
     public int getSongStartTime() { return mSong.getStartTime(); }
     public int getSongEndTime() { return mSong.getEndTime(); }
+    public boolean isPaused() { return mIsSongPaused; }
 
     public void pauseSong() {
-        mSong.pause();
-        mIsSongPaused = true;
-        for(SongPausedListener listener : mSongPausedListeners)
-            listener.onPause(mSong);
+        if(!isPaused()) {
+            mSong.pause();
+            mIsSongPaused = true;
+            for(SongPausedListener listener : mSongPausedListeners)
+                listener.onPause(mSong);
+        }
     }
 
     public void unpauseSong() {
-        mSong.unpause();
-        mIsSongPaused = false;
-        for(SongUnpausedListener listener : mSongUnpausedListeners)
-            listener.onUnpause(mSong);
+        if(isPaused()) {
+            mSong.unpause();
+            mIsSongPaused = false;
+            for(SongUnpausedListener listener : mSongUnpausedListeners)
+                listener.onUnpause(mSong);
+        }
     }
 
     public void addOnSongResetListener(SongResetListener listener, int i) {
