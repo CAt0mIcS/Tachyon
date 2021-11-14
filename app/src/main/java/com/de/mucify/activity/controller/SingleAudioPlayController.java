@@ -1,10 +1,11 @@
 package com.de.mucify.activity.controller;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.os.Handler;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -16,7 +17,6 @@ import android.widget.Toast;
 
 import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
-import com.de.mucify.activity.MultiAudioActivity;
 import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
@@ -40,10 +40,27 @@ public class SingleAudioPlayController {
     private final TextView mLblEndTime;
     private final ImageButton mBtnPlayPause;
 
+    private final PhoneStateListener mPhoneStateListener = new PhoneStateListener() {
+        @Override
+        public void onCallStateChanged(int state, String incomingNumber) {
+            // Incoming call || A call is dialing, active or on hold
+            if (state == TelephonyManager.CALL_STATE_RINGING || state == TelephonyManager.CALL_STATE_OFFHOOK) {
+                if(!AudioController.get().isSongNull())
+                    AudioController.get().pauseSong();
+            }
+            super.onCallStateChanged(state, incomingNumber);
+        }
+    };
+
     private boolean mWasSongPaused = false;
 
     public SingleAudioPlayController(SingleAudioPlayActivity activity) {
         mActivity = activity;
+
+        TelephonyManager mgr = (TelephonyManager)mActivity.getSystemService(Context.TELEPHONY_SERVICE);
+        if(mgr != null) {
+            mgr.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
+        }
 
         mSbProgress = mActivity.findViewById(R.id.pa_sbProgress);
         mSbStartTime = mActivity.findViewById(R.id.pa_sbStartTime);

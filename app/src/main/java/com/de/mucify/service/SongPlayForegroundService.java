@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.RemoteViews;
@@ -22,6 +23,7 @@ import androidx.core.content.res.ResourcesCompat;
 import com.de.mucify.R;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Song;
+import com.de.mucify.receiver.BecomingNoisyReceiver;
 import com.de.mucify.receiver.ForegroundNotificationClickReceiver;
 
 import java.io.File;
@@ -30,6 +32,9 @@ public class SongPlayForegroundService extends IntentService {
     static SongPlayForegroundService sInstance = null;
 
     private final ForegroundNotificationClickReceiver mNotificationReceiver = new ForegroundNotificationClickReceiver();
+
+    private final IntentFilter mNoisyAudioIntent = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+    private final BecomingNoisyReceiver mNoisyAudioReceiver = new BecomingNoisyReceiver();
 
     private static final int NOTIFY_ID = 1337;
     private static final int FOREGROUND_ID = 1338;
@@ -60,6 +65,8 @@ public class SongPlayForegroundService extends IntentService {
         if(!startCustomForegroundService(R.drawable.ic_black_pause))
             return;
 
+        registerReceiver(mNoisyAudioReceiver, mNoisyAudioIntent);
+
         AudioController.get().addOnSongResetListener(song -> {
             stopForeground(true);
             mAlreadyReset = true;
@@ -73,6 +80,7 @@ public class SongPlayForegroundService extends IntentService {
         AudioController.get().addOnSongUnpausedListener(song -> {
             startCustomForegroundService(R.drawable.ic_black_pause);
         }, 0);
+        AudioController.get().addOnSongResetListener(song -> unregisterReceiver(mNoisyAudioReceiver), AudioController.INDEX_DONT_CARE);
 
         synchronized (mMutex) {
             // Wait until song reset/paused

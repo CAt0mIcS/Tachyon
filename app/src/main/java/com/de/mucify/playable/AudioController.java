@@ -1,9 +1,6 @@
 package com.de.mucify.playable;
 
-import android.content.Context;
 import android.content.IntentFilter;
-import android.media.AudioAttributes;
-import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 
 import com.de.mucify.activity.SingleAudioPlayActivity;
@@ -14,6 +11,7 @@ import com.de.mucify.util.Utils;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.AbstractCollection;
 import java.util.ArrayList;
 
 public class AudioController {
@@ -23,22 +21,10 @@ public class AudioController {
 
     public static final int INDEX_DONT_CARE = -1;
 
-    private final IntentFilter mNoisyAudioIntent = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-    private final BecomingNoisyReceiver mNoisyAudioReceiver = new BecomingNoisyReceiver();
-
-    private final AudioFocusRequest mAudioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-            .setAudioAttributes(new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build())
-            .setAcceptsDelayedFocusGain(false)
-            .setOnAudioFocusChangeListener(this::onAudioFocusChange)
-            .build();
-    private boolean mPlaybackAuthorized = false;
-
     private final ArrayList<SongResetListener> mSongResetListeners = new ArrayList<>();
     private final ArrayList<SongPausedListener> mSongPausedListeners = new ArrayList<>();
     private final ArrayList<SongUnpausedListener> mSongUnpausedListeners = new ArrayList<>();
+    private final ArrayList<SongStartedListener> mSongStartedListeners = new ArrayList<>();
 
     public static AudioController get() { return sInstance; }
 
@@ -62,12 +48,6 @@ public class AudioController {
                 }
             }
         }).start();
-
-        addOnSongResetListener(song -> unregisterNoisy(), INDEX_DONT_CARE);
-        addOnSongUnpausedListener(song -> {
-            if(!mPlaybackAuthorized && !requestAudioFocus())
-                pauseSong();
-        }, INDEX_DONT_CARE);
     }
 
     public void reset() {
@@ -76,9 +56,6 @@ public class AudioController {
                 listener.onReset(mSong);
             mSong.reset();
             mSong = null;
-
-            getAudioManager().abandonAudioFocusRequest(mAudioFocusRequest);
-            mPlaybackAuthorized = false;
         }
     }
 
@@ -89,13 +66,11 @@ public class AudioController {
     }
 
     synchronized public void startSong() {
-        if(requestAudioFocus()) {
-            mSong.start();
-            registerNoisy();
-        }
-        else
-            pauseSong();
+        mSong.start();
+        for(SongStartedListener listener : mSongStartedListeners)
+            listener.onStarted(mSong);
     }
+
     public boolean isSongPlaying() {
         return mSong.isPlaying();
     }
@@ -151,6 +126,17 @@ public class AudioController {
         writer.close();
     }
 
+    public void addOnSongStartedListener(SongStartedListener listener, int i) {
+        if(i != INDEX_DONT_CARE)
+            mSongStartedListeners.add(i, listener);
+        else
+            mSongStartedListeners.add(listener);
+    }
+
+    public interface SongStartedListener {
+        void onStarted(Song song);
+    }
+
     public interface SongResetListener {
         void onReset(Song song);
     }
@@ -160,50 +146,4 @@ public class AudioController {
     public interface SongUnpausedListener {
         void onUnpause(Song song);
     }
-
-
-    private void registerNoisy() {
-        SingleAudioPlayActivity.get().registerReceiver(mNoisyAudioReceiver, mNoisyAudioIntent);
-    }
-
-    private boolean requestAudioFocus() {
-        int result = getAudioManager().requestAudioFocus(mAudioFocusRequest);
-
-        switch(result) {
-            case AudioManager.AUDIOFOCUS_REQUEST_FAILED:
-            case AudioManager.AUDIOFOCUS_REQUEST_DELAYED:
-                mPlaybackAuthorized = false;
-                break;
-            case AudioManager.AUDIOFOCUS_REQUEST_GRANTED:
-                mPlaybackAuthorized = true;
-                break;
-        }
-
-        return mPlaybackAuthorized;
-    }
-
-    private void onAudioFocusChange(int focusChange) {
-        switch (focusChange) {
-            case AudioManager.AUDIOFOCUS_GAIN:
-                mPlaybackAuthorized = true;
-                unpauseSong();
-                mSong.setVolume(1.0f, 1.0f);
-                break;
-            case AudioManager.AUDIOFOCUS_LOSS:  // focus loss for long time: should free resources
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT: // focus loss for short time
-                mPlaybackAuthorized = false;
-                pauseSong();
-                break;
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                mSong.setVolume(0.1f, 0.1f);
-                break;
-        }
-    }
-
-    private void unregisterNoisy() {
-        SingleAudioPlayActivity.get().unregisterReceiver(mNoisyAudioReceiver);
-    }
-
-    private AudioManager getAudioManager() { return (AudioManager)SingleAudioPlayActivity.get().getSystemService(Context.AUDIO_SERVICE); }
-
 }
