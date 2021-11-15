@@ -57,7 +57,7 @@ public class MediaLibrary {
 
 
     private static void loadFiles(File dir, boolean song, boolean loop, boolean playlist) {
-        if (dir.exists()) {
+        if (dir != null && dir.exists()) {
             File[] files = dir.listFiles();
             if (files != null) {
 

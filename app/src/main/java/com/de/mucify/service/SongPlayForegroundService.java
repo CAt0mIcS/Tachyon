@@ -78,7 +78,6 @@ public class SongPlayForegroundService extends IntentService {
         AudioController.get().addOnSongUnpausedListener(song -> {
             startCustomForegroundService(R.drawable.ic_black_pause);
         }, 0);
-        AudioController.get().addOnSongResetListener(song -> unregisterReceiver(mNoisyAudioReceiver), AudioController.INDEX_DONT_CARE);
 
         synchronized (mMutex) {
             // Wait until song reset/paused

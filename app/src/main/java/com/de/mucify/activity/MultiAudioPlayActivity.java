@@ -3,6 +3,7 @@ package com.de.mucify.activity;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -25,7 +26,6 @@ public class MultiAudioPlayActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.playlist_play_activity);
 
         mSongPlayForegroundIntent = new Intent(this, SongPlayForegroundService.class);
@@ -53,7 +53,8 @@ public class MultiAudioPlayActivity extends AppCompatActivity {
             return true;
         });
 
-        PlaylistAudioController.get().setPlaylist(new Playlist(this, new File(getIntent().getStringExtra("PlaylistFilePath"))));
+        Playlist playlist = new Playlist(this, new File(getIntent().getStringExtra("PlaylistFilePath")));
+        PlaylistAudioController.get().setPlaylist(playlist);
         PlaylistAudioController.get().startPlaylist();
         AudioController.get().addOnSongUnpausedListener(song -> {
             startService(mSongPlayForegroundIntent);
@@ -66,11 +67,6 @@ public class MultiAudioPlayActivity extends AppCompatActivity {
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         new MultiAudioPlayController(this);
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
     }
 
     @Override

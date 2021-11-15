@@ -1,5 +1,10 @@
 package com.de.mucify.playable;
 
+import android.widget.Toast;
+
+import com.de.mucify.activity.MultiAudioActivity;
+import com.de.mucify.activity.MultiAudioPlayActivity;
+
 public class PlaylistAudioController {
     private static final PlaylistAudioController sInstance = new PlaylistAudioController();
     private Playlist mPlaylist;
@@ -13,6 +18,8 @@ public class PlaylistAudioController {
             }
         }, AudioController.INDEX_DONT_CARE);
     }
+
+    public String getPlaylistName() { return mPlaylist.getName(); }
 
     public void setPlaylist(Playlist playlist) {
         if(mPlaylist != null) {
@@ -35,4 +42,6 @@ public class PlaylistAudioController {
         mPlaylist.reset();
         mPlaylist = null;
     }
+
+    public int getSongCount() { return mPlaylist.getSongs().size(); }
 }

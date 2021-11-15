@@ -30,7 +30,15 @@ public class FileManager {
         return path.getName().replace(MediaLibrary.PlaylistFileExtension, "").replace(MediaLibrary.PlaylistFileIdentifier, "");
     }
 
+    public static File playlistNameToFile(String playlistName) {
+        return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.PlaylistFileIdentifier + playlistName + MediaLibrary.PlaylistFileExtension);
+    }
+
     public static File loopNameToFile(String loopName) {
         return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.LoopFileIdentifier + loopName + MediaLibrary.LoopFileExtension);
+    }
+
+    public static String loopNameFromFile(File path) {
+        return path.getName().replace(MediaLibrary.LoopFileIdentifier, "").replace(MediaLibrary.LoopFileExtension, "").replace("_", " | ");
     }
 }

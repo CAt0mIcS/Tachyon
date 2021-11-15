@@ -2,6 +2,7 @@ package com.de.mucify.activity.controller;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -54,6 +55,8 @@ public class SingleAudioSelectController {
             mListItems = MediaLibrary.AvailableLoops;
             loadLoops();
         }
+
+        mActivity.findViewById(R.id.btnAddPlaylist).setVisibility(View.INVISIBLE);
     }
 
     private void loadSongs() {

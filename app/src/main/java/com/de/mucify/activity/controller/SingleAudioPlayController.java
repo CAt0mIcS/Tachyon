@@ -2,7 +2,6 @@ package com.de.mucify.activity.controller;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Handler;
 import android.telephony.PhoneStateListener;
@@ -10,9 +9,7 @@ import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -217,14 +214,12 @@ public class SingleAudioPlayController {
     }
 
     private void onLoopSave(View v) {
-
-        // Use the Builder class for convenient dialog construction
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        builder.setMessage(R.string.dialog_loop_name)
-                .setView(mActivity.getLayoutInflater().inflate(R.layout.save_loop_alert_dialog_layout, null))
+        new AlertDialog.Builder(mActivity)
+                .setMessage(R.string.dialog_loop_name)
+                .setView(mActivity.getLayoutInflater().inflate(R.layout.save_loop_new_playlist_alert_dialog_layout, null))
                 .setPositiveButton(R.string.save, (dialog, id) -> {
 
-                    String loopName = ((EditText)((AlertDialog)dialog).findViewById(R.id.dialog_txtLoopName)).getText().toString();
+                    String loopName = ((EditText)((AlertDialog)dialog).findViewById(R.id.dialog_txtName)).getText().toString();
                     if(loopName.isEmpty() || loopName.contains("_")) {
                         Toast.makeText(mActivity, "Failed to save loop: Name mustn't contain '_' or be empty", Toast.LENGTH_LONG).show();
                         return;
@@ -239,8 +234,8 @@ public class SingleAudioPlayController {
 
                     MediaLibrary.loadAvailableLoops();
                 })
-                .setNegativeButton(R.string.cancel, (dialog, id) -> dialog.dismiss());
-        builder.create().show();
+                .setNegativeButton(R.string.cancel, (dialog, id) -> dialog.dismiss())
+                .create().show();
     }
 
     private void onAddToPlaylist(View v) {

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.stream.DoubleStream;
 
 public class Playlist {
     private String mName;
@@ -46,6 +47,7 @@ public class Playlist {
 
     public String getName() { return mName; }
     public File getPlaylistFilePath() { return mPlaylistFilePath; }
+    public ArrayList<Song> getSongs() { return mSongs; }
 
     public Song start() {
         if(mPlayingSongs.size() == 0)
@@ -99,5 +101,11 @@ public class Playlist {
             writer.write(song.getEndTime() + "\n");  // Loop end time
         }
         writer.close();
+    }
+
+    public static void createNew(Context context, String playlistName) throws IOException {
+        File path = FileManager.playlistNameToFile(playlistName);
+        if(!path.createNewFile())
+            throw new IOException("Failed to create new file.");
     }
 }

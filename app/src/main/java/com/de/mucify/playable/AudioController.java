@@ -33,17 +33,22 @@ public class AudioController {
     private AudioController() {
         new Thread(() -> {
             while(true) {
+                // MY_TODO: If song is reset after !isSongNull is true, we'll get a NullPointerException
+                // Try/catch is only temporary
                 if(!isSongNull()) {
-                    int currentPos = getCurrentSongPosition();
-                    if(currentPos >= getSongEndTime() || currentPos < getSongStartTime()) {
-                        for(SongFinishedListener listener : mSongFinishedListeners) {
-                            listener.onFinished(mSong);
-                        }
+                    try {
+                        int currentPos = getCurrentSongPosition();
+                        if(currentPos >= getSongEndTime() || currentPos < getSongStartTime()) {
+                            for(SongFinishedListener listener : mSongFinishedListeners) {
+                                listener.onFinished(mSong);
+                            }
 
-                        mSong.start();
-                        if(isPaused())
-                            mSong.pause();
-                    }
+                            mSong.start();
+                            if(isPaused())
+                                mSong.pause();
+                        }
+                    } catch(NullPointerException ignored) {}
+
                 }
 
                 try {
