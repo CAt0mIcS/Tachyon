@@ -5,9 +5,13 @@ import android.widget.Toast;
 import com.de.mucify.activity.MultiAudioActivity;
 import com.de.mucify.activity.MultiAudioPlayActivity;
 
+import java.util.ArrayList;
+
 public class PlaylistAudioController {
     private static final PlaylistAudioController sInstance = new PlaylistAudioController();
     private Playlist mPlaylist;
+
+    private final ArrayList<PlaylistResetListener> mPlaylistResetListeners = new ArrayList<>();
 
     public static PlaylistAudioController get() { return sInstance; }
 
@@ -16,7 +20,7 @@ public class PlaylistAudioController {
             if(mPlaylist != null) {
                 startPlaylist();
             }
-        }, AudioController.INDEX_DONT_CARE);
+        }, 0);
     }
 
     public String getPlaylistName() { return mPlaylist.getName(); }
@@ -38,10 +42,26 @@ public class PlaylistAudioController {
     }
 
     public void reset() {
+        for(PlaylistResetListener listener : mPlaylistResetListeners)
+            listener.onReset(mPlaylist);
+
         AudioController.get().reset();
         mPlaylist.reset();
         mPlaylist = null;
     }
 
     public int getSongCount() { return mPlaylist.getSongs().size(); }
+    public boolean isPlaylistNull() { return mPlaylist == null; }
+    public Song getCurrentSong() { return mPlaylist.getCurrentSong(); }
+
+    public void addOnPlaylistResetListener(PlaylistResetListener listener, int i) {
+        if(i == AudioController.INDEX_DONT_CARE)
+            mPlaylistResetListeners.add(listener);
+        else
+            mPlaylistResetListeners.add(i, listener);
+    }
+
+    public interface PlaylistResetListener {
+        void onReset(Playlist playlist);
+    }
 }

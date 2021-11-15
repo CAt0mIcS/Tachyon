@@ -48,6 +48,7 @@ public class Playlist {
     public String getName() { return mName; }
     public File getPlaylistFilePath() { return mPlaylistFilePath; }
     public ArrayList<Song> getSongs() { return mSongs; }
+    public Song getCurrentSong() { return mPlayingSongs.get(0); }
 
     public Song start() {
         if(mPlayingSongs.size() == 0)

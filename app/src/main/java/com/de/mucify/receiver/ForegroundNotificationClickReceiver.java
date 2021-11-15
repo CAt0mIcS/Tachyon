@@ -6,6 +6,7 @@ import android.content.Intent;
 
 import com.de.mucify.R;
 import com.de.mucify.playable.AudioController;
+import com.de.mucify.playable.PlaylistAudioController;
 
 
 public class ForegroundNotificationClickReceiver extends BroadcastReceiver {
@@ -19,10 +20,7 @@ public class ForegroundNotificationClickReceiver extends BroadcastReceiver {
         }
         else if(intent.getAction().equals("com.de.mucify.FOREGROUND_CLOSE")) {
             AudioController.get().reset();
+            PlaylistAudioController.get().reset();
         }
-//        else if (intent.getAction().equals("com.de.mucify.NOTIFICATION_CLICK")) {
-//            AudioController.get().pauseSong();
-//        }
-
     }
 }

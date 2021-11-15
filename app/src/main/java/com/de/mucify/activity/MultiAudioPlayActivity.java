@@ -15,20 +15,21 @@ import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Playlist;
 import com.de.mucify.playable.PlaylistAudioController;
 import com.de.mucify.playable.Song;
+import com.de.mucify.service.PlaylistPlayForegroundService;
 import com.de.mucify.service.SongPlayForegroundService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.File;
 
 public class MultiAudioPlayActivity extends AppCompatActivity {
-    private Intent mSongPlayForegroundIntent;
+    private Intent mPlaylistPlayForegroundIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.playlist_play_activity);
 
-        mSongPlayForegroundIntent = new Intent(this, SongPlayForegroundService.class);
+        mPlaylistPlayForegroundIntent = new Intent(this, PlaylistPlayForegroundService.class);
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
 
         btmNav.setSelectedItemId(R.id.playlists);
@@ -53,15 +54,17 @@ public class MultiAudioPlayActivity extends AppCompatActivity {
             return true;
         });
 
-        Playlist playlist = new Playlist(this, new File(getIntent().getStringExtra("PlaylistFilePath")));
-        PlaylistAudioController.get().setPlaylist(playlist);
-        PlaylistAudioController.get().startPlaylist();
-        AudioController.get().addOnSongUnpausedListener(song -> {
-            startService(mSongPlayForegroundIntent);
-        }, AudioController.INDEX_DONT_CARE);
+        if(!getIntent().getBooleanExtra("PreservePlaylist", false)) {
+            Playlist playlist = new Playlist(this, new File(getIntent().getStringExtra("PlaylistFilePath")));
+            PlaylistAudioController.get().setPlaylist(playlist);
+            PlaylistAudioController.get().startPlaylist();
+            AudioController.get().addOnSongUnpausedListener(song -> {
+                startService(mPlaylistPlayForegroundIntent);
+            }, AudioController.INDEX_DONT_CARE);
 
-        stopService(mSongPlayForegroundIntent);
-        startService(mSongPlayForegroundIntent);
+            stopService(mPlaylistPlayForegroundIntent);
+            startService(mPlaylistPlayForegroundIntent);
+        }
 
         // MY_TODO: Test if needs to be called in onResume?
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
