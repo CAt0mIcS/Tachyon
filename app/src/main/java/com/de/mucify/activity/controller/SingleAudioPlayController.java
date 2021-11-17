@@ -45,7 +45,7 @@ public class SingleAudioPlayController {
     private final TextView mLblEndTime;
     private final ImageButton mBtnPlayPause;
 
-    private boolean mWasSongPaused = false;
+    private boolean mIsSeeking = false;
 
     public SingleAudioPlayController(SingleAudioPlayActivity activity) {
         mActivity = activity;
@@ -85,10 +85,9 @@ public class SingleAudioPlayController {
         mActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(!AudioController.get().isSongNull() && AudioController.get().isSongPlaying()) {
+                if(!AudioController.get().isSongNull() && AudioController.get().isSongPlaying() && !mIsSeeking) {
                     int mCurrentPosition = AudioController.get().getCurrentSongPosition() / UserSettings.AudioUpdateInterval;
                     mSbProgress.setProgress(mCurrentPosition);
-                    mLblProgress.setText(Utils.millisecondsToReadableString(AudioController.get().getCurrentSongPosition()));
                 }
                 mHandler.postDelayed(this, UserSettings.AudioUpdateInterval);
             }
@@ -96,18 +95,13 @@ public class SingleAudioPlayController {
 
         mSbProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) { if(!mWasSongPaused) AudioController.get().unpauseSong(); }
+            public void onStopTrackingTouch(SeekBar seekBar) { mIsSeeking = false; AudioController.get().seekSongTo(seekBar.getProgress() * UserSettings.AudioUpdateInterval); }
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                mWasSongPaused = !AudioController.get().isSongPlaying();
-                AudioController.get().pauseSong();
-            }
+            public void onStartTrackingTouch(SeekBar seekBar) { mIsSeeking = true; }
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(!AudioController.get().isSongNull() && fromUser){
-                    AudioController.get().seekSongTo(progress * UserSettings.AudioUpdateInterval);
-                    mLblProgress.setText(Utils.millisecondsToReadableString(AudioController.get().getCurrentSongPosition()));
-                }
+                if(!AudioController.get().isSongNull())
+                    mLblProgress.setText(Utils.millisecondsToReadableString(progress * UserSettings.AudioUpdateInterval));
             }
         });
         mSbStartTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
