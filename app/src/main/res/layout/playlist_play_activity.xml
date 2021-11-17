@@ -47,8 +47,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/pp_sbProgress" />
 
-        <ListView
-            android:id="@+id/pp_lstSongs"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/pp_rvSongs"
             android:layout_width="match_parent"
             android:layout_height="213dp"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
@@ -61,8 +61,8 @@
             app:layout_constraintTop_toBottomOf="@+id/pp_lblProgress" />
 
 
-        <ListView
-            android:id="@+id/pp_lstLoops"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/pp_rvLoops"
             android:layout_width="match_parent"
             android:layout_height="213dp"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
@@ -71,7 +71,7 @@
             android:scrollbars="none"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pp_lstSongs" />
+            app:layout_constraintTop_toBottomOf="@+id/pp_rvSongs" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

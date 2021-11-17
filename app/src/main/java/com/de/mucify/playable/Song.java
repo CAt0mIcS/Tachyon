@@ -84,7 +84,7 @@ public class Song {
     public File getLoopPath() { return mLoopFilePath; }
     public String getLoopName() { return mLoopFilePath.getName().replace(MediaLibrary.LoopFileIdentifier, "").replace(MediaLibrary.LoopFileExtension, "").replace("_", " | "); }
     public void setVolume(float left, float right) { mMediaPlayer.setVolume(left, right); }
-    public boolean isLoop() { return mLoopFilePath != null; }
+    public boolean isLoop() { return mLoopFilePath != null || mStartTime != 0 || mEndTime != getDuration(); }
     public void setLooping(boolean looping) { mMediaPlayer.setLooping(looping); }
     public void setOnMediaPlayerCompletionListener(MediaPlayer.OnCompletionListener listener) { mMediaPlayer.setOnCompletionListener(listener); }
 

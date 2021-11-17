@@ -63,6 +63,22 @@ public class PlaylistAudioController {
             mPlaylistResetListeners.add(i, listener);
     }
 
+    public ArrayList<Song> getSongs() {
+        ArrayList<Song> songs = new ArrayList<>();
+        for(Song song : mPlaylist.getSongs())
+            if(!song.isLoop())
+                songs.add(song);
+        return songs;
+    }
+
+    public ArrayList<Song> getLoops() {
+        ArrayList<Song> loops = new ArrayList<>();
+        for(Song song : mPlaylist.getSongs())
+            if(song.isLoop())
+                loops.add(song);
+        return loops;
+    }
+
     public interface PlaylistResetListener {
         void onReset(Playlist playlist);
     }

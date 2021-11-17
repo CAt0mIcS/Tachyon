@@ -74,11 +74,7 @@ public class Playlist {
             BufferedReader reader = new BufferedReader(new FileReader(mPlaylistFilePath));
 
             while(reader.ready()) {
-                String path = reader.readLine();
-                int loopStartTime = Integer.parseInt(reader.readLine());
-                int loopEndTime = Integer.parseInt(reader.readLine());
-
-                mSongs.add(new Song(context, new File(path), loopStartTime, loopEndTime));
+                mSongs.add(new Song(context, new File(reader.readLine())));
             }
             reader.close();
 
@@ -97,9 +93,10 @@ public class Playlist {
         BufferedWriter writer = new BufferedWriter(new FileWriter(mPlaylistFilePath));
 
         for(Song song : mSongs) {
-            writer.write(song.getSongPath() + "\n");  // Path to music file
-            writer.write(song.getStartTime() + "\n");  // Loop start time
-            writer.write(song.getEndTime() + "\n");  // Loop end time
+            if(song.isLoop())
+                writer.write(song.getLoopPath() + "\n");
+            else
+                writer.write(song.getSongPath() + "\n");
         }
         writer.close();
     }
