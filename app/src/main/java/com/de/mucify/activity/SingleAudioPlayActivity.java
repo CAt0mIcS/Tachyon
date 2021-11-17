@@ -11,6 +11,7 @@ import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
 import com.de.mucify.activity.controller.SingleAudioPlayController;
 import com.de.mucify.playable.AudioController;
+import com.de.mucify.playable.PlaylistAudioController;
 import com.de.mucify.playable.Song;
 import com.de.mucify.service.SongPlayForegroundService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -59,6 +60,7 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
         });
 
         if(!getIntent().getBooleanExtra("PreserveSong", false)) {
+            PlaylistAudioController.get().reset();
             AudioController.get().setSong(new Song(this, new File(getIntent().getStringExtra("AudioFilePath"))));
             AudioController.get().startSong();
             AudioController.get().addOnSongUnpausedListener(song -> {

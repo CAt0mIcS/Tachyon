@@ -38,6 +38,7 @@ public class PlaylistAudioController {
         if(!AudioController.get().isSongNull())
             AudioController.get().pauseSong();
         AudioController.get().setSongNoReset(song);
+        AudioController.get().setLooping(false);
         AudioController.get().startSong();
     }
 
@@ -46,7 +47,8 @@ public class PlaylistAudioController {
             listener.onReset(mPlaylist);
 
         AudioController.get().reset();
-        mPlaylist.reset();
+        if(mPlaylist != null)
+            mPlaylist.reset();
         mPlaylist = null;
     }
 

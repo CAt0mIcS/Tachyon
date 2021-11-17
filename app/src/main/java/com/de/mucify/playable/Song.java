@@ -85,12 +85,13 @@ public class Song {
     public String getLoopName() { return mLoopFilePath.getName().replace(MediaLibrary.LoopFileIdentifier, "").replace(MediaLibrary.LoopFileExtension, "").replace("_", " | "); }
     public void setVolume(float left, float right) { mMediaPlayer.setVolume(left, right); }
     public boolean isLoop() { return mLoopFilePath != null; }
+    public void setLooping(boolean looping) { mMediaPlayer.setLooping(looping); }
+    public void setOnMediaPlayerCompletionListener(MediaPlayer.OnCompletionListener listener) { mMediaPlayer.setOnCompletionListener(listener); }
 
 
     private void createInternal(Context context, File path) {
         createInternal(path);
         mMediaPlayer = MediaPlayer.create(context, Uri.parse(mSongFilePath.getPath()));
-        mMediaPlayer.setLooping(true);
 
         if(mEndTime == 0)
             mEndTime = mMediaPlayer.getDuration();

@@ -38,7 +38,7 @@ public class AudioController {
                 if(!isSongNull()) {
                     try {
                         int currentPos = getCurrentSongPosition();
-                        if(currentPos >= getSongEndTime() || currentPos < getSongStartTime()) {
+                        if(currentPos >= getSongEndTime() || currentPos < getSongStartTime() || (!mSong.isPlaying() && !isPaused())) {
                             for(SongFinishedListener listener : mSongFinishedListeners) {
                                 listener.onFinished(mSong);
                             }
@@ -75,6 +75,8 @@ public class AudioController {
             mSong.reset();
         setSongNoReset(song);
     }
+
+    public void setLooping(boolean looping) { mSong.setLooping(looping); }
 
     public void setSongNoReset(Song song) {
         mSong = song;
