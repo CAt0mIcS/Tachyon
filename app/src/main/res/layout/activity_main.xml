@@ -18,6 +18,5 @@
         app:menu="@menu/bottom_nav_menu"
         app:elevation="8dp"
         app:labelVisibilityMode="labeled"
-        android:textAlignment="center"
         android:layout_gravity="bottom"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

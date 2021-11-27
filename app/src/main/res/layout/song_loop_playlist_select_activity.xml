@@ -47,7 +47,6 @@
             app:elevation="8dp"
             app:labelVisibilityMode="labeled"
             app:layout_insetEdge="bottom"
-            android:textAlignment="center"
             android:layout_gravity="bottom">
 
         </com.google.android.material.bottomnavigation.BottomNavigationView>
