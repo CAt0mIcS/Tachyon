@@ -4,6 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:foreground="@drawable/round_ripple"
+    android:background="@drawable/recycler_round_corner"
+    android:clickable="true"
+    android:focusable="true"
+    android:layout_marginBottom="6dp"
+    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+    android:layout_marginRight="@dimen/activity_horizontal_margin"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <TextView

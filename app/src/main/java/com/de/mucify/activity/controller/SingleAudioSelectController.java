@@ -90,6 +90,7 @@ public class SingleAudioSelectController {
     }
 
     private void loadSongs() {
+        mListItems.clear();
         mRvFiles.setLayoutManager(new LinearLayoutManager(mActivity));
         mListItems.addAll(MediaLibrary.AvailableSongs);
 
@@ -101,6 +102,7 @@ public class SingleAudioSelectController {
     }
 
     private void loadLoops() {
+        mListItems.clear();
         mRvFiles.setLayoutManager(new LinearLayoutManager(mActivity));
         mListItems.addAll(MediaLibrary.AvailableLoops);
 
