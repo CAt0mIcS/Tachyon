@@ -1,13 +1,7 @@
 package com.de.mucify.playable;
 
-import android.content.IntentFilter;
-import android.media.AudioManager;
-
-import com.de.mucify.activity.SingleAudioPlayActivity;
-import com.de.mucify.receiver.BecomingNoisyReceiver;
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.UserSettings;
-import com.de.mucify.util.Utils;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -18,6 +12,7 @@ import java.util.ArrayList;
 public class AudioController {
     private static final AudioController sInstance = new AudioController();
     private Song mSong;
+    private Playlist mPlaylist;
     private boolean mIsSongPaused = false;
 
     public static final int INDEX_DONT_CARE = -1;
@@ -27,6 +22,7 @@ public class AudioController {
     private final ArrayList<SongUnpausedListener> mSongUnpausedListeners = new ArrayList<>();
     private final ArrayList<SongStartedListener> mSongStartedListeners = new ArrayList<>();
     private final ArrayList<SongFinishedListener> mSongFinishedListeners = new ArrayList<>();
+    private ArrayList<NextPlaylistSongListener> mNextPlaylistSongListeners = new ArrayList<>();
 
     public static AudioController get() { return sInstance; }
 
@@ -35,21 +31,27 @@ public class AudioController {
             while(true) {
                 // MY_TODO: If song is reset after !isSongNull is true, we'll get a NullPointerException
                 // Try/catch is only temporary
-                if(!isSongNull()) {
-                    try {
+                try {
+                    if(!isSongNull() && mSong.isCreated() && mSong.isPlaying()) {
                         int currentPos = getCurrentSongPosition();
                         if(currentPos >= getSongEndTime() || currentPos < getSongStartTime() || (!mSong.isPlaying() && !isPaused())) {
                             for(SongFinishedListener listener : mSongFinishedListeners) {
                                 listener.onFinished(mSong);
                             }
 
+                            if(!isPlaylistNull()) {
+                                mSong = mPlaylist.next();
+                                mIsSongPaused = false;
+                                for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+                                    listener.onNextSong(mSong);
+                            }
                             mSong.start();
                             if(isPaused())
                                 mSong.pause();
-                        }
-                    } catch(NullPointerException ignored) {}
 
-                }
+                        }
+                    }
+                } catch(NullPointerException ignored) {}
 
                 try {
                     // MY_TODO: Not thread safe (User changes setting while reading here)
@@ -73,13 +75,15 @@ public class AudioController {
     public void setSong(Song song) {
         if(mSong != null)
             mSong.reset();
-        setSongNoReset(song);
+        mSong = song;
     }
 
-    public void setLooping(boolean looping) { mSong.setLooping(looping); }
-
-    public void setSongNoReset(Song song) {
-        mSong = song;
+    public void setPlaylist(Playlist playlist) {
+        if(mPlaylist != null)
+            mPlaylist.reset();
+        mPlaylist = playlist;
+        mSong = mPlaylist.getPlayingSongs().get(0);
+        mSong.create(mPlaylist.getContext());
     }
 
     synchronized public void startSong() {
@@ -107,6 +111,8 @@ public class AudioController {
     public int getSongEndTime() { return mSong.getEndTime(); }
     public boolean isPaused() { return mIsSongPaused; }
     public Song getSong() { return mSong; }
+    public Playlist getPlaylist() { return mPlaylist; }
+    public boolean isPlaylistNull() { return mPlaylist == null; }
 
 
     public void pauseSong() {
@@ -151,6 +157,12 @@ public class AudioController {
         else
             mSongFinishedListeners.add(listener);
     }
+    public void addOnNextPlaylistSongListener(NextPlaylistSongListener listener, int i) {
+        if(i != INDEX_DONT_CARE)
+            mNextPlaylistSongListeners.add(i, listener);
+        else
+            mNextPlaylistSongListeners.add(listener);
+    }
 
     public void saveAsLoop(String loopName) throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(FileManager.loopNameToFile(loopName)));
@@ -181,5 +193,8 @@ public class AudioController {
     }
     public interface SongUnpausedListener {
         void onUnpause(Song song);
+    }
+    public interface NextPlaylistSongListener {
+        void onNextSong(Song nextSong);
     }
 }

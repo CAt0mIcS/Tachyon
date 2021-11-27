@@ -87,6 +87,7 @@ public class Song {
     public boolean isLoop() { return mLoopFilePath != null; }
     public void setLooping(boolean looping) { mMediaPlayer.setLooping(looping); }
     public void setOnMediaPlayerCompletionListener(MediaPlayer.OnCompletionListener listener) { mMediaPlayer.setOnCompletionListener(listener); }
+    public boolean isCreated() { return mMediaPlayer != null; }
 
 
     private void createInternal(Context context, File path) {
@@ -98,7 +99,7 @@ public class Song {
     }
 
     private void createInternal(File path) {
-        if(!path.exists()) {
+        if(path == null || !path.exists()) {
             // MY_TODO: Add error message for user
             return;
         }

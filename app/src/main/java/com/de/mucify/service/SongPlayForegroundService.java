@@ -72,12 +72,9 @@ public class SongPlayForegroundService extends IntentService {
                 mMutex.notify();
             }
         }, 0);
-        AudioController.get().addOnSongPausedListener(song -> {
-            startCustomForegroundService(R.drawable.ic_black_play);
-        }, 0);
-        AudioController.get().addOnSongUnpausedListener(song -> {
-            startCustomForegroundService(R.drawable.ic_black_pause);
-        }, 0);
+        AudioController.get().addOnSongPausedListener(song -> startCustomForegroundService(R.drawable.ic_black_play), 0);
+        AudioController.get().addOnSongUnpausedListener(song -> startCustomForegroundService(R.drawable.ic_black_pause), 0);
+        AudioController.get().addOnNextPlaylistSongListener(nextSong -> startCustomForegroundService(R.drawable.ic_black_pause), 0);
 
         synchronized (mMutex) {
             // Wait until song reset/paused
