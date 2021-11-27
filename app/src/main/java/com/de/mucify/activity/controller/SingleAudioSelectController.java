@@ -26,12 +26,14 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class SingleAudioSelectController {
     private final SingleAudioActivity mActivity;
     private final ArrayList<Song> mListItems = new ArrayList<>();
 
     private final RecyclerView mRvFiles;
+    private final EditText mSearchSongLoop;
 
     public SingleAudioSelectController(SingleAudioActivity activity) {
         mActivity = activity;
@@ -40,13 +42,16 @@ public class SingleAudioSelectController {
         MediaLibrary.loadAvailableLoops();
 
         mRvFiles = mActivity.findViewById(R.id.rvFiles);
+        mSearchSongLoop = mActivity.findViewById(R.id.editSearchFiles);
 
         mActivity.menuItemChangedListener = item -> {
             switch(item.getItemId()) {
                 case R.id.songs:
+                    mSearchSongLoop.setText("");
                     loadSongs();
                     break;
                 case R.id.loops:
+                    mSearchSongLoop.setText("");
                     loadLoops();
                     break;
             }
@@ -59,27 +64,31 @@ public class SingleAudioSelectController {
             loadLoops();
 
         mActivity.findViewById(R.id.btnAddPlaylist).setVisibility(View.INVISIBLE);
-        ((EditText)mActivity.findViewById(R.id.editSearchFiles)).addTextChangedListener(new TextWatcher() {
+        mSearchSongLoop.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            public void onTextChanged(CharSequence s1, int start, int before, int count) {
                 mListItems.clear();
                 if(mActivity.isInSongTab())
                     mListItems.addAll(MediaLibrary.AvailableSongs);
                 else
                     mListItems.addAll(MediaLibrary.AvailableLoops);
 
-                if(s.toString().equals(""))
+                String s = s1.toString().toLowerCase(Locale.ROOT);
+                if(s.equals("")) {
+                    mRvFiles.getAdapter().notifyDataSetChanged();
                     return;
+                }
 
                 for(int i = 0; i < mListItems.size(); ++i) {
                     Song song = mListItems.get(i);
-                    if(!song.getArtist().contains(s) || !song.getTitle().contains(s) || (song.isLoop() && !song.getLoopName().contains(s))) {
-                        mListItems.remove(i);
-                        --i;
-                    }
+                    if(song.getArtist().toLowerCase(Locale.ROOT).contains(s) || song.getTitle().toLowerCase(Locale.ROOT).contains(s) || (song.isLoop() && song.getLoopName().toLowerCase(Locale.ROOT).contains(s)))
+                        continue;
+                    mListItems.remove(i);
+                    --i;
                 }
+
                 mRvFiles.getAdapter().notifyDataSetChanged();
             }
             @Override

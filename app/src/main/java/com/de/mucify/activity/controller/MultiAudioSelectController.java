@@ -30,6 +30,7 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class MultiAudioSelectController {
     private final MultiAudioActivity mActivity;
@@ -49,12 +50,15 @@ public class MultiAudioSelectController {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            public void onTextChanged(CharSequence s1, int start, int before, int count) {
                 mListItems.clear();
                 mListItems.addAll(MediaLibrary.AvailablePlaylists);
 
-                if(s.toString().equals(""))
+                String s = s1.toString().toLowerCase(Locale.ROOT);
+                if(s.equals("")) {
+                    mRvFiles.getAdapter().notifyDataSetChanged();
                     return;
+                }
 
                 for(int i = 0; i < mListItems.size(); ++i) {
                     Playlist playlist = mListItems.get(i);
@@ -62,12 +66,12 @@ public class MultiAudioSelectController {
                     // Search through songs in playlist
                     boolean containsSong = false;
                     for(Song song : playlist.getSongs()) {
-                        if(song.getTitle().contains(s) || song.getArtist().contains(s) || (song.isLoop() && song.getLoopName().contains(s))) {
+                        if(song.getTitle().toLowerCase(Locale.ROOT).contains(s) || song.getArtist().toLowerCase(Locale.ROOT).contains(s) || (song.isLoop() && song.getLoopName().toLowerCase(Locale.ROOT).contains(s))) {
                             containsSong = true;
                             break;
                         }
                     }
-                    if(!containsSong && !playlist.getName().contains(s)) {
+                    if(!containsSong && !playlist.getName().toLowerCase(Locale.ROOT).contains(s)) {
                         mListItems.remove(i);
                         --i;
                     }
