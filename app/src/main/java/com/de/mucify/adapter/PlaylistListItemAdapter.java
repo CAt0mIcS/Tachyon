@@ -8,14 +8,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
 import com.de.mucify.playable.Playlist;
-import com.de.mucify.playable.Song;
 
 import java.util.ArrayList;
 
@@ -41,7 +37,7 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
     public void onBindViewHolder(@NonNull PlaylistViewHolder holder, int i) {
         Playlist playlist = mPlaylists.get(i);
         holder.mOnItemClickListener = mOnItemClickListener;
-        holder.mName.setText(playlist.getName());
+//        holder.mName.setText(playlist.getName());
     }
 
     @Override

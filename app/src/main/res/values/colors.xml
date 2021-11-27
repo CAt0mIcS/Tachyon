@@ -12,4 +12,5 @@
     <color name="text_color">#070707</color>
     <color name="secondary_text_color">#566047</color>
     <color name="audio_playing_notification_background">#78688F</color>
+    <color name="primary_purple">#8e44ad</color>
 </resources>

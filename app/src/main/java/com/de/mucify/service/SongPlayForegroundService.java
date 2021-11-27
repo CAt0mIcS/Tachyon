@@ -151,6 +151,7 @@ public class SongPlayForegroundService extends IntentService {
 //                .setProgress(AudioController.get().getSongDuration(), AudioController.get().getCurrentSongPosition(), false)
 //                .setCategory(Notification.CATEGORY_SERVICE)  // MY_TODO: Check which category fits needs https://developer.android.com/reference/androidx/core/app/NotificationCompat#CATEGORY_ALARM
                 .setColor(ResourcesCompat.getColor(getResources(), R.color.audio_playing_notification_background, null))
+                .setPriority(Notification.PRIORITY_MAX)
                 .build();
 
         startForeground(NOTIFY_ID, notification);

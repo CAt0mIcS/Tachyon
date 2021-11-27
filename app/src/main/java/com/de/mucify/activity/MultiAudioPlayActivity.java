@@ -9,27 +9,18 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
-import com.de.mucify.activity.controller.MultiAudioPlayController;
-import com.de.mucify.activity.controller.SingleAudioPlayController;
 import com.de.mucify.playable.AudioController;
-import com.de.mucify.playable.Playlist;
-import com.de.mucify.playable.PlaylistAudioController;
-import com.de.mucify.playable.Song;
-import com.de.mucify.service.PlaylistPlayForegroundService;
-import com.de.mucify.service.SongPlayForegroundService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.File;
 
 public class MultiAudioPlayActivity extends AppCompatActivity {
-    private Intent mPlaylistPlayForegroundIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.playlist_play_activity);
 
-        mPlaylistPlayForegroundIntent = new Intent(this, PlaylistPlayForegroundService.class);
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
 
         btmNav.setSelectedItemId(R.id.playlists);
@@ -54,22 +45,6 @@ public class MultiAudioPlayActivity extends AppCompatActivity {
             return true;
         });
 
-        if(!getIntent().getBooleanExtra("PreservePlaylist", false)) {
-            Playlist playlist = new Playlist(this, new File(getIntent().getStringExtra("PlaylistFilePath")));
-            PlaylistAudioController.get().setPlaylist(playlist);
-            PlaylistAudioController.get().startPlaylist();
-            AudioController.get().addOnSongUnpausedListener(song -> {
-                startService(mPlaylistPlayForegroundIntent);
-            }, AudioController.INDEX_DONT_CARE);
-
-            stopService(mPlaylistPlayForegroundIntent);
-            startService(mPlaylistPlayForegroundIntent);
-        }
-
-        // MY_TODO: Test if needs to be called in onResume?
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
-
-        new MultiAudioPlayController(this);
     }
 
     @Override

@@ -23,7 +23,6 @@ import com.de.mucify.R;
 import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
-import com.de.mucify.playable.Playlist;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.UserSettings;
 import com.de.mucify.util.Utils;
@@ -233,44 +232,44 @@ public class SingleAudioPlayController {
     }
 
     private void onAddToPlaylist(View v) {
-        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(mActivity, android.R.layout.select_dialog_multichoice);
-        MediaLibrary.loadAvailablePlaylists();
-
-        ArrayList<String> checkedItems = new ArrayList<>();
-
-        for(Playlist playlist : MediaLibrary.AvailablePlaylists)
-            arrayAdapter.add(playlist.getName());
-
-        AlertDialog dialog = new AlertDialog.Builder(mActivity)
-                .setTitle(mActivity.getString(R.string.add_to_playlist))
-                .setPositiveButton(mActivity.getString(R.string.ok), (dial, id) -> {
-                    for(int i = 0; i < arrayAdapter.getCount(); ++i) {
-                        if(checkedItems.contains(arrayAdapter.getItem(i))) {
-                            Playlist playlist = MediaLibrary.AvailablePlaylists.get(i);
-                            playlist.create(mActivity);
-                            playlist.addSong(AudioController.get().getSong());
-                            try {
-                                playlist.save();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                                Toast.makeText(mActivity, "Error saving playlist: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    }
-                })
-                .setNegativeButton(mActivity.getString(R.string.cancel), (dial, i) -> dial.dismiss())
-                .setAdapter(arrayAdapter, null)
-                .create();
-
-        dialog.getListView().setItemsCanFocus(false);
-        dialog.getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        dialog.getListView().setOnItemClickListener((parent, view, position, id) -> {
-            CheckedTextView textView = (CheckedTextView)view;
-            if(textView.isChecked())
-                checkedItems.add(MediaLibrary.AvailablePlaylists.get(position).getName());
-            else
-                checkedItems.remove(MediaLibrary.AvailablePlaylists.get(position).getName());
-        });
-        dialog.show();
+//        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(mActivity, android.R.layout.select_dialog_multichoice);
+//        MediaLibrary.loadAvailablePlaylists();
+//
+//        ArrayList<String> checkedItems = new ArrayList<>();
+//
+//        for(Playlist playlist : MediaLibrary.AvailablePlaylists)
+//            arrayAdapter.add(playlist.getName());
+//
+//        AlertDialog dialog = new AlertDialog.Builder(mActivity)
+//                .setTitle(mActivity.getString(R.string.add_to_playlist))
+//                .setPositiveButton(mActivity.getString(R.string.ok), (dial, id) -> {
+//                    for(int i = 0; i < arrayAdapter.getCount(); ++i) {
+//                        if(checkedItems.contains(arrayAdapter.getItem(i))) {
+//                            Playlist playlist = MediaLibrary.AvailablePlaylists.get(i);
+//                            playlist.create(mActivity);
+//                            playlist.addSong(AudioController.get().getSong());
+//                            try {
+//                                playlist.save();
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                                Toast.makeText(mActivity, "Error saving playlist: " + e.getMessage(), Toast.LENGTH_LONG).show();
+//                            }
+//                        }
+//                    }
+//                })
+//                .setNegativeButton(mActivity.getString(R.string.cancel), (dial, i) -> dial.dismiss())
+//                .setAdapter(arrayAdapter, null)
+//                .create();
+//
+//        dialog.getListView().setItemsCanFocus(false);
+//        dialog.getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+//        dialog.getListView().setOnItemClickListener((parent, view, position, id) -> {
+//            CheckedTextView textView = (CheckedTextView)view;
+//            if(textView.isChecked())
+//                checkedItems.add(MediaLibrary.AvailablePlaylists.get(position).getName());
+//            else
+//                checkedItems.remove(MediaLibrary.AvailablePlaylists.get(position).getName());
+//        });
+//        dialog.show();
     }
 }
