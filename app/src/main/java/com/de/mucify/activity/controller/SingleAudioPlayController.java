@@ -138,7 +138,7 @@ public class SingleAudioPlayController {
         AudioController.get().addOnSongPausedListener(song -> mBtnPlayPause.setImageResource(R.drawable.ic_black_play), AudioController.INDEX_DONT_CARE);
         AudioController.get().addOnSongUnpausedListener(song -> mBtnPlayPause.setImageResource(R.drawable.ic_black_pause), AudioController.INDEX_DONT_CARE);
         AudioController.get().addOnSongResetListener(song -> {
-            if(MucifyApplication.isActivityVisible()) {
+            if(MucifyApplication.isActivityVisible() && SingleAudioActivity.get() == null) {
                 Intent i = new Intent(mActivity, SingleAudioActivity.class);
                 i.putExtra("NavItemID", mActivity.getNavItemID());
                 mActivity.startActivity(i);

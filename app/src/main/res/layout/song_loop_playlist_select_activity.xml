@@ -5,6 +5,17 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <EditText
+        android:id="@+id/editSearchFiles"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:inputType="textCapSentences"
+        app:layout_constraintTop_toTopOf="@+id/coordinator"/>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnAddPlaylist"
         android:layout_width="wrap_content"
@@ -14,41 +25,19 @@
         android:clickable="true"
         app:layout_constraintBottom_toBottomOf="@+id/coordinator"
         app:layout_constraintEnd_toEndOf="@+id/coordinator"
-        app:srcCompat="@android:drawable/ic_input_add" />
+        app:srcCompat="@android:drawable/ic_input_add"/>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinator"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:id="@+id/linearLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_dodgeInsetEdges="bottom"
-            android:orientation="vertical">
-
-            <EditText
-                android:id="@+id/editSearchFiles"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:inputType="text" />
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvFiles"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-        </LinearLayout>
-
-        <FrameLayout
-            android:id="@+id/container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="56dp"/>
+                android:layout_marginTop="128dp"
+                android:layout_height="match_parent"
+                app:layout_dodgeInsetEdges="bottom"/>
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/btmNav"
