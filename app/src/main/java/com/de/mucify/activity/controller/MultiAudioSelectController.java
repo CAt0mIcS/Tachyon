@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.de.mucify.R;
 import com.de.mucify.activity.MultiAudioActivity;
 import com.de.mucify.activity.MultiAudioPlayActivity;
+import com.de.mucify.activity.PlaylistCreateActivity;
 import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.adapter.LoopListItemAdapter;
@@ -25,6 +27,7 @@ import com.de.mucify.playable.Song;
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.Utils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
@@ -45,7 +48,6 @@ public class MultiAudioSelectController {
         mRvFiles = mActivity.findViewById(R.id.rvFiles);
         loadPlaylists();
 
-        mActivity.findViewById(R.id.btnAddPlaylist).setVisibility(View.INVISIBLE);
         ((EditText)mActivity.findViewById(R.id.editSearchFiles)).addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -81,6 +83,11 @@ public class MultiAudioSelectController {
             @Override
             public void afterTextChanged(Editable s) {}
         });
+        mActivity.findViewById(R.id.btnAddPlaylist).setOnClickListener(v -> {
+            Intent i = new Intent(mActivity, PlaylistCreateActivity.class);
+            mActivity.startActivity(i);
+            mActivity.finish();
+        });
     }
 
     private void loadPlaylists() {
@@ -103,7 +110,6 @@ public class MultiAudioSelectController {
         mActivity.startActivity(i);
         mActivity.finish();
     }
-
 
     private void onPlaylistLongClicked(RecyclerView.ViewHolder v) {
 
