@@ -2,6 +2,8 @@ package com.de.mucify.activity.controller;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -27,13 +29,17 @@ import java.util.ArrayList;
 
 public class SingleAudioSelectController {
     private final SingleAudioActivity mActivity;
-    private ArrayList<Song> mListItems;
+    private final ArrayList<Song> mListItems = new ArrayList<>();
+
+    private final RecyclerView mRvFiles;
 
     public SingleAudioSelectController(SingleAudioActivity activity) {
         mActivity = activity;
 
         MediaLibrary.loadAvailableSongs();
         MediaLibrary.loadAvailableLoops();
+
+        mRvFiles = mActivity.findViewById(R.id.rvFiles);
 
         mActivity.menuItemChangedListener = item -> {
             switch(item.getItemId()) {
@@ -47,41 +53,63 @@ public class SingleAudioSelectController {
 
         };
 
-        if(mActivity.isInSongTab()) {
-            mListItems = MediaLibrary.AvailableSongs;
+        if(mActivity.isInSongTab())
             loadSongs();
-        }
-        else {
-            mListItems = MediaLibrary.AvailableLoops;
+        else
             loadLoops();
-        }
 
         mActivity.findViewById(R.id.btnAddPlaylist).setVisibility(View.INVISIBLE);
+        ((EditText)mActivity.findViewById(R.id.editSearchFiles)).addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mListItems.clear();
+                if(mActivity.isInSongTab())
+                    mListItems.addAll(MediaLibrary.AvailableSongs);
+                else
+                    mListItems.addAll(MediaLibrary.AvailableLoops);
+
+                if(s.toString().equals(""))
+                    return;
+
+                for(int i = 0; i < mListItems.size(); ++i) {
+                    Song song = mListItems.get(i);
+                    if(!song.getArtist().contains(s.toString()) && !song.getTitle().contains(s.toString())) {
+                        if(song.isLoop() && song.getLoopName().contains(s.toString()))
+                            continue;
+                        mListItems.remove(song);
+                        --i;
+                    }
+                }
+                mRvFiles.getAdapter().notifyDataSetChanged();
+            }
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
     }
 
     private void loadSongs() {
-        RecyclerView rv = mActivity.findViewById(R.id.rvFiles);
-        rv.setLayoutManager(new LinearLayoutManager(mActivity));
-        mListItems = MediaLibrary.AvailableSongs;
+        mRvFiles.setLayoutManager(new LinearLayoutManager(mActivity));
+        mListItems.addAll(MediaLibrary.AvailableSongs);
 
         SongListItemAdapter adapter = new SongListItemAdapter(mActivity, mListItems);
         adapter.setOnItemClicked(this::onFileClicked);
-        rv.setAdapter(adapter);
+        mRvFiles.setAdapter(adapter);
 
-        rv.getAdapter().notifyDataSetChanged();
+        mRvFiles.getAdapter().notifyDataSetChanged();
     }
 
     private void loadLoops() {
-        RecyclerView rv = mActivity.findViewById(R.id.rvFiles);
-        rv.setLayoutManager(new LinearLayoutManager(mActivity));
-        mListItems = MediaLibrary.AvailableLoops;
+        mRvFiles.setLayoutManager(new LinearLayoutManager(mActivity));
+        mListItems.addAll(MediaLibrary.AvailableLoops);
 
         LoopListItemAdapter adapter = new LoopListItemAdapter(mActivity, mListItems);
         adapter.setOnItemClicked(this::onFileClicked);
         adapter.setOnItemLongClicked(this::onLoopLongClicked);
-        rv.setAdapter(adapter);
+        mRvFiles.setAdapter(adapter);
 
-        rv.getAdapter().notifyDataSetChanged();
+        mRvFiles.getAdapter().notifyDataSetChanged();
     }
 
     private void onFileClicked(RecyclerView.ViewHolder holder) {
