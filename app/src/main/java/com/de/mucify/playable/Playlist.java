@@ -54,7 +54,8 @@ public class Playlist {
 
     public void reset() {
         for(Song s : mSongs)
-            s.reset();
+            if(s.isCreated())
+                s.reset();
         mSongs.clear();
     }
 

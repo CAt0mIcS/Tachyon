@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
+import com.de.mucify.activity.controller.MultiAudioSelectController;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Playlist;
 import com.de.mucify.playable.Song;
@@ -18,14 +19,14 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.io.File;
 
 public class MultiAudioActivity extends AppCompatActivity {
-    private Intent mSongPlayForegroundIntent;
+    private static MultiAudioActivity sInstance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.song_loop_playlist_select_activity);
 
-        mSongPlayForegroundIntent = new Intent(this, SongPlayForegroundService.class);
+        sInstance = this;
 
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
         btmNav.setSelectedItemId(R.id.playlists);
@@ -43,22 +44,13 @@ public class MultiAudioActivity extends AppCompatActivity {
             return true;
         });
 
-        if(!getIntent().getBooleanExtra("PreservePlaylist", false)) {
-            MediaLibrary.loadAvailablePlaylists();
-            Playlist playlist = MediaLibrary.AvailablePlaylists.get(0).create(this);
-            AudioController.get().setPlaylist(playlist);
-            AudioController.get().startSong();
+        new MultiAudioSelectController(this);
+    }
 
-            AudioController.get().addOnSongUnpausedListener(song -> {
-                startService(mSongPlayForegroundIntent);
-            }, AudioController.INDEX_DONT_CARE);
-
-            stopService(mSongPlayForegroundIntent);
-            startService(mSongPlayForegroundIntent);
-        }
-
-        // MY_TODO: Test if needs to be called in onResume?
-        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sInstance = null;
     }
 
     @Override
@@ -73,4 +65,5 @@ public class MultiAudioActivity extends AppCompatActivity {
         MucifyApplication.activityPaused(this);
     }
 
+    public static MultiAudioActivity get() { return sInstance; }
 }

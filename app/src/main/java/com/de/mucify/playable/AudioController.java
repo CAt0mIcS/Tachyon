@@ -70,17 +70,27 @@ public class AudioController {
             mSong.reset();
             mSong = null;
         }
+        if(mPlaylist != null) {
+            mPlaylist.reset();
+            mPlaylist = null;
+        }
     }
 
     public void setSong(Song song) {
         if(mSong != null)
             mSong.reset();
+        if(mPlaylist != null) {
+            mPlaylist.reset();
+            mPlaylist = null;
+        }
         mSong = song;
     }
 
     public void setPlaylist(Playlist playlist) {
         if(mPlaylist != null)
             mPlaylist.reset();
+        if(mSong != null)
+            mSong.reset();
         mPlaylist = playlist;
         mSong = mPlaylist.getPlayingSongs().get(0);
         mSong.create(mPlaylist.getContext());

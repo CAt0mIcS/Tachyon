@@ -20,6 +20,8 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
     private final Context mContext;
     private final ArrayList<Playlist> mPlaylists;
     private PlaylistViewHolder.OnItemClickListener mOnItemClickListener;
+    private PlaylistViewHolder.OnItemClickListener mOnItemLongClickListener;
+
 
     public PlaylistListItemAdapter(Context context, ArrayList<Playlist> playlists) {
         mContext = context;
@@ -37,7 +39,8 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
     public void onBindViewHolder(@NonNull PlaylistViewHolder holder, int i) {
         Playlist playlist = mPlaylists.get(i);
         holder.mOnItemClickListener = mOnItemClickListener;
-//        holder.mName.setText(playlist.getName());
+        holder.mOnItemLongClickListener = mOnItemLongClickListener;
+        holder.mName.setText(playlist.getName());
     }
 
     @Override
@@ -47,11 +50,16 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
         mOnItemClickListener = listener;
     }
 
+    public void setOnItemLongClicked(PlaylistViewHolder.OnItemClickListener listener) {
+        mOnItemLongClickListener = listener;
+    }
+
     public static class PlaylistViewHolder extends RecyclerView.ViewHolder {
 
         private final LinearLayout mItemLayout;
         private final TextView mName;
         private OnItemClickListener mOnItemClickListener;
+        private OnItemClickListener mOnItemLongClickListener;
 
         public PlaylistViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -62,6 +70,11 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
             mItemLayout.setOnClickListener(v -> {
                 if(mOnItemClickListener != null)
                     mOnItemClickListener.onItemClicked(this);
+            });
+            mItemLayout.setOnLongClickListener(v -> {
+                if(mOnItemLongClickListener != null)
+                    mOnItemLongClickListener.onItemClicked(this);
+                return true;
             });
         }
 

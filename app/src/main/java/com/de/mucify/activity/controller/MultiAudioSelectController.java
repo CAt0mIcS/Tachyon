@@ -12,11 +12,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
+import com.de.mucify.activity.MultiAudioActivity;
+import com.de.mucify.activity.MultiAudioPlayActivity;
 import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.adapter.LoopListItemAdapter;
+import com.de.mucify.adapter.PlaylistListItemAdapter;
 import com.de.mucify.adapter.SongListItemAdapter;
 import com.de.mucify.playable.AudioController;
+import com.de.mucify.playable.Playlist;
 import com.de.mucify.playable.Song;
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
@@ -27,36 +31,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class SingleAudioSelectController {
-    private final SingleAudioActivity mActivity;
-    private final ArrayList<Song> mListItems = new ArrayList<>();
+public class MultiAudioSelectController {
+    private final MultiAudioActivity mActivity;
+    private final ArrayList<Playlist> mListItems = new ArrayList<>();
 
     private final RecyclerView mRvFiles;
 
-    public SingleAudioSelectController(SingleAudioActivity activity) {
+    public MultiAudioSelectController(MultiAudioActivity activity) {
         mActivity = activity;
 
-        MediaLibrary.loadAvailableSongs();
-        MediaLibrary.loadAvailableLoops();
-
+        MediaLibrary.loadAvailablePlaylists();
         mRvFiles = mActivity.findViewById(R.id.rvFiles);
-
-        mActivity.menuItemChangedListener = item -> {
-            switch(item.getItemId()) {
-                case R.id.songs:
-                    loadSongs();
-                    break;
-                case R.id.loops:
-                    loadLoops();
-                    break;
-            }
-
-        };
-
-        if(mActivity.isInSongTab())
-            loadSongs();
-        else
-            loadLoops();
+        loadPlaylists();
 
         mActivity.findViewById(R.id.btnAddPlaylist).setVisibility(View.INVISIBLE);
         ((EditText)mActivity.findViewById(R.id.editSearchFiles)).addTextChangedListener(new TextWatcher() {
@@ -65,17 +51,23 @@ public class SingleAudioSelectController {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 mListItems.clear();
-                if(mActivity.isInSongTab())
-                    mListItems.addAll(MediaLibrary.AvailableSongs);
-                else
-                    mListItems.addAll(MediaLibrary.AvailableLoops);
+                mListItems.addAll(MediaLibrary.AvailablePlaylists);
 
                 if(s.toString().equals(""))
                     return;
 
                 for(int i = 0; i < mListItems.size(); ++i) {
-                    Song song = mListItems.get(i);
-                    if(!song.getArtist().contains(s) || !song.getTitle().contains(s) || (song.isLoop() && !song.getLoopName().contains(s))) {
+                    Playlist playlist = mListItems.get(i);
+
+                    // Search through songs in playlist
+                    boolean containsSong = false;
+                    for(Song song : playlist.getSongs()) {
+                        if(song.getTitle().contains(s) || song.getArtist().contains(s) || (song.isLoop() && song.getLoopName().contains(s))) {
+                            containsSong = true;
+                            break;
+                        }
+                    }
+                    if(!containsSong && !playlist.getName().contains(s)) {
                         mListItems.remove(i);
                         --i;
                     }
@@ -87,45 +79,29 @@ public class SingleAudioSelectController {
         });
     }
 
-    private void loadSongs() {
+    private void loadPlaylists() {
         mListItems.clear();
         mRvFiles.setLayoutManager(new LinearLayoutManager(mActivity));
-        mListItems.addAll(MediaLibrary.AvailableSongs);
+        mListItems.addAll(MediaLibrary.AvailablePlaylists);
 
-        SongListItemAdapter adapter = new SongListItemAdapter(mActivity, mListItems);
+        PlaylistListItemAdapter adapter = new PlaylistListItemAdapter(mActivity, mListItems);
         adapter.setOnItemClicked(this::onFileClicked);
-        mRvFiles.setAdapter(adapter);
-
-        mRvFiles.getAdapter().notifyDataSetChanged();
-    }
-
-    private void loadLoops() {
-        mListItems.clear();
-        mRvFiles.setLayoutManager(new LinearLayoutManager(mActivity));
-        mListItems.addAll(MediaLibrary.AvailableLoops);
-
-        LoopListItemAdapter adapter = new LoopListItemAdapter(mActivity, mListItems);
-        adapter.setOnItemClicked(this::onFileClicked);
-        adapter.setOnItemLongClicked(this::onLoopLongClicked);
+        adapter.setOnItemLongClicked(this::onPlaylistLongClicked);
         mRvFiles.setAdapter(adapter);
 
         mRvFiles.getAdapter().notifyDataSetChanged();
     }
 
     private void onFileClicked(RecyclerView.ViewHolder holder) {
-        Intent i = new Intent(mActivity, SingleAudioPlayActivity.class);
-        Song song = mListItems.get(holder.getAdapterPosition());
-        if(song.getLoopPath() != null)
-            i.putExtra("AudioFilePath", song.getLoopPath().getAbsolutePath());
-        else
-            i.putExtra("AudioFilePath", song.getSongPath().getAbsolutePath());
-        i.putExtra("NavItemID", mActivity.isInSongTab() ? R.id.songs : R.id.loops);
+        Intent i = new Intent(mActivity, MultiAudioPlayActivity.class);
+        Playlist playlist = mListItems.get(holder.getAdapterPosition());
+        i.putExtra("AudioFilePath", playlist.getPlaylistFilePath().getAbsolutePath());
         mActivity.startActivity(i);
         mActivity.finish();
     }
 
 
-    private void onLoopLongClicked(RecyclerView.ViewHolder v) {
+    private void onPlaylistLongClicked(RecyclerView.ViewHolder v) {
 
         LoopListItemAdapter.LoopViewHolder holder = (LoopListItemAdapter.LoopViewHolder)v;
 
