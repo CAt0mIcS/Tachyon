@@ -104,7 +104,8 @@ public class SongPlayForegroundService extends IntentService {
     private boolean startCustomForegroundService(@DrawableRes int playPauseIconID) {
         String NOTIFICATION_CHANNEL_ID = "com.mucify";
         String channelName = "Music playing background service";
-        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
+        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_HIGH);
+        channel.setSound(null, null);
         channel.setLightColor(Color.BLUE);
         channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
         NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
@@ -149,9 +150,8 @@ public class SongPlayForegroundService extends IntentService {
                 .setContentIntent(pendingClickIntent)
                 .setColorized(true)
 //                .setProgress(AudioController.get().getSongDuration(), AudioController.get().getCurrentSongPosition(), false)
-//                .setCategory(Notification.CATEGORY_SERVICE)  // MY_TODO: Check which category fits needs https://developer.android.com/reference/androidx/core/app/NotificationCompat#CATEGORY_ALARM
+                .setCategory(Notification.CATEGORY_SERVICE)  // MY_TODO: Check which category fits needs https://developer.android.com/reference/androidx/core/app/NotificationCompat#CATEGORY_ALARM
                 .setColor(ResourcesCompat.getColor(getResources(), R.color.audio_playing_notification_background, null))
-                .setPriority(Notification.PRIORITY_MAX)
                 .build();
 
         startForeground(NOTIFY_ID, notification);
