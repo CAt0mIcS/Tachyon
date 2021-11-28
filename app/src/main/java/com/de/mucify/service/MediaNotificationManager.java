@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaMetadata;
+import android.media.session.PlaybackState;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.v4.media.MediaDescriptionCompat;
@@ -72,6 +73,11 @@ public class MediaNotificationManager {
             public void onStop() {
                 super.onStop();
             }
+
+            @Override
+            public void onSeekTo(long pos) {
+                AudioController.get().seekSongTo(pos);
+            }
         });
         createNotificationChannel();
 
@@ -94,9 +100,7 @@ public class MediaNotificationManager {
         // restarted by the system.
         mNotificationManager.cancelAll();
 
-        AudioController.get().addOnSongSeekedListener(song -> {
-            mMediaSessionCompat.setPlaybackState(getState());
-        }, 0);
+        AudioController.get().addOnSongSeekedListener(song -> mMediaSessionCompat.setPlaybackState(getState()), 0);
     }
 
     public Notification buildNotification(boolean isPlaying) {
@@ -124,6 +128,7 @@ public class MediaNotificationManager {
                 // Pending intent that is fired when user clicks on notification.
                 .setContentIntent(createContentIntent())
 
+                // Add pause or play button
                 .addAction(isPlaying ? mPauseAction : mPlayAction)
 
                 // When notification is deleted (when playback is paused and notification can be
@@ -149,7 +154,9 @@ public class MediaNotificationManager {
     }
 
     private PlaybackStateCompat getState() {
-        long actions = AudioController.get().isSongPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY;
+        long actions = (AudioController.get().isSongPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY) |
+                PlaybackStateCompat.ACTION_SEEK_TO;
+//                | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
         int state = AudioController.get().isSongPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
 
         return new PlaybackStateCompat.Builder()

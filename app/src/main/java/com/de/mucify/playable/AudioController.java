@@ -40,8 +40,11 @@ public class AudioController {
                             if(!isPlaylistNull()) {
                                 playlistNext();
                             }
-                            else
+                            else {
                                 mSong.start();
+                                for(OnSongSeekedListener listener : mSongSeekedListeners)
+                                    listener.onSeeked(mSong);
+                            }
                             if(isPaused())
                                 mSong.pause();
 
@@ -124,7 +127,7 @@ public class AudioController {
     public int getSongDuration() { return mSong.getDuration(); }
     public String getSongTitle() { return mSong.getTitle(); }
     public String getSongArtist() { return mSong.getArtist(); }
-    public void seekSongTo(int milliseconds) { mSong.seekTo(milliseconds); for(OnSongSeekedListener listener : mSongSeekedListeners) listener.onSeeked(mSong); }
+    public void seekSongTo(long milliseconds) { mSong.seekTo(milliseconds); for(OnSongSeekedListener listener : mSongSeekedListeners) listener.onSeeked(mSong); }
     public void setSongStartTime(int startTime) { mSong.setStartTime(startTime); }
     public void setSongEndTime(int endTime) { mSong.setEndTime(endTime); }
     public int getSongStartTime() { return mSong.getStartTime(); }

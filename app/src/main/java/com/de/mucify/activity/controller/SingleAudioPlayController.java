@@ -96,7 +96,7 @@ public class SingleAudioPlayController {
 
         mSbProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) { mIsSeeking = false; AudioController.get().seekSongTo(seekBar.getProgress() * UserSettings.AudioUpdateInterval); }
+            public void onStopTrackingTouch(SeekBar seekBar) { mIsSeeking = false; AudioController.get().seekSongTo((long)seekBar.getProgress() * UserSettings.AudioUpdateInterval); }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) { mIsSeeking = true; }
             @Override

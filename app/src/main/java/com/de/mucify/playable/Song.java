@@ -60,7 +60,7 @@ public class Song {
         seekTo(mStartTime + 20);
     }
 
-    public void seekTo(int milliseconds) {
+    public void seekTo(long milliseconds) {
         mMediaPlayer.seekTo(milliseconds, MediaPlayer.SEEK_CLOSEST);
     }
 
