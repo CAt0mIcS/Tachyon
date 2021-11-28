@@ -43,14 +43,21 @@
             android:exported="true">
         </activity>
 
-        <service android:name=".service.MediaSessionService"/>
+<!--        <service android:name=".service.MediaSessionService"/>-->
 
-<!--        <receiver android:name=".receiver.ForegroundNotificationClickReceiver"-->
-<!--            android:exported="true">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="com.de.mucify.YES_ACTION"/>-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
+        <service
+            android:name=".service.MediaSessionService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </service>
+        <receiver android:name="androidx.media.session.MediaButtonReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON"/>
+            </intent-filter>
+        </receiver>
 
     </application>
 
