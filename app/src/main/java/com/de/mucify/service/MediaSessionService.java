@@ -39,8 +39,6 @@ public class MediaSessionService extends Service {
     private boolean mAlreadyReset = false;
 
     public MediaSessionService() {
-//        super("com.de.mucify.MediaSessionService");
-
         if(sInstance != null)
             sInstance.reset();
 

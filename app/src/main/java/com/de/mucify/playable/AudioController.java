@@ -23,7 +23,7 @@ public class AudioController {
     private final ArrayList<SongPausedListener> mSongPausedListeners = new ArrayList<>();
     private final ArrayList<SongUnpausedListener> mSongUnpausedListeners = new ArrayList<>();
     private final ArrayList<SongStartedListener> mSongStartedListeners = new ArrayList<>();
-    private final ArrayList<SongFinishedListener> mSongFinishedListeners = new ArrayList<>();
+    private final ArrayList<OnSongSeekedListener> mSongSeekedListeners = new ArrayList<>();
     private final ArrayList<NextSongListener> mNextSongListeners = new ArrayList<>();
 
     public static AudioController get() { return sInstance; }
@@ -37,10 +37,6 @@ public class AudioController {
                     if(!isSongNull() && mSong.isCreated() && mSong.isPlaying()) {
                         int currentPos = getCurrentSongPosition();
                         if(currentPos >= getSongEndTime() || currentPos < getSongStartTime() || (!mSong.isPlaying() && !isPaused())) {
-                            for(SongFinishedListener listener : mSongFinishedListeners) {
-                                listener.onFinished(mSong);
-                            }
-
                             if(!isPlaylistNull()) {
                                 playlistNext();
                             }
@@ -128,7 +124,7 @@ public class AudioController {
     public int getSongDuration() { return mSong.getDuration(); }
     public String getSongTitle() { return mSong.getTitle(); }
     public String getSongArtist() { return mSong.getArtist(); }
-    public void seekSongTo(int milliseconds) { mSong.seekTo(milliseconds); }
+    public void seekSongTo(int milliseconds) { mSong.seekTo(milliseconds); for(OnSongSeekedListener listener : mSongSeekedListeners) listener.onSeeked(mSong); }
     public void setSongStartTime(int startTime) { mSong.setStartTime(startTime); }
     public void setSongEndTime(int endTime) { mSong.setEndTime(endTime); }
     public int getSongStartTime() { return mSong.getStartTime(); }
@@ -172,11 +168,11 @@ public class AudioController {
         else
             mSongUnpausedListeners.add(listener);
     }
-    public void addOnSongFinishedListener(SongFinishedListener listener, int i) {
+    public void addOnSongSeekedListener(OnSongSeekedListener listener, int i) {
         if(i != INDEX_DONT_CARE)
-            mSongFinishedListeners.add(i, listener);
+            mSongSeekedListeners.add(i, listener);
         else
-            mSongFinishedListeners.add(listener);
+            mSongSeekedListeners.add(listener);
     }
     public void addOnNextSongListener(NextSongListener listener, int i) {
         if(i != INDEX_DONT_CARE)
@@ -203,8 +199,8 @@ public class AudioController {
     public interface SongStartedListener {
         void onStarted(Song song);
     }
-    public interface SongFinishedListener {
-        void onFinished(Song song);
+    public interface OnSongSeekedListener {
+        void onSeeked(Song song);
     }
     public interface SongResetListener {
         void onReset(Song song);

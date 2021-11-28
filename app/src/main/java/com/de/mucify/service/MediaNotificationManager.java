@@ -67,6 +67,11 @@ public class MediaNotificationManager {
             public void onPause() {
                 AudioController.get().pauseSong();
             }
+
+            @Override
+            public void onStop() {
+                super.onStop();
+            }
         });
         createNotificationChannel();
 
@@ -88,10 +93,15 @@ public class MediaNotificationManager {
         // Cancel all notifications to handle the case where the Service was killed and
         // restarted by the system.
         mNotificationManager.cancelAll();
+
+        AudioController.get().addOnSongSeekedListener(song -> {
+            mMediaSessionCompat.setPlaybackState(getState());
+        }, 0);
     }
 
     public Notification buildNotification(boolean isPlaying) {
         mMediaSessionCompat.setMetadata(getMetadata());
+        mMediaSessionCompat.setPlaybackState(getState());
 
         IntentFilter filter = new IntentFilter(ACTION_PREVIOUS);
         filter.addAction(ACTION_PLAY_PAUSE);
