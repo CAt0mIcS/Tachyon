@@ -107,11 +107,6 @@ public class MediaNotificationManager {
         mMediaSessionCompat.setMetadata(getMetadata());
         mMediaSessionCompat.setPlaybackState(getState());
 
-        IntentFilter filter = new IntentFilter(ACTION_PREVIOUS);
-        filter.addAction(ACTION_PLAY_PAUSE);
-        filter.addAction(ACTION_NEXT);
-        mService.registerReceiver(mNotificationReceiver, filter);
-
         return new NotificationCompat.Builder(mService, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_music_note_black)
                 .setOnlyAlertOnce(true)  // show notification only first time

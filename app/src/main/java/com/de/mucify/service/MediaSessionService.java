@@ -34,7 +34,6 @@ public class MediaSessionService extends Service {
 
     private MediaNotificationManager mMediaNotificationManager;
 
-
     private static final int NOTIFY_ID = 1337;
     private boolean mAlreadyReset = false;
 
