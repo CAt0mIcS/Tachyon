@@ -84,10 +84,11 @@ public class MediaSessionService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if ("android.intent.action.MEDIA_BUTTON".equals(intent.getAction())) {
             KeyEvent keyEvent = (KeyEvent)intent.getExtras().get("android.intent.extra.KEY_EVENT");
-            if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_MEDIA_PAUSE) {
-                AudioController.get().pauseSong();
-            } else {
-                AudioController.get().unpauseSong();
+            switch(keyEvent.getKeyCode()) {
+                case KeyEvent.KEYCODE_MEDIA_PAUSE: AudioController.get().pauseSong(); break;
+                case KeyEvent.KEYCODE_MEDIA_PLAY: AudioController.get().unpauseSong(); break;
+                case KeyEvent.KEYCODE_MEDIA_NEXT: AudioController.get().next(this); break;
+                case KeyEvent.KEYCODE_MEDIA_PREVIOUS: AudioController.get().previous(this); break;
             }
         }
         return super.onStartCommand(intent, flags, startId);

@@ -39,18 +39,18 @@ public class MediaNotificationManager {
 
     private static final String TAG = MediaNotificationManager.class.getSimpleName();
 
-    private final ForegroundNotificationClickReceiver mNotificationReceiver = new ForegroundNotificationClickReceiver();
-
     private static final String CHANNEL_ID = "com.de.mucify.player";
     public static final String ACTION_PREVIOUS = "com.de.mucify.ACTION_PREVIOUS";
     public static final String ACTION_PLAY_PAUSE = "com.de.mucify.ACTION_PLAY_PAUSE";
     public static final String ACTION_NEXT = "com.de.mucify.ACTION_NEXT";
 
-    private MediaSessionCompat mMediaSessionCompat;
-    private NotificationManager mNotificationManager;
+    private final MediaSessionCompat mMediaSessionCompat;
+    private final NotificationManager mNotificationManager;
 
-    private NotificationCompat.Action mPlayAction;
-    private NotificationCompat.Action mPauseAction;
+    private final NotificationCompat.Action mPlayAction;
+    private final NotificationCompat.Action mPauseAction;
+    private final NotificationCompat.Action mNextAction;
+    private final NotificationCompat.Action mPreviousAction;
 
     public MediaNotificationManager(MediaSessionService service) {
         mService = service;
@@ -81,20 +81,30 @@ public class MediaNotificationManager {
         });
         createNotificationChannel();
 
-        mPlayAction =
-                new NotificationCompat.Action(
-                        R.drawable.ic_play_arrow_black,
-                        "Play",
-                        MediaButtonReceiver.buildMediaButtonPendingIntent(
-                                mService,
-                                PlaybackStateCompat.ACTION_PLAY));
-        mPauseAction =
-                new NotificationCompat.Action(
-                        R.drawable.ic_pause_black,
-                        "Pause",
-                        MediaButtonReceiver.buildMediaButtonPendingIntent(
-                                mService,
-                                PlaybackStateCompat.ACTION_PAUSE));
+        mPlayAction = new NotificationCompat.Action(
+                R.drawable.ic_play_arrow_black,
+                "Play",
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        mService,
+                        PlaybackStateCompat.ACTION_PLAY));
+        mPauseAction = new NotificationCompat.Action(
+                R.drawable.ic_pause_black,
+                "Pause",
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        mService,
+                        PlaybackStateCompat.ACTION_PAUSE));
+        mNextAction = new NotificationCompat.Action(
+                R.drawable.ic_next_black,
+                "Next",
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        mService,
+                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT));
+        mPreviousAction = new NotificationCompat.Action(
+                R.drawable.ic_previous_black,
+                "Previous",
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        mService,
+                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS));
 
         // Cancel all notifications to handle the case where the Service was killed and
         // restarted by the system.
@@ -112,7 +122,7 @@ public class MediaNotificationManager {
                 .setOnlyAlertOnce(true)  // show notification only first time
                 .setShowWhen(false)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                        .setShowActionsInCompactView(0)
+                        .setShowActionsInCompactView(0, 1, 2)
                         .setShowCancelButton(true)
                         .setCancelButtonIntent(
                                 MediaButtonReceiver.buildMediaButtonPendingIntent(
@@ -123,8 +133,12 @@ public class MediaNotificationManager {
                 // Pending intent that is fired when user clicks on notification.
                 .setContentIntent(createContentIntent())
 
+                // Add previous song action
+                .addAction(mPreviousAction)
                 // Add pause or play button
                 .addAction(isPlaying ? mPauseAction : mPlayAction)
+                // Add next song action
+                .addAction(mNextAction)
 
                 // When notification is deleted (when playback is paused and notification can be
                 // deleted) fire MediaButtonPendingIntent with ACTION_PAUSE.
@@ -136,7 +150,6 @@ public class MediaNotificationManager {
     }
 
     public void release() {
-        mService.unregisterReceiver(mNotificationReceiver);
         mMediaSessionCompat.release();
     }
 
@@ -151,7 +164,6 @@ public class MediaNotificationManager {
     private PlaybackStateCompat getState() {
         long actions = (AudioController.get().isSongPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY) |
                 PlaybackStateCompat.ACTION_SEEK_TO;
-//                | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
         int state = AudioController.get().isSongPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
 
         return new PlaybackStateCompat.Builder()
