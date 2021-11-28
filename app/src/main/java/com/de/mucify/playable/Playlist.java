@@ -21,6 +21,8 @@ public class Playlist {
     private ArrayList<Song> mSongs = new ArrayList<>();
     private ArrayList<Song> mPlayingSongs = new ArrayList<>();
 
+    private Song mPreviousSong;
+
     public Playlist(File path) {
         if(!path.exists()) {
             // MY_TODO: Error message
@@ -60,8 +62,11 @@ public class Playlist {
     }
 
     public Song next() {
-        Song oldSong = mPlayingSongs.remove(0);
-        oldSong.reset();
+        if(mSongs.size() == 1)
+            return mPlayingSongs.get(0);
+
+        mPreviousSong = mPlayingSongs.remove(0);
+        mPreviousSong.reset();
         if(mPlayingSongs.size() == 0)
             addSongs();
         Song newSong = mPlayingSongs.get(0);
@@ -69,6 +74,23 @@ public class Playlist {
         return newSong;
     }
 
+    public Song previous() {
+        if(mPreviousSong == null || mSongs.size() == 1)
+            return null;
+
+        Song oldSong = mPlayingSongs.remove(0);
+        oldSong.reset();
+
+        for(Song song : mSongs) {
+            if(song.equals(mPreviousSong)) {
+                mPlayingSongs.add(0, song);
+                mPlayingSongs.get(0).create(mContext);
+                mPreviousSong = oldSong;
+                return mPlayingSongs.get(0);
+            }
+        }
+        return null;
+    }
 
     public String getName() { return mName; }
     public File getPlaylistFilePath() { return mPlaylistFilePath; }

@@ -8,16 +8,20 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.Icon;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.widget.RemoteViews;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.de.mucify.R;
@@ -36,6 +40,14 @@ public class SongPlayForegroundService extends IntentService {
 
     private final IntentFilter mNoisyAudioIntent = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final BecomingNoisyReceiver mNoisyAudioReceiver = new BecomingNoisyReceiver();
+
+    private NotificationManager mNotificationManager;
+
+    private static final String CHANNEL_ID = "com.de.mucify.player";
+    public static final String ACTION_PREVIOUS = "com.de.mucify.ACTION_PREVIOUS";
+    public static final String ACTION_PLAY_PAUSE = "com.de.mucify.ACTION_PLAY_PAUSE";
+    public static final String ACTION_NEXT = "com.de.mucify.ACTION_NEXT";
+
 
     private static final int NOTIFY_ID = 1337;
     private boolean mAlreadyReset = false;
@@ -60,7 +72,11 @@ public class SongPlayForegroundService extends IntentService {
         if(AudioController.get().isSongNull() || mAlreadyReset)
             return;
 
-        if(!startCustomForegroundService(R.drawable.ic_black_pause))
+        if(mNotificationManager == null)
+            mNotificationManager = getSystemService(NotificationManager.class);
+        assert mNotificationManager != null;
+
+        if(!startCustomForegroundService(R.drawable.ic_pause_black))
             return;
 
         registerReceiver(mNoisyAudioReceiver, mNoisyAudioIntent);
@@ -72,9 +88,9 @@ public class SongPlayForegroundService extends IntentService {
                 mMutex.notify();
             }
         }, 0);
-        AudioController.get().addOnSongPausedListener(song -> startCustomForegroundService(R.drawable.ic_black_play), 0);
-        AudioController.get().addOnSongUnpausedListener(song -> startCustomForegroundService(R.drawable.ic_black_pause), 0);
-        AudioController.get().addOnNextPlaylistSongListener(nextSong -> startCustomForegroundService(R.drawable.ic_black_pause), 0);
+        AudioController.get().addOnSongPausedListener(song -> startCustomForegroundService(R.drawable.ic_play_arrow_black), 0);
+        AudioController.get().addOnSongUnpausedListener(song -> startCustomForegroundService(R.drawable.ic_pause_black), 0);
+        AudioController.get().addOnNextPlaylistSongListener(nextSong -> startCustomForegroundService(R.drawable.ic_pause_black), 0);
 
         synchronized (mMutex) {
             // Wait until song reset/paused
@@ -99,58 +115,49 @@ public class SongPlayForegroundService extends IntentService {
     public static SongPlayForegroundService get() { return sInstance; }
 
     private boolean startCustomForegroundService(@DrawableRes int playPauseIconID) {
-        String NOTIFICATION_CHANNEL_ID = "com.mucify";
-        String channelName = "Music playing background service";
-        NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_HIGH);
-        channel.setSound(null, null);
-        channel.setLightColor(Color.BLUE);
-        channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-        NotificationManager manager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-        assert manager != null;
-        manager.createNotificationChannel(channel);
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Song playing foreground service notification", NotificationManager.IMPORTANCE_LOW);
+        mNotificationManager.createNotificationChannel(channel);
 
-        // Get the layouts to use in the custom notification
-        RemoteViews notificationLayout = new RemoteViews(getPackageName(), R.layout.song_loop_playing_foreground_notification_small);
-//        RemoteViews notificationLayoutExpanded = new RemoteViews(getPackageName(), R.layout.song_loop_playing_foreground_notification_large);
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+        MediaSessionCompat mediaSessionCompat = new MediaSessionCompat(this, "Mucify");
 
-        notificationLayout.setTextViewText(R.id.notification_txtTitle, AudioController.get().getSongTitle());
-        notificationLayout.setTextViewText(R.id.notification_txtArtist, AudioController.get().getSongArtist());
-
-        notificationLayout.setTextColor(R.id.notification_txtTitle, ResourcesCompat.getColor(getResources(), R.color.black_text_color, null));
-        notificationLayout.setTextColor(R.id.notification_txtArtist, ResourcesCompat.getColor(getResources(), R.color.black_secondary_text_color, null));
-
-        notificationLayout.setImageViewResource(R.id.notification_btnPlayPause, playPauseIconID);
-
-        IntentFilter filter = new IntentFilter("com.de.mucify.PLAY_PAUSE");
-        filter.addAction("com.de.mucify.FOREGROUND_CLOSE");
+        IntentFilter filter = new IntentFilter(ACTION_PREVIOUS);
+        filter.addAction(ACTION_PLAY_PAUSE);
+        filter.addAction(ACTION_NEXT);
         registerReceiver(mNotificationReceiver, filter);
 
-        Intent pauseIntent = new Intent("com.de.mucify.PLAY_PAUSE");
-        pauseIntent.putExtra("PlayPause", playPauseIconID);
-        PendingIntent pendingIntentPause = PendingIntent.getBroadcast(this, 12345, pauseIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        notificationLayout.setOnClickPendingIntent(R.id.notification_btnPlayPause, pendingIntentPause);
+        Intent intentPrevious = new Intent(ACTION_PREVIOUS);
+        PendingIntent pendingIntentPrevious = PendingIntent.getBroadcast(this, 0, intentPrevious, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent closeIntent = new Intent("com.de.mucify.FOREGROUND_CLOSE");
-        PendingIntent pendingIntentClose = PendingIntent.getBroadcast(this, 12345, closeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        notificationLayout.setOnClickPendingIntent(R.id.notification_btnRemove, pendingIntentClose);
+        Intent intentPlayPause = new Intent(ACTION_PLAY_PAUSE);
+        intentPlayPause.putExtra("PlayPause", playPauseIconID);
+        PendingIntent pendingIntentPlayPause = PendingIntent.getBroadcast(this, 0, intentPlayPause, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent intentNext = new Intent(ACTION_NEXT);
+        PendingIntent pendingIntentNext = PendingIntent.getBroadcast(this, 0, intentNext, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent clickIntent = new Intent(this, SingleAudioPlayActivity.class);
         clickIntent.putExtra("PreserveSong", true);
         PendingIntent pendingClickIntent = PendingIntent.getActivity(this, 0, clickIntent, 0);
 
-        // Apply the layouts to the notification
-        Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
-                .setCustomContentView(notificationLayout)
-//                .setCustomBigContentView(notificationLayoutExpanded)
-                .setContentIntent(pendingClickIntent)
-                .setColorized(true)
-//                .setProgress(AudioController.get().getSongDuration(), AudioController.get().getCurrentSongPosition(), false)
-                .setCategory(Notification.CATEGORY_SERVICE)  // MY_TODO: Check which category fits needs https://developer.android.com/reference/androidx/core/app/NotificationCompat#CATEGORY_ALARM
-                .setColor(ResourcesCompat.getColor(getResources(), R.color.audio_playing_notification_background, null))
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_music_note_black)
+                .setContentTitle(AudioController.get().getSongTitle())
+                .setContentText(AudioController.get().getSongArtist())
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_music_note_black))
+                .setOnlyAlertOnce(true)  // show notification only first time
+                .setShowWhen(false)
+//                .setContentIntent(pendingClickIntent)
+                .addAction(R.drawable.ic_previous_black, "Previous", pendingIntentPrevious)
+                .addAction(playPauseIconID, "Play/Pause", pendingIntentPlayPause)
+                .addAction(R.drawable.ic_next_black, "Next", pendingIntentNext)
+//                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
+//                    .setShowActionsInCompactView(0, 1, 2)
+//                    .setMediaSession(mediaSessionCompat.getSessionToken()))
+                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build();
 
+        notificationManagerCompat.notify(NOTIFY_ID, notification);
         startForeground(NOTIFY_ID, notification);
         return true;
     }

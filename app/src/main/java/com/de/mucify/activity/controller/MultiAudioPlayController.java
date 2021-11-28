@@ -89,8 +89,8 @@ public class MultiAudioPlayController {
             else
                 AudioController.get().unpauseSong();
         });
-        AudioController.get().addOnSongPausedListener(song -> mBtnPlayPause.setImageResource(R.drawable.ic_black_play), AudioController.INDEX_DONT_CARE);
-        AudioController.get().addOnSongUnpausedListener(song -> mBtnPlayPause.setImageResource(R.drawable.ic_black_pause), AudioController.INDEX_DONT_CARE);
+        AudioController.get().addOnSongPausedListener(song -> mBtnPlayPause.setImageResource(R.drawable.ic_play_arrow_black), AudioController.INDEX_DONT_CARE);
+        AudioController.get().addOnSongUnpausedListener(song -> mBtnPlayPause.setImageResource(R.drawable.ic_pause_black), AudioController.INDEX_DONT_CARE);
         AudioController.get().addOnSongResetListener(song -> {
             if(MucifyApplication.isActivityVisible() && MultiAudioActivity.get() == null) {
                 Intent i = new Intent(mActivity, MultiAudioActivity.class);

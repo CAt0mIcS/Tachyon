@@ -1,9 +1,14 @@
 package com.de.mucify.playable;
 
+import android.content.Context;
+import android.provider.MediaStore;
+
 import com.de.mucify.util.FileManager;
+import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.UserSettings;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.AbstractCollection;
@@ -22,7 +27,7 @@ public class AudioController {
     private final ArrayList<SongUnpausedListener> mSongUnpausedListeners = new ArrayList<>();
     private final ArrayList<SongStartedListener> mSongStartedListeners = new ArrayList<>();
     private final ArrayList<SongFinishedListener> mSongFinishedListeners = new ArrayList<>();
-    private ArrayList<NextPlaylistSongListener> mNextPlaylistSongListeners = new ArrayList<>();
+    private final ArrayList<NextPlaylistSongListener> mNextPlaylistSongListeners = new ArrayList<>();
 
     public static AudioController get() { return sInstance; }
 
@@ -40,12 +45,10 @@ public class AudioController {
                             }
 
                             if(!isPlaylistNull()) {
-                                mSong = mPlaylist.next();
-                                mIsSongPaused = false;
-                                for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
-                                    listener.onNextSong(mSong);
+                                playlistNext();
                             }
-                            mSong.start();
+                            else
+                                mSong.start();
                             if(isPaused())
                                 mSong.pause();
 
@@ -106,6 +109,20 @@ public class AudioController {
         else
             for(SongStartedListener listener : mSongStartedListeners)
                 listener.onStarted(mSong);
+    }
+
+    public void next(Context context) {
+        if(!isPlaylistNull())
+            playlistNext();
+        else
+            songNext(context);
+    }
+
+    public void previous(Context context) {
+        if(!isPlaylistNull())
+            playlistPrevious();
+        else
+            songPrevious(context);
     }
 
     public boolean isSongPlaying() { return mSong.isPlaying(); }
@@ -206,5 +223,109 @@ public class AudioController {
     }
     public interface NextPlaylistSongListener {
         void onNextSong(Song nextSong);
+    }
+
+
+    private void playlistNext() {
+        mSong = mPlaylist.next();
+        mIsSongPaused = false;
+        mSong.start();
+        for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+            listener.onNextSong(mSong);
+    }
+
+    private void playlistPrevious() {
+        Song previous = mPlaylist.previous();
+        if(previous == null)
+            return;
+        mSong = previous;
+        mIsSongPaused = false;
+        mSong.start();
+        for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+            listener.onNextSong(mSong);
+    }
+
+    private void songNext(Context context) {
+        // MY_TODO: Fix next being called too often
+        if(mSong.isLoop()) {
+            for(int i = 0; i < MediaLibrary.AvailableLoops.size(); ++i) {
+                Song loop = MediaLibrary.AvailableLoops.get(i);
+                if(loop.equalsUninitialized(mSong)) {
+                    int songIndex = i + 1;
+                    if(songIndex >= MediaLibrary.AvailableLoops.size())
+                        songIndex = 0;
+                    mSong.reset();
+                    mSong = MediaLibrary.AvailableLoops.get(songIndex);
+                    mSong.create(context);
+                    mSong.start();
+
+                    for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+                        listener.onNextSong(mSong);
+
+                    break;
+                }
+            }
+        }
+        else {
+            for(int i = 0; i < MediaLibrary.AvailableSongs.size(); ++i) {
+                Song song = MediaLibrary.AvailableSongs.get(i);
+                if(song.equalsUninitialized(mSong)) {
+                    int songIndex = i + 1;
+                    if(songIndex >= MediaLibrary.AvailableSongs.size())
+                        songIndex = 0;
+                    mSong.reset();
+                    mSong = MediaLibrary.AvailableSongs.get(songIndex);
+                    mSong.create(context);
+                    mSong.start();
+
+                    for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+                        listener.onNextSong(mSong);
+
+                    break;
+                }
+            }
+        }
+    }
+
+    private void songPrevious(Context context) {
+        // MY_TODO: Fix previous being called too often
+        if(mSong.isLoop()) {
+            for(int i = 0; i < MediaLibrary.AvailableLoops.size(); ++i) {
+                Song loop = MediaLibrary.AvailableLoops.get(i);
+                if(loop.equalsUninitialized(mSong)) {
+                    int songIndex = i - 1;
+                    if(songIndex < 0)
+                        songIndex = MediaLibrary.AvailableLoops.size() - 1;
+                    mSong.reset();
+                    mSong = MediaLibrary.AvailableLoops.get(songIndex);
+                    mSong.create(context);
+                    mSong.start();
+
+                    for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+                        listener.onNextSong(mSong);
+
+                    break;
+                }
+            }
+        }
+        else {
+            for(int i = 0; i < MediaLibrary.AvailableSongs.size(); ++i) {
+                Song song = MediaLibrary.AvailableSongs.get(i);
+                if(song.equalsUninitialized(mSong)) {
+                    int songIndex = i - 1;
+                    if(songIndex < 0)
+                        songIndex = MediaLibrary.AvailableSongs.size() - 1;
+                    mSong.reset();
+                    mSong = MediaLibrary.AvailableSongs.get(songIndex);
+                    mSong.create(context);
+                    mSong.start();
+
+                    for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+                        listener.onNextSong(mSong);
+
+                    break;
+                }
+            }
+        }
     }
 }

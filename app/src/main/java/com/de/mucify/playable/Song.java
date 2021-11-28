@@ -5,6 +5,8 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 
+import androidx.annotation.Nullable;
+
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
@@ -89,10 +91,32 @@ public class Song {
     public void setOnMediaPlayerCompletionListener(MediaPlayer.OnCompletionListener listener) { mMediaPlayer.setOnCompletionListener(listener); }
     public boolean isCreated() { return mMediaPlayer != null; }
 
+    public boolean equalsUninitialized(@Nullable Song obj) {
+        if(obj == null)
+            return false;
+        boolean equals = mTitle.equals(obj.mTitle) && mArtist.equals(obj.mArtist) && mStartTime == obj.mStartTime && mSongFilePath.equals(obj.mSongFilePath);
+        if(equals && mLoopFilePath != null && obj.mLoopFilePath != null)
+            equals = mLoopFilePath.equals(obj.mLoopFilePath);
+        else if(mLoopFilePath == null && obj.mLoopFilePath == null) {}
+        else equals = false;
+        return equals;
+    }
+
+    public boolean equals(@Nullable Song obj) {
+        if(obj == null)
+            return false;
+        boolean equals = mTitle.equals(obj.mTitle) && mArtist.equals(obj.mArtist) && mStartTime == obj.mStartTime && mEndTime == obj.mEndTime && mMediaPlayer == obj.mMediaPlayer && mSongFilePath.equals(obj.mSongFilePath);
+        if(equals && mLoopFilePath != null && obj.mLoopFilePath != null)
+            equals = mLoopFilePath.equals(obj.mLoopFilePath);
+        else if(mLoopFilePath == null && obj.mLoopFilePath == null) {}
+        else equals = false;
+        return equals;
+    }
 
     private void createInternal(Context context, File path) {
         createInternal(path);
         mMediaPlayer = MediaPlayer.create(context, Uri.parse(mSongFilePath.getPath()));
+        mMediaPlayer.setLooping(true);
 
         if(mEndTime == 0)
             mEndTime = mMediaPlayer.getDuration();
