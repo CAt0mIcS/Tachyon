@@ -1,17 +1,14 @@
 package com.de.mucify.playable;
 
 import android.content.Context;
-import android.provider.MediaStore;
 
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.UserSettings;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.AbstractCollection;
 import java.util.ArrayList;
 
 public class AudioController {
@@ -27,7 +24,7 @@ public class AudioController {
     private final ArrayList<SongUnpausedListener> mSongUnpausedListeners = new ArrayList<>();
     private final ArrayList<SongStartedListener> mSongStartedListeners = new ArrayList<>();
     private final ArrayList<SongFinishedListener> mSongFinishedListeners = new ArrayList<>();
-    private final ArrayList<NextPlaylistSongListener> mNextPlaylistSongListeners = new ArrayList<>();
+    private final ArrayList<NextSongListener> mNextSongListeners = new ArrayList<>();
 
     public static AudioController get() { return sInstance; }
 
@@ -144,10 +141,7 @@ public class AudioController {
 
     public void pauseSong() {
         if(!isPaused()) {
-            mSong.pause();
-            mIsSongPaused = true;
-            for(SongPausedListener listener : mSongPausedListeners)
-                listener.onPause(mSong);
+            pauseSongInternal();
         }
     }
 
@@ -184,11 +178,11 @@ public class AudioController {
         else
             mSongFinishedListeners.add(listener);
     }
-    public void addOnNextPlaylistSongListener(NextPlaylistSongListener listener, int i) {
+    public void addOnNextSongListener(NextSongListener listener, int i) {
         if(i != INDEX_DONT_CARE)
-            mNextPlaylistSongListeners.add(i, listener);
+            mNextSongListeners.add(i, listener);
         else
-            mNextPlaylistSongListeners.add(listener);
+            mNextSongListeners.add(listener);
     }
 
     public void saveAsLoop(String loopName) throws IOException {
@@ -221,16 +215,26 @@ public class AudioController {
     public interface SongUnpausedListener {
         void onUnpause(Song song);
     }
-    public interface NextPlaylistSongListener {
+    public interface NextSongListener {
         void onNextSong(Song nextSong);
     }
 
 
+    private void pauseSongInternal() {
+        mSong.pause();
+        mIsSongPaused = true;
+        for(SongPausedListener listener : mSongPausedListeners)
+            listener.onPause(mSong);
+    }
+
     private void playlistNext() {
         mSong = mPlaylist.next();
-        mIsSongPaused = false;
         mSong.start();
-        for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+
+        if(mIsSongPaused)
+            pauseSongInternal();
+
+        for(NextSongListener listener : mNextSongListeners)
             listener.onNextSong(mSong);
     }
 
@@ -239,9 +243,12 @@ public class AudioController {
         if(previous == null)
             return;
         mSong = previous;
-        mIsSongPaused = false;
         mSong.start();
-        for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+
+        if(mIsSongPaused)
+            pauseSongInternal();
+
+        for(NextSongListener listener : mNextSongListeners)
             listener.onNextSong(mSong);
     }
 
@@ -258,8 +265,10 @@ public class AudioController {
                     mSong = MediaLibrary.AvailableLoops.get(songIndex);
                     mSong.create(context);
                     mSong.start();
+                    if(mIsSongPaused)
+                        pauseSongInternal();
 
-                    for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+                    for(NextSongListener listener : mNextSongListeners)
                         listener.onNextSong(mSong);
 
                     break;
@@ -277,8 +286,10 @@ public class AudioController {
                     mSong = MediaLibrary.AvailableSongs.get(songIndex);
                     mSong.create(context);
                     mSong.start();
+                    if(mIsSongPaused)
+                        pauseSongInternal();
 
-                    for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+                    for(NextSongListener listener : mNextSongListeners)
                         listener.onNextSong(mSong);
 
                     break;
@@ -300,8 +311,10 @@ public class AudioController {
                     mSong = MediaLibrary.AvailableLoops.get(songIndex);
                     mSong.create(context);
                     mSong.start();
+                    if(mIsSongPaused)
+                        mSong.pause();
 
-                    for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+                    for(NextSongListener listener : mNextSongListeners)
                         listener.onNextSong(mSong);
 
                     break;
@@ -319,8 +332,10 @@ public class AudioController {
                     mSong = MediaLibrary.AvailableSongs.get(songIndex);
                     mSong.create(context);
                     mSong.start();
+                    if(mIsSongPaused)
+                        mSong.pause();
 
-                    for(NextPlaylistSongListener listener : mNextPlaylistSongListeners)
+                    for(NextSongListener listener : mNextSongListeners)
                         listener.onNextSong(mSong);
 
                     break;

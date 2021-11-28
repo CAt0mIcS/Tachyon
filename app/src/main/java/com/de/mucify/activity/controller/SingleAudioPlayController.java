@@ -9,11 +9,8 @@ import android.telephony.TelephonyManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,7 +26,6 @@ import com.de.mucify.util.Utils;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 
 public class SingleAudioPlayController {
@@ -73,13 +69,19 @@ public class SingleAudioPlayController {
         mLblEndTime = mActivity.findViewById(R.id.pa_lblEndTime);
         mBtnPlayPause = mActivity.findViewById(R.id.pa_btnPause);
 
+        AudioController.NextSongListener nextSongListener = nextSong -> {
+            int duration = AudioController.get().getSongDuration() / UserSettings.AudioUpdateInterval;
+            mSbProgress.setMax(duration);
+            mSbStartTime.setMax(duration);
+            mSbEndTime.setMax(duration);
+            ((TextView)mActivity.findViewById(R.id.pa_lblSongName)).setText(AudioController.get().getSongTitle() + " " + mActivity.getString(R.string.by) + " " + AudioController.get().getSongArtist());
 
-        int duration = AudioController.get().getSongDuration() / UserSettings.AudioUpdateInterval;
-        mSbProgress.setMax(duration);
-        mSbStartTime.setMax(duration);
-        mSbEndTime.setMax(duration);
-
-        ((TextView)mActivity.findViewById(R.id.pa_lblSongName)).setText(AudioController.get().getSongTitle() + " " + mActivity.getString(R.string.by) + " " + AudioController.get().getSongArtist());
+            // Call listeners to set label text
+            mSbStartTime.setProgress(1);
+            mSbStartTime.setProgress(AudioController.get().getSongStartTime() != 0 ? AudioController.get().getSongStartTime() / UserSettings.AudioUpdateInterval : 0);
+            mSbEndTime.setProgress(AudioController.get().getSongEndTime() != 0 ? AudioController.get().getSongEndTime() / UserSettings.AudioUpdateInterval : 0);
+        };
+        AudioController.get().addOnNextSongListener(nextSongListener, AudioController.INDEX_DONT_CARE);
 
         mActivity.runOnUiThread(new Runnable() {
             @Override
@@ -195,15 +197,11 @@ public class SingleAudioPlayController {
             }
         });
         mActivity.findViewById(R.id.pa_btnAddToPlaylist).setOnClickListener(this::onAddToPlaylist);
+        nextSongListener.onNextSong(AudioController.get().getSong());
 
         // Perform click to update image
         mBtnPlayPause.performClick();
         mBtnPlayPause.performClick();
-
-        // Call listeners to set label text
-        mSbStartTime.setProgress(1);
-        mSbStartTime.setProgress(AudioController.get().getSongStartTime() != 0 ? AudioController.get().getSongStartTime() / UserSettings.AudioUpdateInterval : 0);
-        mSbEndTime.setProgress(AudioController.get().getSongEndTime() != 0 ? AudioController.get().getSongEndTime() / UserSettings.AudioUpdateInterval : 0);
     }
 
     private void onLoopSave(View v) {

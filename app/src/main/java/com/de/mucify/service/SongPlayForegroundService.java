@@ -5,33 +5,22 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.Icon;
 import android.media.AudioManager;
-import android.os.Build;
-import android.os.Bundle;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.widget.RemoteViews;
 
 import androidx.annotation.DrawableRes;
-import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.res.ResourcesCompat;
 
 import com.de.mucify.R;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
-import com.de.mucify.playable.Song;
 import com.de.mucify.receiver.BecomingNoisyReceiver;
 import com.de.mucify.receiver.ForegroundNotificationClickReceiver;
-
-import java.io.File;
 
 public class SongPlayForegroundService extends IntentService {
     static SongPlayForegroundService sInstance = null;
@@ -90,7 +79,7 @@ public class SongPlayForegroundService extends IntentService {
         }, 0);
         AudioController.get().addOnSongPausedListener(song -> startCustomForegroundService(R.drawable.ic_play_arrow_black), 0);
         AudioController.get().addOnSongUnpausedListener(song -> startCustomForegroundService(R.drawable.ic_pause_black), 0);
-        AudioController.get().addOnNextPlaylistSongListener(nextSong -> startCustomForegroundService(R.drawable.ic_pause_black), 0);
+        AudioController.get().addOnNextSongListener(nextSong -> startCustomForegroundService(AudioController.get().isPaused() ? R.drawable.ic_play_arrow_black : R.drawable.ic_pause_black), 0);
 
         synchronized (mMutex) {
             // Wait until song reset/paused

@@ -13,8 +13,6 @@ import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
 import com.de.mucify.activity.MultiAudioActivity;
 import com.de.mucify.activity.MultiAudioPlayActivity;
-import com.de.mucify.activity.SingleAudioActivity;
-import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.util.UserSettings;
 import com.de.mucify.util.Utils;
@@ -55,11 +53,11 @@ public class MultiAudioPlayController {
         mBtnPlayPause = mActivity.findViewById(R.id.pp_btnPause);
         mLblSongName = mActivity.findViewById(R.id.pp_lblSongName);
 
-        AudioController.NextPlaylistSongListener nextSongListener = nextSong -> {
+        AudioController.NextSongListener nextSongListener = nextSong -> {
             mSbProgress.setMax(AudioController.get().getSongDuration() / UserSettings.AudioUpdateInterval);
             mLblSongName.setText(AudioController.get().getSongTitle() + " " + mActivity.getString(R.string.by) + " " + AudioController.get().getSongArtist());
         };
-        AudioController.get().addOnNextPlaylistSongListener(nextSongListener, AudioController.INDEX_DONT_CARE);
+        AudioController.get().addOnNextSongListener(nextSongListener, AudioController.INDEX_DONT_CARE);
         nextSongListener.onNextSong(AudioController.get().getSong());
 
         mActivity.runOnUiThread(new Runnable() {
