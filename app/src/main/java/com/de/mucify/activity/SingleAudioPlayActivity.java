@@ -1,6 +1,5 @@
 package com.de.mucify.activity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
@@ -12,7 +11,7 @@ import com.de.mucify.R;
 import com.de.mucify.activity.controller.SingleAudioPlayController;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Song;
-import com.de.mucify.service.SongPlayForegroundService;
+import com.de.mucify.service.MediaSessionService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.File;
@@ -29,7 +28,7 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
 
         setContentView(R.layout.song_loop_play_activity);
 
-        mSongPlayForegroundIntent = new Intent(this, SongPlayForegroundService.class);
+        mSongPlayForegroundIntent = new Intent(this, MediaSessionService.class);
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
 
         // When switching to this activity, we need to know if we want the Song

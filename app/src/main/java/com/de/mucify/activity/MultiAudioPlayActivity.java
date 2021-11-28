@@ -3,18 +3,15 @@ package com.de.mucify.activity;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
 import com.de.mucify.activity.controller.MultiAudioPlayController;
-import com.de.mucify.activity.controller.SingleAudioPlayController;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Playlist;
-import com.de.mucify.playable.Song;
-import com.de.mucify.service.SongPlayForegroundService;
+import com.de.mucify.service.MediaSessionService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.File;
@@ -28,7 +25,7 @@ public class MultiAudioPlayActivity extends AppCompatActivity {
         setContentView(R.layout.playlist_play_activity);
 
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
-        mSongPlayForegroundIntent = new Intent(this, SongPlayForegroundService.class);
+        mSongPlayForegroundIntent = new Intent(this, MediaSessionService.class);
 
         btmNav.setSelectedItemId(R.id.playlists);
         btmNav.setOnItemSelectedListener(item -> {

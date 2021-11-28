@@ -1,7 +1,6 @@
 package com.de.mucify.activity;
 
 import android.content.Intent;
-import android.media.AudioManager;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,14 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
 import com.de.mucify.activity.controller.MultiAudioSelectController;
-import com.de.mucify.playable.AudioController;
-import com.de.mucify.playable.Playlist;
-import com.de.mucify.playable.Song;
-import com.de.mucify.service.SongPlayForegroundService;
-import com.de.mucify.util.MediaLibrary;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import java.io.File;
 
 public class MultiAudioActivity extends AppCompatActivity {
     private static MultiAudioActivity sInstance;

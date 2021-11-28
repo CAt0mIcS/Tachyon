@@ -43,7 +43,7 @@
             android:exported="true">
         </activity>
 
-        <service android:name=".service.SongPlayForegroundService"/>
+        <service android:name=".service.MediaSessionService"/>
 
 <!--        <receiver android:name=".receiver.ForegroundNotificationClickReceiver"-->
 <!--            android:exported="true">-->
