@@ -51,8 +51,8 @@
             android:layout_toRightOf="@+id/view"
             android:layout_alignParentRight="true"
             android:background="@color/audio_playing_notification_background"
-            android:src="@drawable/ic_black_close"
             style="?android:attr/borderlessButtonStyle"/>
+<!--        android:src="@drawable/ic_black_close"-->
 
     </RelativeLayout>
 

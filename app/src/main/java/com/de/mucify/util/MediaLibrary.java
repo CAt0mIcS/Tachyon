@@ -3,6 +3,7 @@ package com.de.mucify.util;
 import android.content.ContextWrapper;
 import android.hardware.camera2.CameraManager;
 import android.os.Environment;
+import android.provider.ContactsContract;
 
 import com.de.mucify.playable.Playlist;
 import com.de.mucify.playable.Song;
@@ -32,6 +33,9 @@ public class MediaLibrary {
     public static void load(ContextWrapper context) {
         DataDirectory = new File(context.getDataDir().getPath() + "/files");
         MusicDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
+
+        if(!DataDirectory.exists())
+            DataDirectory.mkdirs();
     }
 
     public static ArrayList<Song> loadAvailableSongs() {
