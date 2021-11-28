@@ -26,18 +26,10 @@ import com.de.mucify.receiver.ForegroundNotificationClickReceiver;
 public class MediaSessionService extends IntentService {
     static MediaSessionService sInstance = null;
 
-    private final ForegroundNotificationClickReceiver mNotificationReceiver = new ForegroundNotificationClickReceiver();
-
     private final IntentFilter mNoisyAudioIntent = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final BecomingNoisyReceiver mNoisyAudioReceiver = new BecomingNoisyReceiver();
 
-    private MediaSessionCompat mMediaSessionCompat;
-    private NotificationManager mNotificationManager;
-
-    private static final String CHANNEL_ID = "com.de.mucify.player";
-    public static final String ACTION_PREVIOUS = "com.de.mucify.ACTION_PREVIOUS";
-    public static final String ACTION_PLAY_PAUSE = "com.de.mucify.ACTION_PLAY_PAUSE";
-    public static final String ACTION_NEXT = "com.de.mucify.ACTION_NEXT";
+    private MediaNotificationManager mMediaNotificationManager;
 
 
     private static final int NOTIFY_ID = 1337;
@@ -63,12 +55,8 @@ public class MediaSessionService extends IntentService {
         if(AudioController.get().isSongNull() || mAlreadyReset)
             return;
 
-        if(mNotificationManager == null)
-            mNotificationManager = getSystemService(NotificationManager.class);
-        assert mNotificationManager != null;
-        if(mMediaSessionCompat == null) {
-            mMediaSessionCompat = new MediaSessionCompat(this, "Mucify");
-        }
+        if(mMediaNotificationManager == null)
+            mMediaNotificationManager = new MediaNotificationManager(this);
 
         if(!startCustomForegroundService(R.drawable.ic_pause_black))
             return;
@@ -100,7 +88,7 @@ public class MediaSessionService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         try {
-            unregisterReceiver(mNotificationReceiver);
+            mMediaNotificationManager.release();
             unregisterReceiver(mNoisyAudioReceiver);
         } catch(IllegalArgumentException ignored) {}
         sInstance = null;
@@ -109,49 +97,7 @@ public class MediaSessionService extends IntentService {
     public static MediaSessionService get() { return sInstance; }
 
     private boolean startCustomForegroundService(@DrawableRes int playPauseIconID) {
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Song playing foreground service notification", NotificationManager.IMPORTANCE_LOW);
-        mNotificationManager.createNotificationChannel(channel);
-
-        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
-        mMediaSessionCompat.setMetadata(new MediaMetadataCompat.Builder()
-            .putString(MediaMetadata.METADATA_KEY_TITLE, AudioController.get().getSongTitle())
-            .putString(MediaMetadata.METADATA_KEY_ARTIST, AudioController.get().getSongArtist())
-            .build());
-
-        IntentFilter filter = new IntentFilter(ACTION_PREVIOUS);
-        filter.addAction(ACTION_PLAY_PAUSE);
-        filter.addAction(ACTION_NEXT);
-        registerReceiver(mNotificationReceiver, filter);
-
-        Intent intentPrevious = new Intent(ACTION_PREVIOUS);
-        PendingIntent pendingIntentPrevious = PendingIntent.getBroadcast(this, 0, intentPrevious, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Intent intentPlayPause = new Intent(ACTION_PLAY_PAUSE);
-        intentPlayPause.putExtra("PlayPause", playPauseIconID);
-        PendingIntent pendingIntentPlayPause = PendingIntent.getBroadcast(this, 0, intentPlayPause, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Intent intentNext = new Intent(ACTION_NEXT);
-        PendingIntent pendingIntentNext = PendingIntent.getBroadcast(this, 0, intentNext, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        Intent clickIntent = new Intent(this, SingleAudioPlayActivity.class);
-        clickIntent.putExtra("PreserveSong", true);
-        PendingIntent pendingClickIntent = PendingIntent.getActivity(this, 0, clickIntent, 0);
-
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_music_note_black)
-                .setOnlyAlertOnce(true)  // show notification only first time
-                .setShowWhen(false)
-                .setContentIntent(pendingClickIntent)
-                .addAction(R.drawable.ic_previous_black, "Previous", pendingIntentPrevious)
-                .addAction(playPauseIconID, "Play/Pause", pendingIntentPlayPause)
-                .addAction(R.drawable.ic_next_black, "Next", pendingIntentNext)
-                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                    .setShowActionsInCompactView(0, 1, 2)
-                    .setMediaSession(mMediaSessionCompat.getSessionToken()))
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .build();
-
-        notificationManagerCompat.notify(NOTIFY_ID, notification);
+        Notification notification = mMediaNotificationManager.buildNotification(playPauseIconID);
         startForeground(NOTIFY_ID, notification);
         return true;
     }
