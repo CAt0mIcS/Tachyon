@@ -1,7 +1,11 @@
 package com.de.mucify.playable;
 
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
+import android.media.AudioManager;
 
+import com.de.mucify.service.MediaSessionService;
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.UserSettings;
@@ -95,7 +99,7 @@ public class AudioController {
         mSong.create(mPlaylist.getContext());
     }
 
-    synchronized public void startSong() {
+    synchronized public boolean startSong() {
         mSong.start();
         if(mIsSongPaused) {
             for(SongUnpausedListener listener : mSongUnpausedListeners)
@@ -105,6 +109,7 @@ public class AudioController {
         else
             for(SongStartedListener listener : mSongStartedListeners)
                 listener.onStarted(mSong);
+        return true;
     }
 
     public void next(Context context) {

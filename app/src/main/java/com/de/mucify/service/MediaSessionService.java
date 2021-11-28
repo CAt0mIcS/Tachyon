@@ -1,30 +1,20 @@
 package com.de.mucify.service;
 
-import android.app.IntentService;
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
-import android.media.MediaMetadata;
 import android.os.IBinder;
-import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaSessionCompat;
 import android.view.KeyEvent;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
-import com.de.mucify.R;
-import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.receiver.BecomingNoisyReceiver;
-import com.de.mucify.receiver.ForegroundNotificationClickReceiver;
 
 public class MediaSessionService extends Service {
     static MediaSessionService sInstance = null;
@@ -33,6 +23,27 @@ public class MediaSessionService extends Service {
     private final BecomingNoisyReceiver mNoisyAudioReceiver = new BecomingNoisyReceiver();
 
     private MediaNotificationManager mMediaNotificationManager;
+
+    private final AudioManager.OnAudioFocusChangeListener mOnAudioFocusChanged = new AudioManager.OnAudioFocusChangeListener() {
+        @Override
+        public void onAudioFocusChange(int focusChange) {
+            switch(focusChange) {
+                case AudioManager.AUDIOFOCUS_LOSS:
+                    AudioController.get().pauseSong();
+                    break;
+                case AudioManager.AUDIOFOCUS_GAIN:
+                    if(AudioController.get().isPaused()) AudioController.get().unpauseSong();
+                    else AudioController.get().startSong();
+                    break;
+            }
+        }
+    };
+    private final AudioFocusRequest mAudioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setOnAudioFocusChangeListener(mOnAudioFocusChanged)
+            .setAudioAttributes(new AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build())
+            .build();
 
     private static final int NOTIFY_ID = 1337;
     private boolean mAlreadyReset = false;
@@ -46,6 +57,7 @@ public class MediaSessionService extends Service {
 
     public void reset() {
         AudioController.get().reset();
+        stopSelf();
     }
 
     @Override
@@ -56,9 +68,10 @@ public class MediaSessionService extends Service {
         if(mMediaNotificationManager == null)
             mMediaNotificationManager = new MediaNotificationManager(this);
 
-        if(!startCustomForegroundService())
+        if(!requestAudioFocus(this))
             return;
 
+        startCustomForegroundService();
         registerReceiver(mNoisyAudioReceiver, mNoisyAudioIntent);
 
         AudioController.get().addOnSongResetListener(song -> {
@@ -72,10 +85,10 @@ public class MediaSessionService extends Service {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         try {
             mMediaNotificationManager.release();
             unregisterReceiver(mNoisyAudioReceiver);
+            abandonAudioFocus(this);
         } catch(IllegalArgumentException ignored) {}
         sInstance = null;
     }
@@ -102,9 +115,16 @@ public class MediaSessionService extends Service {
 
     public static MediaSessionService get() { return sInstance; }
 
-    private boolean startCustomForegroundService() {
+    private void startCustomForegroundService() {
         Notification notification = mMediaNotificationManager.buildNotification(AudioController.get().isSongPlaying());
         startForeground(NOTIFY_ID, notification);
-        return true;
+    }
+
+    private boolean requestAudioFocus(Context context) {
+        return ((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).requestAudioFocus(mAudioFocusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+    }
+
+    private int abandonAudioFocus(Context context) {
+        return ((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocusRequest(mAudioFocusRequest);
     }
 }

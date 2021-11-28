@@ -59,13 +59,15 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
 
         if(!getIntent().getBooleanExtra("PreserveSong", false)) {
             AudioController.get().setSong(new Song(this, new File(getIntent().getStringExtra("AudioFilePath"))));
-            AudioController.get().startSong();
+
             AudioController.get().addOnSongUnpausedListener(song -> {
                 startService(mSongPlayForegroundIntent);
             }, AudioController.INDEX_DONT_CARE);
 
             stopService(mSongPlayForegroundIntent);
             startService(mSongPlayForegroundIntent);
+
+            AudioController.get().startSong();
         }
 
         // MY_TODO: Test if needs to be called in onResume?

@@ -5,44 +5,24 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Color;
-import android.media.AudioManager;
 import android.media.MediaMetadata;
-import android.media.session.PlaybackState;
-import android.os.Build;
 import android.os.SystemClock;
-import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.util.Log;
 
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.ContextCompat;
 import androidx.media.session.MediaButtonReceiver;
 
 import com.de.mucify.R;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
-import com.de.mucify.receiver.BecomingNoisyReceiver;
-import com.de.mucify.receiver.ForegroundNotificationClickReceiver;
 
 public class MediaNotificationManager {
-    private MediaSessionService mService;
-
-    private static final String TAG = MediaNotificationManager.class.getSimpleName();
+    private final MediaSessionService mService;
 
     private static final String CHANNEL_ID = "com.de.mucify.player";
-    public static final String ACTION_PREVIOUS = "com.de.mucify.ACTION_PREVIOUS";
-    public static final String ACTION_PLAY_PAUSE = "com.de.mucify.ACTION_PLAY_PAUSE";
-    public static final String ACTION_NEXT = "com.de.mucify.ACTION_NEXT";
 
     private final MediaSessionCompat mMediaSessionCompat;
     private final NotificationManager mNotificationManager;
@@ -61,6 +41,7 @@ public class MediaNotificationManager {
         mMediaSessionCompat.setCallback(new MediaSessionCompat.Callback() {
             @Override
             public void onPlay() {
+                mMediaSessionCompat.setActive(true);
                 AudioController.get().unpauseSong();
             }
 
@@ -71,7 +52,8 @@ public class MediaNotificationManager {
 
             @Override
             public void onStop() {
-                super.onStop();
+                mMediaSessionCompat.setActive(false);
+                mService.reset();
             }
 
             @Override
@@ -163,7 +145,7 @@ public class MediaNotificationManager {
 
     private PlaybackStateCompat getState() {
         long actions = (AudioController.get().isSongPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY) |
-                PlaybackStateCompat.ACTION_SEEK_TO;
+                PlaybackStateCompat.ACTION_SEEK_TO | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
         int state = AudioController.get().isSongPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
 
         return new PlaybackStateCompat.Builder()

@@ -51,13 +51,15 @@ public class MultiAudioPlayActivity extends AppCompatActivity {
 
         if(!getIntent().getBooleanExtra("PreservePlaylist", false)) {
             AudioController.get().setPlaylist(new Playlist(this, new File(getIntent().getStringExtra("AudioFilePath"))));
-            AudioController.get().startSong();
+
             AudioController.get().addOnSongUnpausedListener(song -> {
                 startService(mSongPlayForegroundIntent);
             }, AudioController.INDEX_DONT_CARE);
 
             stopService(mSongPlayForegroundIntent);
             startService(mSongPlayForegroundIntent);
+
+            AudioController.get().startSong();
         }
 
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
