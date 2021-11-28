@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
+import android.media.MediaMetadata;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 
 import androidx.annotation.DrawableRes;
@@ -109,6 +111,10 @@ public class SongPlayForegroundService extends IntentService {
 
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
         MediaSessionCompat mediaSessionCompat = new MediaSessionCompat(this, "Mucify");
+        mediaSessionCompat.setMetadata(new MediaMetadataCompat.Builder()
+            .putString(MediaMetadata.METADATA_KEY_TITLE, AudioController.get().getSongTitle())
+            .putString(MediaMetadata.METADATA_KEY_ARTIST, AudioController.get().getSongArtist())
+            .build());
 
         IntentFilter filter = new IntentFilter(ACTION_PREVIOUS);
         filter.addAction(ACTION_PLAY_PAUSE);
@@ -140,9 +146,9 @@ public class SongPlayForegroundService extends IntentService {
                 .addAction(R.drawable.ic_previous_black, "Previous", pendingIntentPrevious)
                 .addAction(playPauseIconID, "Play/Pause", pendingIntentPlayPause)
                 .addAction(R.drawable.ic_next_black, "Next", pendingIntentNext)
-//                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-//                    .setShowActionsInCompactView(0, 1, 2)
-//                    .setMediaSession(mediaSessionCompat.getSessionToken()))
+                .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
+                    .setShowActionsInCompactView(0, 1, 2)
+                    .setMediaSession(mediaSessionCompat.getSessionToken()))
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build();
 
