@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaMetadata;
+import android.os.Bundle;
+import android.os.ResultReceiver;
 import android.os.SystemClock;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -19,6 +21,8 @@ import androidx.core.app.NotificationCompat;
 import androidx.media.session.MediaButtonReceiver;
 
 import com.de.mucify.R;
+import com.de.mucify.activity.MultiAudioPlayActivity;
+import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
 
@@ -118,7 +122,7 @@ public class MediaNotificationManager {
 
         return new NotificationCompat.Builder(mService, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_music_note_black)
-                .setOnlyAlertOnce(true)  // show notification only first time
+                .setOnlyAlertOnce(true)
                 .setShowWhen(false)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2)
@@ -180,9 +184,9 @@ public class MediaNotificationManager {
     }
 
     private PendingIntent createContentIntent() {
-        Intent openUI = new Intent(mService, SingleAudioPlayActivity.class);
+        Intent openUI = new Intent(mService, AudioController.get().isPlaylistNull() ? SingleAudioPlayActivity.class : MultiAudioPlayActivity.class);
         openUI.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        openUI.putExtra("PreserveSong", true);
+        openUI.putExtra("PreserveAudio", true);
         return PendingIntent.getActivity(
                 mService, 0, openUI, PendingIntent.FLAG_CANCEL_CURRENT);
     }

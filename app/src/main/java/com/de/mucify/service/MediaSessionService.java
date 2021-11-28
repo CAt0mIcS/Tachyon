@@ -112,6 +112,9 @@ public class MediaSessionService extends Service {
                     if(!mHasAudioFocus)
                         AudioController.get().pauseSong();
                     break;
+                case KeyEvent.KEYCODE_MEDIA_STOP:
+                    AudioController.get().reset();
+                    break;
             }
         }
         return super.onStartCommand(intent, flags, startId);
@@ -119,9 +122,7 @@ public class MediaSessionService extends Service {
 
     @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+    public IBinder onBind(Intent intent) { return null; }
 
     public static MediaSessionService get() { return sInstance; }
 

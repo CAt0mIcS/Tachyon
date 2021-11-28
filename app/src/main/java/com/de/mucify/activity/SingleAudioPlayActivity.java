@@ -57,7 +57,7 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
             return true;
         });
 
-        if(!getIntent().getBooleanExtra("PreserveSong", false)) {
+        if(!getIntent().getBooleanExtra("PreserveAudio", false)) {
             AudioController.get().setSong(new Song(this, new File(getIntent().getStringExtra("AudioFilePath"))));
 
             AudioController.get().addOnSongUnpausedListener(song -> {

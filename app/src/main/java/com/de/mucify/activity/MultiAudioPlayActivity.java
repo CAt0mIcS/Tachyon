@@ -49,7 +49,7 @@ public class MultiAudioPlayActivity extends AppCompatActivity {
             return true;
         });
 
-        if(!getIntent().getBooleanExtra("PreservePlaylist", false)) {
+        if(!getIntent().getBooleanExtra("PreserveAudio", false)) {
             AudioController.get().setPlaylist(new Playlist(this, new File(getIntent().getStringExtra("AudioFilePath"))));
 
             AudioController.get().addOnSongUnpausedListener(song -> {
