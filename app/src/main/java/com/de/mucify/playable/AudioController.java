@@ -1,11 +1,7 @@
 package com.de.mucify.playable;
 
 import android.content.Context;
-import android.media.AudioAttributes;
-import android.media.AudioFocusRequest;
-import android.media.AudioManager;
 
-import com.de.mucify.service.MediaSessionService;
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.UserSettings;

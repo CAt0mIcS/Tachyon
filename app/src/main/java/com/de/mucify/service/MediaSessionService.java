@@ -48,8 +48,8 @@ public class MediaSessionService extends Service {
             .build();
     private boolean mHasAudioFocus = false;
 
-    private static final int NOTIFY_ID = 1337;
-    private boolean mAlreadyReset = false;
+    public static final int NOTIFY_ID = 1337;
+
 
     public MediaSessionService() {
         if(sInstance != null)
@@ -65,12 +65,10 @@ public class MediaSessionService extends Service {
 
     @Override
     public void onCreate() {
-        if(AudioController.get().isSongNull() || mAlreadyReset)
+        if(AudioController.get().isSongNull())
             return;
 
-        if(mMediaNotificationManager == null)
-            mMediaNotificationManager = new MediaNotificationManager(this);
-
+        mMediaNotificationManager = new MediaNotificationManager(this);
         if(!requestAudioFocus(this))
             return;
         mHasAudioFocus = true;
@@ -80,7 +78,7 @@ public class MediaSessionService extends Service {
 
         AudioController.get().addOnSongResetListener(song -> {
             stopForeground(true);
-            mAlreadyReset = true;
+            stopSelf();
         }, 0);
         AudioController.get().addOnSongPausedListener(song -> startCustomForegroundService(), 0);
         AudioController.get().addOnSongUnpausedListener(song -> startCustomForegroundService(), 0);
@@ -126,6 +124,8 @@ public class MediaSessionService extends Service {
     }
 
     public static MediaSessionService get() { return sInstance; }
+
+    public boolean hasAudioFocus() { return mHasAudioFocus; }
 
     private void startCustomForegroundService() {
         Notification notification = mMediaNotificationManager.buildNotification(AudioController.get().isSongPlaying());

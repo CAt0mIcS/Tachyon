@@ -5,7 +5,10 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaMetadata;
 import android.os.SystemClock;
 import android.support.v4.media.MediaMetadataCompat;
@@ -59,6 +62,20 @@ public class MediaNotificationManager {
             @Override
             public void onSeekTo(long pos) {
                 AudioController.get().seekSongTo(pos);
+            }
+
+            @Override
+            public void onSkipToNext() {
+                AudioController.get().next(mService);
+                if(!mService.hasAudioFocus())
+                    AudioController.get().pauseSong();
+            }
+
+            @Override
+            public void onSkipToPrevious() {
+                AudioController.get().previous(mService);
+                if(!mService.hasAudioFocus())
+                    AudioController.get().pauseSong();
             }
         });
         createNotificationChannel();
