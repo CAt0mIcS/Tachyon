@@ -137,12 +137,9 @@ public class SongPlayForegroundService extends IntentService {
 
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_music_note_black)
-                .setContentTitle(AudioController.get().getSongTitle())
-                .setContentText(AudioController.get().getSongArtist())
-                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_music_note_black))
                 .setOnlyAlertOnce(true)  // show notification only first time
                 .setShowWhen(false)
-//                .setContentIntent(pendingClickIntent)
+                .setContentIntent(pendingClickIntent)
                 .addAction(R.drawable.ic_previous_black, "Previous", pendingIntentPrevious)
                 .addAction(playPauseIconID, "Play/Pause", pendingIntentPlayPause)
                 .addAction(R.drawable.ic_next_black, "Next", pendingIntentNext)
