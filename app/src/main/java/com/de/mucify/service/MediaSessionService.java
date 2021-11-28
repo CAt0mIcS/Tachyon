@@ -30,10 +30,12 @@ public class MediaSessionService extends Service {
             switch(focusChange) {
                 case AudioManager.AUDIOFOCUS_LOSS:
                     AudioController.get().pauseSong();
+                    mHasAudioFocus = false;
                     break;
                 case AudioManager.AUDIOFOCUS_GAIN:
                     if(AudioController.get().isPaused()) AudioController.get().unpauseSong();
                     else AudioController.get().startSong();
+                    mHasAudioFocus = true;
                     break;
             }
         }
@@ -44,6 +46,7 @@ public class MediaSessionService extends Service {
                     .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
                     .build())
             .build();
+    private boolean mHasAudioFocus = false;
 
     private static final int NOTIFY_ID = 1337;
     private boolean mAlreadyReset = false;
@@ -70,6 +73,7 @@ public class MediaSessionService extends Service {
 
         if(!requestAudioFocus(this))
             return;
+        mHasAudioFocus = true;
 
         startCustomForegroundService();
         registerReceiver(mNoisyAudioReceiver, mNoisyAudioIntent);
@@ -99,9 +103,17 @@ public class MediaSessionService extends Service {
             KeyEvent keyEvent = (KeyEvent)intent.getExtras().get("android.intent.extra.KEY_EVENT");
             switch(keyEvent.getKeyCode()) {
                 case KeyEvent.KEYCODE_MEDIA_PAUSE: AudioController.get().pauseSong(); break;
-                case KeyEvent.KEYCODE_MEDIA_PLAY: AudioController.get().unpauseSong(); break;
-                case KeyEvent.KEYCODE_MEDIA_NEXT: AudioController.get().next(this); break;
-                case KeyEvent.KEYCODE_MEDIA_PREVIOUS: AudioController.get().previous(this); break;
+                case KeyEvent.KEYCODE_MEDIA_PLAY: if(requestAudioFocus(this)) AudioController.get().unpauseSong(); break;
+                case KeyEvent.KEYCODE_MEDIA_NEXT:
+                    AudioController.get().next(this);
+                    if(!mHasAudioFocus)
+                        AudioController.get().pauseSong();
+                    break;
+                case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                    AudioController.get().previous(this);
+                    if(!mHasAudioFocus)
+                        AudioController.get().pauseSong();
+                    break;
             }
         }
         return super.onStartCommand(intent, flags, startId);
@@ -121,10 +133,15 @@ public class MediaSessionService extends Service {
     }
 
     private boolean requestAudioFocus(Context context) {
-        return ((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).requestAudioFocus(mAudioFocusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+        if(((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).requestAudioFocus(mAudioFocusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            mHasAudioFocus = true;
+            return true;
+        }
+        return false;
     }
 
     private int abandonAudioFocus(Context context) {
+        mHasAudioFocus = false;
         return ((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocusRequest(mAudioFocusRequest);
     }
 }
