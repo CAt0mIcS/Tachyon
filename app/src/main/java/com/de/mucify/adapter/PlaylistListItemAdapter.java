@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -14,13 +15,15 @@ import com.de.mucify.R;
 import com.de.mucify.playable.Playlist;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListItemAdapter.PlaylistViewHolder> {
 
     private final Context mContext;
     private final ArrayList<Playlist> mPlaylists;
-    private PlaylistViewHolder.OnItemClickListener mOnItemClickListener;
-    private PlaylistViewHolder.OnItemClickListener mOnItemLongClickListener;
+
+    private final HashMap<Integer, PlaylistViewHolder.OnItemClickListener> mOnViewClickedListeners = new HashMap<>();
 
 
     public PlaylistListItemAdapter(Context context, ArrayList<Playlist> playlists) {
@@ -38,44 +41,43 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
     @Override
     public void onBindViewHolder(@NonNull PlaylistViewHolder holder, int i) {
         Playlist playlist = mPlaylists.get(i);
-        holder.mOnItemClickListener = mOnItemClickListener;
-        holder.mOnItemLongClickListener = mOnItemLongClickListener;
-        holder.mName.setText(playlist.getName());
+        for (Map.Entry<Integer, PlaylistViewHolder.OnItemClickListener> entry : mOnViewClickedListeners.entrySet()) {
+            int key = entry.getKey();
+            PlaylistViewHolder.OnItemClickListener listener = entry.getValue();
+
+            if (key == holder.ItemLayout.getId())
+                holder.ItemLayout.setOnClickListener(v -> listener.onItemClicked(holder));
+            else if(key == holder.TxtName.getId())
+                holder.TxtName.setOnClickListener(v -> listener.onItemClicked(holder));
+            else if(key == holder.BtnFileOptions.getId())
+                holder.BtnFileOptions.setOnClickListener(v -> listener.onItemClicked(holder));
+            else
+                throw new IllegalArgumentException("No view exists with id " + key);
+        }
+
+
+        holder.TxtName.setText(playlist.getName());
     }
 
     @Override
     public int getItemCount() { return mPlaylists.size(); }
 
-    public void setOnItemClicked(PlaylistViewHolder.OnItemClickListener listener) {
-        mOnItemClickListener = listener;
-    }
-
-    public void setOnItemLongClicked(PlaylistViewHolder.OnItemClickListener listener) {
-        mOnItemLongClickListener = listener;
+    public void setOnViewClickedListener(int btnFileOptions, PlaylistViewHolder.OnItemClickListener onFileOptionsClicked) {
+        mOnViewClickedListeners.put(btnFileOptions, onFileOptionsClicked);
     }
 
     public static class PlaylistViewHolder extends RecyclerView.ViewHolder {
 
-        private final LinearLayout mItemLayout;
-        private final TextView mName;
-        private OnItemClickListener mOnItemClickListener;
-        private OnItemClickListener mOnItemLongClickListener;
+        public final LinearLayout ItemLayout;
+        public final TextView TxtName;
+        public final ImageButton BtnFileOptions;
 
         public PlaylistViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            mItemLayout = itemView.findViewById(R.id.rvItemLayout);
-            mName = itemView.findViewById(R.id.txtName);
-
-            mItemLayout.setOnClickListener(v -> {
-                if(mOnItemClickListener != null)
-                    mOnItemClickListener.onItemClicked(this);
-            });
-            mItemLayout.setOnLongClickListener(v -> {
-                if(mOnItemLongClickListener != null)
-                    mOnItemLongClickListener.onItemClicked(this);
-                return true;
-            });
+            ItemLayout = itemView.findViewById(R.id.rvItemLayout);
+            TxtName = itemView.findViewById(R.id.txtName);
+            BtnFileOptions = itemView.findViewById(R.id.btnFileOptions);
         }
 
         public interface OnItemClickListener {

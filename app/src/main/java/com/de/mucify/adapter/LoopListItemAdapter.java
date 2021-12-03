@@ -4,13 +4,12 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
@@ -40,11 +39,11 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
     @Override
     public void onBindViewHolder(@NonNull LoopViewHolder holder, int i) {
         Song song = mSongs.get(i);
-        holder.mOnItemClickListener = mOnItemClickListener;
-        holder.mOnItemLongClickListener = mOnItemLongClickListener;
-        holder.mName.setText(song.getLoopName());
-        holder.mTitle.setText(song.getTitle());
-        holder.mArtist.setText(song.getArtist());
+        holder.OnItemClickListener = mOnItemClickListener;
+        holder.OnItemLongClickListener = mOnItemLongClickListener;
+        holder.TxtName.setText(song.getLoopName());
+        holder.TxtTitle.setText(song.getTitle());
+        holder.TxtArtist.setText(song.getArtist());
     }
 
     public void setOnItemClicked(LoopViewHolder.OnItemClickListener listener) {
@@ -62,36 +61,47 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
 
     public static class LoopViewHolder extends RecyclerView.ViewHolder {
 
-        private final LinearLayout mItemLayout;
-        private final TextView mName;
-        private final TextView mTitle;
-        private final TextView mArtist;
-        private OnItemClickListener mOnItemClickListener;
-        private OnItemClickListener mOnItemLongClickListener;
+        public final LinearLayout ItemLayout;
+        public final TextView TxtName;
+        public final TextView TxtTitle;
+        public final TextView TxtArtist;
+        public final CheckBox ChkItem;
+        public OnItemClickListener OnItemClickListener;
+        public OnItemClickListener OnItemLongClickListener;
+        public OnCheckedChangedListener OnCheckedChangedListener;
 
         public LoopViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            mItemLayout = itemView.findViewById(R.id.rvItemLayout);
-            mName = itemView.findViewById(R.id.txtName);
-            mTitle = itemView.findViewById(R.id.txtTitle);
-            mArtist = itemView.findViewById(R.id.txtArtist);
+            ItemLayout = itemView.findViewById(R.id.rvItemLayout);
+            TxtName = itemView.findViewById(R.id.txtName);
+            TxtTitle = itemView.findViewById(R.id.txtTitle);
+            TxtArtist = itemView.findViewById(R.id.txtArtist);
+            ChkItem = itemView.findViewById(R.id.chkItem);
 
-            mItemLayout.setOnClickListener(v -> {
-                if(mOnItemClickListener != null)
-                    mOnItemClickListener.onItemClicked(this);
+            ItemLayout.setOnClickListener(v -> {
+                if(OnItemClickListener != null)
+                    OnItemClickListener.onItemClicked(this);
             });
-            mItemLayout.setOnLongClickListener(v -> {
-                if(mOnItemLongClickListener != null)
-                    mOnItemLongClickListener.onItemClicked(this);
+            ItemLayout.setOnLongClickListener(v -> {
+                if(OnItemLongClickListener != null)
+                    OnItemLongClickListener.onItemClicked(this);
                 return true;
+            });
+            ChkItem.setOnCheckedChangeListener((v, isChecked) -> {
+                if(OnCheckedChangedListener != null)
+                    OnCheckedChangedListener.onCheckedChanged(this, isChecked);
             });
         }
 
-        public String getName() { return mName.getText().toString(); }
+        public String getName() { return TxtName.getText().toString(); }
 
         public interface OnItemClickListener {
             void onItemClicked(LoopViewHolder holder);
+        }
+
+        public interface OnCheckedChangedListener {
+            void onCheckedChanged(LoopViewHolder holder, boolean isChecked);
         }
     }
 }

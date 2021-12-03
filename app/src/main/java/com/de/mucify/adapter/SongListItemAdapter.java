@@ -4,13 +4,12 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
@@ -39,9 +38,8 @@ public class SongListItemAdapter extends RecyclerView.Adapter<SongListItemAdapte
     @Override
     public void onBindViewHolder(@NonNull SongViewHolder holder, int i) {
         Song song = mSongs.get(i);
-        holder.mOnItemClickListener = mOnItemClickListener;
-        holder.mTitle.setText(song.getTitle());
-        holder.mArtist.setText(song.getArtist());
+        holder.TxtTitle.setText(song.getTitle());
+        holder.TxtArtist.setText(song.getArtist());
     }
 
     @Override
@@ -54,27 +52,38 @@ public class SongListItemAdapter extends RecyclerView.Adapter<SongListItemAdapte
     }
 
     public static class SongViewHolder extends RecyclerView.ViewHolder {
-
-        private final LinearLayout mItemLayout;
-        private final TextView mTitle;
-        private final TextView mArtist;
-        private OnItemClickListener mOnItemClickListener;
+        
+        public final LinearLayout ItemLayout;
+        public final TextView TxtTitle;
+        public final TextView TxtArtist;
+        public final CheckBox ChkItem;
+        public OnItemClickListener OnItemClickListener;
+        public OnCheckedChangedListener OnCheckedChangedListener;
 
         public SongViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            mItemLayout = itemView.findViewById(R.id.rvItemLayout);
-            mTitle = itemView.findViewById(R.id.txtTitle);
-            mArtist = itemView.findViewById(R.id.txtArtist);
+            ItemLayout = itemView.findViewById(R.id.rvItemLayout);
+            TxtTitle = itemView.findViewById(R.id.txtTitle);
+            TxtArtist = itemView.findViewById(R.id.txtArtist);
+            ChkItem = itemView.findViewById(R.id.chkItem);
 
-            mItemLayout.setOnClickListener(v -> {
-                if(mOnItemClickListener != null)
-                    mOnItemClickListener.onItemClicked(this);
+            ItemLayout.setOnClickListener(v -> {
+                if(OnItemClickListener != null)
+                    OnItemClickListener.onItemClicked(this);
+            });
+            ChkItem.setOnCheckedChangeListener((v, isChecked) -> {
+                if(OnCheckedChangedListener != null)
+                    OnCheckedChangedListener.onCheckedChanged(this, isChecked);
             });
         }
 
         public interface OnItemClickListener {
             void onItemClicked(SongViewHolder holder);
+        }
+
+        public interface OnCheckedChangedListener {
+            void onCheckedChanged(SongViewHolder holder, boolean isChecked);
         }
     }
 }

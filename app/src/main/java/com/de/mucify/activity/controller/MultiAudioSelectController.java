@@ -1,37 +1,24 @@
 package com.de.mucify.activity.controller;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
 import com.de.mucify.activity.MultiAudioActivity;
+import com.de.mucify.activity.MultiAudioEditActivity;
 import com.de.mucify.activity.MultiAudioPlayActivity;
 import com.de.mucify.activity.PlaylistCreateActivity;
-import com.de.mucify.activity.SingleAudioActivity;
-import com.de.mucify.activity.SingleAudioPlayActivity;
-import com.de.mucify.adapter.LoopListItemAdapter;
 import com.de.mucify.adapter.PlaylistListItemAdapter;
-import com.de.mucify.adapter.SongListItemAdapter;
-import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Playlist;
 import com.de.mucify.playable.Song;
-import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
-import com.de.mucify.util.Utils;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -96,8 +83,8 @@ public class MultiAudioSelectController {
         mListItems.addAll(MediaLibrary.AvailablePlaylists);
 
         PlaylistListItemAdapter adapter = new PlaylistListItemAdapter(mActivity, mListItems);
-        adapter.setOnItemClicked(this::onFileClicked);
-        adapter.setOnItemLongClicked(this::onPlaylistLongClicked);
+        adapter.setOnViewClickedListener(R.id.rvItemLayout, this::onFileClicked);
+        adapter.setOnViewClickedListener(R.id.btnFileOptions, this::onFileOptionsClicked);
         mRvFiles.setAdapter(adapter);
 
         mRvFiles.getAdapter().notifyDataSetChanged();
@@ -105,26 +92,34 @@ public class MultiAudioSelectController {
 
     private void onFileClicked(RecyclerView.ViewHolder holder) {
         Intent i = new Intent(mActivity, MultiAudioPlayActivity.class);
-        Playlist playlist = mListItems.get(holder.getAdapterPosition());
-        i.putExtra("AudioFilePath", playlist.getPlaylistFilePath().getAbsolutePath());
+        i.putExtra("AudioFilePath", getPlaylistFromViewHolder(holder).getPlaylistFilePath().getAbsolutePath());
         mActivity.startActivity(i);
         mActivity.finish();
     }
 
-    private void onPlaylistLongClicked(RecyclerView.ViewHolder v) {
+    private void onFileOptionsClicked(PlaylistListItemAdapter.PlaylistViewHolder holder) {
+        PopupMenu popup = new PopupMenu(mActivity, holder.BtnFileOptions);
+        popup.inflate(R.menu.loop_playlist_options_menu);
 
-        LoopListItemAdapter.LoopViewHolder holder = (LoopListItemAdapter.LoopViewHolder)v;
-
-        // Use the Builder class for convenient dialog construction
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        builder.setMessage(mActivity.getString(R.string.delete_loop) + " \"" + holder.getName() + "\"?")
-                .setPositiveButton(mActivity.getString(R.string.yes), (dialog, id) -> {
-                    File loopFile = FileManager.loopNameToFile(holder.getName());
-                    if(!loopFile.delete())
-                        Toast.makeText(mActivity,
-                                "Failed to delete loop: " + holder.getName(), Toast.LENGTH_LONG).show();
-                })
-                .setNegativeButton(R.string.cancel, (dialog, id) -> dialog.dismiss());
-        builder.create().show();
+        popup.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.edit:
+                    Intent i = new Intent(mActivity, MultiAudioEditActivity.class);
+                    i.putExtra("AudioID", holder.getAdapterPosition());
+                    mActivity.startActivity(i);
+                    mActivity.finish();
+                    return true;
+                case R.id.delete:
+                    getPlaylistFromViewHolder(holder).delete();
+                    MediaLibrary.loadAvailablePlaylists();
+                    mRvFiles.getAdapter().notifyDataSetChanged();
+                    return true;
+            }
+            return false;
+        });
+        //displaying the popup
+        popup.show();
     }
+
+    private Playlist getPlaylistFromViewHolder(RecyclerView.ViewHolder holder) { return mListItems.get(holder.getAdapterPosition()); }
 }

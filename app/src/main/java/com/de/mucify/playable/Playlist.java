@@ -40,6 +40,11 @@ public class Playlist {
         mContext = context;
     }
 
+    public Playlist(File path, ArrayList<Song> songs) {
+        mPlaylistFilePath = path;
+        mSongs = songs;
+    }
+
     public Playlist create(Context context) { mContext = context; return this; }
 
     public void save() throws IOException {
@@ -52,6 +57,10 @@ public class Playlist {
                 writer.write(song.getSongPath() + "\n");
         }
         writer.close();
+    }
+
+    public void delete() {
+        mPlaylistFilePath.delete();
     }
 
     public void reset() {

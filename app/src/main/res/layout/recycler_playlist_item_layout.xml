@@ -20,5 +20,11 @@
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:textSize="21sp"/>
 
+    <ImageButton
+        android:id="@+id/btnFileOptions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_more_vertical_black"/>
+
 
 </LinearLayout>
