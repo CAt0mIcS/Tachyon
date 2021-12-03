@@ -24,18 +24,33 @@ public class MediaSessionService extends Service {
 
     private MediaNotificationManager mMediaNotificationManager;
 
+    private boolean mKeepPausedAfterAudioFocusGain = false;
+
     private final AudioManager.OnAudioFocusChangeListener mOnAudioFocusChanged = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
             switch(focusChange) {
-                case AudioManager.AUDIOFOCUS_LOSS:
-                    AudioController.get().pauseSong();
-                    mHasAudioFocus = false;
-                    break;
                 case AudioManager.AUDIOFOCUS_GAIN:
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE:
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+                    if(mKeepPausedAfterAudioFocusGain) {
+                        mHasAudioFocus = true;
+                        break;
+                    }
+
                     if(AudioController.get().isPaused()) AudioController.get().unpauseSong();
                     else AudioController.get().startSong();
                     mHasAudioFocus = true;
+                    break;
+                default:
+                    if(AudioController.get().isPaused())
+                        mKeepPausedAfterAudioFocusGain = true;
+                    else {
+                        mKeepPausedAfterAudioFocusGain = false;
+                        AudioController.get().pauseSong();
+                    }
+                    mHasAudioFocus = false;
                     break;
             }
         }
