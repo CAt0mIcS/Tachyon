@@ -32,15 +32,17 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     private final Context mContext;
     private final ArrayList<Song> mItems;
-    private final Playlist mPlaylist;
+    private final ArrayList<Boolean> mItemCheckedStatus;
 
     private SongListItemAdapter.SongViewHolder.OnCheckedChangedListener mOnSongCheckedChangedListener;
     private LoopListItemAdapter.LoopViewHolder.OnCheckedChangedListener mOnLoopCheckedChangedListener;
 
-    public SongLoopListItemAdapter(Context context, ArrayList<Song> items, Playlist playlist) {
+    public SongLoopListItemAdapter(Context context, ArrayList<Song> items, ArrayList<Song> playlistSongs) {
         mContext = context;
         mItems = items;
-        mPlaylist = playlist;
+
+        mItemCheckedStatus = new ArrayList<>(mItems.size());
+        updateCheckedMap(playlistSongs);
     }
 
     @NonNull
@@ -63,14 +65,7 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
             holder.ChkItem.setVisibility(View.VISIBLE);
             holder.OnCheckedChangedListener = mOnSongCheckedChangedListener;
 
-            for(Song s : mPlaylist.getSongs()) {
-                if(s.equals(song)) {
-                    holder.ChkItem.setChecked(true);
-                    break;
-                }
-                else
-                    holder.ChkItem.setChecked(false);
-            }
+            holder.ChkItem.setChecked(mItemCheckedStatus.get(i));
         }
         else {
             LoopListItemAdapter.LoopViewHolder holder = (LoopListItemAdapter.LoopViewHolder)baseHolder;
@@ -80,15 +75,7 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
             holder.ChkItem.setVisibility(View.VISIBLE);
             holder.OnCheckedChangedListener = mOnLoopCheckedChangedListener;
 
-            for(Song s : mPlaylist.getSongs()) {
-                if(s.equals(song)) {
-                    holder.ChkItem.setChecked(true);
-                    break;
-                }
-                else
-                    holder.ChkItem.setChecked(false);
-            }
-
+            holder.ChkItem.setChecked(mItemCheckedStatus.get(i));
         }
     }
 
@@ -106,8 +93,28 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     public void setOnCheckedChangedListener(OnCheckedChangedListener listener) {
-        mOnSongCheckedChangedListener = (listener::onCheckedChanged);
-        mOnLoopCheckedChangedListener = (listener::onCheckedChanged);
+        mOnSongCheckedChangedListener = (holder, isChecked) -> {
+            mItemCheckedStatus.set(holder.getAdapterPosition(), isChecked);
+            listener.onCheckedChanged(holder, isChecked);
+        };
+        mOnLoopCheckedChangedListener = (holder, isChecked) -> {
+            mItemCheckedStatus.set(holder.getAdapterPosition(), isChecked);
+            listener.onCheckedChanged(holder, isChecked);
+        };
+    }
+
+    public void updateCheckedMap(ArrayList<Song> playlistSongs) {
+        mItemCheckedStatus.clear();
+        for(Song item : mItems) {
+            boolean contains = false;
+            for(Song playlistSong : playlistSongs) {
+                if(item.equals(playlistSong)) {
+                    contains = true;
+                    break;
+                }
+            }
+            mItemCheckedStatus.add(contains);
+        }
     }
 
     public interface OnCheckedChangedListener {

@@ -56,6 +56,7 @@ public class MultiAudioEditController {
                 String s = s1.toString().toLowerCase(Locale.ROOT);
                 if(s.equals("")) {
                     mRvFiles.getAdapter().notifyDataSetChanged();
+                    ((SongLoopListItemAdapter)mRvFiles.getAdapter()).updateCheckedMap(mPlaylist.getSongs());
                     return;
                 }
 
@@ -68,6 +69,7 @@ public class MultiAudioEditController {
                 }
 
                 mRvFiles.getAdapter().notifyDataSetChanged();
+                ((SongLoopListItemAdapter)mRvFiles.getAdapter()).updateCheckedMap(mPlaylist.getSongs());
             }
             @Override
             public void afterTextChanged(Editable s) {}
@@ -92,7 +94,7 @@ public class MultiAudioEditController {
         mListItems.addAll(MediaLibrary.AvailableSongs);
         mListItems.addAll(MediaLibrary.AvailableLoops);
 
-        SongLoopListItemAdapter adapter = new SongLoopListItemAdapter(mActivity, mListItems, mPlaylist);
+        SongLoopListItemAdapter adapter = new SongLoopListItemAdapter(mActivity, mListItems, mPlaylist.getSongs());
         adapter.setOnCheckedChangedListener(this::onCheckedChanged);
         mRvFiles.setAdapter(adapter);
 
@@ -140,11 +142,9 @@ public class MultiAudioEditController {
     }
 
     private void onCheckedChanged(RecyclerView.ViewHolder baseHolder, boolean isChecked) {
-        if(isChecked) {
+        if(isChecked)
             mNewSongs.add(mListItems.get(baseHolder.getAdapterPosition()));
-        }
-        else {
+        else
             mNewSongs.remove(mListItems.get(baseHolder.getAdapterPosition()));
-        }
     }
 }
