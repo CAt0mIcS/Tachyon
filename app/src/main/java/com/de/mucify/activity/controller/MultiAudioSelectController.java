@@ -1,9 +1,11 @@
 package com.de.mucify.activity.controller;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -13,13 +15,17 @@ import com.de.mucify.R;
 import com.de.mucify.activity.MultiAudioActivity;
 import com.de.mucify.activity.MultiAudioEditActivity;
 import com.de.mucify.activity.MultiAudioPlayActivity;
-import com.de.mucify.activity.PlaylistCreateActivity;
 import com.de.mucify.adapter.PlaylistListItemAdapter;
+import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Playlist;
 import com.de.mucify.playable.Song;
+import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 
 public class MultiAudioSelectController {
@@ -70,11 +76,7 @@ public class MultiAudioSelectController {
             @Override
             public void afterTextChanged(Editable s) {}
         });
-        mActivity.findViewById(R.id.btnAddPlaylist).setOnClickListener(v -> {
-            Intent i = new Intent(mActivity, PlaylistCreateActivity.class);
-            mActivity.startActivity(i);
-            mActivity.finish();
-        });
+        mActivity.findViewById(R.id.btnAddPlaylist).setOnClickListener(v -> onNewPlaylistClicked());
     }
 
     private void loadPlaylists() {
@@ -122,4 +124,39 @@ public class MultiAudioSelectController {
     }
 
     private Playlist getPlaylistFromViewHolder(RecyclerView.ViewHolder holder) { return mListItems.get(holder.getAdapterPosition()); }
+
+    private void onNewPlaylistClicked() {
+        new AlertDialog.Builder(mActivity)
+                .setMessage(R.string.dialog_new_playlist)
+                .setView(mActivity.getLayoutInflater().inflate(R.layout.save_loop_new_playlist_alert_dialog_layout, null))
+                .setPositiveButton(R.string.save, (dialog, id) -> {
+
+                    String playlistName = ((EditText)((AlertDialog)dialog).findViewById(R.id.dialog_txtName)).getText().toString();
+                    if(playlistName.isEmpty() || playlistName.contains("_")) {
+                        Toast.makeText(mActivity, "Failed to save playlist: Name mustn't contain '_' or be empty", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    try {
+                        new Playlist(FileManager.playlistNameToFile(playlistName), new ArrayList<>()).save();
+                        MediaLibrary.loadAvailablePlaylists();
+
+                        for(int i = 0; i < MediaLibrary.AvailablePlaylists.size(); ++i) {
+                            if(MediaLibrary.AvailablePlaylists.get(i).getName().equals(playlistName)) {
+                                Intent intent = new Intent(mActivity, MultiAudioEditActivity.class);
+                                intent.putExtra("AudioID", i);
+                                mActivity.startActivity(intent);
+                                mActivity.finish();
+                                break;
+                            }
+                        }
+
+                    } catch (IOException e) {
+                        Toast.makeText(mActivity, "Failed to save loop: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                })
+                .setNegativeButton(R.string.cancel, (dialog, id) -> dialog.dismiss())
+                .create().show();
+    }
 }
