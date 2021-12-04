@@ -111,7 +111,7 @@ public class AudioController {
     public void next(Context context) {
         if(!isPlaylistNull())
             playlistNext();
-        else
+        else if(!isSongNull())
             songNext(context);
     }
 

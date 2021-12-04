@@ -86,7 +86,7 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     @Override
     public int getItemViewType(int position) {
-        if (((Song)mItems.get(position)).isLoop())
+        if (mItems.get(position).isLoop())
             return ITEM_TYPE_LOOP;
         else
             return ITEM_TYPE_SONG;

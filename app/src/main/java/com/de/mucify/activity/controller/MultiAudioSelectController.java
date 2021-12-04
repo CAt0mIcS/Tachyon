@@ -16,7 +16,6 @@ import com.de.mucify.activity.MultiAudioActivity;
 import com.de.mucify.activity.MultiAudioEditActivity;
 import com.de.mucify.activity.MultiAudioPlayActivity;
 import com.de.mucify.adapter.PlaylistListItemAdapter;
-import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Playlist;
 import com.de.mucify.playable.Song;
 import com.de.mucify.util.FileManager;
@@ -24,8 +23,6 @@ import com.de.mucify.util.MediaLibrary;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Locale;
 
 public class MultiAudioSelectController {
@@ -85,7 +82,7 @@ public class MultiAudioSelectController {
         mListItems.addAll(MediaLibrary.AvailablePlaylists);
 
         PlaylistListItemAdapter adapter = new PlaylistListItemAdapter(mActivity, mListItems);
-        adapter.setOnViewClickedListener(R.id.rvItemLayout, this::onFileClicked);
+        adapter.setOnViewClickedListener(R.id.rvCoordinatorLayout, this::onFileClicked);
         adapter.setOnViewClickedListener(R.id.btnFileOptions, this::onFileOptionsClicked);
         mRvFiles.setAdapter(adapter);
 

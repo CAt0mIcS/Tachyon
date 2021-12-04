@@ -5,11 +5,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
@@ -54,7 +54,8 @@ public class SongListItemAdapter extends RecyclerView.Adapter<SongListItemAdapte
 
     public static class SongViewHolder extends RecyclerView.ViewHolder {
         
-        public final LinearLayout ItemLayout;
+        public final CoordinatorLayout CoordinatorLayout;
+        public final LinearLayout LinearLayout;
         public final TextView TxtTitle;
         public final TextView TxtArtist;
         public final CheckBox ChkItem;
@@ -64,15 +65,19 @@ public class SongListItemAdapter extends RecyclerView.Adapter<SongListItemAdapte
         public SongViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            ItemLayout = itemView.findViewById(R.id.rvItemLayout);
+            CoordinatorLayout = itemView.findViewById(R.id.rvCoordinatorLayout);
+            LinearLayout = itemView.findViewById(R.id.rvLinearLayout);
             TxtTitle = itemView.findViewById(R.id.txtTitle);
             TxtArtist = itemView.findViewById(R.id.txtArtist);
             ChkItem = itemView.findViewById(R.id.chkItem);
 
-            ItemLayout.setOnClickListener(v -> {
+            View.OnClickListener l1 = v -> {
                 if(OnItemClickListener != null)
                     OnItemClickListener.onItemClicked(this);
-            });
+            };
+            CoordinatorLayout.setOnClickListener(l1);
+            LinearLayout.setOnClickListener(l1);
+
             ChkItem.setOnCheckedChangeListener((v, isChecked) -> {
                 if(OnCheckedChangedListener != null)
                     OnCheckedChangedListener.onCheckedChanged(this, isChecked);

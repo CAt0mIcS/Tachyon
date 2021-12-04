@@ -75,7 +75,7 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
         public PlaylistViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            ItemLayout = itemView.findViewById(R.id.rvItemLayout);
+            ItemLayout = itemView.findViewById(R.id.rvCoordinatorLayout);
             TxtName = itemView.findViewById(R.id.txtName);
             BtnFileOptions = itemView.findViewById(R.id.btnFileOptions);
         }
