@@ -40,6 +40,7 @@ public class SongListItemAdapter extends RecyclerView.Adapter<SongListItemAdapte
         Song song = mSongs.get(i);
         holder.TxtTitle.setText(song.getTitle());
         holder.TxtArtist.setText(song.getArtist());
+        holder.OnItemClickListener = mOnItemClickListener;
     }
 
     @Override

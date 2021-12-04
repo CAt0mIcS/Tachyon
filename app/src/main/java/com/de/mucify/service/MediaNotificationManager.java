@@ -122,8 +122,6 @@ public class MediaNotificationManager {
 
         return new NotificationCompat.Builder(mService, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_music_note_black)
-                .setOnlyAlertOnce(true)
-                .setShowWhen(false)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2)
                         .setShowCancelButton(true)
@@ -179,7 +177,7 @@ public class MediaNotificationManager {
     }
 
     private void createNotificationChannel() {
-        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Song playing foreground service notification", NotificationManager.IMPORTANCE_LOW);
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Song playing foreground service notification", NotificationManager.IMPORTANCE_HIGH);
         mNotificationManager.createNotificationChannel(channel);
     }
 
