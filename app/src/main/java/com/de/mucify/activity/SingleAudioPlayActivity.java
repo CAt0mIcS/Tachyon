@@ -57,7 +57,7 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
             return true;
         });
 
-        if(!getIntent().getBooleanExtra("PreserveAudio", false)) {
+        if(!getIntent().getBooleanExtra("PreserveAudio", false) || getIntent().hasExtra("EditLoop")) {
             AudioController.get().setSong(new Song(this, new File(getIntent().getStringExtra("AudioFilePath"))));
 
             AudioController.get().addOnSongUnpausedListener(song -> {
@@ -74,6 +74,8 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         new SingleAudioPlayController(this);
+        if(getIntent().hasExtra("EditLoop"))
+            AudioController.get().pauseSong();
     }
 
     public int getNavItemID() {

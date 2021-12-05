@@ -8,13 +8,16 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
+import com.de.mucify.activity.MultiAudioEditActivity;
 import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.adapter.LoopListItemAdapter;
+import com.de.mucify.adapter.PlaylistListItemAdapter;
 import com.de.mucify.adapter.SongListItemAdapter;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Song;
@@ -114,8 +117,10 @@ public class SingleAudioSelectController {
         mListItems.addAll(MediaLibrary.AvailableLoops);
 
         LoopListItemAdapter adapter = new LoopListItemAdapter(mActivity, mListItems);
-        adapter.setOnItemClicked(this::onFileClicked);
-        adapter.setOnItemLongClicked(this::onLoopLongClicked);
+//        adapter.setOnItemClicked(this::onFileClicked);
+        adapter.setOnViewClickedListener(R.id.rvCoordinatorLayout, this::onFileClicked);
+        adapter.setOnViewClickedListener(R.id.rvLinearLayout, this::onFileClicked);
+        adapter.setOnViewClickedListener(R.id.btnFileOptions, this::onFileOptionsClicked);
         mRvFiles.setAdapter(adapter);
 
         mRvFiles.getAdapter().notifyDataSetChanged();
@@ -133,21 +138,33 @@ public class SingleAudioSelectController {
         mActivity.finish();
     }
 
+    private void onFileOptionsClicked(LoopListItemAdapter.LoopViewHolder holder) {
+        PopupMenu popup = new PopupMenu(mActivity, holder.BtnFileOptions);
+        popup.inflate(R.menu.loop_playlist_options_menu);
 
-    private void onLoopLongClicked(RecyclerView.ViewHolder v) {
-
-        LoopListItemAdapter.LoopViewHolder holder = (LoopListItemAdapter.LoopViewHolder)v;
-
-        // Use the Builder class for convenient dialog construction
-        AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
-        builder.setMessage(mActivity.getString(R.string.delete_loop) + " \"" + holder.getName() + "\"?")
-                .setPositiveButton(mActivity.getString(R.string.yes), (dialog, id) -> {
+        popup.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.edit:
+                    Intent i = new Intent(mActivity, SingleAudioPlayActivity.class);
+                    i.putExtra("EditLoop", true);
+                    i.putExtra("AudioFilePath", MediaLibrary.AvailableLoops.get(holder.getAdapterPosition()).getLoopPath().getAbsolutePath());
+                    mActivity.startActivity(i);
+                    mActivity.finish();
+                    return true;
+                case R.id.delete:
                     File loopFile = FileManager.loopNameToFile(holder.getName());
                     if(!loopFile.delete())
                         Toast.makeText(mActivity,
                                 "Failed to delete loop: " + holder.getName(), Toast.LENGTH_LONG).show();
-                })
-                .setNegativeButton(R.string.cancel, (dialog, id) -> dialog.dismiss());
-        builder.create().show();
+
+                    mListItems.clear();
+                    mListItems.addAll(MediaLibrary.loadAvailableLoops());
+                    mRvFiles.getAdapter().notifyDataSetChanged();
+                    return true;
+            }
+            return false;
+        });
+        //displaying the popup
+        popup.show();
     }
 }

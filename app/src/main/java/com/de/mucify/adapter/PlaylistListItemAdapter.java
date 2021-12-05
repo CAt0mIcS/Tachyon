@@ -9,6 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
@@ -68,7 +69,7 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
 
     public static class PlaylistViewHolder extends RecyclerView.ViewHolder {
 
-        public final LinearLayout ItemLayout;
+        public final CoordinatorLayout ItemLayout;
         public final TextView TxtName;
         public final ImageButton BtnFileOptions;
 

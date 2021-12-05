@@ -110,7 +110,8 @@ public class MultiAudioSelectController {
                     return true;
                 case R.id.delete:
                     getPlaylistFromViewHolder(holder).delete();
-                    MediaLibrary.loadAvailablePlaylists();
+                    mListItems.clear();
+                    mListItems.addAll(MediaLibrary.loadAvailablePlaylists());
                     mRvFiles.getAdapter().notifyDataSetChanged();
                     return true;
             }

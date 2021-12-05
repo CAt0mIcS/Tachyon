@@ -4,11 +4,14 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable-v24/ic_white_pause.xml" value="0.10925925925925926" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/empty_shape.xml" value="0.1259259259259259" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_baseline_play_arrow_24.xml" value="0.10925925925925926" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_black_close.xml" value="0.1037037037037037" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_black_pause.xml" value="0.10925925925925926" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_black_play.xml" value="0.10925925925925926" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_black_play_pause.xml" value="0.10648148148148148" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_more_vertical_black.xml" value="0.1259259259259259" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_music_note_black.xml" value="0.1259259259259259" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_pause.xml" value="0.10185185185185185" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_play_arrow.xml" value="0.10185185185185185" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_white_pause.xml" value="0.10925925925925926" />
@@ -22,7 +25,8 @@
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/playlist_create_activity.xml" value="0.2421875" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/playlist_edit_activity.xml" value="0.2421875" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/playlist_play_activity.xml" value="0.23072916666666668" />
-        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_playlist_item_layout.xml" value="0.2375" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_loop_item_layout.xml" value="0.4041666666666667" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_playlist_item_layout.xml" value="0.4" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_song_item_layout.xml" value="0.4041666666666667" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_song_loop_item_layout.xml" value="0.240625" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/save_loop_alert_dialog_layout.xml" value="0.240625" />

@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -16,13 +17,15 @@ import com.de.mucify.R;
 import com.de.mucify.playable.Song;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapter.LoopViewHolder> {
 
     private final Context mContext;
     private final ArrayList<Song> mSongs;
-    private LoopViewHolder.OnItemClickListener mOnItemClickListener;
-    private LoopViewHolder.OnItemClickListener mOnItemLongClickListener;
+
+    private final HashMap<Integer, LoopViewHolder.OnItemClickListener> mOnViewClickedListeners = new HashMap<>();
 
     public LoopListItemAdapter(Context context, ArrayList<Song> songs) {
         mContext = context;
@@ -39,19 +42,34 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
     @Override
     public void onBindViewHolder(@NonNull LoopViewHolder holder, int i) {
         Song song = mSongs.get(i);
-        holder.OnItemClickListener = mOnItemClickListener;
-        holder.OnItemLongClickListener = mOnItemLongClickListener;
+
+        for (Map.Entry<Integer, LoopViewHolder.OnItemClickListener> entry : mOnViewClickedListeners.entrySet()) {
+            int key = entry.getKey();
+            LoopViewHolder.OnItemClickListener listener = entry.getValue();
+
+            if (key == holder.LinearLayout.getId())
+                holder.LinearLayout.setOnClickListener(v -> listener.onItemClicked(holder));
+            else if (key == holder.CoordinatorLayout.getId())
+                holder.CoordinatorLayout.setOnClickListener(v -> listener.onItemClicked(holder));
+            else if(key == holder.TxtName.getId())
+                holder.TxtName.setOnClickListener(v -> listener.onItemClicked(holder));
+            else if(key == holder.TxtTitle.getId())
+                holder.TxtTitle.setOnClickListener(v -> listener.onItemClicked(holder));
+            else if(key == holder.TxtArtist.getId())
+                holder.TxtArtist.setOnClickListener(v -> listener.onItemClicked(holder));
+            else if(key == holder.BtnFileOptions.getId())
+                holder.BtnFileOptions.setOnClickListener(v -> listener.onItemClicked(holder));
+            else
+                throw new IllegalArgumentException("No view exists with id " + key);
+        }
+
         holder.TxtName.setText(song.getLoopName());
         holder.TxtTitle.setText(song.getTitle());
         holder.TxtArtist.setText(song.getArtist());
     }
 
-    public void setOnItemClicked(LoopViewHolder.OnItemClickListener listener) {
-        mOnItemClickListener = listener;
-    }
-
-    public void setOnItemLongClicked(LoopViewHolder.OnItemClickListener listener) {
-        mOnItemLongClickListener = listener;
+    public void setOnViewClickedListener(int btnFileOptions, LoopViewHolder.OnItemClickListener onClicked) {
+        mOnViewClickedListeners.put(btnFileOptions, onClicked);
     }
 
     @Override
@@ -67,8 +85,7 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
         public final TextView TxtTitle;
         public final TextView TxtArtist;
         public final CheckBox ChkItem;
-        public OnItemClickListener OnItemClickListener;
-        public OnItemClickListener OnItemLongClickListener;
+        public final ImageButton BtnFileOptions;
         public OnCheckedChangedListener OnCheckedChangedListener;
 
         public LoopViewHolder(@NonNull View itemView) {
@@ -80,21 +97,7 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
             TxtTitle = itemView.findViewById(R.id.txtTitle);
             TxtArtist = itemView.findViewById(R.id.txtArtist);
             ChkItem = itemView.findViewById(R.id.chkItem);
-
-            View.OnClickListener l1 = v -> {
-                if(OnItemClickListener != null)
-                OnItemClickListener.onItemClicked(this);
-            };
-            CoordinatorLayout.setOnClickListener(l1);
-            LinearLayout.setOnClickListener(l1);
-
-            View.OnLongClickListener l2 = v -> {
-                if(OnItemLongClickListener != null)
-                    OnItemLongClickListener.onItemClicked(this);
-                return true;
-            };
-            CoordinatorLayout.setOnLongClickListener(l2);
-            LinearLayout.setOnLongClickListener(l2);
+            BtnFileOptions = itemView.findViewById(R.id.btnFileOptions);
 
             ChkItem.setOnCheckedChangeListener((v, isChecked) -> {
                 if(OnCheckedChangedListener != null)
