@@ -13,6 +13,7 @@ import android.media.MediaMetadata;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -25,6 +26,11 @@ import com.de.mucify.activity.MultiAudioPlayActivity;
 import com.de.mucify.activity.SingleAudioActivity;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.playable.AudioController;
+import com.de.mucify.playable.Song;
+import com.de.mucify.util.MediaLibrary;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MediaNotificationManager {
     private final MediaSessionService mService;
@@ -119,6 +125,20 @@ public class MediaNotificationManager {
     public Notification buildNotification(boolean isPlaying) {
         mMediaSessionCompat.setMetadata(getMetadata());
         mMediaSessionCompat.setPlaybackState(getState());
+
+        List<MediaSessionCompat.QueueItem> queue = new ArrayList<>();
+        int i = 0;
+        for(Song s : MediaLibrary.AvailableSongs) {
+            MediaDescriptionCompat desc = new MediaDescriptionCompat.Builder()
+                    .setTitle(s.getTitle())
+                    .build();
+
+            queue.add(new MediaSessionCompat.QueueItem(desc, i));
+            ++i;
+        }
+
+        mMediaSessionCompat.setQueue(queue);
+        mMediaSessionCompat.setQueueTitle("TestQueue");
 
         return new NotificationCompat.Builder(mService, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_music_note_black)
