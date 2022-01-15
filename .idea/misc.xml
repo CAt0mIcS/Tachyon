@@ -10,6 +10,7 @@
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_black_pause.xml" value="0.10925925925925926" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_black_play.xml" value="0.10925925925925926" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_black_play_pause.xml" value="0.10648148148148148" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.11574074074074074" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_more_vertical_black.xml" value="0.1259259259259259" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_music_note_black.xml" value="0.1259259259259259" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_pause.xml" value="0.10185185185185185" />
@@ -38,6 +39,7 @@
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/song_loop_playlist_select_activity.xml" value="0.240625" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/song_select_activity.xml" value="0.23072916666666668" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/menu/loop_playlist_options_menu.xml" value="0.2421875" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.11574074074074074" />
       </map>
     </option>
   </component>

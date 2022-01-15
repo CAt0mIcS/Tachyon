@@ -9,16 +9,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.BitmapFactory;
 import android.media.MediaMetadata;
 import android.os.Bundle;
 import android.os.ResultReceiver;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.media.session.MediaButtonReceiver;
 
 import com.de.mucify.R;
@@ -126,19 +129,19 @@ public class MediaNotificationManager {
         mMediaSessionCompat.setMetadata(getMetadata());
         mMediaSessionCompat.setPlaybackState(getState());
 
-        List<MediaSessionCompat.QueueItem> queue = new ArrayList<>();
-        int i = 0;
-        for(Song s : MediaLibrary.AvailableSongs) {
-            MediaDescriptionCompat desc = new MediaDescriptionCompat.Builder()
-                    .setTitle(s.getTitle())
-                    .build();
-
-            queue.add(new MediaSessionCompat.QueueItem(desc, i));
-            ++i;
-        }
-
-        mMediaSessionCompat.setQueue(queue);
-        mMediaSessionCompat.setQueueTitle("TestQueue");
+//        List<MediaSessionCompat.QueueItem> queue = new ArrayList<>();
+//        int i = 0;
+//        for(Song s : MediaLibrary.AvailableSongs) {
+//            MediaDescriptionCompat desc = new MediaDescriptionCompat.Builder()
+//                    .setTitle(s.getTitle())
+//                    .build();
+//
+//            queue.add(new MediaSessionCompat.QueueItem(desc, i));
+//            ++i;
+//        }
+//
+//        mMediaSessionCompat.setQueue(queue);
+//        mMediaSessionCompat.setQueueTitle("TestQueue");
 
         return new NotificationCompat.Builder(mService, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_music_note_black)
@@ -161,12 +164,19 @@ public class MediaNotificationManager {
                 // Add next song action
                 .addAction(mNextAction)
 
+                // Add the metadata for the currently playing track
+                .setContentTitle(AudioController.get().getSongTitle())
+                .setContentText(AudioController.get().getSongArtist())
+                .setLargeIcon(BitmapFactory.decodeResource(mService.getResources(), R.drawable.ic_launcher_foreground))
+
+                // Make the transport controls visible on the lockscreen
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+
                 // When notification is deleted (when playback is paused and notification can be
                 // deleted) fire MediaButtonPendingIntent with ACTION_PAUSE.
                 .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(
                         mService, PlaybackStateCompat.ACTION_PAUSE))
 
-                .setPriority(NotificationCompat.PRIORITY_LOW)
                 .build();
     }
 
@@ -179,6 +189,7 @@ public class MediaNotificationManager {
                 .putString(MediaMetadata.METADATA_KEY_TITLE, AudioController.get().getSongTitle())
                 .putString(MediaMetadata.METADATA_KEY_ARTIST, AudioController.get().getSongArtist())
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, AudioController.get().getSongDuration())
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, BitmapFactory.decodeResource(mService.getResources(), R.drawable.ic_launcher_foreground))
                 .build();
     }
 
