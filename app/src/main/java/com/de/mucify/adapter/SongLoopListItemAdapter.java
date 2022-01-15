@@ -73,6 +73,7 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
             holder.TxtTitle.setText(song.getTitle());
             holder.TxtArtist.setText(song.getArtist());
             holder.ChkItem.setVisibility(View.VISIBLE);
+            holder.BtnFileOptions.setVisibility(View.INVISIBLE);
             holder.OnCheckedChangedListener = mOnLoopCheckedChangedListener;
 
             holder.ChkItem.setChecked(mItemCheckedStatus.get(i));
