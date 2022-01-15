@@ -83,6 +83,7 @@ public class AudioController {
             mPlaylist = null;
         }
         mSong = song;
+        mSong.setLooping(true);
     }
 
     public void setPlaylist(Playlist playlist) {
@@ -93,9 +94,10 @@ public class AudioController {
         mPlaylist = playlist;
         mSong = mPlaylist.getPlayingSongs().get(0);
         mSong.create(mPlaylist.getContext());
+        mSong.setLooping(false);
     }
 
-    synchronized public boolean startSong() {
+    synchronized public void startSong() {
         mSong.start();
         if(mIsSongPaused) {
             for(SongUnpausedListener listener : mSongUnpausedListeners)
@@ -105,7 +107,6 @@ public class AudioController {
         else
             for(SongStartedListener listener : mSongStartedListeners)
                 listener.onStarted(mSong);
-        return true;
     }
 
     public void next(Context context) {
