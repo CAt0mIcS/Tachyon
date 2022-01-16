@@ -32,10 +32,15 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     private final Context mContext;
     private final ArrayList<Song> mItems;
-    private final ArrayList<Boolean> mItemCheckedStatus;
+    private ArrayList<Boolean> mItemCheckedStatus = new ArrayList<>();
+
+    private boolean mCheckbox = true;
 
     private SongListItemAdapter.SongViewHolder.OnCheckedChangedListener mOnSongCheckedChangedListener;
     private LoopListItemAdapter.LoopViewHolder.OnCheckedChangedListener mOnLoopCheckedChangedListener;
+
+    private SongListItemAdapter.SongViewHolder.OnItemClickListener mOnSongClickListener;
+    private LoopListItemAdapter.LoopViewHolder.OnItemClickListener mOnLoopClickListener;
 
     public SongLoopListItemAdapter(Context context, ArrayList<Song> items, ArrayList<Song> playlistSongs) {
         mContext = context;
@@ -43,6 +48,13 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
 
         mItemCheckedStatus = new ArrayList<>(mItems.size());
         updateCheckedMap(playlistSongs);
+    }
+
+    public SongLoopListItemAdapter(Context context, ArrayList<Song> items) {
+        mContext = context;
+        mItems = items;
+
+        mCheckbox = false;
     }
 
     @NonNull
@@ -62,21 +74,26 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
             SongListItemAdapter.SongViewHolder holder = (SongListItemAdapter.SongViewHolder)baseHolder;
             holder.TxtTitle.setText(song.getTitle());
             holder.TxtArtist.setText(song.getArtist());
-            holder.ChkItem.setVisibility(View.VISIBLE);
-            holder.OnCheckedChangedListener = mOnSongCheckedChangedListener;
-
-            holder.ChkItem.setChecked(mItemCheckedStatus.get(i));
+            holder.ChkItem.setVisibility(mCheckbox ? View.VISIBLE : View.INVISIBLE);
+            holder.OnItemClickListener = mOnSongClickListener;
+            if(mCheckbox){
+                holder.OnCheckedChangedListener = mOnSongCheckedChangedListener;
+                holder.ChkItem.setChecked(mItemCheckedStatus.get(i));
+            }
         }
         else {
             LoopListItemAdapter.LoopViewHolder holder = (LoopListItemAdapter.LoopViewHolder)baseHolder;
             holder.TxtName.setText(song.getLoopName());
             holder.TxtTitle.setText(song.getTitle());
             holder.TxtArtist.setText(song.getArtist());
-            holder.ChkItem.setVisibility(View.VISIBLE);
+            holder.ChkItem.setVisibility(mCheckbox ? View.VISIBLE : View.INVISIBLE);
             holder.BtnFileOptions.setVisibility(View.INVISIBLE);
-            holder.OnCheckedChangedListener = mOnLoopCheckedChangedListener;
+            holder.OnItemClickListener = mOnLoopClickListener;
+            if(mCheckbox) {
+                holder.OnCheckedChangedListener = mOnLoopCheckedChangedListener;
+                holder.ChkItem.setChecked(mItemCheckedStatus.get(i));
+            }
 
-            holder.ChkItem.setChecked(mItemCheckedStatus.get(i));
         }
     }
 
@@ -104,6 +121,11 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
         };
     }
 
+    public  void setOnClickListener(OnClickListener listener) {
+        mOnSongClickListener = listener::onClick;
+        mOnLoopClickListener = listener::onClick;
+    }
+
     public void updateCheckedMap(ArrayList<Song> playlistSongs) {
         mItemCheckedStatus.clear();
         for(Song item : mItems) {
@@ -120,5 +142,9 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     public interface OnCheckedChangedListener {
         void onCheckedChanged(RecyclerView.ViewHolder holder, boolean isChecked);
+    }
+
+    public interface OnClickListener {
+        void onClick(RecyclerView.ViewHolder holder);
     }
 }

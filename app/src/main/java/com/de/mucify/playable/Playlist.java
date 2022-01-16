@@ -107,6 +107,24 @@ public class Playlist {
         return null;
     }
 
+    public boolean setNextSong(Song song) {
+        for(Song s : mPlayingSongs) {
+            if(s.equalsUninitialized(song)) {
+                mPlayingSongs.remove(s);
+                mPlayingSongs.add(1, s);
+                return true;
+            }
+        }
+
+        for(Song s : mSongs) {
+            if(s.equalsUninitialized(song)) {
+                mPlayingSongs.add(1, s);
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String getName() { return mName; }
     public File getPlaylistFilePath() { return mPlaylistFilePath; }
     public ArrayList<Song> getSongs() { return mSongs; }

@@ -1,105 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/coordinator"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:orientation="horizontal"
+    app:layout_constraintTop_toTopOf="parent"
+    tools:layout_editor_absoluteX="16dp">
 
-
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <TextView
+        android:id="@+id/pp_lblSongName"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/play_playlist_fragment">
+        android:layout_height="27dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/pp_lblSongName"
-            android:layout_width="match_parent"
-            android:textAlignment="center"
-            android:layout_height="27dp"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <SeekBar
+        android:id="@+id/pp_sbProgress"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:clickable="true"
+        android:progressTint="@color/primary_purple"
+        android:thumbTint="@color/primary_purple"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.468"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pp_lblSongName" />
 
-        <SeekBar
-            android:id="@+id/pp_sbProgress"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:thumbTint="@color/primary_purple"
-            android:progressTint="@color/primary_purple"
-            android:clickable="true"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.468"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pp_lblSongName" />
+    <TextView
+        android:id="@+id/pp_lblProgress"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pp_sbProgress" />
 
-        <TextView
-            android:id="@+id/pp_lblProgress"
-            android:layout_width="match_parent"
-            android:layout_height="20dp"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pp_sbProgress" />
+    <ImageButton
+        android:id="@+id/pp_btnPause"
+        android:layout_width="69dp"
+        android:layout_height="66dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:background="@null"
+        android:contentDescription="@string/play_pause"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pp_lblProgress" />
 
-        <ImageButton
-            android:id="@+id/pp_btnPause"
-            android:layout_width="69dp"
-            android:layout_height="66dp"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:background="@null"
-            android:contentDescription="@string/play_pause"
-            android:scaleType="fitCenter"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pp_lblProgress"/>
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/pp_btnPause">
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/pp_rvSongs"
+            android:id="@+id/pp_rvFiles"
             android:layout_width="match_parent"
-            android:layout_height="213dp"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:scrollbars="none"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.156"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pa_btnPause" />
+            android:layout_height="match_parent"
+            android:layout_marginTop="58dp"
+            app:layout_dodgeInsetEdges="bottom"/>
 
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/pp_rvLoops"
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/btmNav"
             android:layout_width="match_parent"
-            android:layout_height="213dp"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:layout_marginRight="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="32dp"
-            android:scrollbars="none"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pp_rvSongs" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_height="56dp"
+            app:menu="@menu/bottom_nav_menu"
+            app:elevation="8dp"
+            app:labelVisibilityMode="labeled"
+            app:layout_insetEdge="bottom"
+            android:layout_gravity="bottom"/>
 
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/btmNav"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        app:menu="@menu/bottom_nav_menu"
-        app:elevation="8dp"
-        app:labelVisibilityMode="labeled"
-        android:layout_gravity="bottom"/>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

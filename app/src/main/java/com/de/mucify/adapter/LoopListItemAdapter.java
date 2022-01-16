@@ -87,6 +87,7 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
         public final CheckBox ChkItem;
         public final ImageButton BtnFileOptions;
         public OnCheckedChangedListener OnCheckedChangedListener;
+        public OnItemClickListener OnItemClickListener;
 
         public LoopViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -98,6 +99,13 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
             TxtArtist = itemView.findViewById(R.id.txtArtist);
             ChkItem = itemView.findViewById(R.id.chkItem);
             BtnFileOptions = itemView.findViewById(R.id.btnFileOptions);
+
+            View.OnClickListener l1 = v -> {
+                if(OnItemClickListener != null)
+                    OnItemClickListener.onItemClicked(this);
+            };
+            CoordinatorLayout.setOnClickListener(l1);
+            LinearLayout.setOnClickListener(l1);
 
             ChkItem.setOnCheckedChangeListener((v, isChecked) -> {
                 if(OnCheckedChangedListener != null)

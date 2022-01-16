@@ -122,6 +122,20 @@ public class AudioController {
             songPrevious(context);
     }
 
+    public void setCurrentPlaylistSong(Song song) {
+        if(!isPlaylistNull()) {
+            if(song.equalsUninitialized(mSong)) {
+                seekSongTo(mSong.getStartTime());
+                if(mIsSongPaused)
+                    mSong.pause();
+                return;
+            }
+
+            if(mPlaylist.setNextSong(song))
+                playlistNext();
+        }
+    }
+
     public boolean isSongPlaying() { return mSong.isPlaying(); }
     public int getCurrentSongPosition() { return mSong.getCurrentPosition(); }
     public boolean isSongNull() { return mSong == null; }

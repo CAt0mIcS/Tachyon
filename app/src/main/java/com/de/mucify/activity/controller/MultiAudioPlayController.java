@@ -9,13 +9,21 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
 import com.de.mucify.activity.MultiAudioActivity;
 import com.de.mucify.activity.MultiAudioPlayActivity;
+import com.de.mucify.adapter.SongLoopListItemAdapter;
 import com.de.mucify.playable.AudioController;
+import com.de.mucify.playable.Song;
+import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.UserSettings;
 import com.de.mucify.util.Utils;
+
+import java.util.ArrayList;
 
 
 public class MultiAudioPlayController {
@@ -26,6 +34,7 @@ public class MultiAudioPlayController {
     private final TextView mLblProgress;
     private final ImageButton mBtnPlayPause;
     private final TextView mLblSongName;
+    private final RecyclerView mRvFiles;
 
     private boolean mIsSeeking = false;
 
@@ -52,6 +61,9 @@ public class MultiAudioPlayController {
         mLblProgress = mActivity.findViewById(R.id.pp_lblProgress);
         mBtnPlayPause = mActivity.findViewById(R.id.pp_btnPause);
         mLblSongName = mActivity.findViewById(R.id.pp_lblSongName);
+        mRvFiles = mActivity.findViewById(R.id.pp_rvFiles);
+
+        loadItems();
 
         AudioController.NextSongListener nextSongListener = nextSong -> {
             mSbProgress.setMax(AudioController.get().getSongDuration() / UserSettings.AudioUpdateInterval);
@@ -103,5 +115,22 @@ public class MultiAudioPlayController {
                 mActivity.finish();
             }
         });
+
+        if(AudioController.get().isPaused())
+            mBtnPlayPause.setImageResource(R.drawable.ic_play_arrow_black);
+        else
+            mBtnPlayPause.setImageResource(R.drawable.ic_pause_black);
+    }
+
+    public void loadItems() {
+        mRvFiles.setLayoutManager(new LinearLayoutManager(mActivity));
+
+        SongLoopListItemAdapter adapter = new SongLoopListItemAdapter(mActivity, AudioController.get().getPlaylist().getSongs());
+        adapter.setOnClickListener(holder -> {
+            Song song = AudioController.get().getPlaylist().getSongs().get(holder.getAdapterPosition());
+                AudioController.get().setCurrentPlaylistSong(song);
+        });
+        mRvFiles.setAdapter(adapter);
+        mRvFiles.getAdapter().notifyDataSetChanged();
     }
 }
