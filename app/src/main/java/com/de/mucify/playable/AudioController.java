@@ -37,18 +37,19 @@ public class AudioController {
                 try {
                     if(!isSongNull() && mSong.isCreated() && mSong.isPlaying()) {
                         int currentPos = getCurrentSongPosition();
-                        if(currentPos >= getSongEndTime() - 20 || currentPos < getSongStartTime() || (!mSong.isPlaying() && !isPaused())) {
-                            if(!isPlaylistNull()) {
-                                playlistNext();
-                            }
-                            else {
-                                mSong.start();
-                                for(OnSongSeekedListener listener : mSongSeekedListeners)
-                                    listener.onSeeked(mSong);
-                            }
-                            if(isPaused())
-                                mSong.pause();
+                        if(mSong.isLooping() || getSongEndTime() != getSongDuration()) {
+                            if (currentPos >= getSongEndTime() || currentPos < getSongStartTime() || (!mSong.isPlaying() && !isPaused())) {
+                                if(isPlaylistNull()) {
+                                    mSong.start();
+                                    for (OnSongSeekedListener listener : mSongSeekedListeners)
+                                        listener.onSeeked(mSong);
+                                }
+                                else
+                                    playlistNext();
 
+                                if (isPaused())
+                                    mSong.pause();
+                            }
                         }
                     }
                 } catch(NullPointerException ignored) {}
@@ -94,6 +95,15 @@ public class AudioController {
         mPlaylist = playlist;
         mSong = mPlaylist.getPlayingSongs().get(0);
         mSong.create(mPlaylist.getContext());
+
+        if(getSongEndTime() == getSongDuration())
+            mSong.setOnMediaPlayerCompletionListener(mp -> {
+                if(!isPlaylistNull())
+                    playlistNext();
+
+                if (isPaused())
+                    mSong.pause();
+            });
     }
 
     synchronized public void startSong() {
@@ -244,6 +254,15 @@ public class AudioController {
     private void playlistNext() {
         mSong = mPlaylist.next();
         mSong.start();
+
+        if(getSongEndTime() == getSongDuration())
+            mSong.setOnMediaPlayerCompletionListener(mp -> {
+                if(!isPlaylistNull())
+                    playlistNext();
+
+                if (isPaused())
+                    mSong.pause();
+            });
 
         if(mIsSongPaused)
             pauseSongInternal();
