@@ -189,7 +189,7 @@ public class MediaNotificationManager {
                 .putString(MediaMetadata.METADATA_KEY_TITLE, AudioController.get().getSongTitle())
                 .putString(MediaMetadata.METADATA_KEY_ARTIST, AudioController.get().getSongArtist())
                 .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, AudioController.get().getSongDuration())
-                .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, BitmapFactory.decodeResource(mService.getResources(), R.drawable.ic_launcher_foreground))
+                .putBitmap(MediaMetadataCompat.METADATA_KEY_ART, BitmapFactory.decodeResource(mService.getResources(), R.drawable.ic_launcher_foreground))
                 .build();
     }
 

@@ -37,7 +37,7 @@ public class AudioController {
                 try {
                     if(!isSongNull() && mSong.isCreated() && mSong.isPlaying()) {
                         int currentPos = getCurrentSongPosition();
-                        if(currentPos >= getSongEndTime() || currentPos < getSongStartTime() || (!mSong.isPlaying() && !isPaused())) {
+                        if(currentPos >= getSongEndTime() - 20 || currentPos < getSongStartTime() || (!mSong.isPlaying() && !isPaused())) {
                             if(!isPlaylistNull()) {
                                 playlistNext();
                             }
@@ -94,20 +94,6 @@ public class AudioController {
         mPlaylist = playlist;
         mSong = mPlaylist.getPlayingSongs().get(0);
         mSong.create(mPlaylist.getContext());
-
-        // If media player stops before song duration is reached we'll catch it like this
-        mSong.setOnMediaPlayerCompletionListener(mp -> {
-            Song oldSong = mSong;
-            try {
-                // MY_TODO: Not thread safe (User changes setting while reading here)
-                Thread.sleep(UserSettings.AudioUpdateInterval + 100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            if(!isPlaylistNull() && oldSong.equals(mSong))
-                playlistNext();
-        });
     }
 
     synchronized public void startSong() {
