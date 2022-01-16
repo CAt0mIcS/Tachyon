@@ -29,6 +29,8 @@ public class Song {
     private int mStartTime;
     private int mEndTime;
 
+    private boolean mLooping = true;
+
     private File mSongFilePath;
     private File mLoopFilePath;
 
@@ -88,9 +90,10 @@ public class Song {
     public String getLoopName() { return mLoopFilePath.getName().replace(MediaLibrary.LoopFileIdentifier, "").replace(MediaLibrary.LoopFileExtension, "").replace("_", " | "); }
     public void setVolume(float left, float right) { mMediaPlayer.setVolume(left, right); }
     public boolean isLoop() { return mLoopFilePath != null; }
-    public void setLooping(boolean looping) { mMediaPlayer.setLooping(looping); }
+    public void setLooping(boolean looping) { if(isCreated()) mMediaPlayer.setLooping(looping); else mLooping = looping; }
     public void setOnMediaPlayerCompletionListener(MediaPlayer.OnCompletionListener listener) { mMediaPlayer.setOnCompletionListener(listener); }
     public boolean isCreated() { return mMediaPlayer != null; }
+    public boolean isLooping() { return mLooping; }
 
     public boolean equalsUninitialized(@Nullable Song obj) {
         if(obj == null)
@@ -117,7 +120,7 @@ public class Song {
     private void createInternal(Context context, File path) {
         createInternal(path);
         mMediaPlayer = MediaPlayer.create(context, Uri.parse(mSongFilePath.getPath()));
-        mMediaPlayer.setLooping(true);
+        mMediaPlayer.setLooping(mLooping);
 
         if(mEndTime == 0)
             mEndTime = mMediaPlayer.getDuration();

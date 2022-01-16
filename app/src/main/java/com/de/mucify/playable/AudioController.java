@@ -1,6 +1,7 @@
 package com.de.mucify.playable;
 
 import android.content.Context;
+import android.media.MediaPlayer;
 
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
@@ -83,7 +84,6 @@ public class AudioController {
             mPlaylist = null;
         }
         mSong = song;
-        mSong.setLooping(true);
     }
 
     public void setPlaylist(Playlist playlist) {
@@ -94,7 +94,20 @@ public class AudioController {
         mPlaylist = playlist;
         mSong = mPlaylist.getPlayingSongs().get(0);
         mSong.create(mPlaylist.getContext());
-        mSong.setLooping(false);
+
+        // If media player stops before song duration is reached we'll catch it like this
+        mSong.setOnMediaPlayerCompletionListener(mp -> {
+            Song oldSong = mSong;
+            try {
+                // MY_TODO: Not thread safe (User changes setting while reading here)
+                Thread.sleep(UserSettings.AudioUpdateInterval + 100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            if(!isPlaylistNull() && oldSong.equals(mSong))
+                playlistNext();
+        });
     }
 
     synchronized public void startSong() {

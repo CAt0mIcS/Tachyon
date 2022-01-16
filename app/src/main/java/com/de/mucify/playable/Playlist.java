@@ -32,17 +32,23 @@ public class Playlist {
         mPlaylistFilePath = path;
         mName = FileManager.playlistNameFromFile(path);
         loadPlaylist();
+        for(Song s : mSongs)
+            s.setLooping(false);
         addSongs();
     }
 
     public Playlist(Context context, File path) {
         this(path);
         mContext = context;
+        for(Song s : mSongs)
+            s.setLooping(false);
     }
 
     public Playlist(File path, ArrayList<Song> songs) {
         mPlaylistFilePath = path;
         mSongs = songs;
+        for(Song s : mSongs)
+            s.setLooping(false);
     }
 
     public Playlist create(Context context) { mContext = context; return this; }
