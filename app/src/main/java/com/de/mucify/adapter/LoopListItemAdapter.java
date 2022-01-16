@@ -106,6 +106,8 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
         }
 
         public String getName() { return TxtName.getText().toString(); }
+        public String getTitle() { return TxtTitle.getText().toString(); }
+        public String getAuthor() { return TxtArtist.getText().toString(); }
 
         public interface OnItemClickListener {
             void onItemClicked(LoopViewHolder holder);

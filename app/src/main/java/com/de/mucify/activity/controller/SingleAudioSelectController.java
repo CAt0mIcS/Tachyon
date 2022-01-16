@@ -152,7 +152,7 @@ public class SingleAudioSelectController {
                     mActivity.finish();
                     return true;
                 case R.id.delete:
-                    File loopFile = FileManager.loopNameToFile(holder.getName());
+                    File loopFile = FileManager.loopNameToFile(holder.getName(), holder.getTitle(), holder.getAuthor());
                     if(!loopFile.delete())
                         Toast.makeText(mActivity,
                                 "Failed to delete loop: " + holder.getName(), Toast.LENGTH_LONG).show();

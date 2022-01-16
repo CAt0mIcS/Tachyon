@@ -34,11 +34,12 @@ public class FileManager {
         return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.PlaylistFileIdentifier + playlistName + MediaLibrary.PlaylistFileExtension);
     }
 
-    public static File loopNameToFile(String loopName) {
-        return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.LoopFileIdentifier + loopName + MediaLibrary.LoopFileExtension);
+    public static File loopNameToFile(String loopName, String songName, String songAuthor) {
+        return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.LoopFileIdentifier + loopName + "_" + songName + "_" + songAuthor + MediaLibrary.LoopFileExtension);
     }
 
     public static String loopNameFromFile(File path) {
-        return path.getName().replace(MediaLibrary.LoopFileIdentifier, "").replace(MediaLibrary.LoopFileExtension, "").replace("_", " | ");
+        String name = path.getName().replace(MediaLibrary.LoopFileIdentifier, "").replace(MediaLibrary.LoopFileExtension, "");
+        return name.substring(0, name.indexOf("_"));
     }
 }

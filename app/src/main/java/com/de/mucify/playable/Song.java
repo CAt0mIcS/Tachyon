@@ -87,7 +87,7 @@ public class Song {
     public int getStartTime() { return mStartTime; }
     public int getEndTime() { return mEndTime; }
     public File getLoopPath() { return mLoopFilePath; }
-    public String getLoopName() { return mLoopFilePath.getName().replace(MediaLibrary.LoopFileIdentifier, "").replace(MediaLibrary.LoopFileExtension, "").replace("_", " | "); }
+    public String getLoopName() { return FileManager.loopNameFromFile(mLoopFilePath); }
     public void setVolume(float left, float right) { mMediaPlayer.setVolume(left, right); }
     public boolean isLoop() { return mLoopFilePath != null; }
     public void setLooping(boolean looping) { if(isCreated()) mMediaPlayer.setLooping(looping); else mLooping = looping; }
