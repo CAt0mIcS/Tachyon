@@ -37,7 +37,9 @@ public class AudioController {
                 try {
                     if(!isSongNull() && mSong.isCreated() && mSong.isPlaying()) {
                         int currentPos = getCurrentSongPosition();
-                        if(mSong.isLooping() || getSongEndTime() != getSongDuration()) {
+
+                        // Only run for loops that don't end at the song's end time, other cases are handled through MediaPlayer.OnCompletionListener
+                        if(getSongEndTime() != getSongDuration()) {
                             if (currentPos >= getSongEndTime() || currentPos < getSongStartTime() || (!mSong.isPlaying() && !isPaused())) {
                                 if(isPlaylistNull()) {
                                     mSong.start();
@@ -85,6 +87,18 @@ public class AudioController {
             mPlaylist = null;
         }
         mSong = song;
+        mSong.setLooping(false);
+
+        if(getSongEndTime() == getSongDuration())
+            mSong.setOnMediaPlayerCompletionListener(mp -> {
+                if(isPlaylistNull()) {
+                    mSong.start();
+                    for (OnSongSeekedListener listener : mSongSeekedListeners)
+                        listener.onSeeked(mSong);
+                }
+                if (isPaused())
+                    mSong.pause();
+            });
     }
 
     public void setPlaylist(Playlist playlist) {
