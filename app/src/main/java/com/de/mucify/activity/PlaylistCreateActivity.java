@@ -32,7 +32,10 @@ public class PlaylistCreateActivity extends AppCompatActivity {
                     finish();
                     break;
                 case R.id.settings:
-                    return false;
+                    i = new Intent(PlaylistCreateActivity.this, SettingsActivity.class);
+                    startActivity(i);
+                    finish();
+                    break;
             }
 
             return true;

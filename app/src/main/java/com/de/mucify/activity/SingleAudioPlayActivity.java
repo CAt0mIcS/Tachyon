@@ -52,6 +52,12 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
                     startActivity(i);
                     finish();
                     break;
+                case R.id.settings:
+                    i = new Intent(SingleAudioPlayActivity.this, SettingsActivity.class);
+                    startActivity(i);
+                    finish();
+                    break;
+
             }
 
             return true;

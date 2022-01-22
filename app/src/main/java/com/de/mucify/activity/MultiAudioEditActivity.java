@@ -46,7 +46,10 @@ public class MultiAudioEditActivity extends AppCompatActivity {
                     finish();
                     break;
                 case R.id.settings:
-                    return false;
+                    i = new Intent(MultiAudioEditActivity.this, SettingsActivity.class);
+                    startActivity(i);
+                    finish();
+                    break;
             }
 
             return true;

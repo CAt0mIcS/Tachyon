@@ -46,6 +46,10 @@
             android:name=".activity.MultiAudioEditActivity"
             android:exported="true">
         </activity>
+        <activity
+            android:name=".activity.SettingsActivity"
+            android:exported="true">
+        </activity>
 
 <!--        <service android:name=".service.MediaSessionService"/>-->
 

@@ -23,6 +23,7 @@ import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Song;
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
+import com.de.mucify.util.UserSettings;
 import com.de.mucify.util.Utils;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -43,6 +44,8 @@ public class SingleAudioSelectController {
 
         MediaLibrary.loadAvailableSongs();
         MediaLibrary.loadAvailableLoops();
+
+        UserSettings.load();
 
         mRvFiles = mActivity.findViewById(R.id.rvFiles);
         mSearchSongLoop = mActivity.findViewById(R.id.editSearchFiles);

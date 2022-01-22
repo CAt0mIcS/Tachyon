@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
+import com.de.mucify.activity.controller.SingleAudioPlayController;
 import com.de.mucify.activity.controller.SingleAudioSelectController;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.PermissionManager;
@@ -62,7 +63,10 @@ public class SingleAudioActivity extends AppCompatActivity {
                     finish();
                     break;
                 case R.id.settings:
-                    return false;
+                    i = new Intent(SingleAudioActivity.this, SettingsActivity.class);
+                    startActivity(i);
+                    finish();
+                    break;
             }
 
             return true;
