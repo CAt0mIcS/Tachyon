@@ -1,7 +1,5 @@
 package com.de.mucify.util;
 
-import com.google.android.material.snackbar.Snackbar;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -17,11 +15,13 @@ public class UserSettings {
     public static int AudioUpdateInterval = 100;
     public static int SongIncDecInterval = 100;
     public static boolean RandomizePlaylistSongOrder = true;
+    public static boolean UseAudioFocus = true;
 
     public static void save() throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(SettingsFile));
         writer.write(String.valueOf(RandomizePlaylistSongOrder) + '\n');
         writer.write(String.valueOf(SongIncDecInterval) + '\n');
+        writer.write(String.valueOf(UseAudioFocus) + '\n');
         writer.close();
     }
 }

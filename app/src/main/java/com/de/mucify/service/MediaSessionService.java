@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.receiver.BecomingNoisyReceiver;
+import com.de.mucify.util.UserSettings;
 
 public class MediaSessionService extends Service {
     static MediaSessionService sInstance = null;
@@ -29,6 +30,9 @@ public class MediaSessionService extends Service {
     private final AudioManager.OnAudioFocusChangeListener mOnAudioFocusChanged = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
+            if(!UserSettings.UseAudioFocus)
+                return;
+
             switch(focusChange) {
                 case AudioManager.AUDIOFOCUS_GAIN:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
@@ -58,10 +62,10 @@ public class MediaSessionService extends Service {
     private final AudioFocusRequest mAudioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
             .setOnAudioFocusChangeListener(mOnAudioFocusChanged)
             .setAudioAttributes(new AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .setContentType(UserSettings.UseAudioFocus ? AudioAttributes.CONTENT_TYPE_MUSIC : AudioAttributes.CONTENT_TYPE_SPEECH)  // API 31 doesn't mute when playing with content_type_speech
                     .build())
             .build();
-    private boolean mHasAudioFocus = false;
+    private boolean mHasAudioFocus = !UserSettings.UseAudioFocus;
 
     public static final int NOTIFY_ID = 1337;
 
@@ -149,6 +153,9 @@ public class MediaSessionService extends Service {
     }
 
     private boolean requestAudioFocus(Context context) {
+        if(!UserSettings.UseAudioFocus)
+            return true;
+
         if(((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).requestAudioFocus(mAudioFocusRequest) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             mHasAudioFocus = true;
             return true;
@@ -157,6 +164,9 @@ public class MediaSessionService extends Service {
     }
 
     private int abandonAudioFocus(Context context) {
+        if(!UserSettings.UseAudioFocus)
+            return 0;
+
         mHasAudioFocus = false;
         return ((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocusRequest(mAudioFocusRequest);
     }
