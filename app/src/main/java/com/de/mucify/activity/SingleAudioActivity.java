@@ -3,17 +3,24 @@ package com.de.mucify.activity;
 import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.mediarouter.app.MediaRouteButton;
 
 import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
-import com.de.mucify.activity.controller.SingleAudioPlayController;
 import com.de.mucify.activity.controller.SingleAudioSelectController;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.PermissionManager;
 import com.de.mucify.util.Utils;
+import com.google.android.gms.cast.framework.CastButtonFactory;
+import com.google.android.gms.cast.framework.CastContext;
+import com.google.android.gms.cast.framework.CastSession;
+import com.google.android.gms.cast.framework.SessionManagerListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class SingleAudioActivity extends AppCompatActivity {

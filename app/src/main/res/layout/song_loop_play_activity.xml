@@ -16,6 +16,25 @@
             android:layout_height="wrap_content"
             android:id="@+id/play_song_fragment">
 
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:minHeight="?attr/actionBarSize"
+                android:background="?attr/colorPrimary"
+                app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.mediarouter.app.MediaRouteButton
+                    android:id="@+id/media_route_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:mediaRouteTypes="user" />
+
+
+            </androidx.appcompat.widget.Toolbar>
+
             <TextView
                 android:id="@+id/pa_lblSongName"
                 android:layout_width="match_parent"
@@ -39,7 +58,7 @@
                 android:layout_marginTop="16dp"
                 android:text="@string/save"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
             <Button
                 android:id="@+id/pa_btnAddToPlaylist"
@@ -49,7 +68,7 @@
                 android:layout_marginTop="16dp"
                 android:text="@string/add_to_playlist"
                 app:layout_constraintStart_toEndOf="@+id/pa_btnSave"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
             <SeekBar
                 android:id="@+id/pa_sbStartTime"
@@ -240,4 +259,5 @@
         app:elevation="8dp"
         app:labelVisibilityMode="labeled"
         android:layout_gravity="bottom"/>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

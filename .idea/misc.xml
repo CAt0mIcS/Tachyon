@@ -34,12 +34,14 @@
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/save_loop_new_playlist_alert_dialog_layout.xml" value="0.2375" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/settings_activity.xml" value="0.25065138092756645" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/single_audio_activity.xml" value="0.23072916666666668" />
-        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/song_loop_play_activity.xml" value="0.6" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/song_loop_play_activity.xml" value="0.264" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/song_loop_playing_foreground_notification_large.xml" value="0.34375" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/song_loop_playing_foreground_notification_small.xml" value="0.34375" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/song_loop_playlist_select_activity.xml" value="0.240625" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/song_select_activity.xml" value="0.23072916666666668" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/menu/loop_playlist_options_menu.xml" value="0.2421875" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/menu/main_menu.xml" value="0.24739583333333334" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/menu/menu.xml" value="0.24739583333333334" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.11574074074074074" />
       </map>
     </option>
