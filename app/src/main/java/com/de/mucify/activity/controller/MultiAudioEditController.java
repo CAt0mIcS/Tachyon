@@ -23,15 +23,17 @@ import com.de.mucify.playable.Playlist;
 import com.de.mucify.playable.Song;
 import com.de.mucify.util.MediaLibrary;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.TreeSet;
 
 public class MultiAudioEditController {
-    private MultiAudioEditActivity mActivity;
-    private Playlist mPlaylist;
+    private final MultiAudioEditActivity mActivity;
+    private final Playlist mPlaylist;
     private final ArrayList<Song> mListItems = new ArrayList<>();
-    private final ArrayList<Song> mNewSongs = new ArrayList<>();
+    private final TreeSet<File> mNewSongs = new TreeSet<>();
 
     private final RecyclerView mRvFiles;
     private final EditText mSearchSongLoop;
@@ -77,7 +79,11 @@ public class MultiAudioEditController {
 
         mActivity.findViewById(R.id.btnSavePlaylist).setOnClickListener(v -> {
             try {
-                new Playlist(mPlaylist.getPlaylistFilePath(), mNewSongs).save();
+                ArrayList<Song> songs = new ArrayList<>();
+                for(File f : mNewSongs)
+                    songs.add(new Song(f));
+
+                new Playlist(mPlaylist.getPlaylistFilePath(), songs).save();
                 Intent i = new Intent(mActivity, MultiAudioActivity.class);
                 mActivity.startActivity(i);
                 mActivity.finish();
@@ -93,6 +99,13 @@ public class MultiAudioEditController {
         mRvFiles.setLayoutManager(new LinearLayoutManager(mActivity));
         mListItems.addAll(MediaLibrary.AvailableSongs);
         mListItems.addAll(MediaLibrary.AvailableLoops);
+        for(Song s : mPlaylist.getSongs()) {
+            if(s.isLoop())
+                mNewSongs.add(s.getLoopPath());
+            else
+                mNewSongs.add(s.getSongPath());
+        }
+
 
         SongLoopListItemAdapter adapter = new SongLoopListItemAdapter(mActivity, mListItems, mPlaylist.getSongs());
         adapter.setOnCheckedChangedListener(this::onCheckedChanged);
@@ -142,9 +155,11 @@ public class MultiAudioEditController {
     }
 
     private void onCheckedChanged(RecyclerView.ViewHolder baseHolder, boolean isChecked) {
-        if(isChecked)
-            mNewSongs.add(mListItems.get(baseHolder.getAdapterPosition()));
+        Song song = mListItems.get(baseHolder.getAdapterPosition());
+        if(isChecked) {
+            mNewSongs.add(song.isLoop() ? song.getLoopPath() : song.getSongPath());
+        }
         else
-            mNewSongs.remove(mListItems.get(baseHolder.getAdapterPosition()));
+            mNewSongs.remove(song.isLoop() ? song.getLoopPath() : song.getSongPath());
     }
 }
