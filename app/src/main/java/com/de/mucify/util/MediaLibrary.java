@@ -72,13 +72,21 @@ public class MediaLibrary {
                         if(song) {
                             String extension = FileManager.getFileExtension(file.getName());
                             if(SupportedAudioExtensions.contains(extension)) {
-                                AvailableSongs.add(new Song(file));
+                                try {
+                                    AvailableSongs.add(new Song(file));
+                                } catch (Song.LoadingFailedException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                         else if(loop) {
                             String extension = FileManager.getFileExtension(file.getName());
                             if(extension.equals(LoopFileExtension) && file.getName().indexOf(LoopFileIdentifier) == 0) {
-                                AvailableLoops.add(new Song(file));
+                                try {
+                                    AvailableLoops.add(new Song(file));
+                                } catch (Song.LoadingFailedException e) {
+                                    e.printStackTrace();
+                                }
                             }
                         }
                         else if(playlist) {

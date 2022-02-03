@@ -37,15 +37,15 @@ public class Song {
     /**
      * @param  path path to either a song audio file or a loop file
      */
-    public Song(Context context, File path) {
+    public Song(Context context, File path) throws LoadingFailedException {
         createInternal(context, path);
     }
 
-    public Song(File path) {
+    public Song(File path) throws LoadingFailedException {
         createInternal(path);
     }
 
-    public Song(Context context, File songFilePath, int startTime, int endTime) {
+    public Song(Context context, File songFilePath, int startTime, int endTime) throws LoadingFailedException {
         mStartTime = startTime;
         mEndTime = endTime;
 
@@ -70,7 +70,7 @@ public class Song {
     /**
      * Needs to be called only after @Song(File path) constructor was used
      */
-    public void create(Context context) {
+    public void create(Context context) throws LoadingFailedException {
         createInternal(context, mSongFilePath);
     }
 
@@ -117,7 +117,7 @@ public class Song {
         return equals;
     }
 
-    private void createInternal(Context context, File path) {
+    private void createInternal(Context context, File path) throws LoadingFailedException {
         createInternal(path);
         mMediaPlayer = MediaPlayer.create(context, Uri.parse(mSongFilePath.getPath()));
         mMediaPlayer.setLooping(mLooping);
@@ -126,10 +126,9 @@ public class Song {
             mEndTime = mMediaPlayer.getDuration();
     }
 
-    private void createInternal(File path) {
+    private void createInternal(File path) throws LoadingFailedException {
         if(path == null || !path.exists()) {
-            // MY_TODO: Add error message for user
-            return;
+            throw new LoadingFailedException();
         }
 
         if(FileManager.isLoopFile(path)) {
@@ -176,5 +175,9 @@ public class Song {
         mStartTime = Integer.parseInt(reader.readLine());
         mEndTime = Integer.parseInt(reader.readLine());
         reader.close();
+    }
+
+    public class LoadingFailedException extends Exception {
+
     }
 }

@@ -108,7 +108,11 @@ public class AudioController {
             mSong.reset();
         mPlaylist = playlist;
         mSong = mPlaylist.getPlayingSongs().get(0);
-        mSong.create(mPlaylist.getContext());
+        try {
+            mSong.create(mPlaylist.getContext());
+        } catch (Song.LoadingFailedException e) {
+            e.printStackTrace();
+        }
 
         if(getSongEndTime() == getSongDuration())
             mSong.setOnMediaPlayerCompletionListener(mp -> {
@@ -310,7 +314,11 @@ public class AudioController {
                         songIndex = 0;
                     mSong.reset();
                     mSong = MediaLibrary.AvailableLoops.get(songIndex);
-                    mSong.create(context);
+                    try {
+                        mSong.create(context);
+                    } catch (Song.LoadingFailedException e) {
+                        e.printStackTrace();
+                    }
                     mSong.start();
                     if(mIsSongPaused)
                         pauseSongInternal();
@@ -331,7 +339,11 @@ public class AudioController {
                         songIndex = 0;
                     mSong.reset();
                     mSong = MediaLibrary.AvailableSongs.get(songIndex);
-                    mSong.create(context);
+                    try {
+                        mSong.create(context);
+                    } catch (Song.LoadingFailedException e) {
+                        e.printStackTrace();
+                    }
                     mSong.start();
                     if(mIsSongPaused)
                         pauseSongInternal();
@@ -356,7 +368,11 @@ public class AudioController {
                         songIndex = MediaLibrary.AvailableLoops.size() - 1;
                     mSong.reset();
                     mSong = MediaLibrary.AvailableLoops.get(songIndex);
-                    mSong.create(context);
+                    try {
+                        mSong.create(context);
+                    } catch (Song.LoadingFailedException e) {
+                        e.printStackTrace();
+                    }
                     mSong.start();
                     if(mIsSongPaused)
                         mSong.pause();
@@ -377,7 +393,11 @@ public class AudioController {
                         songIndex = MediaLibrary.AvailableSongs.size() - 1;
                     mSong.reset();
                     mSong = MediaLibrary.AvailableSongs.get(songIndex);
-                    mSong.create(context);
+                    try {
+                        mSong.create(context);
+                    } catch (Song.LoadingFailedException e) {
+                        e.printStackTrace();
+                    }
                     mSong.start();
                     if(mIsSongPaused)
                         mSong.pause();

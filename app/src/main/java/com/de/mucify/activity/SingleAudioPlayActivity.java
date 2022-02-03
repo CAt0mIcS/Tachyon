@@ -77,7 +77,11 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
         });
 
         if(!getIntent().getBooleanExtra("PreserveAudio", false) || getIntent().hasExtra("EditLoop")) {
-            AudioController.get().setSong(new Song(this, new File(getIntent().getStringExtra("AudioFilePath"))));
+            try {
+                AudioController.get().setSong(new Song(this, new File(getIntent().getStringExtra("AudioFilePath"))));
+            } catch (Song.LoadingFailedException e) {
+                e.printStackTrace();
+            }
 
             AudioController.get().addOnSongUnpausedListener(song -> {
                 startService(mSongPlayForegroundIntent);

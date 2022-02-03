@@ -80,8 +80,13 @@ public class MultiAudioEditController {
         mActivity.findViewById(R.id.btnSavePlaylist).setOnClickListener(v -> {
             try {
                 ArrayList<Song> songs = new ArrayList<>();
-                for(File f : mNewSongs)
-                    songs.add(new Song(f));
+                for(File f : mNewSongs) {
+                    try {
+                        songs.add(new Song(f));
+                    } catch (Song.LoadingFailedException e) {
+                        e.printStackTrace();
+                    }
+                }
 
                 new Playlist(mPlaylist.getPlaylistFilePath(), songs).save();
                 Intent i = new Intent(mActivity, MultiAudioActivity.class);

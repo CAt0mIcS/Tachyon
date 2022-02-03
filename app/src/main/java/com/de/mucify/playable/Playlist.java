@@ -85,7 +85,11 @@ public class Playlist {
         if(mPlayingSongs.size() == 0)
             addSongs();
         Song newSong = mPlayingSongs.get(0);
-        newSong.create(mContext);
+        try {
+            newSong.create(mContext);
+        } catch (Song.LoadingFailedException e) {
+            e.printStackTrace();
+        }
         return newSong;
     }
 
@@ -99,7 +103,11 @@ public class Playlist {
         for(Song song : mSongs) {
             if(song.equals(mPreviousSong)) {
                 mPlayingSongs.add(0, song);
-                mPlayingSongs.get(0).create(mContext);
+                try {
+                    mPlayingSongs.get(0).create(mContext);
+                } catch (Song.LoadingFailedException e) {
+                    e.printStackTrace();
+                }
                 mPreviousSong = oldSong;
                 return mPlayingSongs.get(0);
             }
@@ -144,7 +152,12 @@ public class Playlist {
             BufferedReader reader = new BufferedReader(new FileReader(mPlaylistFilePath));
 
             while(reader.ready()) {
-                mSongs.add(new Song(new File(reader.readLine())));
+                try {
+                    mSongs.add(new Song(new File(reader.readLine())));
+                } catch(Song.LoadingFailedException e) {
+                    // MY_TODO: Remove from playlist and display error message to user
+                    e.printStackTrace();
+                 }
             }
             reader.close();
 
