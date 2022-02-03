@@ -5,10 +5,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,6 +26,7 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
     private final ArrayList<Song> mSongs;
 
     private final HashMap<Integer, LoopViewHolder.OnItemClickListener> mOnViewClickedListeners = new HashMap<>();
+    private final HashMap<Integer, LoopViewHolder.OnItemClickListener> mOnViewLongClickedListeners = new HashMap<>();
 
     public LoopListItemAdapter(Context context, ArrayList<Song> songs) {
         mContext = context;
@@ -46,21 +47,13 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
         for (Map.Entry<Integer, LoopViewHolder.OnItemClickListener> entry : mOnViewClickedListeners.entrySet()) {
             int key = entry.getKey();
             LoopViewHolder.OnItemClickListener listener = entry.getValue();
+            getViewById(holder, key).setOnClickListener(v -> listener.onItemClicked(holder));
+        }
 
-            if (key == holder.LinearLayout.getId())
-                holder.LinearLayout.setOnClickListener(v -> listener.onItemClicked(holder));
-            else if (key == holder.CoordinatorLayout.getId())
-                holder.CoordinatorLayout.setOnClickListener(v -> listener.onItemClicked(holder));
-            else if(key == holder.TxtName.getId())
-                holder.TxtName.setOnClickListener(v -> listener.onItemClicked(holder));
-            else if(key == holder.TxtTitle.getId())
-                holder.TxtTitle.setOnClickListener(v -> listener.onItemClicked(holder));
-            else if(key == holder.TxtArtist.getId())
-                holder.TxtArtist.setOnClickListener(v -> listener.onItemClicked(holder));
-            else if(key == holder.BtnFileOptions.getId())
-                holder.BtnFileOptions.setOnClickListener(v -> listener.onItemClicked(holder));
-            else
-                throw new IllegalArgumentException("No view exists with id " + key);
+        for (Map.Entry<Integer, LoopViewHolder.OnItemClickListener> entry : mOnViewLongClickedListeners.entrySet()) {
+            int key = entry.getKey();
+            LoopViewHolder.OnItemClickListener listener = entry.getValue();
+            getViewById(holder, key).setOnLongClickListener(v -> { listener.onItemClicked(holder); return true; });
         }
 
         holder.TxtName.setText(song.getLoopName());
@@ -68,8 +61,27 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
         holder.TxtArtist.setText(song.getArtist());
     }
 
+    private View getViewById(LoopViewHolder holder, @IdRes int key) {
+        if (key == holder.LinearLayout.getId())
+            return holder.LinearLayout;
+        else if (key == holder.CoordinatorLayout.getId())
+            return holder.CoordinatorLayout;
+        else if(key == holder.TxtName.getId())
+            return holder.TxtName;
+        else if(key == holder.TxtTitle.getId())
+            return holder.TxtTitle;
+        else if(key == holder.TxtArtist.getId())
+            return holder.TxtArtist;
+        else
+            throw new IllegalArgumentException("No view exists with id " + key);
+    }
+
     public void setOnViewClickedListener(int btnFileOptions, LoopViewHolder.OnItemClickListener onClicked) {
         mOnViewClickedListeners.put(btnFileOptions, onClicked);
+    }
+
+    public void setOnViewLongClickedListener(int btnFileOptions, LoopViewHolder.OnItemClickListener onClicked) {
+        mOnViewLongClickedListeners.put(btnFileOptions, onClicked);
     }
 
     @Override
@@ -85,7 +97,6 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
         public final TextView TxtTitle;
         public final TextView TxtArtist;
         public final CheckBox ChkItem;
-        public final ImageButton BtnFileOptions;
         public OnCheckedChangedListener OnCheckedChangedListener;
         public OnItemClickListener OnItemClickListener;
 
@@ -96,9 +107,8 @@ public class LoopListItemAdapter extends RecyclerView.Adapter<LoopListItemAdapte
             LinearLayout = itemView.findViewById(R.id.rvLinearLayout);
             TxtName = itemView.findViewById(R.id.txtName);
             TxtTitle = itemView.findViewById(R.id.txtTitle);
-            TxtArtist = itemView.findViewById(R.id.txtArtist);
+            TxtArtist = itemView.findViewById(R.id.txtAdditionalInfo);
             ChkItem = itemView.findViewById(R.id.chkItem);
-            BtnFileOptions = itemView.findViewById(R.id.btnFileOptions);
 
             View.OnClickListener l1 = v -> {
                 if(OnItemClickListener != null)

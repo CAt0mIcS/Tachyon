@@ -83,7 +83,7 @@ public class MultiAudioSelectController {
 
         PlaylistListItemAdapter adapter = new PlaylistListItemAdapter(mActivity, mListItems);
         adapter.setOnViewClickedListener(R.id.rvCoordinatorLayout, this::onFileClicked);
-        adapter.setOnViewClickedListener(R.id.btnFileOptions, this::onFileOptionsClicked);
+        adapter.setOnViewLongClickedListener(R.id.rvCoordinatorLayout, this::onFileOptionsClicked);
         mRvFiles.setAdapter(adapter);
 
         mRvFiles.getAdapter().notifyDataSetChanged();
@@ -97,7 +97,7 @@ public class MultiAudioSelectController {
     }
 
     private void onFileOptionsClicked(PlaylistListItemAdapter.PlaylistViewHolder holder) {
-        PopupMenu popup = new PopupMenu(mActivity, holder.BtnFileOptions);
+        PopupMenu popup = new PopupMenu(mActivity, holder.CoordinatorLayout);
         popup.inflate(R.menu.loop_playlist_options_menu);
 
         popup.setOnMenuItemClickListener(item -> {

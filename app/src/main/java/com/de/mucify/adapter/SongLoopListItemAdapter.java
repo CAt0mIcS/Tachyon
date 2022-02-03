@@ -4,26 +4,14 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
-import com.de.mucify.playable.AudioController;
-import com.de.mucify.playable.Playlist;
 import com.de.mucify.playable.Song;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -61,7 +49,7 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == ITEM_TYPE_SONG)
-            return new SongListItemAdapter.SongViewHolder(LayoutInflater.from(mContext).inflate(R.layout.recycler_song_item_layout, parent, false));
+            return new SongListItemAdapter.SongViewHolder(LayoutInflater.from(mContext).inflate(R.layout.recycler_song_playlist_item_layout, parent, false));
         else
             return new LoopListItemAdapter.LoopViewHolder(LayoutInflater.from(mContext).inflate(R.layout.recycler_loop_item_layout, parent, false));
     }
@@ -87,7 +75,6 @@ public class SongLoopListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
             holder.TxtTitle.setText(song.getTitle());
             holder.TxtArtist.setText(song.getArtist());
             holder.ChkItem.setVisibility(mCheckbox ? View.VISIBLE : View.INVISIBLE);
-            holder.BtnFileOptions.setVisibility(View.INVISIBLE);
             holder.OnItemClickListener = mOnLoopClickListener;
             if(mCheckbox) {
                 holder.OnCheckedChangedListener = mOnLoopCheckedChangedListener;

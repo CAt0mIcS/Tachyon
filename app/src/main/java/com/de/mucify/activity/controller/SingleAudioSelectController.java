@@ -2,6 +2,10 @@ package com.de.mucify.activity.controller;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.media.MediaMetadata;
+import android.media.MediaMetadataEditor;
+import android.support.v4.media.MediaMetadataCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -109,6 +113,7 @@ public class SingleAudioSelectController {
 
         SongListItemAdapter adapter = new SongListItemAdapter(mActivity, mListItems);
         adapter.setOnItemClicked(this::onFileClicked);
+        adapter.setOnItemLongClicked(this::onFileOptionsClicked);
         mRvFiles.setAdapter(adapter);
 
         mRvFiles.getAdapter().notifyDataSetChanged();
@@ -120,10 +125,12 @@ public class SingleAudioSelectController {
         mListItems.addAll(MediaLibrary.AvailableLoops);
 
         LoopListItemAdapter adapter = new LoopListItemAdapter(mActivity, mListItems);
-//        adapter.setOnItemClicked(this::onFileClicked);
         adapter.setOnViewClickedListener(R.id.rvCoordinatorLayout, this::onFileClicked);
         adapter.setOnViewClickedListener(R.id.rvLinearLayout, this::onFileClicked);
-        adapter.setOnViewClickedListener(R.id.btnFileOptions, this::onFileOptionsClicked);
+
+        adapter.setOnViewLongClickedListener(R.id.rvCoordinatorLayout, this::onFileOptionsClicked);
+        adapter.setOnViewLongClickedListener(R.id.rvLinearLayout, this::onFileOptionsClicked);
+
         mRvFiles.setAdapter(adapter);
 
         mRvFiles.getAdapter().notifyDataSetChanged();
@@ -142,7 +149,7 @@ public class SingleAudioSelectController {
     }
 
     private void onFileOptionsClicked(LoopListItemAdapter.LoopViewHolder holder) {
-        PopupMenu popup = new PopupMenu(mActivity, holder.BtnFileOptions);
+        PopupMenu popup = new PopupMenu(mActivity, holder.CoordinatorLayout);
         popup.inflate(R.menu.loop_playlist_options_menu);
 
         popup.setOnMenuItemClickListener(item -> {
@@ -169,5 +176,28 @@ public class SingleAudioSelectController {
         });
         //displaying the popup
         popup.show();
+    }
+
+    private void onFileOptionsClicked(SongListItemAdapter.SongViewHolder holder) {
+        PopupMenu popup = new PopupMenu(mActivity, holder.CoordinatorLayout);
+        popup.inflate(R.menu.song_options_menu);
+
+        popup.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case R.id.edit:
+                    editSongMetadata(MediaLibrary.AvailableSongs.get(holder.getAdapterPosition()));
+                    return true;
+            }
+            return false;
+        });
+        //displaying the popup
+        popup.show();
+    }
+
+    private void editSongMetadata(Song song) {
+        String title = "Hello World";
+        String artist = "New Artist";
+
+
     }
 }

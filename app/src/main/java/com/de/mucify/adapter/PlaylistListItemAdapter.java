@@ -4,10 +4,12 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,6 +27,7 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
     private final ArrayList<Playlist> mPlaylists;
 
     private final HashMap<Integer, PlaylistViewHolder.OnItemClickListener> mOnViewClickedListeners = new HashMap<>();
+    private final HashMap<Integer, PlaylistViewHolder.OnItemClickListener> mOnViewLongClickedListeners = new HashMap<>();
 
 
     public PlaylistListItemAdapter(Context context, ArrayList<Playlist> playlists) {
@@ -36,7 +39,7 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
     @Override
     public PlaylistViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return new PlaylistViewHolder(LayoutInflater.from(mContext)
-                .inflate(R.layout.recycler_playlist_item_layout, parent, false));
+                .inflate(R.layout.recycler_song_playlist_item_layout, parent, false));
     }
 
     @Override
@@ -46,18 +49,37 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
             int key = entry.getKey();
             PlaylistViewHolder.OnItemClickListener listener = entry.getValue();
 
-            if (key == holder.ItemLayout.getId())
-                holder.ItemLayout.setOnClickListener(v -> listener.onItemClicked(holder));
-            else if(key == holder.TxtName.getId())
-                holder.TxtName.setOnClickListener(v -> listener.onItemClicked(holder));
-            else if(key == holder.BtnFileOptions.getId())
-                holder.BtnFileOptions.setOnClickListener(v -> listener.onItemClicked(holder));
-            else
-                throw new IllegalArgumentException("No view exists with id " + key);
+            getViewById(holder, key).setOnClickListener(v -> listener.onItemClicked(holder));
+        }
+
+        for (Map.Entry<Integer, PlaylistViewHolder.OnItemClickListener> entry : mOnViewLongClickedListeners.entrySet()) {
+            int key = entry.getKey();
+            PlaylistViewHolder.OnItemClickListener listener = entry.getValue();
+
+            getViewById(holder, key).setOnLongClickListener(view -> { listener.onItemClicked(holder); return true; });
         }
 
 
-        holder.TxtName.setText(playlist.getName());
+        holder.TxtTitle.setText(playlist.getName());
+        if(playlist.getSongs().size() == 1)
+            holder.TxtArtist.setText("1 Song");
+        else
+            holder.TxtArtist.setText(playlist.getSongs().size() + " Songs");
+    }
+
+    private View getViewById(PlaylistViewHolder holder, @IdRes int key) {
+        if (key == holder.LinearLayout.getId())
+            return holder.LinearLayout;
+        else if (key == holder.CoordinatorLayout.getId())
+            return holder.CoordinatorLayout;
+        else if(key == holder.TxtTitle.getId())
+            return holder.TxtTitle;
+        else if(key == holder.TxtArtist.getId())
+            return holder.TxtArtist;
+        else if(key == holder.ChkItem.getId())
+            return holder.ChkItem;
+        else
+            throw new IllegalArgumentException("No view exists with id " + key);
     }
 
     @Override
@@ -67,18 +89,26 @@ public class PlaylistListItemAdapter extends RecyclerView.Adapter<PlaylistListIt
         mOnViewClickedListeners.put(btnFileOptions, onFileOptionsClicked);
     }
 
+    public void setOnViewLongClickedListener(int btnFileOptions, PlaylistViewHolder.OnItemClickListener onFileOptionsClicked) {
+        mOnViewLongClickedListeners.put(btnFileOptions, onFileOptionsClicked);
+    }
+
     public static class PlaylistViewHolder extends RecyclerView.ViewHolder {
 
-        public final CoordinatorLayout ItemLayout;
-        public final TextView TxtName;
-        public final ImageButton BtnFileOptions;
+        public final CoordinatorLayout CoordinatorLayout;
+        public final LinearLayout LinearLayout;
+        public final TextView TxtTitle;
+        public final TextView TxtArtist;
+        public final CheckBox ChkItem;
 
         public PlaylistViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            ItemLayout = itemView.findViewById(R.id.rvCoordinatorLayout);
-            TxtName = itemView.findViewById(R.id.txtName);
-            BtnFileOptions = itemView.findViewById(R.id.btnFileOptions);
+            CoordinatorLayout = itemView.findViewById(R.id.rvCoordinatorLayout);
+            LinearLayout = itemView.findViewById(R.id.rvLinearLayout);
+            TxtTitle = itemView.findViewById(R.id.txtTitle);
+            TxtArtist = itemView.findViewById(R.id.txtAdditionalInfo);
+            ChkItem = itemView.findViewById(R.id.chkItem);
         }
 
         public interface OnItemClickListener {
