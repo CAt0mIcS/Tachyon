@@ -84,6 +84,8 @@ public class MultiAudioSelectController {
         PlaylistListItemAdapter adapter = new PlaylistListItemAdapter(mActivity, mListItems);
         adapter.setOnViewClickedListener(R.id.rvCoordinatorLayout, this::onFileClicked);
         adapter.setOnViewLongClickedListener(R.id.rvCoordinatorLayout, this::onFileOptionsClicked);
+        adapter.setOnViewClickedListener(R.id.rvLinearLayout, this::onFileClicked);
+        adapter.setOnViewLongClickedListener(R.id.rvLinearLayout, this::onFileOptionsClicked);
         mRvFiles.setAdapter(adapter);
 
         mRvFiles.getAdapter().notifyDataSetChanged();
