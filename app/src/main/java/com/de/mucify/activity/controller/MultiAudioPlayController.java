@@ -41,21 +41,21 @@ public class MultiAudioPlayController {
     public MultiAudioPlayController(MultiAudioPlayActivity activity) {
         mActivity = activity;
 
-        TelephonyManager mgr = (TelephonyManager)mActivity.getSystemService(Context.TELEPHONY_SERVICE);
-        if(mgr != null) {
-            // Incoming call || A call is dialing, active or on hold
-            mgr.listen(new PhoneStateListener() {
-                @Override
-                public void onCallStateChanged(int state, String incomingNumber) {
-                    // Incoming call || A call is dialing, active or on hold
-                    if (state == TelephonyManager.CALL_STATE_RINGING || state == TelephonyManager.CALL_STATE_OFFHOOK) {
-                        if (!AudioController.get().isSongNull())
-                            AudioController.get().pauseSong();
-                    }
-                    super.onCallStateChanged(state, incomingNumber);
-                }
-            }, PhoneStateListener.LISTEN_CALL_STATE);
-        }
+//        TelephonyManager mgr = (TelephonyManager)mActivity.getSystemService(Context.TELEPHONY_SERVICE);
+//        if(mgr != null) {
+//            // Incoming call || A call is dialing, active or on hold
+//            mgr.listen(new PhoneStateListener() {
+//                @Override
+//                public void onCallStateChanged(int state, String incomingNumber) {
+//                    // Incoming call || A call is dialing, active or on hold
+//                    if (state == TelephonyManager.CALL_STATE_RINGING || state == TelephonyManager.CALL_STATE_OFFHOOK) {
+//                        if (!AudioController.get().isSongNull())
+//                            AudioController.get().pauseSong();
+//                    }
+//                    super.onCallStateChanged(state, incomingNumber);
+//                }
+//            }, PhoneStateListener.LISTEN_CALL_STATE);
+//        }
 
         mSbProgress = mActivity.findViewById(R.id.pp_sbProgress);
         mLblProgress = mActivity.findViewById(R.id.pp_lblProgress);

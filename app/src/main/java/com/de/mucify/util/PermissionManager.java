@@ -29,6 +29,7 @@ public class PermissionManager {
         switch(permission) {
             case Manifest.permission.READ_EXTERNAL_STORAGE:
             case Manifest.permission.WRITE_EXTERNAL_STORAGE:
+            case Manifest.permission.READ_PHONE_STATE:
                 if(ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_DENIED)
                     mRequestPermissionLauncher.launch(permission);
                 break;

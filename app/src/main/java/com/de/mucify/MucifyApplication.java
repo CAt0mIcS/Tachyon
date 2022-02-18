@@ -6,6 +6,7 @@ import android.app.Application;
 import java.util.ArrayList;
 
 public class MucifyApplication extends Application {
+    public static boolean AdsInitialized = false;
     private static boolean sActivityVisible;
 
     private static final ArrayList<ActivityVisibilityChangedListener> mActivityVisibilityChangedListeners = new ArrayList<>();

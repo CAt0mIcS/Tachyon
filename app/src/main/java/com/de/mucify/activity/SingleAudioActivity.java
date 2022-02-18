@@ -17,6 +17,9 @@ import com.de.mucify.activity.controller.SingleAudioSelectController;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.PermissionManager;
 import com.de.mucify.util.Utils;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
@@ -41,7 +44,7 @@ public class SingleAudioActivity extends AppCompatActivity {
 
         try {
             PermissionManager.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-            PermissionManager.requestPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+//            PermissionManager.requestPermission(this, Manifest.permission.READ_PHONE_STATE);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

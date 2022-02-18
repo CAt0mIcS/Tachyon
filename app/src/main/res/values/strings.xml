@@ -20,4 +20,5 @@
     <string name="dialog_name">Name</string>
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
+    <string name="admob_interstitial_test_id">ca-app-pub-3940256099942544/1033173712</string>
 </resources>

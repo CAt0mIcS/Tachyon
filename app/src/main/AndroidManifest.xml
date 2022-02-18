@@ -3,9 +3,8 @@
     package="com.de.mucify">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+<!--    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>-->
 
     <application
         android:name=".MucifyApplication"
@@ -78,6 +77,10 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>
         </receiver>
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/admob_app_id"/>
 
     </application>
 

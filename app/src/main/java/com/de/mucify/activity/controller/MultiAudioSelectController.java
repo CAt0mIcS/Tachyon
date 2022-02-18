@@ -19,19 +19,23 @@ import com.de.mucify.adapter.PlaylistListItemAdapter;
 import com.de.mucify.playable.Playlist;
 import com.de.mucify.playable.Song;
 import com.de.mucify.util.FileManager;
+import com.de.mucify.util.InterstitialAdvertiser;
 import com.de.mucify.util.MediaLibrary;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class MultiAudioSelectController {
+public class MultiAudioSelectController extends InterstitialAdvertiser {
     private final MultiAudioActivity mActivity;
     private final ArrayList<Playlist> mListItems = new ArrayList<>();
 
     private final RecyclerView mRvFiles;
 
     public MultiAudioSelectController(MultiAudioActivity activity) {
+        super(activity);
         mActivity = activity;
 
         MediaLibrary.loadAvailablePlaylists();
@@ -91,11 +95,25 @@ public class MultiAudioSelectController {
         mRvFiles.getAdapter().notifyDataSetChanged();
     }
 
-    private void onFileClicked(RecyclerView.ViewHolder holder) {
+    private void switchActivity(RecyclerView.ViewHolder holder) {
         Intent i = new Intent(mActivity, MultiAudioPlayActivity.class);
         i.putExtra("AudioFilePath", getPlaylistFromViewHolder(holder).getPlaylistFilePath().getAbsolutePath());
         mActivity.startActivity(i);
         mActivity.finish();
+    }
+
+    private void onFileClicked(RecyclerView.ViewHolder holder) {
+        if(mInterstitialAd != null && allowedToAdvertise()) {
+            showAd(new FullScreenContentCallback() {
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    loadAd();
+                    switchActivity(holder);
+                }
+            });
+        }
+        else
+            switchActivity(holder);
     }
 
     private void onFileOptionsClicked(PlaylistListItemAdapter.PlaylistViewHolder holder) {

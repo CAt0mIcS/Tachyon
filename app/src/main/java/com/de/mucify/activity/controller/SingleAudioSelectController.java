@@ -12,10 +12,12 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.de.mucify.MucifyApplication;
 import com.de.mucify.R;
 import com.de.mucify.activity.MultiAudioEditActivity;
 import com.de.mucify.activity.SingleAudioActivity;
@@ -26,9 +28,15 @@ import com.de.mucify.adapter.SongListItemAdapter;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Song;
 import com.de.mucify.util.FileManager;
+import com.de.mucify.util.InterstitialAdvertiser;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.UserSettings;
 import com.de.mucify.util.Utils;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
@@ -36,7 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class SingleAudioSelectController {
+public class SingleAudioSelectController extends InterstitialAdvertiser {
     private final SingleAudioActivity mActivity;
     private final ArrayList<Song> mListItems = new ArrayList<>();
 
@@ -44,7 +52,9 @@ public class SingleAudioSelectController {
     private final EditText mSearchSongLoop;
 
     public SingleAudioSelectController(SingleAudioActivity activity) {
+        super(activity);
         mActivity = activity;
+
 
         MediaLibrary.loadAvailableSongs();
         MediaLibrary.loadAvailableLoops();
@@ -136,7 +146,7 @@ public class SingleAudioSelectController {
         mRvFiles.getAdapter().notifyDataSetChanged();
     }
 
-    private void onFileClicked(RecyclerView.ViewHolder holder) {
+    private void switchActivity(RecyclerView.ViewHolder holder) {
         Intent i = new Intent(mActivity, SingleAudioPlayActivity.class);
         Song song = mListItems.get(holder.getAdapterPosition());
         if(song.getLoopPath() != null)
@@ -146,6 +156,20 @@ public class SingleAudioSelectController {
         i.putExtra("NavItemID", mActivity.isInSongTab() ? R.id.songs : R.id.loops);
         mActivity.startActivity(i);
         mActivity.finish();
+    }
+
+    private void onFileClicked(RecyclerView.ViewHolder holder) {
+        if(mInterstitialAd != null && allowedToAdvertise()) {
+            showAd(new FullScreenContentCallback(){
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    loadAd();
+                    switchActivity(holder);
+                }
+            });
+        }
+        else
+            switchActivity(holder);
     }
 
     private void onFileOptionsClicked(LoopListItemAdapter.LoopViewHolder holder) {

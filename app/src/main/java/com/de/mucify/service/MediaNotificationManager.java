@@ -52,6 +52,7 @@ public class MediaNotificationManager {
         mService = service;
 
         mNotificationManager = mService.getSystemService(NotificationManager.class);
+
         mMediaSessionCompat = new MediaSessionCompat(mService, "MucifySongService");
         mMediaSessionCompat.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
         mMediaSessionCompat.setCallback(new MediaSessionCompat.Callback() {
@@ -217,6 +218,6 @@ public class MediaNotificationManager {
         openUI.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         openUI.putExtra("PreserveAudio", true);
         return PendingIntent.getActivity(
-                mService, 0, openUI, PendingIntent.FLAG_CANCEL_CURRENT);
+                mService, 0, openUI, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 }
