@@ -13,6 +13,7 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.material.snackbar.Snackbar;
 
 
 public class InterstitialAdvertiser {
@@ -60,7 +61,8 @@ public class InterstitialAdvertiser {
 
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError error) {
-                        Log.e("InterstitialAdvertiser", error.getMessage());
+//                        Log.e("InterstitialAdvertiser", error.getMessage());
+                        Utils.startErrorActivity("InterstitialAdvertiser: " + error.getMessage());
                     }
                 }
         );
