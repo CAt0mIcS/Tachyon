@@ -17,6 +17,7 @@ public class MultiAudioActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.song_loop_playlist_select_activity);
+        MucifyApplication.setCurrentActivity(this);
 
         sInstance = this;
 

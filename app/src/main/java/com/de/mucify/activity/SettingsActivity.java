@@ -28,6 +28,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MucifyApplication.setCurrentActivity(this);
 
         setContentView(R.layout.settings_activity);
 
@@ -114,7 +115,7 @@ public class SettingsActivity extends AppCompatActivity {
         try {
             UserSettings.save();
         } catch (IOException e) {
-            e.printStackTrace();
+            Utils.startErrorActivity("Failed to save user settings\n" + Utils.getDetailedError(e));
         }
     }
 

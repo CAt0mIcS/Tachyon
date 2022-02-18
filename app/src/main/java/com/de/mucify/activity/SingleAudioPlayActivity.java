@@ -15,6 +15,7 @@ import com.de.mucify.activity.controller.SingleAudioPlayController;
 import com.de.mucify.playable.AudioController;
 import com.de.mucify.playable.Song;
 import com.de.mucify.service.MediaSessionService;
+import com.de.mucify.util.Utils;
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
@@ -38,7 +39,7 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sInstance = this;
-
+        MucifyApplication.setCurrentActivity(this);
         setContentView(R.layout.song_loop_play_activity);
 
         mSongPlayForegroundIntent = new Intent(this, MediaSessionService.class);
@@ -80,7 +81,7 @@ public class SingleAudioPlayActivity extends AppCompatActivity {
             try {
                 AudioController.get().setSong(new Song(this, new File(getIntent().getStringExtra("AudioFilePath"))));
             } catch (Song.LoadingFailedException e) {
-                e.printStackTrace();
+                Utils.startErrorActivity("Failed to load song: " + getIntent().getStringExtra("AudioFilePath") + "\n" + Utils.getDetailedError(e));
             }
 
             AudioController.get().addOnSongUnpausedListener(song -> {

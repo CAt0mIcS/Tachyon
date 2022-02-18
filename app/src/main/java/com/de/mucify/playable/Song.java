@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import com.de.mucify.activity.SingleAudioPlayActivity;
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
+import com.de.mucify.util.Utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -128,27 +129,26 @@ public class Song {
 
     private void createInternal(File path) throws LoadingFailedException {
         if(path == null || !path.exists()) {
-            throw new LoadingFailedException();
+            throw new LoadingFailedException("Failed to load song: \"" + path + "\" does not exist");
         }
 
         if(FileManager.isLoopFile(path)) {
             try {
                 parseLoopFile(path);
             } catch (IOException e) {
-                // MY_TODO: Add error message for invalid file (format)
-                return;
+                throw new LoadingFailedException("Failed to load loop: \"" + mSongFilePath + "\" is not a valid loop file");
             }
             mLoopFilePath = path;
         }
         else if(FileManager.isSongFile(path)) {
             mSongFilePath = path;
         }
-        else
-            return;  // MY_TODO: Add invalid file type error message for user
+        else {
+            throw new LoadingFailedException("Failed to load song: \"" + mSongFilePath + "\" is an invalid file type");
+        }
 
         if(!mSongFilePath.exists()) {
-            return;
-            // MY_TODO: Add error message for user
+            throw new LoadingFailedException("Failed to load song: \"" + mSongFilePath + "\" does not exist");
         }
 
         mTitle = mSongFilePath.getName().replace(FileManager.getFileExtension(mSongFilePath.getName()), "");
@@ -177,7 +177,11 @@ public class Song {
         reader.close();
     }
 
-    public class LoadingFailedException extends Exception {
+    public static class LoadingFailedException extends Exception {
+        public LoadingFailedException(String message) {
+            super(message);
+        }
 
+        public LoadingFailedException() {}
     }
 }

@@ -28,6 +28,7 @@ public class MultiAudioEditActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.playlist_edit_activity);
+        MucifyApplication.setCurrentActivity(this);
 
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
         btmNav.setSelectedItemId(R.id.playlists);

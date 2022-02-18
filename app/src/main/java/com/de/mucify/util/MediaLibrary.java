@@ -75,7 +75,7 @@ public class MediaLibrary {
                                 try {
                                     AvailableSongs.add(new Song(file));
                                 } catch (Song.LoadingFailedException e) {
-                                    e.printStackTrace();
+                                    Utils.startErrorActivity("Failed to load song: " + file + "\n" + Utils.getDetailedError(e));
                                 }
                             }
                         }
@@ -85,7 +85,7 @@ public class MediaLibrary {
                                 try {
                                     AvailableLoops.add(new Song(file));
                                 } catch (Song.LoadingFailedException e) {
-                                    e.printStackTrace();
+                                    Utils.startErrorActivity("Failed to load loop: " + file + "\n" + Utils.getDetailedError(e));
                                 }
                             }
                         }

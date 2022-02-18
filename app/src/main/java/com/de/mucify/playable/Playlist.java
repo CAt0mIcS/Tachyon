@@ -4,6 +4,8 @@ import android.content.Context;
 
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.UserSettings;
+import com.de.mucify.util.Utils;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,7 +27,7 @@ public class Playlist {
 
     public Playlist(File path) {
         if(!path.exists()) {
-            // MY_TODO: Error message
+            Utils.startErrorActivity("Failed to load playlist: \"" + path + "\" does not exist.");
             return;
         }
 
@@ -88,7 +90,7 @@ public class Playlist {
         try {
             newSong.create(mContext);
         } catch (Song.LoadingFailedException e) {
-            e.printStackTrace();
+            Utils.startErrorActivity("Failed to load song: " + newSong.getSongPath() + "\n" + Utils.getDetailedError(e));
         }
         return newSong;
     }
@@ -106,7 +108,7 @@ public class Playlist {
                 try {
                     mPlayingSongs.get(0).create(mContext);
                 } catch (Song.LoadingFailedException e) {
-                    e.printStackTrace();
+                    Utils.startErrorActivity("Failed to load song: " + mPlayingSongs.get(0).getSongPath() + "\n" + Utils.getDetailedError(e));
                 }
                 mPreviousSong = oldSong;
                 return mPlayingSongs.get(0);
@@ -162,8 +164,7 @@ public class Playlist {
             reader.close();
 
         } catch (IOException e) {
-            e.printStackTrace();
-            // MY_TODO: Error message, invalid file
+            Utils.startErrorActivity("Failed to load playlist: " + mPlaylistFilePath + "\n" + Utils.getDetailedError(e));
         }
     }
 }

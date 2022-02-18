@@ -3,9 +3,11 @@ package com.de.mucify.playable;
 import android.content.Context;
 import android.media.MediaPlayer;
 
+import com.de.mucify.MucifyApplication;
 import com.de.mucify.util.FileManager;
 import com.de.mucify.util.MediaLibrary;
 import com.de.mucify.util.UserSettings;
+import com.de.mucify.util.Utils;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -111,7 +113,7 @@ public class AudioController {
         try {
             mSong.create(mPlaylist.getContext());
         } catch (Song.LoadingFailedException e) {
-            e.printStackTrace();
+            Utils.startErrorActivity("Failed to load song: " + mSong.getSongPath() + "\n" + Utils.getDetailedError(e));
         }
 
         if(getSongEndTime() == getSongDuration())
@@ -317,7 +319,7 @@ public class AudioController {
                     try {
                         mSong.create(context);
                     } catch (Song.LoadingFailedException e) {
-                        e.printStackTrace();
+                        Utils.startErrorActivity("Failed to load song: " + mSong.getSongPath() + "\n" + Utils.getDetailedError(e));
                     }
                     mSong.start();
                     if(mIsSongPaused)
@@ -342,7 +344,7 @@ public class AudioController {
                     try {
                         mSong.create(context);
                     } catch (Song.LoadingFailedException e) {
-                        e.printStackTrace();
+                        Utils.startErrorActivity("Failed to load song: " + mSong.getSongPath() + "\n" + Utils.getDetailedError(e));
                     }
                     mSong.start();
                     if(mIsSongPaused)
@@ -371,7 +373,7 @@ public class AudioController {
                     try {
                         mSong.create(context);
                     } catch (Song.LoadingFailedException e) {
-                        e.printStackTrace();
+                        Utils.startErrorActivity("Failed to load song: " + mSong.getSongPath() + "\n" + Utils.getDetailedError(e));
                     }
                     mSong.start();
                     if(mIsSongPaused)
@@ -396,7 +398,7 @@ public class AudioController {
                     try {
                         mSong.create(context);
                     } catch (Song.LoadingFailedException e) {
-                        e.printStackTrace();
+                        Utils.startErrorActivity("Failed to load song: " + mSong.getSongPath() + "\n" + Utils.getDetailedError(e));
                     }
                     mSong.start();
                     if(mIsSongPaused)

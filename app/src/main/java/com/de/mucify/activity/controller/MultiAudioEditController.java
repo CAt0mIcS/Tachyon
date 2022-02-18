@@ -22,6 +22,7 @@ import com.de.mucify.adapter.SongLoopListItemAdapter;
 import com.de.mucify.playable.Playlist;
 import com.de.mucify.playable.Song;
 import com.de.mucify.util.MediaLibrary;
+import com.de.mucify.util.Utils;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,7 +85,7 @@ public class MultiAudioEditController {
                     try {
                         songs.add(new Song(f));
                     } catch (Song.LoadingFailedException e) {
-                        e.printStackTrace();
+                        Utils.startErrorActivity("Failed to load song: " + f + "\n" + Utils.getDetailedError(e));
                     }
                 }
 
@@ -93,8 +94,7 @@ public class MultiAudioEditController {
                 mActivity.startActivity(i);
                 mActivity.finish();
             } catch (IOException e) {
-                e.printStackTrace();
-                // MY_TODO: Add error message for user
+                Utils.startErrorActivity("Failed to save playlist: " + mPlaylist.getPlaylistFilePath() + "\n" + Utils.getDetailedError(e));
             }
         });
     }

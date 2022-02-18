@@ -35,6 +35,7 @@ public class SingleAudioActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sInstance = this;
+        MucifyApplication.setCurrentActivity(this);
 
         Utils.enableDarkMode();
 

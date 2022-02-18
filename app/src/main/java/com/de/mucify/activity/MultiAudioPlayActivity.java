@@ -23,6 +23,7 @@ public class MultiAudioPlayActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.playlist_play_activity);
+        MucifyApplication.setCurrentActivity(this);
 
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
         mSongPlayForegroundIntent = new Intent(this, MediaSessionService.class);

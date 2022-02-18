@@ -10,6 +10,8 @@ public class MucifyApplication extends Application {
 
     private static final ArrayList<ActivityVisibilityChangedListener> mActivityVisibilityChangedListeners = new ArrayList<>();
 
+    public static Activity mCurrentActivity;
+
     public interface ActivityVisibilityChangedListener {
         void onVisibilityChanged(Activity activity, boolean becameVisible);
     }
@@ -17,6 +19,9 @@ public class MucifyApplication extends Application {
     public static boolean isActivityVisible() {
         return sActivityVisible;
     }
+
+    public static Activity getCurrentActivity() { return mCurrentActivity; }
+    public static void setCurrentActivity(Activity cur) { mCurrentActivity = cur; }
 
     public static void activityResumed(Activity activity) {
         sActivityVisible = true;

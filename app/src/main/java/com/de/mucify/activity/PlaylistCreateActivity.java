@@ -14,6 +14,7 @@ public class PlaylistCreateActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.playlist_create_activity);
+        MucifyApplication.setCurrentActivity(this);
 
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
         btmNav.setSelectedItemId(R.id.playlists);
