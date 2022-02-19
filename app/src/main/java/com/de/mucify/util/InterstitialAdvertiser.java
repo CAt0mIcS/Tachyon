@@ -61,8 +61,7 @@ public class InterstitialAdvertiser {
 
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError error) {
-//                        Log.e("InterstitialAdvertiser", error.getMessage());
-                        Utils.startErrorActivity("InterstitialAdvertiser: " + error.getMessage());
+                        Log.e("InterstitialAdvertiser", error.getMessage());
                     }
                 }
         );
