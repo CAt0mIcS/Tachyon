@@ -7,10 +7,4 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="black_text_color">#F8F8F8</color>
-    <color name="black_secondary_text_color">#A99FB8</color>
-    <color name="text_color">#070707</color>
-    <color name="secondary_text_color">#566047</color>
-    <color name="audio_playing_notification_background">#78688F</color>
-    <color name="primary_purple">#8e44ad</color>
 </resources>

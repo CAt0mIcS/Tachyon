@@ -13,6 +13,3 @@
 .externalNativeBuild
 .cxx
 local.properties
-images/
-app/release/
-app/src/main/res/values/private.xml
