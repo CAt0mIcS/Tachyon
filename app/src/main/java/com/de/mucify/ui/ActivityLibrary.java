@@ -7,6 +7,7 @@ import android.widget.RelativeLayout;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,6 +29,10 @@ public class ActivityLibrary extends MediaControllerActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_library);
 
+        Toolbar toolbar = (Toolbar)findViewById(R.id.my_toolbar);
+        toolbar.inflateMenu(R.menu.toolbar_default);
+        toolbar.setTitle(getString(R.string.library));
+
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
@@ -40,12 +45,9 @@ public class ActivityLibrary extends MediaControllerActivity {
         MediaLibrary.loadAvailableLoops();
         MediaLibrary.loadAvailablePlaylists();
 
-        for(Song s : MediaLibrary.AvailableSongs)
-            mPlaybacks.add(s);
-        for(Song s : MediaLibrary.AvailableLoops)
-            mPlaybacks.add(s);
-        for(Playlist s : MediaLibrary.AvailablePlaylists)
-            mPlaybacks.add(s);
+        mPlaybacks.addAll(MediaLibrary.AvailableSongs);
+        mPlaybacks.addAll(MediaLibrary.AvailableLoops);
+        mPlaybacks.addAll(MediaLibrary.AvailablePlaylists);
 
         PlayableListItemAdapter adapter = new PlayableListItemAdapter(this, mPlaybacks);
         rvHistory.setAdapter(adapter);
@@ -74,6 +76,12 @@ public class ActivityLibrary extends MediaControllerActivity {
                     .add(R.id.fragment_container_view, fragment)
                     .commit();
         });
+
+        FragmentMinimizedPlayer fragmentMinimizedPlayer = new FragmentMinimizedPlayer("Title Hello", "Artist Hello");
+        getSupportFragmentManager().beginTransaction()
+                .setReorderingAllowed(true)
+                .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
+                .commit();
     }
 
     @Override

@@ -46,14 +46,14 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
 
         switch (mAudioType) {
             case "Song":
-                for(Song s : MediaLibrary.AvailableSongs)
-                    mPlaybacks.add(s);
+                mPlaybacks.addAll(MediaLibrary.AvailableSongs);
+                break;
             case "Loop":
-                for(Song s : MediaLibrary.AvailableLoops)
-                    mPlaybacks.add(s);
+                mPlaybacks.addAll(MediaLibrary.AvailableLoops);
+                break;
             case "Playlist":
-                for(Playlist s : MediaLibrary.AvailablePlaylists)
-                    mPlaybacks.add(s);
+                mPlaybacks.addAll(MediaLibrary.AvailablePlaylists);
+                break;
         }
 
         PlayableListItemAdapter adapter = new PlayableListItemAdapter(getContext(), mPlaybacks);

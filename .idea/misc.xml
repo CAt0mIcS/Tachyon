@@ -3,10 +3,13 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/settings.xml" value="0.2125" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/action_bar_default.xml" value="0.19655521783181357" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_library.xml" value="0.25" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_main.xml" value="0.19655521783181357" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_player_layout.xml" value="0.25" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_playlist_player_layout.xml" value="0.228125" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/fragment_minimized_player.xml" value="0.4041666666666667" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/fragment_playing_layout.xml" value="0.228125" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/fragment_select_audio_layout.xml" value="0.228125" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_loop_item_layout.xml" value="0.23645833333333333" />
@@ -14,6 +17,7 @@
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_song_item_layout.xml" value="0.23645833333333333" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/menu/bottom_navigation_view.xml" value="0.23645833333333333" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/menu/bottom_navigation_view_song_loop_player.xml" value="0.228125" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/menu/toolbar_default.xml" value="0.2791666666666667" />
       </map>
     </option>
   </component>
