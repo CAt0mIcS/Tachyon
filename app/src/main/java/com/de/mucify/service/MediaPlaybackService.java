@@ -52,7 +52,17 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
-
+            switch(focusChange) {
+                case AudioManager.AUDIOFOCUS_GAIN:
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE:
+                case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+                    mMediaPlayer.start();
+                    break;
+                default:
+                    mMediaPlayer.pause();
+                    break;
+            }
         }
     };
     private final BroadcastReceiver myNoisyAudioStreamReceiver = new BroadcastReceiver() {
@@ -88,7 +98,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         mMediaSession.setCallback(new MediaSessionCallback());
         setSessionToken(mMediaSession.getSessionToken());
 
-        mMediaPlayer = MediaPlayer.create(this, Uri.parse("/storage/emulated/0/Music/Bone Dry - Tristam.mp3"));
+//        mMediaPlayer = MediaPlayer.create(this, Uri.parse("/storage/emulated/0/Music/Flight Hymn.mp3"));
+        mMediaPlayer = MediaPlayer.create(this, Uri.parse("/storage/sdcard/Music/Flight Hymn.mp3"));
         mMediaPlayer.setLooping(true);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -154,7 +165,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         mMediaSession.setPlaybackState(getState());
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-//                .setSmallIcon(R.drawable.ic_music_note_black)
+                .setSmallIcon(R.drawable.pause)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2)
                         .setShowCancelButton(true)
