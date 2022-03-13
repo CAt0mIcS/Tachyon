@@ -13,6 +13,7 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.de.mucify.MediaLibrary;
 import com.de.mucify.PermissionManager;
 import com.de.mucify.R;
 import com.de.mucify.service.MediaPlaybackService;
@@ -27,6 +28,7 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
 
         // MY_TODO: Better waiting and figure out what to do if permission not granted
         PermissionManager.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        MediaLibrary.load(this);
 
         mMediaBrowser = new MediaBrowserCompat(MediaControllerActivity.this,
                 new ComponentName(MediaControllerActivity.this, MediaPlaybackService.class),

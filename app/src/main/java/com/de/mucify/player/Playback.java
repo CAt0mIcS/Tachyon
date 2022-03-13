@@ -1,6 +1,9 @@
 package com.de.mucify.player;
 
-public interface Playback {
+
+public class Playback {
+    protected Callback mCallback;
+
     interface Callback {
         /**
          * On current music completed.
@@ -23,4 +26,6 @@ public interface Playback {
          */
         void onMetadataChanged(String mediaId);
     }
+
+    void setCallback(Callback callback) { mCallback = callback; }
 }

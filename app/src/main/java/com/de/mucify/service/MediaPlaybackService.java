@@ -30,6 +30,7 @@ import androidx.media.session.MediaButtonReceiver;
 
 import com.de.mucify.R;
 import com.de.mucify.Util;
+import com.de.mucify.player.Playlist;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private static final String MEDIA_ROOT_ID = "com.de.mucify.ROOT_MEDIA";
     private static final String EMPTY_MEDIA_ID = "com.de.mucify.EMPTY_MEDIA";
     private static final String CHANNEL_ID = "com.de.mucify.MediaPlaybackChannel";
+
+    private Playlist mPlaylist;
 
     private IntentFilter mBecomeNoisyIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
