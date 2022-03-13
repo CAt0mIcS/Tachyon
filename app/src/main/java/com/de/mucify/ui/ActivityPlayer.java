@@ -16,8 +16,8 @@ public class ActivityPlayer extends MediaControllerActivity {
 
     @Override
     public void onBuildTransportControls() {
-        play(getIntent().getStringExtra("MediaId"));
-        seekTo(getIntent().getIntExtra("MediaPos", 0));
+        if(!getIntent().getBooleanExtra("IsPlaying", false))
+            play(getIntent().getStringExtra("MediaId"));
 
         Playback playback = Util.getPlaybackFromMediaId(getIntent().getStringExtra("MediaId"));
 

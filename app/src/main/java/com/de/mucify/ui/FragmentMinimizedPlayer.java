@@ -53,7 +53,7 @@ public class FragmentMinimizedPlayer extends Fragment implements Playback.Callba
         view.setOnClickListener(v -> {
             Intent i = new Intent(getActivity(), ActivityPlayer.class);
             i.putExtra("MediaId", mPlayback.getMediaId());
-            i.putExtra("MediaPos", mPlayback.getCurrentPosition());
+            i.putExtra("IsPlaying", true);
             startActivity(i);
         });
 
