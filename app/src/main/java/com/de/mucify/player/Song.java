@@ -24,6 +24,7 @@ public class Song extends Playback {
     private int mEndTime;
 
     private boolean mLooping = true;
+    private boolean mPaused = false;
 
     private File mSongFilePath;
     private File mLoopFilePath;
@@ -31,11 +32,7 @@ public class Song extends Playback {
 
     public Song(Context context, File path) throws LoadingFailedException {
         this(path);
-        mMediaPlayer = MediaPlayer.create(context, Uri.parse(mSongFilePath.getPath()));
-        mMediaPlayer.setLooping(mLooping);
-
-        if(mEndTime == 0)
-            mEndTime = mMediaPlayer.getDuration();
+        create(context);
     }
 
     public Song(File path) throws LoadingFailedException {
@@ -86,14 +83,77 @@ public class Song extends Playback {
         mEndTime = endTime;
     }
 
+    @Override
     public boolean isPlaying() { return mMediaPlayer.isPlaying(); }
-    public void pause() { mMediaPlayer.pause(); }
-    public void unpause() { mMediaPlayer.start(); }
-    public String getTitle() { return mTitle; }
+
+    @Override
+    public boolean isPaused() {
+        return mPaused;
+    }
+
+    @Override
+    public void seekTo(int millis) {
+        mMediaPlayer.seekTo(millis);
+    }
+
+    @Override
+    public void start() {
+        mMediaPlayer.start();
+    }
+
+    @Override
+    public void unpause() {
+        mPaused = false;
+        mMediaPlayer.start();
+    }
+
+    @Override
+    public void pause() {
+        mPaused = true;
+        mMediaPlayer.pause();
+    }
+
+    @Override
+    public int getCurrentPosition() {
+        return mMediaPlayer.getCurrentPosition();
+    }
+
+    @Override
+    public void stop() {
+        mMediaPlayer.stop();
+    }
+
+    @Override
+    public void reset() {
+        mMediaPlayer.reset();
+    }
+
+    @Override
+    public void create(Context context) {
+        mMediaPlayer = MediaPlayer.create(context, Uri.parse(mSongFilePath.getPath()));
+        mMediaPlayer.setLooping(mLooping);
+
+        if(mEndTime == 0)
+            mEndTime = mMediaPlayer.getDuration();
+    }
+
+    @Override
+    public int getDuration() {
+        return mMediaPlayer.getDuration();
+    }
+
+    @Override
+    public String getTitle() {
+        return mTitle;
+    }
+
+    @Override
+    public String getSubtitle() {
+        return getArtist();
+    }
+
     public String getArtist() { return mArtist; }
     public File getSongPath() { return mSongFilePath; }
-    public int getCurrentPosition() { return mMediaPlayer.getCurrentPosition(); }
-    public int getDuration() { return mMediaPlayer.getDuration(); }
     public void setStartTime(int startTime) { mStartTime = startTime; }
     public void setEndTime(int endTime) { mEndTime = endTime; }
     public int getStartTime() { return mStartTime; }
@@ -136,7 +196,6 @@ public class Song extends Playback {
         mEndTime = Integer.parseInt(reader.readLine());
         reader.close();
     }
-
 
 
     public class LoadingFailedException extends Exception {

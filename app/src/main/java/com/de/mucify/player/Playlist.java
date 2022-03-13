@@ -47,7 +47,74 @@ public class Playlist extends Playback {
             s.setLooping(false);
     }
 
-    public Playlist create(Context context) { mContext = context; return this; }
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void unpause() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return false;
+    }
+
+    @Override
+    public boolean isPaused() {
+        return false;
+    }
+
+    @Override
+    public void seekTo(int millis) {
+
+    }
+
+    @Override
+    public int getDuration() {
+        return 0;
+    }
+
+    @Override
+    public int getCurrentPosition() {
+        return 0;
+    }
+
+    @Override
+    public void stop() {
+
+    }
+
+    @Override
+    public void reset() {
+
+    }
+
+    @Override
+    public String getTitle() {
+        return ""; // return title of current song
+    }
+
+    @Override
+    public String getSubtitle() {
+        return ""; // return artist of current song
+    }
+
+    @Override
+    public void create(Context context) {
+        mContext = context;
+    }
+
+    public String getName() {
+        return mName;
+    }
 
     public void save() throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(mPlaylistFilePath));
@@ -65,7 +132,6 @@ public class Playlist extends Playback {
         mPlaylistFilePath.delete();
     }
 
-    public String getName() { return mName; }
     public File getPlaylistFilePath() { return mPlaylistFilePath; }
     public ArrayList<Song> getSongs() { return mSongs; }
     public Context getContext() { return mContext; }

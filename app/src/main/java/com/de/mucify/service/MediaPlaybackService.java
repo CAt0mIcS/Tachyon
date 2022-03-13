@@ -55,10 +55,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
-                    mMediaPlayer.start();
+                    mPlayback.start();
                     break;
                 default:
-                    mMediaPlayer.pause();
+                    mPlayback.pause();
                     break;
             }
         }
@@ -67,14 +67,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
-                mMediaPlayer.pause();
+                mPlayback.pause();
             }
         }
     };
 
     private MediaSessionCompat mMediaSession;
     private PlaybackStateCompat.Builder mStateBuilder;
-    private MediaPlayer mMediaPlayer;
 
     private NotificationManager mNotificationManager;
     private MediaMetadataCompat.Builder mMetadataBuilder = new MediaMetadataCompat.Builder();
@@ -99,10 +98,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         mMediaSession.setPlaybackState(mStateBuilder.build());
         mMediaSession.setCallback(new MediaSessionCallback());
         setSessionToken(mMediaSession.getSessionToken());
-
-        mMediaPlayer = MediaPlayer.create(this, Uri.parse("/storage/emulated/0/Music/Flight Hymn.mp3"));
-//        mMediaPlayer = MediaPlayer.create(this, Uri.parse("/storage/sdcard/Music/Flight Hymn.mp3"));
-        mMediaPlayer.setLooping(true);
 
         mNotificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -215,21 +210,21 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
     private MediaMetadataCompat getMetadata() {
         return mMetadataBuilder
-                .putString(MediaMetadata.METADATA_KEY_TITLE, "Cosmic Storm")
-                .putString(MediaMetadata.METADATA_KEY_ARTIST, "A Himitsu")
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mMediaPlayer.getDuration())
+                .putString(MediaMetadata.METADATA_KEY_TITLE, mPlayback.getTitle())
+                .putString(MediaMetadata.METADATA_KEY_ARTIST, mPlayback.getSubtitle())
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mPlayback.getDuration())
                 .build();
     }
 
     private PlaybackStateCompat getState() {
-        long actions = (mMediaPlayer.isPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY) |
+        long actions = (mPlayback.isPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY) |
                 PlaybackStateCompat.ACTION_SEEK_TO | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
-        int state = mMediaPlayer.isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
+        int state = mPlayback.isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
 
         return mPlaybackStateBuilder
                 .setActions(actions)
                 .setState(state,
-                        mMediaPlayer.getCurrentPosition(),
+                        mPlayback.getCurrentPosition(),
                         1.0f,
                         SystemClock.elapsedRealtime())
                 .build();
@@ -251,7 +246,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 mMediaSession.setActive(true);
 
                 // start the player (custom call)
-                mMediaPlayer.start();
+                mPlayback.start();
 
                 // Register BECOME_NOISY BroadcastReceiver
                 registerReceiver(myNoisyAudioStreamReceiver, mBecomeNoisyIntentFilter);
@@ -263,7 +258,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onPause() {
-            mMediaPlayer.pause();
+            mPlayback.pause();
             unregisterReceiver(myNoisyAudioStreamReceiver);
 
             repostNotification();
@@ -276,12 +271,16 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             unregisterReceiver(myNoisyAudioStreamReceiver);
             stopSelf();
             mMediaSession.setActive(false);
-            mMediaPlayer.stop();
+            mPlayback.reset();
+            mPlayback = null;
             stopForeground(false);
         }
 
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
+            if(mPlayback != null)
+                mPlayback.reset();
+
             if(Util.isSongMediaId(mediaId)) {
                 mPlayback = MediaLibrary.AvailableSongs.get(Util.getIndexFromMediaId(mediaId));
             }
@@ -293,11 +292,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             }
             else
                 Log.e("Mucify: ", "Invalid media id " + mediaId);
+            mPlayback.create(MediaPlaybackService.this);
+            onPlay();
         }
 
         @Override
         public void onSeekTo(long pos) {
-            mMediaPlayer.seekTo((int)pos);
+            mPlayback.seekTo((int)pos);
             repostNotification();
         }
 
