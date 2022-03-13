@@ -1,4 +1,4 @@
-package com.de.mucify.player;
+package com.de.mucify.ui;
 
 import android.Manifest;
 import android.content.ComponentName;
@@ -9,13 +9,11 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.PermissionManager;
-import com.de.mucify.R;
 import com.de.mucify.service.MediaPlaybackService;
 
 public abstract class MediaControllerActivity extends AppCompatActivity {

@@ -1,22 +1,21 @@
-package com.de.mucify;
+package com.de.mucify.ui;
 
 import android.os.Bundle;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.widget.Button;
 import android.widget.RelativeLayout;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.de.mucify.MediaLibrary;
+import com.de.mucify.R;
 import com.de.mucify.adapter.PlayableListItemAdapter;
-import com.de.mucify.player.MediaControllerActivity;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class LibraryActivity extends MediaControllerActivity {
