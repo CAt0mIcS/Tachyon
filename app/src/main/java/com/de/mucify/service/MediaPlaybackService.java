@@ -1,16 +1,12 @@
 package com.de.mucify.service;
 
-import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.AudioAttributes;
-import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaMetadata;
 import android.media.MediaPlayer;
@@ -20,9 +16,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.service.media.MediaBrowserService;
 import android.support.v4.media.MediaBrowserCompat;
-import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
@@ -31,15 +25,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 import androidx.media.MediaBrowserServiceCompat;
 import androidx.media.session.MediaButtonReceiver;
 
-import com.de.mucify.PermissionManager;
 import com.de.mucify.R;
 import com.de.mucify.Util;
 
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,6 +69,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private PlaybackStateCompat.Builder mStateBuilder;
     private MediaPlayer mMediaPlayer;
 
+    private NotificationManager mNotificationManager;
+    private MediaMetadataCompat.Builder mMetadataBuilder = new MediaMetadataCompat.Builder();
+    private PlaybackStateCompat.Builder mPlaybackStateBuilder = new PlaybackStateCompat.Builder();
+
     private NotificationCompat.Action mPlayAction;
     private NotificationCompat.Action mPauseAction;
     private NotificationCompat.Action mNextAction;
@@ -98,16 +93,18 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         mMediaSession.setCallback(new MediaSessionCallback());
         setSessionToken(mMediaSession.getSessionToken());
 
-//        mMediaPlayer = MediaPlayer.create(this, Uri.parse("/storage/emulated/0/Music/Flight Hymn.mp3"));
-        mMediaPlayer = MediaPlayer.create(this, Uri.parse("/storage/sdcard/Music/Flight Hymn.mp3"));
+        mMediaPlayer = MediaPlayer.create(this, Uri.parse("/storage/emulated/0/Music/Flight Hymn.mp3"));
+//        mMediaPlayer = MediaPlayer.create(this, Uri.parse("/storage/sdcard/Music/Flight Hymn.mp3"));
         mMediaPlayer.setLooping(true);
+
+        mNotificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel();
         }
 
         mPlayAction = new NotificationCompat.Action(
-                R.drawable.pause,
+                R.drawable.play,
                 "Play",
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this,
@@ -119,13 +116,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         this,
                         PlaybackStateCompat.ACTION_PAUSE));
         mNextAction = new NotificationCompat.Action(
-                R.drawable.pause,
+                R.drawable.next,
                 "Next",
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this,
                         PlaybackStateCompat.ACTION_SKIP_TO_NEXT));
         mPreviousAction = new NotificationCompat.Action(
-                R.drawable.pause,
+                R.drawable.previous,
                 "Previous",
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this,
@@ -160,9 +157,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     }
 
 
-    public Notification buildNotification(boolean isPlaying) {
-        mMediaSession.setMetadata(getMetadata());
-        mMediaSession.setPlaybackState(getState());
+    public Notification buildNotification() {
+        PlaybackStateCompat playbackState = getState();
+        MediaMetadataCompat metadata = getMetadata();
+
+        mMediaSession.setMetadata(metadata);
+        mMediaSession.setPlaybackState(playbackState);
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.pause)
@@ -181,13 +181,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 // Add previous song action
                 .addAction(mPreviousAction)
                 // Add pause or play button
-                .addAction(isPlaying ? mPauseAction : mPlayAction)
+                .addAction(playbackState.getState() == PlaybackStateCompat.STATE_PLAYING ? mPauseAction : mPlayAction)
                 // Add next song action
                 .addAction(mNextAction)
 
                 // Add the metadata for the currently playing track
-                .setContentTitle("Cosmic Storm")
-                .setContentText("A Himitsu")
+                .setContentTitle(metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE))
+                .setContentText(metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST))
 
                 // Make the transport controls visible on the lockscreen
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -203,14 +203,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void createNotificationChannel() {
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Mucify foreground service notification", NotificationManager.IMPORTANCE_LOW);
-        getSystemService(NotificationManager.class).createNotificationChannel(channel);
+        mNotificationManager.createNotificationChannel(channel);
     }
 
     private MediaMetadataCompat getMetadata() {
-        return new MediaMetadataCompat.Builder()
+        return mMetadataBuilder
                 .putString(MediaMetadata.METADATA_KEY_TITLE, "Cosmic Storm")
                 .putString(MediaMetadata.METADATA_KEY_ARTIST, "A Himitsu")
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, 1000)
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mMediaPlayer.getDuration())
                 .build();
     }
 
@@ -219,13 +219,17 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 PlaybackStateCompat.ACTION_SEEK_TO | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
         int state = mMediaPlayer.isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
 
-        return new PlaybackStateCompat.Builder()
+        return mPlaybackStateBuilder
                 .setActions(actions)
                 .setState(state,
                         mMediaPlayer.getCurrentPosition(),
                         1.0f,
                         SystemClock.elapsedRealtime())
                 .build();
+    }
+
+    private void repostNotification() {
+        mNotificationManager.notify(1337, buildNotification());
     }
 
 
@@ -246,7 +250,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 registerReceiver(myNoisyAudioStreamReceiver, mBecomeNoisyIntentFilter);
 
                 // Put the service in the foreground, post notification
-                startForeground(1337, buildNotification(true));
+                startForeground(1337, buildNotification());
             }
         }
 
@@ -255,9 +259,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mMediaPlayer.pause();
             unregisterReceiver(myNoisyAudioStreamReceiver);
 
-            mMediaSession.setMetadata(getMetadata());
-            mMediaSession.setPlaybackState(getState());
-
+            repostNotification();
             stopForeground(false);
         }
 
@@ -273,6 +275,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSeekTo(long pos) {
+            mMediaPlayer.seekTo((int)pos);
+            repostNotification();
         }
 
         @Override
