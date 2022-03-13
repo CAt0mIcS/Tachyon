@@ -58,6 +58,8 @@ public class FragmentMinimizedPlayer extends Fragment implements Playback.Callba
 
         if(mPlayback.isPlaying())
             mPlayPause.setImageResource(R.drawable.pause);
+        else
+            mPlayPause.setImageResource(R.drawable.play);
     }
 
 
