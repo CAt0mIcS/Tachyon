@@ -53,7 +53,6 @@ public class FragmentMinimizedPlayer extends Fragment implements Playback.Callba
             i.putExtra("MediaId", mPlayback.getMediaId());
             i.putExtra("MediaPos", mPlayback.getCurrentPosition());
             startActivity(i);
-            getActivity().finish();
         });
 
         if(mPlayback.isPlaying())

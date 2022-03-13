@@ -84,13 +84,11 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
         Intent i = new Intent(getActivity(), ActivityPlayer.class);
         i.putExtra("MediaId", mediaId);
         startActivity(i);
-        getActivity().finish();
     }
 
     private void startPlayingPlaylistActivity(String mediaId) {
         Intent i = new Intent(getActivity(), ActivityPlaylistPlayer.class);
         i.putExtra("MediaId", mediaId);
         startActivity(i);
-        getActivity().finish();
     }
 }

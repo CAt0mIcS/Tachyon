@@ -59,21 +59,21 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         findViewById(R.id.relLayoutSongs).setOnClickListener(v -> {
             FragmentSelectAudio fragment = new FragmentSelectAudio("Song");
             getSupportFragmentManager().beginTransaction()
-                    .setReorderingAllowed(true)
+                    .addToBackStack(null)
                     .add(R.id.fragment_container_view, fragment)
                     .commit();
         });
         findViewById(R.id.relLayoutLoops).setOnClickListener(v -> {
             FragmentSelectAudio fragment = new FragmentSelectAudio("Loop");
             getSupportFragmentManager().beginTransaction()
-                    .setReorderingAllowed(true)
+                    .addToBackStack(null)
                     .add(R.id.fragment_container_view, fragment)
                     .commit();
         });
         findViewById(R.id.relLayoutPlaylists).setOnClickListener(v -> {
             FragmentSelectAudio fragment = new FragmentSelectAudio("Playlist");
             getSupportFragmentManager().beginTransaction()
-                    .setReorderingAllowed(true)
+                    .addToBackStack(null)
                     .add(R.id.fragment_container_view, fragment)
                     .commit();
         });
@@ -104,7 +104,6 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
 
         FragmentMinimizedPlayer fragmentMinimizedPlayer = new FragmentMinimizedPlayer(playback);
         getSupportFragmentManager().beginTransaction()
-                .setReorderingAllowed(true)
                 .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
                 .commit();
     }
