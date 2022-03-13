@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.Nullable;
 
 import com.de.mucify.FileManager;
+import com.de.mucify.MediaLibrary;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -108,6 +109,11 @@ public class Playlist extends Playback {
     }
 
     @Override
+    public String getMediaId() {
+        return getMediaId(this);
+    }
+
+    @Override
     public void create(Context context) {
         mContext = context;
     }
@@ -124,6 +130,10 @@ public class Playlist extends Playback {
 
     public String getName() {
         return mName;
+    }
+
+    public static String getMediaId(Playlist playlist) {
+        return "Playlist_" + MediaLibrary.getPlaylistIndex(playlist);
     }
 
     public void save() throws IOException {

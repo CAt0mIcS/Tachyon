@@ -28,4 +28,5 @@ public abstract class Playback {
 
     public abstract String getTitle();
     public abstract String getSubtitle();
+    public abstract String getMediaId();
 }

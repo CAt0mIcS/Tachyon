@@ -22,16 +22,6 @@ public class Util {
         return ((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(onChanged);
     }
 
-    public static String songMediaId(Song song) {
-        return "Song_" + MediaLibrary.getSongIndex(song);
-    }
-    public static String loopMediaId(Song song) {
-        return "Loop_" + MediaLibrary.getLoopIndex(song);
-    }
-    public static String playlistMediaId(Playlist playlist) {
-        return "Playlist_" + MediaLibrary.getPlaylistIndex(playlist);
-    }
-
     public static boolean isSongMediaId(String mediaId) {
         return mediaId.contains("Song_");
     }

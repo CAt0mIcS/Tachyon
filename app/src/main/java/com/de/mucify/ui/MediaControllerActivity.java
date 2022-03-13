@@ -85,9 +85,9 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
     public void play(Song song) {
         String mediaId = "";
         if(song.isLoop())
-            mediaId = Util.loopMediaId(song);
+            mediaId = song.getMediaId();
         else
-            mediaId = Util.songMediaId(song);
+            mediaId = song.getMediaId();
         MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(mediaId, null);
     }
 
@@ -96,7 +96,7 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
     }
 
     public void play(Playlist playlist) {
-        String mediaId = Util.playlistMediaId(playlist);
+        String mediaId = playlist.getMediaId();
         MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(mediaId, null);
     }
 

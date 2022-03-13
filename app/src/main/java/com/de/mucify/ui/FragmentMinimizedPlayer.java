@@ -1,5 +1,6 @@
 package com.de.mucify.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
@@ -44,6 +45,15 @@ public class FragmentMinimizedPlayer extends Fragment implements Playback.Callba
                 mPlayback.unpause();
             else
                 mPlayback.pause();
+        });
+
+        // Clicking on minimized player should open the large player
+        view.setOnClickListener(v -> {
+            Intent i = new Intent(getActivity(), ActivityPlayer.class);
+            i.putExtra("MediaId", mPlayback.getMediaId());
+            i.putExtra("MediaPos", mPlayback.getCurrentPosition());
+            startActivity(i);
+            getActivity().finish();
         });
 
         if(mPlayback.isPlaying())

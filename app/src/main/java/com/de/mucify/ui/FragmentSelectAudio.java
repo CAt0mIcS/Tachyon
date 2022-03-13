@@ -65,19 +65,19 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
     @Override
     public void onClick(ViewHolderSong holder) {
         Song s = (Song)mPlaybacks.get(holder.getAdapterPosition());
-        startPlayingActivity(Util.songMediaId(s));
+        startPlayingActivity(Song.getSongMediaId(s));
     }
 
     @Override
     public void onClick(ViewHolderLoop holder) {
         Song s = (Song)mPlaybacks.get(holder.getAdapterPosition());
-        startPlayingActivity(Util.loopMediaId(s));
+        startPlayingActivity(Song.getLoopMediaId(s));
     }
 
     @Override
     public void onClick(ViewHolderPlaylist holder) {
         Playlist s = (Playlist)mPlaybacks.get(holder.getAdapterPosition());
-        startPlayingPlaylistActivity(Util.playlistMediaId(s));
+        startPlayingPlaylistActivity(Playlist.getMediaId(s));
     }
 
     private void startPlayingActivity(String mediaId) {
