@@ -5,6 +5,7 @@ import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.widget.RelativeLayout;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -47,25 +48,33 @@ public class ActivityLibrary extends MediaControllerActivity {
         rvHistory.setAdapter(adapter);
 
         rvHistory.getAdapter().notifyDataSetChanged();
+
+
+        findViewById(R.id.relLayoutSongs).setOnClickListener(v -> {
+            FragmentSelectAudio fragment = new FragmentSelectAudio("Song");
+            getSupportFragmentManager().beginTransaction()
+                    .setReorderingAllowed(true)
+                    .add(R.id.fragment_container_view, fragment)
+                    .commit();
+        });
+        findViewById(R.id.relLayoutLoops).setOnClickListener(v -> {
+            FragmentSelectAudio fragment = new FragmentSelectAudio("Loop");
+            getSupportFragmentManager().beginTransaction()
+                    .setReorderingAllowed(true)
+                    .add(R.id.fragment_container_view, fragment)
+                    .commit();
+        });
+        findViewById(R.id.relLayoutPlaylists).setOnClickListener(v -> {
+            FragmentSelectAudio fragment = new FragmentSelectAudio("Playlist");
+            getSupportFragmentManager().beginTransaction()
+                    .setReorderingAllowed(true)
+                    .add(R.id.fragment_container_view, fragment)
+                    .commit();
+        });
     }
 
     @Override
     public void onBuildTransportControls() {
-        // Grab the view for the play/pause button
-        RelativeLayout playPause = findViewById(R.id.relLayoutSongs);
 
-        // Attach a listener to the button
-        playPause.setOnClickListener(v -> {
-            getSupportFragmentManager().beginTransaction()
-                    .setReorderingAllowed(true)
-                    .add(R.id.fragment_container_view, FragmentSelectAudio.class, null)
-                    .commit();
-
-//            int pbState = MediaControllerCompat.getMediaController(LibraryActivity.this).getPlaybackState().getState();
-//            if (pbState == PlaybackStateCompat.STATE_PLAYING)
-//                MediaControllerCompat.getMediaController(LibraryActivity.this).getTransportControls().pause();
-//            else
-//                MediaControllerCompat.getMediaController(LibraryActivity.this).getTransportControls().play();
-        });
     }
 }

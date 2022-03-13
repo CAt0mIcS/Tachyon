@@ -14,7 +14,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.PermissionManager;
+import com.de.mucify.Util;
+import com.de.mucify.player.Playlist;
+import com.de.mucify.player.Song;
 import com.de.mucify.service.MediaPlaybackService;
+
+import java.io.File;
 
 public abstract class MediaControllerActivity extends AppCompatActivity {
     private MediaBrowserCompat mMediaBrowser;
@@ -53,6 +58,42 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
             MediaControllerCompat.getMediaController(MediaControllerActivity.this).unregisterCallback(mControllerCallback);
         }
         mMediaBrowser.disconnect();
+    }
+
+    public void unpause() {
+        if(!isPlaying())
+            MediaControllerCompat.getMediaController(this).getTransportControls().play();
+    }
+
+    public void pause() {
+        if(isPlaying())
+            MediaControllerCompat.getMediaController(this).getTransportControls().pause();
+    }
+
+    public void seekTo(int millis) {
+        MediaControllerCompat.getMediaController(this).getTransportControls().seekTo(millis);
+    }
+
+    public void play(Song song) {
+        String mediaId = "";
+        if(song.isLoop())
+            mediaId = Util.loopMediaId(song);
+        else
+            mediaId = Util.songMediaId(song);
+        MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(mediaId, null);
+    }
+
+    public void play(String mediaId) {
+        MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(mediaId, null);
+    }
+
+    public void play(Playlist playlist) {
+        String mediaId = Util.playlistMediaId(playlist);
+        MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(mediaId, null);
+    }
+
+    public boolean isPlaying() {
+        return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING;
     }
 
     private void buildTransportControls()

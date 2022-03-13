@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
+import com.de.mucify.Util;
 import com.de.mucify.adapter.AdapterEventListener;
 import com.de.mucify.adapter.PlayableListItemAdapter;
 import com.de.mucify.adapter.ViewHolderLoop;
@@ -29,9 +30,11 @@ import java.util.ArrayList;
 public class FragmentSelectAudio extends Fragment implements AdapterEventListener {
 
     ArrayList<Playback> mPlaybacks = new ArrayList<>();
+    private String mAudioType;
 
-    public FragmentSelectAudio() {
+    public FragmentSelectAudio(String audioType) {
         super(R.layout.fragment_select_audio_layout);
+        mAudioType = audioType;
     }
 
     @Override
@@ -41,8 +44,17 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
         RecyclerView rvFiles = view.findViewById(R.id.rvFiles);
         rvFiles.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        for(Song s : MediaLibrary.AvailableSongs)
-            mPlaybacks.add(s);
+        switch (mAudioType) {
+            case "Song":
+                for(Song s : MediaLibrary.AvailableSongs)
+                    mPlaybacks.add(s);
+            case "Loop":
+                for(Song s : MediaLibrary.AvailableLoops)
+                    mPlaybacks.add(s);
+            case "Playlist":
+                for(Playlist s : MediaLibrary.AvailablePlaylists)
+                    mPlaybacks.add(s);
+        }
 
         PlayableListItemAdapter adapter = new PlayableListItemAdapter(getContext(), mPlaybacks);
         adapter.setListener(this);
@@ -53,31 +65,31 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
     @Override
     public void onClick(ViewHolderSong holder) {
         Song s = (Song)mPlaybacks.get(holder.getAdapterPosition());
-        startPlayingActivity(s.getSongPath());
+        startPlayingActivity(Util.songMediaId(s));
     }
 
     @Override
     public void onClick(ViewHolderLoop holder) {
         Song s = (Song)mPlaybacks.get(holder.getAdapterPosition());
-        startPlayingActivity(s.getLoopPath());
+        startPlayingActivity(Util.loopMediaId(s));
     }
 
     @Override
     public void onClick(ViewHolderPlaylist holder) {
         Playlist s = (Playlist)mPlaybacks.get(holder.getAdapterPosition());
-        startPlayingPlaylistActivity(s.getPlaylistFilePath());
+        startPlayingPlaylistActivity(Util.playlistMediaId(s));
     }
 
-    private void startPlayingActivity(File filepath) {
+    private void startPlayingActivity(String mediaId) {
         Intent i = new Intent(getActivity(), ActivityPlayer.class);
-        i.putExtra("AudioPath", filepath.toString());
+        i.putExtra("MediaId", mediaId);
         startActivity(i);
         getActivity().finish();
     }
 
-    private void startPlayingPlaylistActivity(File filepath) {
+    private void startPlayingPlaylistActivity(String mediaId) {
         Intent i = new Intent(getActivity(), ActivityPlaylistPlayer.class);
-        i.putExtra("AudioPath", filepath.toString());
+        i.putExtra("MediaId", mediaId);
         startActivity(i);
         getActivity().finish();
     }

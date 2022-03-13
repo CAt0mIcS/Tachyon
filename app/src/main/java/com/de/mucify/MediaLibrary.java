@@ -73,6 +73,30 @@ public class MediaLibrary {
         return AvailablePlaylists;
     }
 
+    public static int getSongIndex(Song song) {
+        for(int i = 0; i < AvailableSongs.size(); ++i) {
+            if(AvailableSongs.get(i).equalsUninitialized(song))
+                return i;
+        }
+        return -1;
+    }
+
+    public static int getLoopIndex(Song song) {
+        for(int i = 0; i < AvailableLoops.size(); ++i) {
+            if(AvailableLoops.get(i).equalsUninitialized(song))
+                return i;
+        }
+        return -1;
+    }
+
+    public static int getPlaylistIndex(Playlist playlist) {
+        for(int i = 0; i < AvailablePlaylists.size(); ++i) {
+            if(AvailablePlaylists.get(i).equalsUninitialized(playlist))
+                return i;
+        }
+        return -1;
+    }
+
 
     private static void loadFiles(File dir, boolean song, boolean loop, boolean playlist) {
         if (dir != null && dir.exists()) {

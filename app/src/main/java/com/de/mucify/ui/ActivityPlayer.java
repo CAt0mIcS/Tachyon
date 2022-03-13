@@ -9,11 +9,10 @@ public class ActivityPlayer extends MediaControllerActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player_layout);
-
     }
 
     @Override
     public void onBuildTransportControls() {
-
+        play(getIntent().getStringExtra("MediaId"));
     }
 }

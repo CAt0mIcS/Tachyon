@@ -20,6 +20,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,9 +29,12 @@ import androidx.core.app.NotificationCompat;
 import androidx.media.MediaBrowserServiceCompat;
 import androidx.media.session.MediaButtonReceiver;
 
+import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.Util;
+import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
+import com.de.mucify.player.Song;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +44,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private static final String EMPTY_MEDIA_ID = "com.de.mucify.EMPTY_MEDIA";
     private static final String CHANNEL_ID = "com.de.mucify.MediaPlaybackChannel";
 
-    private Playlist mPlaylist;
+    private Playback mPlayback;
 
     private IntentFilter mBecomeNoisyIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
@@ -274,6 +278,21 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mMediaSession.setActive(false);
             mMediaPlayer.stop();
             stopForeground(false);
+        }
+
+        @Override
+        public void onPlayFromMediaId(String mediaId, Bundle extras) {
+            if(Util.isSongMediaId(mediaId)) {
+                mPlayback = MediaLibrary.AvailableSongs.get(Util.getIndexFromMediaId(mediaId));
+            }
+            else if(Util.isLoopMediaId(mediaId)) {
+                mPlayback = MediaLibrary.AvailableLoops.get(Util.getIndexFromMediaId(mediaId));
+            }
+            else if (Util.isPlaylistMediaId(mediaId)) {
+                mPlayback = MediaLibrary.AvailablePlaylists.get(Util.getIndexFromMediaId(mediaId));
+            }
+            else
+                Log.e("Mucify: ", "Invalid media id " + mediaId);
         }
 
         @Override

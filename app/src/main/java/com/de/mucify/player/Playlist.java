@@ -2,6 +2,8 @@ package com.de.mucify.player;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import com.de.mucify.FileManager;
 
 import java.io.BufferedReader;
@@ -67,6 +69,15 @@ public class Playlist extends Playback {
     public File getPlaylistFilePath() { return mPlaylistFilePath; }
     public ArrayList<Song> getSongs() { return mSongs; }
     public Context getContext() { return mContext; }
+
+    public boolean equalsUninitialized(@Nullable Playlist playlist) {
+        if(playlist == null)
+            return false;
+
+        return playlist.mName.equals(mName) &&
+                playlist.mPlaylistFilePath.equals(mPlaylistFilePath) &&
+                playlist.mSongs.equals(mSongs);
+    }
 
     private void loadPlaylist() {
         try {
