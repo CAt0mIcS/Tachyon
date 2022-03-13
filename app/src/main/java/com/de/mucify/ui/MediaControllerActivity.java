@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.PermissionManager;
 import com.de.mucify.Util;
+import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 import com.de.mucify.service.MediaPlaybackService;
@@ -72,6 +73,13 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
 
     public void seekTo(int millis) {
         MediaControllerCompat.getMediaController(this).getTransportControls().seekTo(millis);
+    }
+
+    public void play(Playback playback) {
+        if(playback instanceof Song)
+            play((Song)playback);
+        else
+            play((Playlist)playback);
     }
 
     public void play(Song song) {

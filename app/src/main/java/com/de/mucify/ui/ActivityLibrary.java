@@ -1,11 +1,7 @@
 package com.de.mucify.ui;
 
 import android.os.Bundle;
-import android.support.v4.media.session.MediaControllerCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
-import android.widget.RelativeLayout;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -13,7 +9,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
+import com.de.mucify.adapter.AdapterEventListener;
 import com.de.mucify.adapter.PlayableListItemAdapter;
+import com.de.mucify.adapter.ViewHolderLoop;
+import com.de.mucify.adapter.ViewHolderPlaylist;
+import com.de.mucify.adapter.ViewHolderSong;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
@@ -21,8 +21,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 
-public class ActivityLibrary extends MediaControllerActivity {
-    ArrayList<Playback> mPlaybacks = new ArrayList<>();
+public class ActivityLibrary extends MediaControllerActivity implements AdapterEventListener {
+    ArrayList<Playback> mHistory = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +45,12 @@ public class ActivityLibrary extends MediaControllerActivity {
         MediaLibrary.loadAvailableLoops();
         MediaLibrary.loadAvailablePlaylists();
 
-        mPlaybacks.addAll(MediaLibrary.AvailableSongs);
-        mPlaybacks.addAll(MediaLibrary.AvailableLoops);
-        mPlaybacks.addAll(MediaLibrary.AvailablePlaylists);
+        mHistory.addAll(MediaLibrary.AvailableSongs);
+        mHistory.addAll(MediaLibrary.AvailableLoops);
+        mHistory.addAll(MediaLibrary.AvailablePlaylists);
 
-        PlayableListItemAdapter adapter = new PlayableListItemAdapter(this, mPlaybacks);
+        PlayableListItemAdapter adapter = new PlayableListItemAdapter(this, mHistory);
+        adapter.setListener(this);
         rvHistory.setAdapter(adapter);
 
         rvHistory.getAdapter().notifyDataSetChanged();
@@ -76,16 +77,35 @@ public class ActivityLibrary extends MediaControllerActivity {
                     .add(R.id.fragment_container_view, fragment)
                     .commit();
         });
-
-        FragmentMinimizedPlayer fragmentMinimizedPlayer = new FragmentMinimizedPlayer("Title Hello", "Artist Hello");
-        getSupportFragmentManager().beginTransaction()
-                .setReorderingAllowed(true)
-                .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
-                .commit();
     }
 
     @Override
     public void onBuildTransportControls() {
 
+    }
+
+    @Override
+    public void onClick(ViewHolderSong holder) {
+        startAudio(mHistory.get(holder.getAdapterPosition()));
+    }
+
+    @Override
+    public void onClick(ViewHolderLoop holder) {
+        startAudio(mHistory.get(holder.getAdapterPosition()));
+    }
+
+    @Override
+    public void onClick(ViewHolderPlaylist holder) {
+        startAudio(mHistory.get(holder.getAdapterPosition()));
+    }
+
+    private void startAudio(Playback playback) {
+        play(playback);
+
+        FragmentMinimizedPlayer fragmentMinimizedPlayer = new FragmentMinimizedPlayer(playback);
+        getSupportFragmentManager().beginTransaction()
+                .setReorderingAllowed(true)
+                .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
+                .commit();
     }
 }

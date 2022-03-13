@@ -106,12 +106,18 @@ public class Song extends Playback {
     public void unpause() {
         mPaused = false;
         mMediaPlayer.start();
+
+        if(mCallback != null)
+            mCallback.onPlayPause(false);
     }
 
     @Override
     public void pause() {
         mPaused = true;
         mMediaPlayer.pause();
+
+        if(mCallback != null)
+            mCallback.onPlayPause(true);
     }
 
     @Override

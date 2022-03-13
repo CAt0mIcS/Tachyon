@@ -6,11 +6,11 @@ import android.content.Context;
 public abstract class Playback {
     protected Callback mCallback;
 
-    interface Callback {
-
+    public interface Callback {
+        void onPlayPause(boolean paused);
     }
 
-    void setCallback(Callback callback) { mCallback = callback; }
+    public void setCallback(Callback callback) { mCallback = callback; }
 
     public abstract void start();
     public abstract void unpause();
