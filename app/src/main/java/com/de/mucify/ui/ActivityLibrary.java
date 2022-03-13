@@ -18,7 +18,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
 
-public class LibraryActivity extends MediaControllerActivity {
+public class ActivityLibrary extends MediaControllerActivity {
     ArrayList<Playback> mPlaybacks = new ArrayList<>();
 
     @Override
@@ -56,11 +56,16 @@ public class LibraryActivity extends MediaControllerActivity {
 
         // Attach a listener to the button
         playPause.setOnClickListener(v -> {
-            int pbState = MediaControllerCompat.getMediaController(LibraryActivity.this).getPlaybackState().getState();
-            if (pbState == PlaybackStateCompat.STATE_PLAYING)
-                MediaControllerCompat.getMediaController(LibraryActivity.this).getTransportControls().pause();
-            else
-                MediaControllerCompat.getMediaController(LibraryActivity.this).getTransportControls().play();
+            getSupportFragmentManager().beginTransaction()
+                    .setReorderingAllowed(true)
+                    .add(R.id.fragment_container_view, FragmentSelectAudio.class, null)
+                    .commit();
+
+//            int pbState = MediaControllerCompat.getMediaController(LibraryActivity.this).getPlaybackState().getState();
+//            if (pbState == PlaybackStateCompat.STATE_PLAYING)
+//                MediaControllerCompat.getMediaController(LibraryActivity.this).getTransportControls().pause();
+//            else
+//                MediaControllerCompat.getMediaController(LibraryActivity.this).getTransportControls().play();
         });
     }
 }

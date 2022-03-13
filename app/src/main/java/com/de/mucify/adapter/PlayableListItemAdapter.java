@@ -1,6 +1,7 @@
 package com.de.mucify.adapter;
 
 import android.content.Context;
+import android.telecom.Call;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,8 @@ public class PlayableListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     private final Context mContext;
     private final ArrayList<Playback> mItems;
+
+    private AdapterEventListener mCallback;
 
 
     public PlayableListItemAdapter(Context context, ArrayList<Playback> items) {
@@ -49,6 +52,7 @@ public class PlayableListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
             ViewHolderSong viewHolder = (ViewHolderSong) baseHolder;
             viewHolder.TxtTitle.setText(song.getTitle());
             viewHolder.TxtArtist.setText(song.getArtist());
+            viewHolder.setListener(mCallback);
         }
         else if(baseHolder instanceof ViewHolderLoop) {
             Song song = (Song)mItems.get(i);
@@ -57,6 +61,7 @@ public class PlayableListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
             viewHolder.TxtName.setText(song.getLoopName());
             viewHolder.TxtTitle.setText(song.getTitle());
             viewHolder.TxtArtist.setText(song.getArtist());
+            viewHolder.setListener(mCallback);
         }
         else {
             Playlist playlist = (Playlist)mItems.get(i);
@@ -64,6 +69,7 @@ public class PlayableListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
             ViewHolderPlaylist viewHolder = (ViewHolderPlaylist) baseHolder;
             viewHolder.TxtName.setText(playlist.getName());
             viewHolder.TxtNumSongs.setText(String.valueOf(playlist.getSongs().size()));
+            viewHolder.setListener(mCallback);
         }
     }
 
@@ -80,5 +86,9 @@ public class PlayableListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
             return ITEM_TYPE_SONG;
         }
         return ITEM_TYPE_PLAYLIST;
+    }
+
+    public void setListener(AdapterEventListener callback) {
+        mCallback = callback;
     }
 }
