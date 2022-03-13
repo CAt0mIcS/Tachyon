@@ -261,9 +261,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mPlayback.pause();
             unregisterReceiver(myNoisyAudioStreamReceiver);
 
-//            repostNotification();
-//            stopForeground(false);
-            startForeground(1337, buildNotification());
+            repostNotification();
+            stopForeground(false);
         }
 
         @Override
@@ -290,8 +289,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onSeekTo(long pos) {
             mPlayback.seekTo((int)pos);
-//            repostNotification();
-            startForeground(1337, buildNotification());
+            repostNotification();
         }
 
         @Override

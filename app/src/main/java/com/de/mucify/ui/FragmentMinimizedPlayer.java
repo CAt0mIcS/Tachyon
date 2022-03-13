@@ -19,17 +19,19 @@ public class FragmentMinimizedPlayer extends Fragment implements Playback.Callba
     private String mArtist;
     private Playback mPlayback;
     private ImageButton mPlayPause;
+    private MediaControllerActivity mMediaController;
 
     public FragmentMinimizedPlayer() {
         super();
     }
 
-    public FragmentMinimizedPlayer(Playback playback) {
+    public FragmentMinimizedPlayer(Playback playback, MediaControllerActivity controller) {
         super(R.layout.fragment_minimized_player);
         mPlayback = playback;
         mPlayback.setCallback(this);
         mTitle = playback.getTitle();
         mArtist = playback.getSubtitle();
+        mMediaController = controller;
     }
 
     @Override
@@ -41,10 +43,10 @@ public class FragmentMinimizedPlayer extends Fragment implements Playback.Callba
 
         mPlayPause = view.findViewById(R.id.btnPlayPause);
         mPlayPause.setOnClickListener(v -> {
-            if(mPlayback.isPaused())
-                mPlayback.unpause();
+            if(mMediaController.isPlaying())
+                mMediaController.pause();
             else
-                mPlayback.pause();
+                mMediaController.unpause();
         });
 
         // Clicking on minimized player should open the large player
@@ -55,10 +57,7 @@ public class FragmentMinimizedPlayer extends Fragment implements Playback.Callba
             startActivity(i);
         });
 
-        if(mPlayback.isPlaying())
-            mPlayPause.setImageResource(R.drawable.pause);
-        else
-            mPlayPause.setImageResource(R.drawable.play);
+        onPlayPause(mPlayback.isPaused());
     }
 
 

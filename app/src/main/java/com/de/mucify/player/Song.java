@@ -101,6 +101,12 @@ public class Song extends Playback {
     @Override
     public void start() {
         mMediaPlayer.start();
+
+        if(mPaused) {
+            mPaused = false;
+            if(mCallback != null)
+                mCallback.onPlayPause(false);
+        }
     }
 
     @Override
