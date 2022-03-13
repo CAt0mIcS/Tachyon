@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">Mucify</string>
     <string name="pause">Pause</string>
+    <string name="songs">Songs</string>
+    <string name="loops">Loops</string>
+    <string name="playlists">Playlists</string>
+    <string name="history">History</string>
+    <string name="library">Library</string>
+    <string name="search">Search</string>
+    <string name="import_name">Import</string>
 </resources>
