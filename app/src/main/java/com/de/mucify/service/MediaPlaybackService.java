@@ -294,10 +294,18 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSkipToNext() {
+            mPlayback.reset();
+            mPlayback = mPlayback.next();
+            mPlayback.create(MediaPlaybackService.this);
+            onPlay();
         }
 
         @Override
         public void onSkipToPrevious() {
+            mPlayback.reset();
+            mPlayback = mPlayback.previous();
+            mPlayback.create(MediaPlaybackService.this);
+            onPlay();
         }
     }
 }

@@ -112,6 +112,16 @@ public class Playlist extends Playback {
         mContext = context;
     }
 
+    @Override
+    public Song next() {
+        return null;
+    }
+
+    @Override
+    public Song previous() {
+        return null;
+    }
+
     public String getName() {
         return mName;
     }

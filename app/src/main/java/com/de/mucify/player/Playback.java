@@ -23,6 +23,8 @@ public abstract class Playback {
     public abstract void stop();
     public abstract void reset();
     public abstract void create(Context context);
+    public abstract Song next();
+    public abstract Song previous();
 
     public abstract String getTitle();
     public abstract String getSubtitle();

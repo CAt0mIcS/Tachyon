@@ -8,6 +8,7 @@ import android.net.Uri;
 import androidx.annotation.Nullable;
 
 import com.de.mucify.FileManager;
+import com.de.mucify.MediaLibrary;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -135,6 +136,38 @@ public class Song extends Playback {
 
         if(mEndTime == 0)
             mEndTime = mMediaPlayer.getDuration();
+    }
+
+    @Override
+    public Song next() {
+        if(!isLoop()) {
+            int idx = MediaLibrary.getSongIndex(this) + 1;
+            if(idx >= MediaLibrary.AvailableSongs.size())
+                idx = 0;
+            return MediaLibrary.AvailableSongs.get(idx);
+        }
+        else {
+            int idx = MediaLibrary.getLoopIndex(this) + 1;
+            if(idx >= MediaLibrary.AvailableLoops.size())
+                idx = 0;
+            return MediaLibrary.AvailableLoops.get(idx);
+        }
+    }
+
+    @Override
+    public Song previous() {
+        if(!isLoop()) {
+            int idx = MediaLibrary.getSongIndex(this) - 1;
+            if(idx < 0)
+                idx = MediaLibrary.AvailableSongs.size() - 1;
+            return MediaLibrary.AvailableSongs.get(idx);
+        }
+        else {
+            int idx = MediaLibrary.getLoopIndex(this) - 1;
+            if(idx < 0)
+                idx = MediaLibrary.AvailableLoops.size() - 1;
+            return MediaLibrary.AvailableLoops.get(idx);
+        }
     }
 
     @Override
