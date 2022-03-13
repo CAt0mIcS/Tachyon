@@ -2,7 +2,9 @@ package com.de.mucify.ui;
 
 import android.Manifest;
 import android.content.ComponentName;
+import android.content.Intent;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -33,6 +35,11 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         // MY_TODO: Better waiting and figure out what to do if permission not granted
         PermissionManager.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
         MediaLibrary.load(this);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            startForegroundService(new Intent(this, MediaPlaybackService.class));
+        else
+            startService(new Intent(this, MediaPlaybackService.class));
 
         mMediaBrowser = new MediaBrowserCompat(MediaControllerActivity.this,
                 new ComponentName(MediaControllerActivity.this, MediaPlaybackService.class),
