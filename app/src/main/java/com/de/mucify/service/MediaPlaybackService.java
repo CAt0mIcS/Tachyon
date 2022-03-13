@@ -281,17 +281,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             if(mPlayback != null)
                 mPlayback.reset();
 
-            if(Util.isSongMediaId(mediaId)) {
-                mPlayback = MediaLibrary.AvailableSongs.get(Util.getIndexFromMediaId(mediaId));
-            }
-            else if(Util.isLoopMediaId(mediaId)) {
-                mPlayback = MediaLibrary.AvailableLoops.get(Util.getIndexFromMediaId(mediaId));
-            }
-            else if (Util.isPlaylistMediaId(mediaId)) {
-                mPlayback = MediaLibrary.AvailablePlaylists.get(Util.getIndexFromMediaId(mediaId));
-            }
-            else
-                Log.e("Mucify: ", "Invalid media id " + mediaId);
+            mPlayback = Util.getPlaybackFromMediaId(mediaId);
             mPlayback.create(MediaPlaybackService.this);
             onPlay();
         }

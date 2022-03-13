@@ -34,7 +34,6 @@
                     android:layout_alignParentLeft="true"
                     android:text="@string/songs"
                     android:textStyle="bold"
-                    android:textColor="@color/black"
                     android:textSize="20sp" />
 
                 <ImageView
@@ -61,7 +60,6 @@
                     android:layout_alignParentLeft="true"
                     android:text="@string/loops"
                     android:textStyle="bold"
-                    android:textColor="@color/black"
                     android:textSize="20sp" />
 
                 <ImageView
@@ -88,7 +86,6 @@
                     android:layout_alignParentLeft="true"
                     android:text="@string/playlists"
                     android:textStyle="bold"
-                    android:textColor="@color/black"
                     android:textSize="20sp" />
 
                 <ImageView
@@ -105,7 +102,6 @@
                 android:layout_marginLeft="16dp"
                 android:layout_marginTop="48dp"
                 android:text="@string/history"
-                android:textColor="@color/black"
                 android:textSize="32dp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
