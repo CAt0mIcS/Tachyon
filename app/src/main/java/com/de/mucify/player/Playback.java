@@ -13,10 +13,10 @@ public abstract class Playback {
     public void setCallback(Callback callback) { mCallback = callback; }
 
     public abstract void start();
-    public abstract void unpause();
+    public abstract void restart();
     public abstract void pause();
     public abstract boolean isPlaying();
-    public abstract boolean isPaused();
+    public boolean isPaused() { return !isPlaying(); }
     public abstract void seekTo(int millis);
     public abstract int getDuration();
     public abstract int getCurrentPosition();

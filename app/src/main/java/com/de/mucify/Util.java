@@ -5,11 +5,18 @@ import android.media.AudioManager;
 import android.util.Log;
 
 import com.de.mucify.player.Playback;
-import com.de.mucify.player.Playlist;
-import com.de.mucify.player.Song;
 
 
 public class Util {
+    public static String millisecondsToReadableString(int progress) {
+        long millis = progress % 1000;
+        long second = (progress / 1000) % 60;
+        long minute = (progress / (1000 * 60)) % 60;
+        long hour = (progress / (1000 * 60 * 60)) % 24;
+
+        return String.format("%02d:%02d:%02d.%d", hour, minute, second, millis);
+    }
+
     public static int requestAudioFocus(Context context, AudioManager.OnAudioFocusChangeListener onChanged) {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 

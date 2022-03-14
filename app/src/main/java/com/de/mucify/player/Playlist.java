@@ -54,7 +54,7 @@ public class Playlist extends Playback {
     }
 
     @Override
-    public void unpause() {
+    public void restart() {
 
     }
 

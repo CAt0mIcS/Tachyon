@@ -63,6 +63,9 @@ public class FragmentMinimizedPlayer extends Fragment implements Playback.Callba
 
     @Override
     public void onPlayPause(boolean paused) {
+        if(mPlayPause == null)
+            return;
+
         if(paused)
             mPlayPause.setImageResource(R.drawable.play);
         else

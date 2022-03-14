@@ -46,7 +46,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
     private Playback mPlayback;
 
-    private IntentFilter mBecomeNoisyIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+    private final IntentFilter mBecomeNoisyIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
@@ -55,10 +55,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
-                    mPlayback.start();
+                    mMediaSession.getController().getTransportControls().play();
                     break;
                 default:
-                    mPlayback.pause();
+                    mMediaSession.getController().getTransportControls().pause();
                     break;
             }
         }
@@ -67,17 +67,16 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
-                mPlayback.pause();
+                mMediaSession.getController().getTransportControls().pause();
             }
         }
     };
 
     private MediaSessionCompat mMediaSession;
-    private PlaybackStateCompat.Builder mStateBuilder;
 
     private NotificationManager mNotificationManager;
-    private MediaMetadataCompat.Builder mMetadataBuilder = new MediaMetadataCompat.Builder();
-    private PlaybackStateCompat.Builder mPlaybackStateBuilder = new PlaybackStateCompat.Builder();
+    private final MediaMetadataCompat.Builder mMetadataBuilder = new MediaMetadataCompat.Builder();
+    private final PlaybackStateCompat.Builder mPlaybackStateBuilder = new PlaybackStateCompat.Builder();
 
     private NotificationCompat.Action mPlayAction;
     private NotificationCompat.Action mPauseAction;
@@ -93,9 +92,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
                         MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
 
-        mStateBuilder = new PlaybackStateCompat.Builder()
+        PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
                 .setActions(PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PLAY_PAUSE);
-        mMediaSession.setPlaybackState(mStateBuilder.build());
+        mMediaSession.setPlaybackState(stateBuilder.build());
         mMediaSession.setCallback(new MediaSessionCallback());
         setSessionToken(mMediaSession.getSessionToken());
 
