@@ -53,8 +53,10 @@ public class FragmentMinimizedPlayer extends Fragment {
         mPlayPause.setOnClickListener(v -> {
             if(!mPlayback.isCreated()) {
                 mMediaController.play(mPlayback);
-                if(mPlaybackSeekPos != 0)
+                if(mPlaybackSeekPos != 0) {
                     mMediaController.seekTo(mPlaybackSeekPos);
+                }
+
             }
             else if(mMediaController.isPaused())
                 mMediaController.unpause();
@@ -67,6 +69,8 @@ public class FragmentMinimizedPlayer extends Fragment {
             Intent i = new Intent(getActivity(), ActivityPlayer.class);
             i.putExtra("MediaId", mPlayback.getMediaId());
             i.putExtra("IsPlaying", true);
+            if(mPlaybackSeekPos != 0)
+                i.putExtra("SeekPos", mPlaybackSeekPos);
             startActivity(i);
         });
 

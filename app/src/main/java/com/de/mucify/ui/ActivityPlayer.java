@@ -31,6 +31,7 @@ public class ActivityPlayer extends MediaControllerActivity {
     private Song mSong;
 
     private boolean mIsSeeking = false;
+    private int mPlaybackSeekPos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +55,8 @@ public class ActivityPlayer extends MediaControllerActivity {
     public void onBuildTransportControls() {
         if(!getIntent().getBooleanExtra("IsPlaying", false))
             play(getIntent().getStringExtra("MediaId"));
+
+        mPlaybackSeekPos = getIntent().getIntExtra("SeekPos", 0);
 
         mSong = (Song)Util.getPlaybackFromMediaId(getIntent().getStringExtra("MediaId"));
         mSong.addCallback(mPlaybackCallback);
@@ -150,8 +153,12 @@ public class ActivityPlayer extends MediaControllerActivity {
         });
 
         mBtnPlayPause.setOnClickListener(v -> {
-            if(!mSong.isCreated())
+            if(!mSong.isCreated()) {
                 play(mSong);
+                if(mPlaybackSeekPos != 0)
+                    seekTo(mPlaybackSeekPos);
+            }
+
             else if(mSong.isPaused())
                 unpause();
             else
