@@ -32,7 +32,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_library);
 
-        Toolbar toolbar = (Toolbar)findViewById(R.id.my_toolbar);
+        Toolbar toolbar = findViewById(R.id.my_toolbar);
         toolbar.inflateMenu(R.menu.toolbar_default);
         toolbar.setTitle(getString(R.string.library));
 

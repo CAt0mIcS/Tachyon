@@ -32,6 +32,7 @@ import androidx.media.session.MediaButtonReceiver;
 
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
+import com.de.mucify.UserData;
 import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
@@ -52,6 +53,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
+            if(UserData.IgnoreAudioFocus)
+                return;
+
             Log.d("Mucify", "Audio focus changed " + focusChange);
             switch(focusChange) {
                 case AudioManager.AUDIOFOCUS_GAIN:
@@ -91,6 +95,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     public void onCreate() {
         super.onCreate();
 
+        UserData.load(this);
         if(Media == null) {
             Media = new MediaLibrary(this);
             Media.loadAvailableSongs();

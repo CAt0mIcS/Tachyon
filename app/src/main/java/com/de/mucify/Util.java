@@ -1,6 +1,8 @@
 package com.de.mucify;
 
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.util.Log;
 
@@ -19,7 +21,20 @@ public class Util {
     }
 
     public static int requestAudioFocus(Context context, AudioManager.OnAudioFocusChangeListener onChanged) {
+        if(UserData.IgnoreAudioFocus)
+            return AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
+
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            AudioFocusRequest audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setOnAudioFocusChangeListener(onChanged)
+                    .setAudioAttributes(new AudioAttributes.Builder()
+                            .setContentType(UserData.IgnoreAudioFocus ? AudioAttributes.CONTENT_TYPE_SPEECH : AudioAttributes.CONTENT_TYPE_MUSIC)  // API 31 doesn't mute when playing with content_type_speech
+                            .build())
+                    .build();
+            return audioManager.requestAudioFocus(audioFocusRequest);
+        }
 
         return audioManager.requestAudioFocus(onChanged,
                 AudioManager.STREAM_MUSIC,
@@ -27,6 +42,9 @@ public class Util {
     }
 
     public static int abandonAudioFocus(Context context, AudioManager.OnAudioFocusChangeListener onChanged) {
+        if(UserData.IgnoreAudioFocus)
+            return 0;
+
         return ((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(onChanged);
     }
 
