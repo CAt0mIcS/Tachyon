@@ -17,4 +17,8 @@
     <string name="media_route_menu_title">Cast</string>
     <string name="cast">Cast</string>
     <string name="play_pause">Play/Pause</string>
+    <string name="dec_start_time">Decrement song start time</string>
+    <string name="inc_start_time">Increment song start time</string>
+    <string name="dec_end_time">Decrement song end time</string>
+    <string name="inc_end_time">Increment song end time</string>
 </resources>
