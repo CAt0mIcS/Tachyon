@@ -50,6 +50,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
+            Log.d("Mucify", "Audio focus changed " + focusChange);
             switch(focusChange) {
                 case AudioManager.AUDIOFOCUS_GAIN:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
@@ -68,6 +69,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         public void onReceive(Context context, Intent intent) {
             if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
                 mMediaSession.getController().getTransportControls().pause();
+                Log.d("Mucify", "Became noisy");
             }
         }
     };
@@ -128,6 +130,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this,
                         PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS));
+
+        Log.d("Mucify", "Created MediaPlaybackService");
     }
 
     @Nullable
@@ -159,6 +163,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
 
     public Notification buildNotification() {
+        Log.d("Mucify", "Rebuilding notification");
+
         PlaybackStateCompat playbackState = getState();
         MediaMetadataCompat metadata = getMetadata();
 
@@ -205,6 +211,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private void createNotificationChannel() {
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Mucify foreground service notification", NotificationManager.IMPORTANCE_LOW);
         mNotificationManager.createNotificationChannel(channel);
+        Log.d("Mucify", "Created notification channel");
     }
 
     private MediaMetadataCompat getMetadata() {
@@ -231,6 +238,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
     private void repostNotification() {
         mNotificationManager.notify(1337, buildNotification());
+        Log.d("Mucify", "Reposting notification");
     }
 
 
@@ -252,6 +260,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
                 // Put the service in the foreground, post notification
                 startForeground(1337, buildNotification());
+                Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPlay");
             }
         }
 
@@ -262,6 +271,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             repostNotification();
             stopForeground(false);
+            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPause");
         }
 
         @Override
@@ -273,6 +283,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mPlayback.reset();
             mPlayback = null;
             stopForeground(false);
+            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onStop");
         }
 
         @Override
@@ -283,12 +294,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mPlayback = Util.getPlaybackFromMediaId(mediaId);
             mPlayback.create(MediaPlaybackService.this);
             onPlay();
+            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPlayFromMediaId " + mediaId);
         }
 
         @Override
         public void onSeekTo(long pos) {
             mPlayback.seekTo((int)pos);
             repostNotification();
+            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSeekTo " + pos);
         }
 
         @Override
@@ -297,6 +310,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mPlayback = mPlayback.next();
             mPlayback.create(MediaPlaybackService.this);
             onPlay();
+            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSkipToNext");
         }
 
         @Override
@@ -305,6 +319,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mPlayback = mPlayback.previous();
             mPlayback.create(MediaPlaybackService.this);
             onPlay();
+            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSkipToPrevious");
         }
     }
 }

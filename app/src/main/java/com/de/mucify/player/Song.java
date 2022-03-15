@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -98,6 +99,7 @@ public class Song extends Playback {
 
         if(mCallback != null)
             mCallback.onPlayPause(false);
+        Log.d("Mucify.Song", "Song.start");
     }
 
     @Override
@@ -107,6 +109,7 @@ public class Song extends Playback {
 
         if(mCallback != null)
             mCallback.onPlayPause(false);
+        Log.d("Mucify.Song", "Song.restart");
     }
 
     @Override
@@ -115,6 +118,7 @@ public class Song extends Playback {
 
         if(mCallback != null)
             mCallback.onPlayPause(true);
+        Log.d("Mucify.Song", "Song.pause");
     }
 
     @Override
@@ -125,11 +129,13 @@ public class Song extends Playback {
     @Override
     public void stop() {
         mMediaPlayer.stop();
+        Log.d("Mucify.Song", "Song.stop");
     }
 
     @Override
     public void reset() {
         mMediaPlayer.reset();
+        Log.d("Mucify.Song", "Song.reset");
     }
 
     @Override
@@ -139,6 +145,8 @@ public class Song extends Playback {
 
         if(mEndTime == 0)
             mEndTime = mMediaPlayer.getDuration();
+
+        Log.d("Mucify.Song", "Song.create");
     }
 
     @Override
@@ -158,6 +166,8 @@ public class Song extends Playback {
 
     @Override
     public Song next() {
+        Log.d("Mucify.Song", "Song.next");
+
         if(!isLoop()) {
             int idx = MediaLibrary.getSongIndex(this) + 1;
             if(idx >= MediaLibrary.AvailableSongs.size())
@@ -174,6 +184,8 @@ public class Song extends Playback {
 
     @Override
     public Song previous() {
+        Log.d("Mucify.Song", "Song.previous");
+
         if(!isLoop()) {
             int idx = MediaLibrary.getSongIndex(this) - 1;
             if(idx < 0)
@@ -241,6 +253,8 @@ public class Song extends Playback {
     }
 
     private void parseLoopFile(File file) throws IOException {
+        Log.d("Mucify.Song", "Parsing loop file " + file);
+
         BufferedReader reader = new BufferedReader(new FileReader(file));
         mSongFilePath = new File(reader.readLine());
         mStartTime = Integer.parseInt(reader.readLine());

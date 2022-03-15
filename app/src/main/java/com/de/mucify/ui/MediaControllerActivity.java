@@ -1,7 +1,9 @@
 package com.de.mucify.ui;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Build;
@@ -11,6 +13,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -45,18 +48,23 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
                 new ComponentName(MediaControllerActivity.this, MediaPlaybackService.class),
                 new ConnectionCallback(),
                 null);
+
+        Log.d("Mucify", "MediaControllerActivity created");
     }
 
     @Override
     public void onStart() {
         super.onStart();
         mMediaBrowser.connect();
+
+        Log.d("Mucify", "Started connecting to MediaController");
     }
 
     @Override
     public void onResume() {
         super.onResume();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        Log.d("Mucify", "MediaControllerActivity.onResume");
     }
 
     @Override
@@ -66,6 +74,7 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
             MediaControllerCompat.getMediaController(MediaControllerActivity.this).unregisterCallback(mControllerCallback);
         }
         mMediaBrowser.disconnect();
+        Log.d("Mucify", "Started disconnecting from MediaController");
     }
 
     public void unpause() {
@@ -111,6 +120,23 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING;
     }
 
+    public Song getCurrentSong() {
+        for(Song s : MediaLibrary.AvailableSongs)
+            if(s.isCreated())
+                return s;
+
+        for(Song s : MediaLibrary.AvailableLoops)
+            if(s.isCreated())
+                return s;
+
+        for(Playlist playlist : MediaLibrary.AvailablePlaylists)
+            for(Song s : playlist.getSongs())
+                if(s.isCreated())
+                    return s;
+
+        return null;
+    }
+
     private void buildTransportControls()
     {
         onBuildTransportControls();
@@ -119,7 +145,8 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         mediaController.registerCallback(mControllerCallback);
     }
 
-    public abstract void onBuildTransportControls();
+    protected void onBuildTransportControls() {}
+    protected void onConnected() {}
 
 
     private class ConnectionCallback extends MediaBrowserCompat.ConnectionCallback {
@@ -136,28 +163,37 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
 
             // Finish building the UI
             buildTransportControls();
+            MediaControllerActivity.this.onConnected();
+            Log.d("Mucify", "MediaController connection established");
         }
 
         @Override
         public void onConnectionSuspended() {
             // The Service has crashed. Disable transport controls until it automatically reconnects
+            Log.d("Mucify", "MediaController connection suspended");
         }
 
         @Override
         public void onConnectionFailed() {
             // The Service has refused our connection
+            Log.d("Mucify", "MediaController connection failed");
         }
     }
 
     private class MediaControllerCallback extends MediaControllerCompat.Callback {
         @Override
-        public void onMetadataChanged(MediaMetadataCompat metadata) {}
+        public void onMetadataChanged(MediaMetadataCompat metadata) {
+            Log.d("Mucify", "MediaController metadata changed");
+        }
 
         @Override
-        public void onPlaybackStateChanged(PlaybackStateCompat state) {}
+        public void onPlaybackStateChanged(PlaybackStateCompat state) {
+            Log.d("Mucify", "MediaController playback state changed" + state);
+        }
 
         @Override
         public void onSessionDestroyed() {
+            Log.d("Mucify", "MediaController session destroyed");
             mMediaBrowser.disconnect();
             // maybe schedule a reconnection using a new MediaBrowser instance
         }

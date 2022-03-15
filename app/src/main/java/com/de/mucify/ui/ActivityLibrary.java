@@ -1,6 +1,7 @@
 package com.de.mucify.ui;
 
 import android.os.Bundle;
+import android.support.v4.media.MediaMetadataCompat;
 
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 
 public class ActivityLibrary extends MediaControllerActivity implements AdapterEventListener {
     ArrayList<Playback> mHistory = new ArrayList<>();
+    private boolean mRestartMinimizedPlayer = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,8 +82,23 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
     }
 
     @Override
-    public void onBuildTransportControls() {
+    public void onResume() {
+        super.onResume();
+        mRestartMinimizedPlayer = true;
+    }
 
+    @Override
+    public void onConnected() {
+        if(mRestartMinimizedPlayer) {
+            Song current = getCurrentSong();
+            if(current != null) {
+                FragmentMinimizedPlayer fragmentMinimizedPlayer = new FragmentMinimizedPlayer(current, this);
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
+                        .commit();
+            }
+        }
+        mRestartMinimizedPlayer = false;
     }
 
     @Override
