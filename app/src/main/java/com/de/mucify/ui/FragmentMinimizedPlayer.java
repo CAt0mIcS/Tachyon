@@ -13,13 +13,15 @@ import androidx.fragment.app.Fragment;
 import com.de.mucify.R;
 import com.de.mucify.player.Playback;
 
-public class FragmentMinimizedPlayer extends Fragment implements Playback.Callback {
+public class FragmentMinimizedPlayer extends Fragment {
 
     private String mTitle;
     private String mArtist;
     private Playback mPlayback;
     private ImageButton mPlayPause;
     private MediaControllerActivity mMediaController;
+
+    private PlaybackCallback mPlaybackCallback = new PlaybackCallback();
 
     public FragmentMinimizedPlayer() {
         super();
@@ -28,7 +30,7 @@ public class FragmentMinimizedPlayer extends Fragment implements Playback.Callba
     public FragmentMinimizedPlayer(Playback playback, MediaControllerActivity controller) {
         super(R.layout.fragment_minimized_player);
         mPlayback = playback;
-        mPlayback.setCallback(this);
+        mPlayback.addCallback(mPlaybackCallback);
         mTitle = playback.getTitle();
         mArtist = playback.getSubtitle();
         mMediaController = controller;
@@ -57,18 +59,29 @@ public class FragmentMinimizedPlayer extends Fragment implements Playback.Callba
             startActivity(i);
         });
 
-        onPlayPause(mPlayback.isPaused());
+        if(mPlayback.isPaused())
+            mPlaybackCallback.onPause();
+        else
+            mPlaybackCallback.onStart();
     }
 
-
     @Override
-    public void onPlayPause(boolean paused) {
-        if(mPlayPause == null)
-            return;
+    public void onDestroy() {
+        super.onDestroy();
+        mPlayback.removeCallback(mPlaybackCallback);
+    }
 
-        if(paused)
-            mPlayPause.setImageResource(R.drawable.play);
-        else
-            mPlayPause.setImageResource(R.drawable.pause);
+    private class PlaybackCallback extends Playback.Callback {
+        @Override
+        public void onStart() {
+            if(mPlayPause != null)
+                mPlayPause.setImageResource(R.drawable.pause);
+        }
+
+        @Override
+        public void onPause() {
+            if(mPlayPause != null)
+                mPlayPause.setImageResource(R.drawable.play);
+        }
     }
 }

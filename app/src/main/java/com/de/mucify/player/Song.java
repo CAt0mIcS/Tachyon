@@ -98,8 +98,8 @@ public class Song extends Playback {
     public void start() {
         mMediaPlayer.start();
 
-        if(mCallback != null)
-            mCallback.onPlayPause(false);
+        for(Callback c : mCallbacks)
+            c.onStart();
         Log.d("Mucify.Song", "Song.start");
     }
 
@@ -108,8 +108,8 @@ public class Song extends Playback {
         mMediaPlayer.seekTo(mStartTime);
         mMediaPlayer.start();
 
-        if(mCallback != null)
-            mCallback.onPlayPause(false);
+        for(Callback c : mCallbacks)
+            c.onRestart();
         Log.d("Mucify.Song", "Song.restart");
     }
 
@@ -117,8 +117,8 @@ public class Song extends Playback {
     public void pause() {
         mMediaPlayer.pause();
 
-        if(mCallback != null)
-            mCallback.onPlayPause(true);
+        for(Callback c : mCallbacks)
+            c.onPause();
         Log.d("Mucify.Song", "Song.pause");
     }
 
@@ -130,12 +130,18 @@ public class Song extends Playback {
     @Override
     public void stop() {
         mMediaPlayer.stop();
+
+        for(Callback c : mCallbacks)
+            c.onStop();
         Log.d("Mucify.Song", "Song.stop");
     }
 
     @Override
     public void reset() {
         mMediaPlayer.reset();
+
+        for(Callback c : mCallbacks)
+            c.onReset();
         Log.d("Mucify.Song", "Song.reset");
     }
 
@@ -169,36 +175,46 @@ public class Song extends Playback {
     public Song next() {
         Log.d("Mucify.Song", "Song.next");
 
+        Song s;
         if(!isLoop()) {
             int idx = MediaPlaybackService.Media.getSongIndex(this) + 1;
             if(idx >= MediaPlaybackService.Media.AvailableSongs.size())
                 idx = 0;
-            return MediaPlaybackService.Media.AvailableSongs.get(idx);
+            s = MediaPlaybackService.Media.AvailableSongs.get(idx);
         }
         else {
             int idx = MediaPlaybackService.Media.getLoopIndex(this) + 1;
             if(idx >= MediaPlaybackService.Media.AvailableLoops.size())
                 idx = 0;
-            return MediaPlaybackService.Media.AvailableLoops.get(idx);
+            s = MediaPlaybackService.Media.AvailableLoops.get(idx);
         }
+
+        for(Callback c : mCallbacks)
+            c.onNext(s);
+        return s;
     }
 
     @Override
     public Song previous() {
         Log.d("Mucify.Song", "Song.previous");
 
+        Song s;
         if(!isLoop()) {
             int idx = MediaPlaybackService.Media.getSongIndex(this) - 1;
             if(idx < 0)
                 idx = MediaPlaybackService.Media.AvailableSongs.size() - 1;
-            return MediaPlaybackService.Media.AvailableSongs.get(idx);
+            s = MediaPlaybackService.Media.AvailableSongs.get(idx);
         }
         else {
             int idx = MediaPlaybackService.Media.getLoopIndex(this) - 1;
             if(idx < 0)
                 idx = MediaPlaybackService.Media.AvailableLoops.size() - 1;
-            return MediaPlaybackService.Media.AvailableLoops.get(idx);
+            s = MediaPlaybackService.Media.AvailableLoops.get(idx);
         }
+
+        for(Callback c : mCallbacks)
+            c.onPrevious(s);
+        return s;
     }
 
     @Override
