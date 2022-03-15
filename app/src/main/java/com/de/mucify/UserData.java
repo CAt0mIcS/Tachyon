@@ -27,6 +27,7 @@ public class UserData {
     public static int AudioUpdateInterval = 100;
 
     public static File LastPlayedPlayback;
+    public static int LastPlayedPlaybackPos = 0;
 
     public static void load(ContextWrapper context) {
         mSettingsFile = new File(context.getFilesDir().getAbsolutePath() + "/Settings.txt");
@@ -54,6 +55,7 @@ public class UserData {
             IgnoreAudioFocus = json.optBoolean("IgnoreAudioFocus", IgnoreAudioFocus);
             SongIncDecInterval = json.optInt("SongIncDecInterval", SongIncDecInterval);
             AudioUpdateInterval = json.optInt("AudioUpdateInterval", AudioUpdateInterval);
+            LastPlayedPlaybackPos = json.optInt("LastPlayedPlaybackPos", LastPlayedPlaybackPos);
 
             if(json.has("LastPlayedPlayback"))
                 LastPlayedPlayback = new File(json.getString("LastPlayedPlayback"));
@@ -68,8 +70,11 @@ public class UserData {
         map.put("IgnoreAudioFocus", String.valueOf(IgnoreAudioFocus));
         map.put("SongIncDecInterval", String.valueOf(SongIncDecInterval));
         map.put("AudioUpdateInterval", String.valueOf(AudioUpdateInterval));
-        if(LastPlayedPlayback != null)
+        if(LastPlayedPlayback != null) {
             map.put("LastPlayedPlayback", LastPlayedPlayback.getAbsolutePath());
+            map.put("LastPlayedPlaybackPos", String.valueOf(LastPlayedPlaybackPos));
+        }
+
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(mSettingsFile));

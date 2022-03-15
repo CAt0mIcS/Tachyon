@@ -21,19 +21,25 @@ public class FragmentMinimizedPlayer extends Fragment {
     private ImageButton mPlayPause;
     private MediaControllerActivity mMediaController;
 
-    private PlaybackCallback mPlaybackCallback = new PlaybackCallback();
+    private final PlaybackCallback mPlaybackCallback = new PlaybackCallback();
+    private int mPlaybackSeekPos;
 
     public FragmentMinimizedPlayer() {
         super();
     }
 
-    public FragmentMinimizedPlayer(Playback playback, MediaControllerActivity controller) {
+    public FragmentMinimizedPlayer(Playback playback, int playbackSeekPos, MediaControllerActivity controller) {
         super(R.layout.fragment_minimized_player);
         mPlayback = playback;
         mPlayback.addCallback(mPlaybackCallback);
         mTitle = playback.getTitle();
         mArtist = playback.getSubtitle();
         mMediaController = controller;
+        mPlaybackSeekPos = playbackSeekPos;
+    }
+
+    public FragmentMinimizedPlayer(Playback playback, MediaControllerActivity controller) {
+        this(playback, 0, controller);
     }
 
     @Override
@@ -45,8 +51,11 @@ public class FragmentMinimizedPlayer extends Fragment {
 
         mPlayPause = view.findViewById(R.id.btnPlayPause);
         mPlayPause.setOnClickListener(v -> {
-            if(!mPlayback.isCreated())
+            if(!mPlayback.isCreated()) {
                 mMediaController.play(mPlayback);
+                if(mPlaybackSeekPos != 0)
+                    mMediaController.seekTo(mPlaybackSeekPos);
+            }
             else if(mMediaController.isPaused())
                 mMediaController.unpause();
             else

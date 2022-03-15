@@ -291,6 +291,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             repostNotification();
             stopForeground(false);
+
+            UserData.LastPlayedPlaybackPos = mPlayback.getCurrentPosition();
+            UserData.save();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPause");
         }
 
