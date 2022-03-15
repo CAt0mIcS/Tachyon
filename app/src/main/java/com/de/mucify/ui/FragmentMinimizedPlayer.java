@@ -45,10 +45,12 @@ public class FragmentMinimizedPlayer extends Fragment {
 
         mPlayPause = view.findViewById(R.id.btnPlayPause);
         mPlayPause.setOnClickListener(v -> {
-            if(mMediaController.isPlaying())
-                mMediaController.pause();
-            else
+            if(!mPlayback.isCreated())
+                mMediaController.play(mPlayback);
+            else if(mMediaController.isPaused())
                 mMediaController.unpause();
+            else
+                mMediaController.pause();
         });
 
         // Clicking on minimized player should open the large player
@@ -59,7 +61,7 @@ public class FragmentMinimizedPlayer extends Fragment {
             startActivity(i);
         });
 
-        if(mPlayback.isPaused())
+        if(!mPlayback.isCreated() || mPlayback.isPaused())
             mPlaybackCallback.onPause();
         else
             mPlaybackCallback.onStart();

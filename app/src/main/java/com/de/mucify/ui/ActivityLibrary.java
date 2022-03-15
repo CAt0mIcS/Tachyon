@@ -74,10 +74,6 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
     public void onConnected() {
         Song miniplayerSong = MediaPlaybackService.Media.getSong(UserData.LastPlayedPlayback);
         if(miniplayerSong != null) {
-            if(!miniplayerSong.isCreated()) {
-                play(miniplayerSong);
-                pause();
-            }
             FragmentMinimizedPlayer fragmentMinimizedPlayer =
                     new FragmentMinimizedPlayer(miniplayerSong, this);
             getSupportFragmentManager().beginTransaction()

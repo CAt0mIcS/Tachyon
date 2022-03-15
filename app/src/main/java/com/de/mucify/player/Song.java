@@ -232,6 +232,9 @@ public class Song extends Playback {
         return getArtist();
     }
 
+    @Override
+    public boolean isCreated() { return mMediaPlayer != null; }
+
     public String getArtist() { return mArtist; }
     public File getSongPath() { return mSongFilePath; }
     public void setStartTime(int startTime) { mStartTime = startTime; }
@@ -244,7 +247,6 @@ public class Song extends Playback {
     public boolean isLoop() { return mLoopFilePath != null; }
     public void setLooping(boolean looping) { if(isCreated()) mMediaPlayer.setLooping(looping); else mLooping = looping; }
     public void setOnMediaPlayerCompletionListener(MediaPlayer.OnCompletionListener listener) { mMediaPlayer.setOnCompletionListener(listener); }
-    public boolean isCreated() { return mMediaPlayer != null; }
     public boolean isLooping() { return mLooping; }
 
     public boolean equalsUninitialized(@Nullable Song obj) {

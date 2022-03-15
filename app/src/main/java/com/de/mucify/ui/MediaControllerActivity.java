@@ -118,6 +118,10 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING;
     }
 
+    public boolean isPaused() {
+        return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PAUSED;
+    }
+
     public Song getCurrentSong() {
         for(Song s : MediaPlaybackService.Media.AvailableSongs)
             if(s.isCreated())
