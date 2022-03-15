@@ -92,8 +92,6 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         PlayableListItemAdapter adapter = new PlayableListItemAdapter(this, mHistory);
         adapter.setListener(this);
         rvHistory.setAdapter(adapter);
-
-        rvHistory.getAdapter().notifyDataSetChanged();
     }
 
     @Override
