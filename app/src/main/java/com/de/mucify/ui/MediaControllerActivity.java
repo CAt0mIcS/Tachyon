@@ -1,9 +1,7 @@
 package com.de.mucify.ui;
 
 import android.Manifest;
-import android.app.ActivityManager;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.os.Build;
@@ -17,16 +15,12 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.de.mucify.MediaLibrary;
 import com.de.mucify.PermissionManager;
-import com.de.mucify.UserData;
-import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 import com.de.mucify.service.MediaPlaybackService;
 
-import java.io.File;
 
 public abstract class MediaControllerActivity extends AppCompatActivity {
     private MediaBrowserCompat mMediaBrowser;
@@ -97,12 +91,7 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
     }
 
     public void play(Song song) {
-        String mediaId;
-        if(song.isLoop())
-            mediaId = song.getMediaId();
-        else
-            mediaId = song.getMediaId();
-        MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(mediaId, null);
+        MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(song.getMediaId(), null);
     }
 
     public void play(String mediaId) {
@@ -110,8 +99,7 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
     }
 
     public void play(Playlist playlist) {
-        String mediaId = playlist.getMediaId();
-        MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(mediaId, null);
+        MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(playlist.getMediaId(), null);
     }
 
     public boolean isPlaying() {
@@ -122,22 +110,22 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PAUSED;
     }
 
-    public Song getCurrentSong() {
-        for(Song s : MediaPlaybackService.Media.AvailableSongs)
-            if(s.isCreated())
-                return s;
-
-        for(Song s : MediaPlaybackService.Media.AvailableLoops)
-            if(s.isCreated())
-                return s;
-
-        for(Playlist playlist : MediaPlaybackService.Media.AvailablePlaylists)
-            for(Song s : playlist.getSongs())
-                if(s.isCreated())
-                    return s;
-
-        return null;
-    }
+//    public Song getCurrentSong() {
+//        for(Song s : MediaPlaybackService.Media.AvailableSongs)
+//            if(s.isCreated())
+//                return s;
+//
+//        for(Song s : MediaPlaybackService.Media.AvailableLoops)
+//            if(s.isCreated())
+//                return s;
+//
+//        for(Playlist playlist : MediaPlaybackService.Media.AvailablePlaylists)
+//            for(Song s : playlist.getSongs())
+//                if(s.isCreated())
+//                    return s;
+//
+//        return null;
+//    }
 
     private void buildTransportControls()
     {

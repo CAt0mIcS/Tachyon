@@ -2,7 +2,6 @@ package com.de.mucify;
 
 import android.content.ContextWrapper;
 
-import com.de.mucify.player.Song;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,7 +12,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.CharBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,9 +51,9 @@ public class UserData {
         // If reading fails, save default settings
         try {
             JSONObject json = new JSONObject(jsonString);
-            IgnoreAudioFocus = json.getBoolean("IgnoreAudioFocus");
-            SongIncDecInterval = json.getInt("SongIncDecInterval");
-            AudioUpdateInterval = json.getInt("AudioUpdateInterval");
+            IgnoreAudioFocus = json.optBoolean("IgnoreAudioFocus", IgnoreAudioFocus);
+            SongIncDecInterval = json.optInt("SongIncDecInterval", SongIncDecInterval);
+            AudioUpdateInterval = json.optInt("AudioUpdateInterval", AudioUpdateInterval);
 
             if(json.has("LastPlayedPlayback"))
                 LastPlayedPlayback = new File(json.getString("LastPlayedPlayback"));

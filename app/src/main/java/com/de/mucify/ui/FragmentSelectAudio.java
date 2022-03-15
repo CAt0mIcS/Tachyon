@@ -2,9 +2,7 @@ package com.de.mucify.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,9 +10,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
-import com.de.mucify.Util;
 import com.de.mucify.adapter.AdapterEventListener;
 import com.de.mucify.adapter.PlayableListItemAdapter;
 import com.de.mucify.adapter.ViewHolderLoop;
@@ -25,7 +21,6 @@ import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 import com.de.mucify.service.MediaPlaybackService;
 
-import java.io.File;
 import java.util.ArrayList;
 
 public class FragmentSelectAudio extends Fragment implements AdapterEventListener {

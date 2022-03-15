@@ -1,11 +1,8 @@
 package com.de.mucify;
 
 import android.content.ContextWrapper;
-import android.hardware.camera2.CameraManager;
 import android.os.Environment;
-import android.provider.ContactsContract;
 
-import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 

@@ -1,11 +1,8 @@
 package com.de.mucify;
 
-import android.provider.MediaStore;
 
 import com.de.mucify.service.MediaPlaybackService;
-
 import java.io.File;
-import java.util.Optional;
 
 public class FileManager {
     public static String getFileExtension(String filename) {

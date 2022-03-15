@@ -1,14 +1,12 @@
 package com.de.mucify.ui;
 
 import android.os.Bundle;
-import android.support.v4.media.MediaMetadataCompat;
 
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
 import com.de.mucify.adapter.AdapterEventListener;
@@ -17,7 +15,6 @@ import com.de.mucify.adapter.ViewHolderLoop;
 import com.de.mucify.adapter.ViewHolderPlaylist;
 import com.de.mucify.adapter.ViewHolderSong;
 import com.de.mucify.player.Playback;
-import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 import com.de.mucify.service.MediaPlaybackService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
