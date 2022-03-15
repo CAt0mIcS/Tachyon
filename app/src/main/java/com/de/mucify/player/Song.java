@@ -172,7 +172,7 @@ public class Song extends Playback {
     }
 
     @Override
-    public Song next() {
+    public Song next(Context context) {
         Log.d("Mucify.Song", "Song.next");
 
         Song s;
@@ -188,6 +188,7 @@ public class Song extends Playback {
                 idx = 0;
             s = MediaPlaybackService.Media.AvailableLoops.get(idx);
         }
+        s.create(context);
 
         for(Callback c : mCallbacks)
             c.onNext(s);
@@ -195,7 +196,7 @@ public class Song extends Playback {
     }
 
     @Override
-    public Song previous() {
+    public Song previous(Context context) {
         Log.d("Mucify.Song", "Song.previous");
 
         Song s;
@@ -211,6 +212,7 @@ public class Song extends Playback {
                 idx = MediaPlaybackService.Media.AvailableLoops.size() - 1;
             s = MediaPlaybackService.Media.AvailableLoops.get(idx);
         }
+        s.create(context);
 
         for(Callback c : mCallbacks)
             c.onPrevious(s);
@@ -235,10 +237,19 @@ public class Song extends Playback {
     @Override
     public boolean isCreated() { return mMediaPlayer != null; }
 
+    @Override
+    public void setStartTime(int startTime) { mStartTime = startTime; }
+
+    @Override
+    public void setEndTime(int endTime) { mEndTime = endTime; }
+
+    @Override
+    public Song getCurrentSong() {
+        return this;
+    }
+
     public String getArtist() { return mArtist; }
     public File getSongPath() { return mSongFilePath; }
-    public void setStartTime(int startTime) { mStartTime = startTime; }
-    public void setEndTime(int endTime) { mEndTime = endTime; }
     public int getStartTime() { return mStartTime; }
     public int getEndTime() { return mEndTime; }
     public File getLoopPath() { return mLoopFilePath; }

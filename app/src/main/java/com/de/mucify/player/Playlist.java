@@ -120,12 +120,17 @@ public class Playlist extends Playback {
     }
 
     @Override
-    public Song next() {
+    public Song next(Context context) {
         return null;
     }
 
     @Override
-    public Song previous() {
+    public Song previous(Context context) {
+        return null;
+    }
+
+    @Override
+    public Song getCurrentSong() {
         return null;
     }
 

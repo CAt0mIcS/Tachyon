@@ -25,6 +25,8 @@ public class UserData {
 
     // Interval by which the seekbars in the player should increment/decrement the time in milliseconds
     public static int SongIncDecInterval = 100;
+    // Interval by which the loop/song done check will be run
+    public static int AudioUpdateInterval = 100;
 
     public static File LastPlayedPlayback;
 
@@ -53,6 +55,7 @@ public class UserData {
             JSONObject json = new JSONObject(jsonString);
             IgnoreAudioFocus = json.getBoolean("IgnoreAudioFocus");
             SongIncDecInterval = json.getInt("SongIncDecInterval");
+            AudioUpdateInterval = json.getInt("AudioUpdateInterval");
 
             if(json.has("LastPlayedPlayback"))
                 LastPlayedPlayback = new File(json.getString("LastPlayedPlayback"));
@@ -66,6 +69,7 @@ public class UserData {
         Map<String, String> map = new HashMap<>();
         map.put("IgnoreAudioFocus", String.valueOf(IgnoreAudioFocus));
         map.put("SongIncDecInterval", String.valueOf(SongIncDecInterval));
+        map.put("AudioUpdateInterval", String.valueOf(AudioUpdateInterval));
         if(LastPlayedPlayback != null)
             map.put("LastPlayedPlayback", LastPlayedPlayback.getAbsolutePath());
 

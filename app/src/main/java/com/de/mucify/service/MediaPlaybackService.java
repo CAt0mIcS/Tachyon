@@ -330,8 +330,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onSkipToNext() {
             mPlayback.reset();
-            mPlayback = mPlayback.next();
-            mPlayback.create(MediaPlaybackService.this);
+            mPlayback = mPlayback.next(MediaPlaybackService.this);
             onPlay();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSkipToNext");
         }
@@ -339,8 +338,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onSkipToPrevious() {
             mPlayback.reset();
-            mPlayback = mPlayback.previous();
-            mPlayback.create(MediaPlaybackService.this);
+            mPlayback = mPlayback.previous(MediaPlaybackService.this);
             onPlay();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSkipToPrevious");
         }

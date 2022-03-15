@@ -36,9 +36,12 @@ public abstract class Playback {
     public abstract void stop();
     public abstract void reset();
     public abstract void create(Context context);
-    public abstract Song next();
-    public abstract Song previous();
+    public abstract Song next(Context context);
+    public abstract Song previous(Context context);
+    public abstract Song getCurrentSong();
     public boolean isCreated() { return true; }
+    public void setStartTime(int millis) {}
+    public void setEndTime(int millis) {}
 
     public abstract String getTitle();
     public abstract String getSubtitle();
