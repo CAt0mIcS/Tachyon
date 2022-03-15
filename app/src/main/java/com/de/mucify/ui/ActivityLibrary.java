@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
+import com.de.mucify.UserData;
 import com.de.mucify.adapter.AdapterEventListener;
 import com.de.mucify.adapter.PlayableListItemAdapter;
 import com.de.mucify.adapter.ViewHolderLoop;
@@ -25,7 +26,6 @@ import java.util.ArrayList;
 
 public class ActivityLibrary extends MediaControllerActivity implements AdapterEventListener {
     ArrayList<Playback> mHistory = new ArrayList<>();
-    private boolean mRestartMinimizedPlayer = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,21 +68,23 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
     @Override
     public void onResume() {
         super.onResume();
-        mRestartMinimizedPlayer = true;
     }
 
     @Override
     public void onConnected() {
-        if(mRestartMinimizedPlayer) {
-            Song current = getCurrentSong();
-            if(current != null) {
-                FragmentMinimizedPlayer fragmentMinimizedPlayer = new FragmentMinimizedPlayer(current, this);
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
-                        .commit();
+        Song miniplayerSong = MediaPlaybackService.Media.getSong(UserData.LastPlayedPlayback);
+        if(miniplayerSong != null) {
+            if(!miniplayerSong.isCreated()) {
+                play(miniplayerSong);
+                pause();
             }
+            FragmentMinimizedPlayer fragmentMinimizedPlayer =
+                    new FragmentMinimizedPlayer(miniplayerSong, this);
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
+                    .commit();
         }
-        mRestartMinimizedPlayer = false;
+
 
         RecyclerView rvHistory = findViewById(R.id.rvHistory);
         rvHistory.setLayoutManager(new LinearLayoutManager(this));

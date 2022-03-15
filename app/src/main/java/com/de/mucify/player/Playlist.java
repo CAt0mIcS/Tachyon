@@ -137,6 +137,10 @@ public class Playlist extends Playback {
         return "Playlist_" + MediaPlaybackService.Media.getPlaylistIndex(playlist);
     }
 
+    public File getCurrentAudioPath() {
+        return null;
+    }
+
     public void save() throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(mPlaylistFilePath));
 

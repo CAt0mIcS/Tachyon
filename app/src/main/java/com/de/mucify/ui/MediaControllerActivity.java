@@ -78,13 +78,11 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
     }
 
     public void unpause() {
-        if(!isPlaying())
-            MediaControllerCompat.getMediaController(this).getTransportControls().play();
+        MediaControllerCompat.getMediaController(this).getTransportControls().play();
     }
 
     public void pause() {
-        if(isPlaying())
-            MediaControllerCompat.getMediaController(this).getTransportControls().pause();
+        MediaControllerCompat.getMediaController(this).getTransportControls().pause();
     }
 
     public void seekTo(int millis) {

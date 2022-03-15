@@ -268,6 +268,15 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
                 // start the player (custom call)
                 mPlayback.start();
+                if(mPlayback instanceof Song) {
+                    if(((Song)mPlayback).isLoop())
+                        UserData.LastPlayedPlayback = ((Song)mPlayback).getLoopPath();
+                    else
+                        UserData.LastPlayedPlayback = ((Song)mPlayback).getSongPath();
+                }
+                else
+                    UserData.LastPlayedPlayback = ((Playlist)mPlayback).getCurrentAudioPath();
+                UserData.save();
 
                 // Register BECOME_NOISY BroadcastReceiver
                 registerReceiver(myNoisyAudioStreamReceiver, mBecomeNoisyIntentFilter);

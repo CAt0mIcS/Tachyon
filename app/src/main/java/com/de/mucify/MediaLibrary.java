@@ -5,6 +5,7 @@ import android.hardware.camera2.CameraManager;
 import android.os.Environment;
 import android.provider.ContactsContract;
 
+import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 
@@ -95,6 +96,18 @@ public class MediaLibrary {
                 return i;
         }
         return -1;
+    }
+
+    public Song getSong(File songLoopPath) {
+        for(Song s : AvailableSongs)
+            if(s.getSongPath().equals(songLoopPath))
+                return s;
+
+        for(Song s : AvailableLoops)
+            if(s.getLoopPath().equals(songLoopPath))
+                return s;
+
+        return null;
     }
 
 
