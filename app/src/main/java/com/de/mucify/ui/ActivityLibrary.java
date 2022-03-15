@@ -18,6 +18,7 @@ import com.de.mucify.adapter.ViewHolderSong;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
+import com.de.mucify.service.MediaPlaybackService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -39,23 +40,6 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
 
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
         btmNav.setSelectedItemId(R.id.btmNavLibrary);
-
-        RecyclerView rvHistory = findViewById(R.id.rvHistory);
-        rvHistory.setLayoutManager(new LinearLayoutManager(this));
-
-        MediaLibrary.loadAvailableSongs();
-        MediaLibrary.loadAvailableLoops();
-        MediaLibrary.loadAvailablePlaylists();
-
-        mHistory.addAll(MediaLibrary.AvailableSongs);
-        mHistory.addAll(MediaLibrary.AvailableLoops);
-        mHistory.addAll(MediaLibrary.AvailablePlaylists);
-
-        PlayableListItemAdapter adapter = new PlayableListItemAdapter(this, mHistory);
-        adapter.setListener(this);
-        rvHistory.setAdapter(adapter);
-
-        rvHistory.getAdapter().notifyDataSetChanged();
 
 
         findViewById(R.id.relLayoutSongs).setOnClickListener(v -> {
@@ -99,6 +83,19 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
             }
         }
         mRestartMinimizedPlayer = false;
+
+        RecyclerView rvHistory = findViewById(R.id.rvHistory);
+        rvHistory.setLayoutManager(new LinearLayoutManager(this));
+
+        mHistory.addAll(MediaPlaybackService.Media.AvailableSongs);
+        mHistory.addAll(MediaPlaybackService.Media.AvailableLoops);
+        mHistory.addAll(MediaPlaybackService.Media.AvailablePlaylists);
+
+        PlayableListItemAdapter adapter = new PlayableListItemAdapter(this, mHistory);
+        adapter.setListener(this);
+        rvHistory.setAdapter(adapter);
+
+        rvHistory.getAdapter().notifyDataSetChanged();
     }
 
     @Override

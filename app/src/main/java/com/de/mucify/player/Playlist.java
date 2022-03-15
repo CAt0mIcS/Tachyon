@@ -6,6 +6,7 @@ import androidx.annotation.Nullable;
 
 import com.de.mucify.FileManager;
 import com.de.mucify.MediaLibrary;
+import com.de.mucify.service.MediaPlaybackService;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -133,7 +134,7 @@ public class Playlist extends Playback {
     }
 
     public static String getMediaId(Playlist playlist) {
-        return "Playlist_" + MediaLibrary.getPlaylistIndex(playlist);
+        return "Playlist_" + MediaPlaybackService.Media.getPlaylistIndex(playlist);
     }
 
     public void save() throws IOException {

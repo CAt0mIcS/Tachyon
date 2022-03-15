@@ -16,35 +16,35 @@ import java.util.Comparator;
 import java.util.List;
 
 public class MediaLibrary {
-    public static File DataDirectory;
-    public static File MusicDirectory;
+    public File DataDirectory;
+    public File MusicDirectory;
 
-    public final static String LoopFileExtension = ".loop";
-    public final static String LoopFileIdentifier = "LOOP_";
+    public static final String LoopFileExtension = ".loop";
+    public static final String LoopFileIdentifier = "LOOP_";
 
-    public final static String PlaylistFileExtension = ".playlist";
-    public final static String PlaylistFileIdentifier = "PLAYLIST_";
+    public static final String PlaylistFileExtension = ".playlist";
+    public static final String PlaylistFileIdentifier = "PLAYLIST_";
 
-    public final static List<String> SupportedAudioExtensions = Arrays.asList(".3gp", ".mp4", ".m4a", ".aac", ".ts", ".amr", ".flac", ".ota", ".imy", ".mp3", ".mkv", ".ogg", ".wav");
+    public static final List<String> SupportedAudioExtensions = Arrays.asList(".3gp", ".mp4", ".m4a", ".aac", ".ts", ".amr", ".flac", ".ota", ".imy", ".mp3", ".mkv", ".ogg", ".wav");
 
-    public final static ArrayList<Song> AvailableSongs = new ArrayList<>();
-    public final static ArrayList<Song> AvailableLoops = new ArrayList<>();
-    public final static ArrayList<Playlist> AvailablePlaylists = new ArrayList<>();
+    public final ArrayList<Song> AvailableSongs = new ArrayList<>();
+    public final ArrayList<Song> AvailableLoops = new ArrayList<>();
+    public final ArrayList<Playlist> AvailablePlaylists = new ArrayList<>();
 
-    private final static Comparator<Song> mSongComparator = new Comparator<Song>() {
+    private final Comparator<Song> mSongComparator = new Comparator<Song>() {
         @Override
         public int compare(Song o1, Song o2) {
             return o1.getTitle().compareToIgnoreCase(o2.getTitle());
         }
     };
-    private final static Comparator<Playlist> mPlaylistComparator = new Comparator<Playlist>() {
+    private final Comparator<Playlist> mPlaylistComparator = new Comparator<Playlist>() {
         @Override
         public int compare(Playlist o1, Playlist o2) {
             return o1.getName().compareToIgnoreCase(o2.getName());
         }
     };
 
-    public static void load(ContextWrapper context) {
+    public MediaLibrary(ContextWrapper context) {
         DataDirectory = context.getFilesDir();
         MusicDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
 
@@ -52,28 +52,28 @@ public class MediaLibrary {
             DataDirectory.mkdirs();
     }
 
-    public static ArrayList<Song> loadAvailableSongs() {
+    public ArrayList<Song> loadAvailableSongs() {
         AvailableSongs.clear();
         loadFiles(MusicDirectory, true, false, false);
         Collections.sort(AvailableSongs, mSongComparator);
         return AvailableSongs;
     }
 
-    public static ArrayList<Song> loadAvailableLoops() {
+    public ArrayList<Song> loadAvailableLoops() {
         AvailableLoops.clear();
         loadFiles(DataDirectory, false, true, false);
         Collections.sort(AvailableLoops, mSongComparator);
         return AvailableLoops;
     }
 
-    public static ArrayList<Playlist> loadAvailablePlaylists() {
+    public ArrayList<Playlist> loadAvailablePlaylists() {
         AvailablePlaylists.clear();
         loadFiles(DataDirectory, false, false, true);
         Collections.sort(AvailablePlaylists, mPlaylistComparator);
         return AvailablePlaylists;
     }
 
-    public static int getSongIndex(Song song) {
+    public int getSongIndex(Song song) {
         for(int i = 0; i < AvailableSongs.size(); ++i) {
             if(AvailableSongs.get(i).equalsUninitialized(song))
                 return i;
@@ -81,7 +81,7 @@ public class MediaLibrary {
         return -1;
     }
 
-    public static int getLoopIndex(Song song) {
+    public int getLoopIndex(Song song) {
         for(int i = 0; i < AvailableLoops.size(); ++i) {
             if(AvailableLoops.get(i).equalsUninitialized(song))
                 return i;
@@ -89,7 +89,7 @@ public class MediaLibrary {
         return -1;
     }
 
-    public static int getPlaylistIndex(Playlist playlist) {
+    public int getPlaylistIndex(Playlist playlist) {
         for(int i = 0; i < AvailablePlaylists.size(); ++i) {
             if(AvailablePlaylists.get(i).equalsUninitialized(playlist))
                 return i;
@@ -98,7 +98,7 @@ public class MediaLibrary {
     }
 
 
-    private static void loadFiles(File dir, boolean song, boolean loop, boolean playlist) {
+    private void loadFiles(File dir, boolean song, boolean loop, boolean playlist) {
         if (dir != null && dir.exists()) {
             File[] files = dir.listFiles();
             if (files != null) {

@@ -23,6 +23,7 @@ import com.de.mucify.adapter.ViewHolderSong;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
+import com.de.mucify.service.MediaPlaybackService;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -46,13 +47,13 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
 
         switch (mAudioType) {
             case "Song":
-                mPlaybacks.addAll(MediaLibrary.AvailableSongs);
+                mPlaybacks.addAll(MediaPlaybackService.Media.AvailableSongs);
                 break;
             case "Loop":
-                mPlaybacks.addAll(MediaLibrary.AvailableLoops);
+                mPlaybacks.addAll(MediaPlaybackService.Media.AvailableLoops);
                 break;
             case "Playlist":
-                mPlaybacks.addAll(MediaLibrary.AvailablePlaylists);
+                mPlaybacks.addAll(MediaPlaybackService.Media.AvailablePlaylists);
                 break;
         }
 

@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.service.media.MediaBrowserService;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
@@ -45,6 +46,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private static final String CHANNEL_ID = "com.de.mucify.MediaPlaybackChannel";
 
     private Playback mPlayback;
+    public static MediaLibrary Media;
 
     private final IntentFilter mBecomeNoisyIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
@@ -88,6 +90,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        if(Media == null) {
+            Media = new MediaLibrary(this);
+            Media.loadAvailableSongs();
+            Media.loadAvailableLoops();
+            Media.loadAvailablePlaylists();
+        }
 
         mMediaSession = new MediaSessionCompat(this, "com.de.mucify.MediaPlaybackService");
         mMediaSession.setFlags(

@@ -37,7 +37,6 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
 
         // MY_TODO: Better waiting and figure out what to do if permission not granted
         PermissionManager.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
-        MediaLibrary.load(this);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
             startForegroundService(new Intent(this, MediaPlaybackService.class));
@@ -99,7 +98,7 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
     }
 
     public void play(Song song) {
-        String mediaId = "";
+        String mediaId;
         if(song.isLoop())
             mediaId = song.getMediaId();
         else
@@ -121,15 +120,15 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
     }
 
     public Song getCurrentSong() {
-        for(Song s : MediaLibrary.AvailableSongs)
+        for(Song s : MediaPlaybackService.Media.AvailableSongs)
             if(s.isCreated())
                 return s;
 
-        for(Song s : MediaLibrary.AvailableLoops)
+        for(Song s : MediaPlaybackService.Media.AvailableLoops)
             if(s.isCreated())
                 return s;
 
-        for(Playlist playlist : MediaLibrary.AvailablePlaylists)
+        for(Playlist playlist : MediaPlaybackService.Media.AvailablePlaylists)
             for(Song s : playlist.getSongs())
                 if(s.isCreated())
                     return s;

@@ -2,6 +2,8 @@ package com.de.mucify;
 
 import android.provider.MediaStore;
 
+import com.de.mucify.service.MediaPlaybackService;
+
 import java.io.File;
 import java.util.Optional;
 
@@ -29,11 +31,11 @@ public class FileManager {
     }
 
     public static File playlistNameToFile(String playlistName) {
-        return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.PlaylistFileIdentifier + playlistName + MediaLibrary.PlaylistFileExtension);
+        return new File(MediaPlaybackService.Media.DataDirectory + "/" + MediaLibrary.PlaylistFileIdentifier + playlistName + MediaLibrary.PlaylistFileExtension);
     }
 
     public static File loopNameToFile(String loopName, String songName, String songAuthor) {
-        return new File(MediaLibrary.DataDirectory + "/" + MediaLibrary.LoopFileIdentifier + loopName + "_" + songName + "_" + songAuthor + MediaLibrary.LoopFileExtension);
+        return new File(MediaPlaybackService.Media.DataDirectory + "/" + MediaLibrary.LoopFileIdentifier + loopName + "_" + songName + "_" + songAuthor + MediaLibrary.LoopFileExtension);
     }
 
     public static String loopNameFromFile(File path) {

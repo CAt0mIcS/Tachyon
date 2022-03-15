@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import com.de.mucify.FileManager;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.Util;
+import com.de.mucify.service.MediaPlaybackService;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -157,11 +158,11 @@ public class Song extends Playback {
     }
 
     public static String getSongMediaId(Song song) {
-        return "Song_" + MediaLibrary.getSongIndex(song);
+        return "Song_" + MediaPlaybackService.Media.getSongIndex(song);
     }
 
     public static String getLoopMediaId(Song song) {
-        return "Loop_" + MediaLibrary.getLoopIndex(song);
+        return "Loop_" + MediaPlaybackService.Media.getLoopIndex(song);
     }
 
     @Override
@@ -169,16 +170,16 @@ public class Song extends Playback {
         Log.d("Mucify.Song", "Song.next");
 
         if(!isLoop()) {
-            int idx = MediaLibrary.getSongIndex(this) + 1;
-            if(idx >= MediaLibrary.AvailableSongs.size())
+            int idx = MediaPlaybackService.Media.getSongIndex(this) + 1;
+            if(idx >= MediaPlaybackService.Media.AvailableSongs.size())
                 idx = 0;
-            return MediaLibrary.AvailableSongs.get(idx);
+            return MediaPlaybackService.Media.AvailableSongs.get(idx);
         }
         else {
-            int idx = MediaLibrary.getLoopIndex(this) + 1;
-            if(idx >= MediaLibrary.AvailableLoops.size())
+            int idx = MediaPlaybackService.Media.getLoopIndex(this) + 1;
+            if(idx >= MediaPlaybackService.Media.AvailableLoops.size())
                 idx = 0;
-            return MediaLibrary.AvailableLoops.get(idx);
+            return MediaPlaybackService.Media.AvailableLoops.get(idx);
         }
     }
 
@@ -187,16 +188,16 @@ public class Song extends Playback {
         Log.d("Mucify.Song", "Song.previous");
 
         if(!isLoop()) {
-            int idx = MediaLibrary.getSongIndex(this) - 1;
+            int idx = MediaPlaybackService.Media.getSongIndex(this) - 1;
             if(idx < 0)
-                idx = MediaLibrary.AvailableSongs.size() - 1;
-            return MediaLibrary.AvailableSongs.get(idx);
+                idx = MediaPlaybackService.Media.AvailableSongs.size() - 1;
+            return MediaPlaybackService.Media.AvailableSongs.get(idx);
         }
         else {
-            int idx = MediaLibrary.getLoopIndex(this) - 1;
+            int idx = MediaPlaybackService.Media.getLoopIndex(this) - 1;
             if(idx < 0)
-                idx = MediaLibrary.AvailableLoops.size() - 1;
-            return MediaLibrary.AvailableLoops.get(idx);
+                idx = MediaPlaybackService.Media.AvailableLoops.size() - 1;
+            return MediaPlaybackService.Media.AvailableLoops.get(idx);
         }
     }
 

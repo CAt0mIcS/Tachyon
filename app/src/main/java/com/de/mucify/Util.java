@@ -5,6 +5,7 @@ import android.media.AudioManager;
 import android.util.Log;
 
 import com.de.mucify.player.Playback;
+import com.de.mucify.service.MediaPlaybackService;
 
 
 public class Util {
@@ -45,13 +46,13 @@ public class Util {
 
     public static Playback getPlaybackFromMediaId(String mediaId) {
         if(Util.isSongMediaId(mediaId)) {
-            return MediaLibrary.AvailableSongs.get(Util.getIndexFromMediaId(mediaId));
+            return MediaPlaybackService.Media.AvailableSongs.get(Util.getIndexFromMediaId(mediaId));
         }
         else if(Util.isLoopMediaId(mediaId)) {
-            return MediaLibrary.AvailableLoops.get(Util.getIndexFromMediaId(mediaId));
+            return MediaPlaybackService.Media.AvailableLoops.get(Util.getIndexFromMediaId(mediaId));
         }
         else if (Util.isPlaylistMediaId(mediaId)) {
-            return MediaLibrary.AvailablePlaylists.get(Util.getIndexFromMediaId(mediaId));
+            return MediaPlaybackService.Media.AvailablePlaylists.get(Util.getIndexFromMediaId(mediaId));
         }
 
         Log.e("Mucify: ", "Invalid media id " + mediaId);
