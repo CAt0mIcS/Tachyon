@@ -4,15 +4,40 @@ import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
+import android.os.Environment;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.de.mucify.player.Playback;
 import com.de.mucify.service.MediaPlaybackService;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Locale;
 
 
 public class Util {
+    public static Thread.UncaughtExceptionHandler UncaughtExceptionLogger = (t, e) -> {
+        String msg = e.getLocalizedMessage() + '\n' + Arrays.toString(e.getStackTrace());
+        logGlobal(msg);
+    };
+
+    public static void logGlobal(String msg) {
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Documents/mucify.log.txt");
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
+            writer.write(msg + '\n');
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public static String millisecondsToReadableString(int progress) {
         long millis = progress % 1000;
         long second = (progress / 1000) % 60;

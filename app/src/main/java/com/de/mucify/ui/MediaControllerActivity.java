@@ -16,6 +16,7 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.de.mucify.PermissionManager;
+import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
@@ -44,6 +45,7 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
                 null);
 
         Log.d("Mucify", "MediaControllerActivity created");
+        Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
     }
 
     @Override

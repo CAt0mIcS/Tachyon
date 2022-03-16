@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
+import com.de.mucify.Util;
 import com.de.mucify.adapter.AdapterEventListener;
 import com.de.mucify.adapter.PlayableListItemAdapter;
 import com.de.mucify.adapter.ViewHolderLoop;
@@ -31,6 +32,12 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
     public FragmentSelectAudio(String audioType) {
         super(R.layout.fragment_select_audio_layout);
         mAudioType = audioType;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
     }
 
     @Override

@@ -143,12 +143,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS));
 
         Log.d("Mucify", "Created MediaPlaybackService");
+
+        Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
     }
 
     @Nullable
     @Override
     public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {
-        return new BrowserRoot(MEDIA_ROOT_ID, null);
+        return new BrowserRoot(getString(R.string.app_name), null);
     }
 
     @Override
@@ -161,14 +163,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();
 
-        // Check if this is the root menu:
-        if (MEDIA_ROOT_ID.equals(parentId)) {
-            // Build the MediaItem objects for the top level,
-            // and put them in the mediaItems list...
-        } else {
-            // Examine the passed parentMediaId to see which submenu we're at,
-            // and put the children of that menu in the mediaItems list...
-        }
         result.sendResult(mediaItems);
     }
 
@@ -287,10 +281,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onPause() {
             mPlayback.pause();
-            unregisterReceiver(myNoisyAudioStreamReceiver);
+//            unregisterReceiver(myNoisyAudioStreamReceiver);
 
             repostNotification();
-            stopForeground(false);
+//            stopForeground(false);
 
             UserData.LastPlayedPlaybackPos = mPlayback.getCurrentPosition();
             UserData.save();

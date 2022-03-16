@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.de.mucify.R;
+import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 
 public class FragmentMinimizedPlayer extends Fragment {
@@ -40,6 +41,12 @@ public class FragmentMinimizedPlayer extends Fragment {
 
     public FragmentMinimizedPlayer(Playback playback, MediaControllerActivity controller) {
         this(playback, 0, controller);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
     }
 
     @Override
