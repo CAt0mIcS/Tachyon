@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 public abstract class Playback {
     protected ArrayList<Callback> mCallbacks = new ArrayList<>();
+    public final Object Lock = new Object();
 
     public abstract static class Callback {
         public void onStart() {}

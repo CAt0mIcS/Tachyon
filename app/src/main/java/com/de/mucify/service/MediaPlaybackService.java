@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MediaPlaybackService extends MediaBrowserServiceCompat {
-    private static final String MEDIA_ROOT_ID = "com.de.mucify.ROOT_MEDIA";
     private static final String EMPTY_MEDIA_ID = "com.de.mucify.EMPTY_MEDIA";
     private static final String CHANNEL_ID = "com.de.mucify.MediaPlaybackChannel";
 
@@ -143,6 +142,39 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         this,
                         PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS));
 
+        new Thread(() -> {
+            Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
+
+            while(true) {
+
+                if(mPlayback != null) {
+                    synchronized (mPlayback.Lock) {
+                        if(mPlayback.isCreated()) {
+                            int currentPos = mPlayback.getCurrentPosition();
+                            Song currentSong = mPlayback.getCurrentSong();
+
+                            if(currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime()) {
+                                if(mPlayback instanceof Playlist) {
+                                    mPlayback.next(this);
+                                }
+                                else
+                                    mMediaSession.getController().getTransportControls().seekTo(currentSong.getStartTime());
+                            }
+                        }
+                    }
+                }
+
+
+                try {
+                    synchronized (UserData.SettingsLock) {
+                        Thread.sleep(UserData.AudioUpdateInterval);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
         Log.d("Mucify", "Created MediaPlaybackService");
 
         Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
@@ -241,25 +273,29 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     }
 
     private MediaMetadataCompat getMetadata() {
-        return mMetadataBuilder
-                .putString(MediaMetadata.METADATA_KEY_TITLE, mPlayback.getTitle())
-                .putString(MediaMetadata.METADATA_KEY_ARTIST, mPlayback.getSubtitle())
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mPlayback.getDuration())
-                .build();
+        synchronized (mPlayback.Lock) {
+            return mMetadataBuilder
+                    .putString(MediaMetadata.METADATA_KEY_TITLE, mPlayback.getTitle())
+                    .putString(MediaMetadata.METADATA_KEY_ARTIST, mPlayback.getSubtitle())
+                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mPlayback.getDuration())
+                    .build();
+        }
     }
 
     private PlaybackStateCompat getState() {
-        long actions = (mPlayback.isPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY) |
-                PlaybackStateCompat.ACTION_SEEK_TO | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
-        int state = mPlayback.isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
+        synchronized (mPlayback.Lock) {
+            long actions = (mPlayback.isPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY) |
+                    PlaybackStateCompat.ACTION_SEEK_TO | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
+            int state = mPlayback.isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
 
-        return mPlaybackStateBuilder
-                .setActions(actions)
-                .setState(state,
-                        mPlayback.getCurrentPosition(),
-                        1.0f,
-                        SystemClock.elapsedRealtime())
-                .build();
+            return mPlaybackStateBuilder
+                    .setActions(actions)
+                    .setState(state,
+                            mPlayback.getCurrentPosition(),
+                            1.0f,
+                            SystemClock.elapsedRealtime())
+                    .build();
+        }
     }
 
     private void repostNotification() {
@@ -279,16 +315,21 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 mMediaSession.setActive(true);
 
                 // start the player (custom call)
-                mPlayback.start();
-                if(mPlayback instanceof Song) {
-                    if(((Song)mPlayback).isLoop())
-                        UserData.LastPlayedPlayback = ((Song)mPlayback).getLoopPath();
-                    else
-                        UserData.LastPlayedPlayback = ((Song)mPlayback).getSongPath();
+                synchronized (mPlayback.Lock) {
+                    mPlayback.start();
+                    synchronized (UserData.SettingsLock) {
+                        if(mPlayback instanceof Song) {
+                            if(((Song)mPlayback).isLoop())
+                                UserData.LastPlayedPlayback = ((Song)mPlayback).getLoopPath();
+                            else
+                                UserData.LastPlayedPlayback = ((Song)mPlayback).getSongPath();
+                        }
+                        else
+                            UserData.LastPlayedPlayback = ((Playlist)mPlayback).getCurrentAudioPath();
+                    }
+                    UserData.save();
                 }
-                else
-                    UserData.LastPlayedPlayback = ((Playlist)mPlayback).getCurrentAudioPath();
-                UserData.save();
+
 
                 // Register BECOME_NOISY BroadcastReceiver
                 registerReceiver(myNoisyAudioStreamReceiver, mBecomeNoisyIntentFilter);
@@ -301,13 +342,17 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onPause() {
-            mPlayback.pause();
+            synchronized (mPlayback.Lock) {
+                mPlayback.pause();
+            }
 //            unregisterReceiver(myNoisyAudioStreamReceiver);
 
             repostNotification();
 //            stopForeground(false);
 
-            UserData.LastPlayedPlaybackPos = mPlayback.getCurrentPosition();
+            synchronized (UserData.SettingsLock) {
+                UserData.LastPlayedPlaybackPos = mPlayback.getCurrentPosition();
+            }
             UserData.save();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPause");
         }
@@ -318,7 +363,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             unregisterReceiver(myNoisyAudioStreamReceiver);
             stopSelf();
             mMediaSession.setActive(false);
-            mPlayback.reset();
+            synchronized (mPlayback.Lock) {
+                mPlayback.reset();
+            }
             mPlayback = null;
             stopForeground(false);
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onStop");
@@ -326,34 +373,42 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
-            if(mPlayback != null)
-                mPlayback.reset();
+            synchronized (mPlayback != null ? mPlayback.Lock : new Object()) {
+                if(mPlayback != null)
+                    mPlayback.reset();
 
-            mPlayback = Util.getPlaybackFromMediaId(mediaId);
-            mPlayback.create(MediaPlaybackService.this);
+                mPlayback = Util.getPlaybackFromMediaId(mediaId);
+                mPlayback.create(MediaPlaybackService.this);
+            }
             onPlay();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPlayFromMediaId " + mediaId);
         }
 
         @Override
         public void onSeekTo(long pos) {
-            mPlayback.seekTo((int)pos);
+            synchronized (mPlayback.Lock) {
+                mPlayback.seekTo((int)pos);
+            }
             repostNotification();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSeekTo " + pos);
         }
 
         @Override
         public void onSkipToNext() {
-            mPlayback.reset();
-            mPlayback = mPlayback.next(MediaPlaybackService.this);
+            synchronized (mPlayback.Lock) {
+                mPlayback.reset();
+                mPlayback = mPlayback.next(MediaPlaybackService.this);
+            }
             onPlay();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSkipToNext");
         }
 
         @Override
         public void onSkipToPrevious() {
-            mPlayback.reset();
-            mPlayback = mPlayback.previous(MediaPlaybackService.this);
+            synchronized (mPlayback.Lock) {
+                mPlayback.reset();
+                mPlayback = mPlayback.previous(MediaPlaybackService.this);
+            }
             onPlay();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSkipToPrevious");
         }

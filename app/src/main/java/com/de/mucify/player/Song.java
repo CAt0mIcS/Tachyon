@@ -25,7 +25,7 @@ public class Song extends Playback {
     private int mStartTime;
     private int mEndTime;
 
-    private boolean mLooping = true;
+    private boolean mLooping = false;
 
     private File mSongFilePath;
     private File mLoopFilePath;
@@ -90,6 +90,10 @@ public class Song extends Playback {
     @Override
     public void seekTo(int millis) {
         mMediaPlayer.seekTo(millis);
+
+        for(Callback c : mCallbacks)
+            c.onSeek(millis);
+        Log.d("Mucify.Song", "Song.seekTo " + millis);
     }
 
     @Override
@@ -103,7 +107,7 @@ public class Song extends Playback {
 
     @Override
     public void restart() {
-        mMediaPlayer.seekTo(mStartTime);
+        seekTo(mStartTime);
         mMediaPlayer.start();
 
         for(Callback c : mCallbacks)

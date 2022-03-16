@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UserData {
+    public static final Object SettingsLock = new Object();
+
     public static File mSettingsFile;
 
     // Keep playing even if audio focus is lost
@@ -52,13 +54,17 @@ public class UserData {
         // If reading fails, save default settings
         try {
             JSONObject json = new JSONObject(jsonString);
-            IgnoreAudioFocus = json.optBoolean("IgnoreAudioFocus", IgnoreAudioFocus);
-            SongIncDecInterval = json.optInt("SongIncDecInterval", SongIncDecInterval);
-            AudioUpdateInterval = json.optInt("AudioUpdateInterval", AudioUpdateInterval);
-            LastPlayedPlaybackPos = json.optInt("LastPlayedPlaybackPos", LastPlayedPlaybackPos);
 
-            if(json.has("LastPlayedPlayback"))
-                LastPlayedPlayback = new File(json.getString("LastPlayedPlayback"));
+            synchronized (SettingsLock) {
+                IgnoreAudioFocus = json.optBoolean("IgnoreAudioFocus", IgnoreAudioFocus);
+                SongIncDecInterval = json.optInt("SongIncDecInterval", SongIncDecInterval);
+                AudioUpdateInterval = json.optInt("AudioUpdateInterval", AudioUpdateInterval);
+                LastPlayedPlaybackPos = json.optInt("LastPlayedPlaybackPos", LastPlayedPlaybackPos);
+
+                if(json.has("LastPlayedPlayback"))
+                    LastPlayedPlayback = new File(json.getString("LastPlayedPlayback"));
+            }
+
         } catch (JSONException e) {
             save();
             return;
@@ -67,14 +73,16 @@ public class UserData {
 
     public static void save() {
         Map<String, String> map = new HashMap<>();
-        map.put("IgnoreAudioFocus", String.valueOf(IgnoreAudioFocus));
-        map.put("SongIncDecInterval", String.valueOf(SongIncDecInterval));
-        map.put("AudioUpdateInterval", String.valueOf(AudioUpdateInterval));
-        if(LastPlayedPlayback != null) {
-            map.put("LastPlayedPlayback", LastPlayedPlayback.getAbsolutePath());
-            map.put("LastPlayedPlaybackPos", String.valueOf(LastPlayedPlaybackPos));
-        }
 
+        synchronized (SettingsLock) {
+            map.put("IgnoreAudioFocus", String.valueOf(IgnoreAudioFocus));
+            map.put("SongIncDecInterval", String.valueOf(SongIncDecInterval));
+            map.put("AudioUpdateInterval", String.valueOf(AudioUpdateInterval));
+            if(LastPlayedPlayback != null) {
+                map.put("LastPlayedPlayback", LastPlayedPlayback.getAbsolutePath());
+                map.put("LastPlayedPlaybackPos", String.valueOf(LastPlayedPlaybackPos));
+            }
+        }
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(mSettingsFile));
