@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.service.media.MediaBrowserService;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
@@ -162,6 +163,26 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
 
         List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();
+
+        for(Song s : Media.AvailableSongs) {
+            MediaDescriptionCompat mediaDesc = new MediaDescriptionCompat.Builder()
+                    .setMediaId(s.getMediaId())
+                    .setTitle(s.getTitle())
+                    .setSubtitle(s.getSubtitle())
+                    .build();
+
+            mediaItems.add(new MediaBrowserCompat.MediaItem(mediaDesc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE));
+        }
+        for(Song s : Media.AvailableLoops) {
+            MediaDescriptionCompat mediaDesc = new MediaDescriptionCompat.Builder()
+                    .setMediaId(s.getMediaId())
+                    .setTitle(s.getTitle())
+                    .setSubtitle(s.getSubtitle())
+                    .build();
+
+            mediaItems.add(new MediaBrowserCompat.MediaItem(mediaDesc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE));
+        }
+        // MY_TODO: Playlists
 
         result.sendResult(mediaItems);
     }
