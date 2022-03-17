@@ -153,7 +153,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         int currentPos = mPlayback.getCurrentPosition();
                         Song currentSong = mPlayback.getCurrentSong();
 
-                        if(currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime()) {
+                        if(currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime() || currentSong.isFinished()) {
                             if(mPlayback instanceof Playlist) {
                                 mPlayback.next(this);
                             }

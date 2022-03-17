@@ -26,6 +26,7 @@ public abstract class Playback {
     public abstract void pause();
     public abstract boolean isPlaying();
     public boolean isPaused() { return !isPlaying(); }
+    public boolean isFinished() { return false; }
     public abstract void seekTo(int millis);
     public abstract int getDuration();
     public abstract int getCurrentPosition();

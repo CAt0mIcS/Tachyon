@@ -26,6 +26,7 @@ public class Song extends Playback {
     private int mEndTime;
 
     private boolean mLooping = false;
+    private boolean mPaused = false;
 
     private File mSongFilePath;
     private File mLoopFilePath;
@@ -85,7 +86,14 @@ public class Song extends Playback {
     }
 
     @Override
-    public boolean isPlaying() { return mMediaPlayer.isPlaying(); }
+    public boolean isPlaying() {
+        return mMediaPlayer.isPlaying();
+    }
+
+    @Override
+    public boolean isFinished() {
+        return !isPlaying() && !mPaused;
+    }
 
     @Override
     public void seekTo(int millis) {
@@ -99,6 +107,7 @@ public class Song extends Playback {
     @Override
     public void start() {
         mMediaPlayer.start();
+        mPaused = false;
 
         for(Callback c : mCallbacks)
             c.onStart();
@@ -109,6 +118,7 @@ public class Song extends Playback {
     public void restart() {
         seekTo(mStartTime);
         mMediaPlayer.start();
+        mPaused = false;
 
         for(Callback c : mCallbacks)
             c.onRestart();
@@ -118,6 +128,7 @@ public class Song extends Playback {
     @Override
     public void pause() {
         mMediaPlayer.pause();
+        mPaused = true;
 
         for(Callback c : mCallbacks)
             c.onPause();
