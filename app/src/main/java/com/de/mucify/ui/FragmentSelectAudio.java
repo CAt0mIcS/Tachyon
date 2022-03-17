@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.de.mucify.AudioType;
 import com.de.mucify.R;
 import com.de.mucify.Util;
 import com.de.mucify.adapter.AdapterEventListener;
@@ -27,9 +28,9 @@ import java.util.ArrayList;
 public class FragmentSelectAudio extends Fragment implements AdapterEventListener {
 
     ArrayList<Playback> mPlaybacks = new ArrayList<>();
-    private String mAudioType;
+    private final AudioType mAudioType;
 
-    public FragmentSelectAudio(String audioType) {
+    public FragmentSelectAudio(AudioType audioType) {
         super(R.layout.fragment_select_audio_layout);
         mAudioType = audioType;
     }
@@ -48,13 +49,13 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
         rvFiles.setLayoutManager(new LinearLayoutManager(getContext()));
 
         switch (mAudioType) {
-            case "Song":
+            case Song:
                 mPlaybacks.addAll(MediaPlaybackService.Media.AvailableSongs);
                 break;
-            case "Loop":
+            case Loop:
                 mPlaybacks.addAll(MediaPlaybackService.Media.AvailableLoops);
                 break;
-            case "Playlist":
+            case Playlist:
                 mPlaybacks.addAll(MediaPlaybackService.Media.AvailablePlaylists);
                 break;
         }

@@ -112,23 +112,6 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PAUSED;
     }
 
-//    public Song getCurrentSong() {
-//        for(Song s : MediaPlaybackService.Media.AvailableSongs)
-//            if(s.isCreated())
-//                return s;
-//
-//        for(Song s : MediaPlaybackService.Media.AvailableLoops)
-//            if(s.isCreated())
-//                return s;
-//
-//        for(Playlist playlist : MediaPlaybackService.Media.AvailablePlaylists)
-//            for(Song s : playlist.getSongs())
-//                if(s.isCreated())
-//                    return s;
-//
-//        return null;
-//    }
-
     private void buildTransportControls()
     {
         onBuildTransportControls();

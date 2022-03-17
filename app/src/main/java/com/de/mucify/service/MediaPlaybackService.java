@@ -44,6 +44,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private static final String CHANNEL_ID = "com.de.mucify.MediaPlaybackChannel";
 
     private Playback mPlayback;
+    private final Object mPlaybackLock = new Object();
     public static MediaLibrary Media;
 
     private final IntentFilter mBecomeNoisyIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -147,23 +148,20 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             while(true) {
 
-                if(mPlayback != null) {
-                    synchronized (mPlayback.Lock) {
-                        if(mPlayback.isCreated()) {
-                            int currentPos = mPlayback.getCurrentPosition();
-                            Song currentSong = mPlayback.getCurrentSong();
+                synchronized (mPlaybackLock) {
+                    if(mPlayback != null && mPlayback.isCreated()) {
+                        int currentPos = mPlayback.getCurrentPosition();
+                        Song currentSong = mPlayback.getCurrentSong();
 
-                            if(currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime()) {
-                                if(mPlayback instanceof Playlist) {
-                                    mPlayback.next(this);
-                                }
-                                else
-                                    mMediaSession.getController().getTransportControls().seekTo(currentSong.getStartTime());
+                        if(currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime()) {
+                            if(mPlayback instanceof Playlist) {
+                                mPlayback.next(this);
                             }
+                            else
+                                mMediaSession.getController().getTransportControls().seekTo(currentSong.getStartTime());
                         }
                     }
                 }
-
 
                 try {
                     synchronized (UserData.SettingsLock) {
@@ -273,7 +271,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     }
 
     private MediaMetadataCompat getMetadata() {
-        synchronized (mPlayback.Lock) {
+        synchronized (mPlaybackLock) {
             return mMetadataBuilder
                     .putString(MediaMetadata.METADATA_KEY_TITLE, mPlayback.getTitle())
                     .putString(MediaMetadata.METADATA_KEY_ARTIST, mPlayback.getSubtitle())
@@ -283,7 +281,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     }
 
     private PlaybackStateCompat getState() {
-        synchronized (mPlayback.Lock) {
+        synchronized (mPlaybackLock) {
             long actions = (mPlayback.isPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY) |
                     PlaybackStateCompat.ACTION_SEEK_TO | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
             int state = mPlayback.isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
@@ -315,7 +313,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 mMediaSession.setActive(true);
 
                 // start the player (custom call)
-                synchronized (mPlayback.Lock) {
+                synchronized (mPlaybackLock) {
                     mPlayback.start();
                     synchronized (UserData.SettingsLock) {
                         if(mPlayback instanceof Song) {
@@ -342,7 +340,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onPause() {
-            synchronized (mPlayback.Lock) {
+            synchronized (mPlaybackLock) {
                 mPlayback.pause();
             }
 //            unregisterReceiver(myNoisyAudioStreamReceiver);
@@ -363,7 +361,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             unregisterReceiver(myNoisyAudioStreamReceiver);
             stopSelf();
             mMediaSession.setActive(false);
-            synchronized (mPlayback.Lock) {
+            synchronized (mPlaybackLock) {
                 mPlayback.reset();
             }
             mPlayback = null;
@@ -373,7 +371,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
-            synchronized (mPlayback != null ? mPlayback.Lock : new Object()) {
+            synchronized (mPlaybackLock) {
                 if(mPlayback != null)
                     mPlayback.reset();
 
@@ -386,7 +384,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSeekTo(long pos) {
-            synchronized (mPlayback.Lock) {
+            synchronized (mPlaybackLock) {
                 mPlayback.seekTo((int)pos);
             }
             repostNotification();
@@ -395,7 +393,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSkipToNext() {
-            synchronized (mPlayback.Lock) {
+            synchronized (mPlaybackLock) {
                 mPlayback.reset();
                 mPlayback = mPlayback.next(MediaPlaybackService.this);
             }
@@ -405,7 +403,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         @Override
         public void onSkipToPrevious() {
-            synchronized (mPlayback.Lock) {
+            synchronized (mPlaybackLock) {
                 mPlayback.reset();
                 mPlayback = mPlayback.previous(MediaPlaybackService.this);
             }

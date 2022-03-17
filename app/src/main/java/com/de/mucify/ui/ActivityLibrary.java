@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.de.mucify.AudioType;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
 import com.de.mucify.Util;
@@ -54,21 +55,21 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
 
 
         findViewById(R.id.relLayoutSongs).setOnClickListener(v -> {
-            FragmentSelectAudio fragment = new FragmentSelectAudio("Song");
+            FragmentSelectAudio fragment = new FragmentSelectAudio(AudioType.Song);
             getSupportFragmentManager().beginTransaction()
                     .addToBackStack(null)
                     .add(R.id.fragment_container_view, fragment)
                     .commit();
         });
         findViewById(R.id.relLayoutLoops).setOnClickListener(v -> {
-            FragmentSelectAudio fragment = new FragmentSelectAudio("Loop");
+            FragmentSelectAudio fragment = new FragmentSelectAudio(AudioType.Loop);
             getSupportFragmentManager().beginTransaction()
                     .addToBackStack(null)
                     .add(R.id.fragment_container_view, fragment)
                     .commit();
         });
         findViewById(R.id.relLayoutPlaylists).setOnClickListener(v -> {
-            FragmentSelectAudio fragment = new FragmentSelectAudio("Playlist");
+            FragmentSelectAudio fragment = new FragmentSelectAudio(AudioType.Playlist);
             getSupportFragmentManager().beginTransaction()
                     .addToBackStack(null)
                     .add(R.id.fragment_container_view, fragment)
