@@ -97,6 +97,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         RecyclerView rvHistory = findViewById(R.id.rvHistory);
         rvHistory.setLayoutManager(new LinearLayoutManager(this));
 
+        mHistory.clear();
         mHistory.addAll(MediaPlaybackService.Media.AvailableSongs);
         mHistory.addAll(MediaPlaybackService.Media.AvailableLoops);
         mHistory.addAll(MediaPlaybackService.Media.AvailablePlaylists);
