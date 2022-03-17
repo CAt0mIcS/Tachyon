@@ -233,12 +233,6 @@ public class Song extends Playback {
     public boolean isCreated() { return mMediaPlayer != null; }
 
     @Override
-    public void setStartTime(int startTime) { mStartTime = startTime; }
-
-    @Override
-    public void setEndTime(int endTime) { mEndTime = endTime; }
-
-    @Override
     public void setVolume(float left, float right) {
         mMediaPlayer.setVolume(left, right);
     }
@@ -248,6 +242,8 @@ public class Song extends Playback {
         return this;
     }
 
+    public void setStartTime(int startTime) { mStartTime = startTime; }
+    public void setEndTime(int endTime) { mEndTime = endTime; }
     public String getArtist() { return mArtist; }
     public File getSongPath() { return mSongFilePath; }
     public int getStartTime() { return mStartTime; }
