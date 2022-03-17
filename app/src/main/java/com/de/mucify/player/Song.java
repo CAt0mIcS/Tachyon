@@ -99,22 +99,12 @@ public class Song extends Playback {
     }
 
     @Override
-    public void start() {
+    public void start(Context context) {
         mMediaPlayer.start();
 
         for(Callback c : mCallbacks)
             c.onStart();
         Log.d("Mucify.Song", "Song.start");
-    }
-
-    @Override
-    public void restart() {
-        seekTo(mStartTime);
-        mMediaPlayer.start();
-
-        for(Callback c : mCallbacks)
-            c.onRestart();
-        Log.d("Mucify.Song", "Song.restart");
     }
 
     @Override
@@ -177,7 +167,7 @@ public class Song extends Playback {
     }
 
     @Override
-    public Song next(Context context) {
+    public Playback next(Context context) {
         Log.d("Mucify.Song", "Song.next");
 
         Song s;
@@ -201,7 +191,7 @@ public class Song extends Playback {
     }
 
     @Override
-    public Song previous(Context context) {
+    public Playback previous(Context context) {
         Log.d("Mucify.Song", "Song.previous");
 
         Song s;

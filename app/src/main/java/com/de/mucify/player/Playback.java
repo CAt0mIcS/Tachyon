@@ -21,8 +21,7 @@ public abstract class Playback {
     public void addCallback(Callback callback) { mCallbacks.add(callback); }
     public void removeCallback(Callback callback) { mCallbacks.remove(callback); }
 
-    public abstract void start();
-    public abstract void restart();
+    public abstract void start(Context context);
     public abstract void pause();
     public abstract boolean isPlaying();
     public boolean isPaused() { return !isPlaying(); }
@@ -32,13 +31,13 @@ public abstract class Playback {
     public abstract void stop();
     public abstract void reset();
     public abstract void create(Context context);
-    public abstract Song next(Context context);
-    public abstract Song previous(Context context);
+    public abstract Playback next(Context context);
+    public abstract Playback previous(Context context);
     public abstract Song getCurrentSong();
 
     // 1.0f --> 100% volume
     public abstract void setVolume(float left, float right);
-    public boolean isCreated() { return true; }
+    public abstract boolean isCreated();
     public void setStartTime(int millis) {}
     public void setEndTime(int millis) {}
 

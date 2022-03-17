@@ -17,9 +17,9 @@ import java.util.ArrayList;
 
 public class Playlist extends Playback {
     private String mName;
-    private Context mContext;
     private File mPlaylistFilePath;
     private ArrayList<Song> mSongs = new ArrayList<>();
+    private int mCurrentSongIndex = 0;
 
     public Playlist(File path) {
         if(!path.exists()) {
@@ -34,13 +34,6 @@ public class Playlist extends Playback {
             s.setLooping(false);
     }
 
-    public Playlist(Context context, File path) {
-        this(path);
-        mContext = context;
-        for(Song s : mSongs)
-            s.setLooping(false);
-    }
-
     public Playlist(File path, ArrayList<Song> songs) {
         mPlaylistFilePath = path;
         mSongs = songs;
@@ -49,63 +42,53 @@ public class Playlist extends Playback {
     }
 
     @Override
-    public void start() {
-
-    }
-
-    @Override
-    public void restart() {
-
+    public void start(Context context) {
+        getCurrentSong().start(context);
     }
 
     @Override
     public void pause() {
-
+        getCurrentSong().pause();
     }
 
     @Override
     public boolean isPlaying() {
-        return false;
-    }
-
-    @Override
-    public boolean isPaused() {
-        return false;
+        return getCurrentSong().isPlaying();
     }
 
     @Override
     public void seekTo(int millis) {
-
+        getCurrentSong().seekTo(millis);
     }
 
     @Override
     public int getDuration() {
-        return 0;
+        return getCurrentSong().getDuration();
     }
 
     @Override
     public int getCurrentPosition() {
-        return 0;
+        return getCurrentSong().getCurrentPosition();
     }
 
     @Override
     public void stop() {
-
+            getCurrentSong().stop();
     }
 
     @Override
     public void reset() {
-
+        getCurrentSong().reset();
     }
 
     @Override
     public String getTitle() {
-        return ""; // return title of current song
+        return getCurrentSong().getTitle();
     }
 
     @Override
     public String getSubtitle() {
-        return ""; // return artist of current song
+        return getCurrentSong().getSubtitle();
     }
 
     @Override
@@ -115,27 +98,42 @@ public class Playlist extends Playback {
 
     @Override
     public void create(Context context) {
-        mContext = context;
+        getCurrentSong().create(context);
     }
 
     @Override
-    public Song next(Context context) {
-        return null;
+    public Playback next(Context context) {
+        mCurrentSongIndex++;
+        if(mCurrentSongIndex >= mSongs.size())
+            mCurrentSongIndex = 0;
+
+        getCurrentSong().create(context);
+        return this;
     }
 
     @Override
-    public Song previous(Context context) {
-        return null;
+    public Playback previous(Context context) {
+        mCurrentSongIndex--;
+        if(mCurrentSongIndex < 0)
+            mCurrentSongIndex = mSongs.size() - 1;
+
+        getCurrentSong().create(context);
+        return this;
     }
 
     @Override
     public Song getCurrentSong() {
-        return null;
+        return mSongs.get(mCurrentSongIndex);
     }
 
     @Override
     public void setVolume(float left, float right) {
+        getCurrentSong().setVolume(left, right);
+    }
 
+    @Override
+    public boolean isCreated() {
+        return getCurrentSong().isCreated();
     }
 
     public String getName() {
@@ -147,7 +145,9 @@ public class Playlist extends Playback {
     }
 
     public File getCurrentAudioPath() {
-        return null;
+        if(getCurrentSong().isLoop())
+            return getCurrentSong().getLoopPath();
+        return getCurrentSong().getSongPath();
     }
 
     public void save() throws IOException {
@@ -168,7 +168,6 @@ public class Playlist extends Playback {
 
     public File getPlaylistFilePath() { return mPlaylistFilePath; }
     public ArrayList<Song> getSongs() { return mSongs; }
-    public Context getContext() { return mContext; }
 
     public boolean equalsUninitialized(@Nullable Playlist playlist) {
         if(playlist == null)

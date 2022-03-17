@@ -324,7 +324,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
                 // start the player (custom call)
                 synchronized (mPlaybackLock) {
-                    mPlayback.start();
+                    if(!mPlayback.isCreated())
+                        mPlayback.create(MediaPlaybackService.this);
+
+                    mPlayback.start(MediaPlaybackService.this);
                     synchronized (UserData.SettingsLock) {
                         if(mPlayback instanceof Song) {
                             if(((Song)mPlayback).isLoop())

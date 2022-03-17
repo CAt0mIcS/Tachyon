@@ -18,7 +18,7 @@ public class ViewHolderPlaylist extends RecyclerView.ViewHolder {
         super(itemView);
 
         ParentLayout = itemView.findViewById(R.id.parent_layout);
-        TxtName = itemView.findViewById(R.id.txtTitle);
+        TxtName = itemView.findViewById(R.id.txtName);
         TxtNumSongs = itemView.findViewById(R.id.txtNumSongs);
     }
 
