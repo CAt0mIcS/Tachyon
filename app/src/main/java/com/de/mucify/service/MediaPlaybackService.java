@@ -60,9 +60,17 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
+                    mPlayback.setVolume(1.f, 1.f);
                     mMediaSession.getController().getTransportControls().play();
                     break;
-                default:
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                    mMediaSession.getController().getTransportControls().pause();
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                    mPlayback.setVolume(.2f, .2f);
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS:
+                    // MY_TODO: Release media player here
                     mMediaSession.getController().getTransportControls().pause();
                     break;
             }
@@ -153,12 +161,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         int currentPos = mPlayback.getCurrentPosition();
                         Song currentSong = mPlayback.getCurrentSong();
 
-                        if(currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime() || currentSong.isFinished()) {
+                        if(currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime()) {
                             if(mPlayback instanceof Playlist) {
                                 mPlayback.next(this);
                             }
-                            else
+                            else {
                                 mMediaSession.getController().getTransportControls().seekTo(currentSong.getStartTime());
+                            }
+
                         }
                     }
                 }

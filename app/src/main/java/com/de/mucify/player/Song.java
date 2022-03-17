@@ -25,8 +25,7 @@ public class Song extends Playback {
     private int mStartTime;
     private int mEndTime;
 
-    private boolean mLooping = false;
-    private boolean mPaused = false;
+    private boolean mLooping = true;
 
     private File mSongFilePath;
     private File mLoopFilePath;
@@ -91,11 +90,6 @@ public class Song extends Playback {
     }
 
     @Override
-    public boolean isFinished() {
-        return !isPlaying() && !mPaused;
-    }
-
-    @Override
     public void seekTo(int millis) {
         mMediaPlayer.seekTo(millis);
 
@@ -107,7 +101,6 @@ public class Song extends Playback {
     @Override
     public void start() {
         mMediaPlayer.start();
-        mPaused = false;
 
         for(Callback c : mCallbacks)
             c.onStart();
@@ -118,7 +111,6 @@ public class Song extends Playback {
     public void restart() {
         seekTo(mStartTime);
         mMediaPlayer.start();
-        mPaused = false;
 
         for(Callback c : mCallbacks)
             c.onRestart();
@@ -128,7 +120,6 @@ public class Song extends Playback {
     @Override
     public void pause() {
         mMediaPlayer.pause();
-        mPaused = true;
 
         for(Callback c : mCallbacks)
             c.onPause();
@@ -151,7 +142,8 @@ public class Song extends Playback {
 
     @Override
     public void reset() {
-        mMediaPlayer.reset();
+        mMediaPlayer.release();
+        mMediaPlayer = null;
 
         for(Callback c : mCallbacks)
             c.onReset();
@@ -257,6 +249,11 @@ public class Song extends Playback {
     public void setEndTime(int endTime) { mEndTime = endTime; }
 
     @Override
+    public void setVolume(float left, float right) {
+        mMediaPlayer.setVolume(left, right);
+    }
+
+    @Override
     public Song getCurrentSong() {
         return this;
     }
@@ -267,7 +264,6 @@ public class Song extends Playback {
     public int getEndTime() { return mEndTime; }
     public File getLoopPath() { return mLoopFilePath; }
     public String getLoopName() { return FileManager.loopNameFromFile(mLoopFilePath); }
-    public void setVolume(float left, float right) { mMediaPlayer.setVolume(left, right); }
     public boolean isLoop() { return mLoopFilePath != null; }
     public void setLooping(boolean looping) { if(isCreated()) mMediaPlayer.setLooping(looping); else mLooping = looping; }
     public void setOnMediaPlayerCompletionListener(MediaPlayer.OnCompletionListener listener) { mMediaPlayer.setOnCompletionListener(listener); }

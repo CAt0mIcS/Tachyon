@@ -133,6 +133,11 @@ public class Playlist extends Playback {
         return null;
     }
 
+    @Override
+    public void setVolume(float left, float right) {
+
+    }
+
     public String getName() {
         return mName;
     }
