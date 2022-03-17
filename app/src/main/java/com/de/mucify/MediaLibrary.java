@@ -89,7 +89,7 @@ public class MediaLibrary {
 
     public int getPlaylistIndex(Playlist playlist) {
         for(int i = 0; i < AvailablePlaylists.size(); ++i) {
-            if(AvailablePlaylists.get(i).equalsUninitialized(playlist))
+            if(AvailablePlaylists.get(i).equals(playlist))
                 return i;
         }
         return -1;

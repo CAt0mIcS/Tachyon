@@ -21,4 +21,7 @@
     <string name="inc_start_time">Increment song start time</string>
     <string name="dec_end_time">Decrement song end time</string>
     <string name="inc_end_time">Increment song end time</string>
+    <string name="play">Play</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
 </resources>

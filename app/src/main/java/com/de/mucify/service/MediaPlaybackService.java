@@ -40,11 +40,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MediaPlaybackService extends MediaBrowserServiceCompat {
+    private static final int NOTIFY_ID = 1337;
+    private static final float DUCK_VOLUME = .2f;
     private static final String EMPTY_MEDIA_ID = "com.de.mucify.EMPTY_MEDIA";
     private static final String CHANNEL_ID = "com.de.mucify.MediaPlaybackChannel";
 
     private Playback mPlayback;
     private final Object mPlaybackLock = new Object();
+
+    /**
+     * One global instance of the MediaLibrary. This is placed here to avoid it being unloaded when
+     * the phone is shut down and the MediaPlaybackService is running in the background but requires
+     * access to the MediaLibrary. (MY_TODO: Terrible code)
+     */
     public static MediaLibrary Media;
 
     private final IntentFilter mBecomeNoisyIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
@@ -67,7 +75,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     mMediaSession.getController().getTransportControls().pause();
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                    mPlayback.setVolume(.2f, .2f);
+                    mPlayback.setVolume(DUCK_VOLUME, DUCK_VOLUME);
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS:
                     // MY_TODO: Release media player here
@@ -76,6 +84,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             }
         }
     };
+
+    /**
+     * Handles the case where headphones are unplugged. The audio shouldn't continue playing because
+     * it could disturb people around the user.
+     */
     private final BroadcastReceiver myNoisyAudioStreamReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -101,6 +114,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     public void onCreate() {
         super.onCreate();
 
+        // MY_TODO: Find a good location to load MediaLibrary and UserData
         UserData.load(this);
         if(Media == null) {
             Media = new MediaLibrary(this);
@@ -128,29 +142,31 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         mPlayAction = new NotificationCompat.Action(
                 R.drawable.play,
-                "Play",
+                getString(R.string.play),
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this,
                         PlaybackStateCompat.ACTION_PLAY));
         mPauseAction = new NotificationCompat.Action(
                 R.drawable.pause,
-                "Pause",
+                getString(R.string.pause),
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this,
                         PlaybackStateCompat.ACTION_PAUSE));
         mNextAction = new NotificationCompat.Action(
                 R.drawable.next,
-                "Next",
+                getString(R.string.next),
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this,
                         PlaybackStateCompat.ACTION_SKIP_TO_NEXT));
         mPreviousAction = new NotificationCompat.Action(
                 R.drawable.previous,
-                "Previous",
+                getString(R.string.previous),
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
                         this,
                         PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS));
 
+        // Thread checks every User.AudioUpdateInterval if the song has finished playing. If so
+        // the song will either be restarted (Song) or the next song will be played (Playlist)
         new Thread(() -> {
             Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
 
@@ -227,7 +243,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         result.sendResult(mediaItems);
     }
 
-
+    /**
+     * Rebuilds the notification for the MediaSession with the new metadata/state and returns it. Should be called whenever a metadata/state change
+     * like pause/play, skipToNext/-Previous, ... happens
+     */
     public Notification buildNotification() {
         Log.d("Mucify", "Rebuilding notification");
 
@@ -273,6 +292,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 .build();
     }
 
+    /**
+     * Creates the required notification channel.
+     */
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void createNotificationChannel() {
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Mucify foreground service notification", NotificationManager.IMPORTANCE_LOW);
@@ -280,6 +302,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         Log.d("Mucify", "Created notification channel");
     }
 
+    /**
+     * Rebuilds the metadata for the current Playback.
+     */
     private MediaMetadataCompat getMetadata() {
         synchronized (mPlaybackLock) {
             return mMetadataBuilder
@@ -290,6 +315,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
     }
 
+    /**
+     * Rebuilds the state for the current Playback.
+     */
     private PlaybackStateCompat getState() {
         synchronized (mPlaybackLock) {
             long actions = (mPlayback.isPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY) |
@@ -306,13 +334,22 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
     }
 
+    /**
+     * Reposts the notification without requiring a foreground service to be started
+     */
     private void repostNotification() {
-        mNotificationManager.notify(1337, buildNotification());
+        mNotificationManager.notify(NOTIFY_ID, buildNotification());
         Log.d("Mucify", "Reposting notification");
     }
 
 
     public class MediaSessionCallback extends MediaSessionCompat.Callback {
+
+        /**
+         * Called whenever we want to play/unpause the current song. Requests audio focus, starts
+         * required services, starts the playback and sets UserData.LastPlayedPlayback to the new
+         * Playback that was started/unpaused.
+         */
         @Override
         public void onPlay() {
             if (Util.requestAudioFocus(MediaPlaybackService.this, mAudioFocusChangedListener) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
@@ -346,11 +383,16 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 registerReceiver(myNoisyAudioStreamReceiver, mBecomeNoisyIntentFilter);
 
                 // Put the service in the foreground, post notification
-                startForeground(1337, buildNotification());
+                startForeground(NOTIFY_ID, buildNotification());
                 Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPlay");
             }
         }
 
+        /**
+         * Pauses the current Playback, reposts the notification without foreground service
+         * (MY_TODO: Do we need to repost notification without startForeground or can we just use it?)
+         * and sets UserData.LastPlayedPlaybackPos to the current Playback position.
+         */
         @Override
         public void onPause() {
             synchronized (mPlaybackLock) {
@@ -368,6 +410,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPause");
         }
 
+        /**
+         * Abandons audio focus, completely stops the service and resets the Playback.
+         * (MY_TODO: Doesn't get called when notification is swiped. Should it?)
+         */
         @Override
         public void onStop() {
             Util.abandonAudioFocus(MediaPlaybackService.this, mAudioFocusChangedListener);
@@ -382,6 +428,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onStop");
         }
 
+        /**
+         * Resets the old Playback if there was one and starts the new one.
+         */
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
             synchronized (mPlaybackLock) {
@@ -395,6 +444,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPlayFromMediaId " + mediaId);
         }
 
+        /**
+         * Seeks Playback to pos.
+         * @param pos position to seek to in milliseconds.
+         */
         @Override
         public void onSeekTo(long pos) {
             synchronized (mPlaybackLock) {
@@ -404,6 +457,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSeekTo " + pos);
         }
 
+        /**
+         * Gets the next song in the list and calls onPlay().
+         */
         @Override
         public void onSkipToNext() {
             synchronized (mPlaybackLock) {
@@ -414,6 +470,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSkipToNext");
         }
 
+        /**
+         * Gets the previous song in the list and calls onPlay().
+         */
         @Override
         public void onSkipToPrevious() {
             synchronized (mPlaybackLock) {

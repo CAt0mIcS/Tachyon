@@ -14,6 +14,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Playlist extends Playback {
     private String mName;
@@ -21,6 +22,10 @@ public class Playlist extends Playback {
     private ArrayList<Song> mSongs = new ArrayList<>();
     private int mCurrentSongIndex = 0;
 
+    /**
+     * Creates a Playlist. Afterwards you'll need to call create() and start() to play the first song
+     * @param path path to the playlist file
+     */
     public Playlist(File path) {
         if(!path.exists()) {
 //            Utils.startErrorActivity("Failed to load playlist: \"" + path + "\" does not exist.");
@@ -30,13 +35,6 @@ public class Playlist extends Playback {
         mPlaylistFilePath = path;
         mName = FileManager.playlistNameFromFile(path);
         loadPlaylist();
-        for(Song s : mSongs)
-            s.setLooping(false);
-    }
-
-    public Playlist(File path, ArrayList<Song> songs) {
-        mPlaylistFilePath = path;
-        mSongs = songs;
         for(Song s : mSongs)
             s.setLooping(false);
     }
@@ -136,6 +134,9 @@ public class Playlist extends Playback {
         return getCurrentSong().isCreated();
     }
 
+    /**
+     * @return the Playlist's name.
+     */
     public String getName() {
         return mName;
     }
@@ -144,12 +145,21 @@ public class Playlist extends Playback {
         return "Playlist_" + MediaPlaybackService.Media.getPlaylistIndex(playlist);
     }
 
+    /**
+     * @return the path of the currently playing song. If the current song is a loop the loop path
+     * will be returned. If the current song is a song the song path will be returned.
+     */
     public File getCurrentAudioPath() {
         if(getCurrentSong().isLoop())
             return getCurrentSong().getLoopPath();
         return getCurrentSong().getSongPath();
     }
 
+    /**
+     * Saves the entire playlist to the path set in the constructor. Overwrites any previously
+     * existing file at playlist path
+     * @throws IOException writing failed.
+     */
     public void save() throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(mPlaylistFilePath));
 
@@ -162,14 +172,32 @@ public class Playlist extends Playback {
         writer.close();
     }
 
+    /**
+     * Deletes the playlist file at the path specified in the constructor
+     */
     public void delete() {
         mPlaylistFilePath.delete();
     }
 
+    /**
+     * @return the path to the playlist file
+     */
     public File getPlaylistFilePath() { return mPlaylistFilePath; }
+
+    /**
+     * @return list of all songs in the playlist
+     */
     public ArrayList<Song> getSongs() { return mSongs; }
 
-    public boolean equalsUninitialized(@Nullable Playlist playlist) {
+    @Override
+    public int hashCode() {
+        return Objects.hash(mName, mPlaylistFilePath, mSongs, mCurrentSongIndex);
+    }
+
+    /**
+     * Checks if two Playlists are equal
+     */
+    public boolean equals(@Nullable Playlist playlist) {
         if(playlist == null)
             return false;
 
@@ -178,6 +206,9 @@ public class Playlist extends Playback {
                 playlist.mSongs.equals(mSongs);
     }
 
+    /**
+     * Parses the playlist file set in the constructor. Doesn't do any checking if the file is correctly formatted.
+     */
     private void loadPlaylist() {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(mPlaylistFilePath));

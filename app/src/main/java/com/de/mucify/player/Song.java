@@ -30,12 +30,22 @@ public class Song extends Playback {
     private File mSongFilePath;
     private File mLoopFilePath;
 
-
+    /**
+     * Creates a fully created Song object, can be started directly after the constructor call.
+     * @param path path to a song or loop file.
+     * @throws LoadingFailedException if the path doesn't exist or if the loading of the loop file fails.
+     */
     public Song(Context context, File path) throws LoadingFailedException {
         this(path);
         create(context);
     }
 
+    /**
+     * Creates a Song object which only has basic data (title, artist, path, startTime, endTime) set.
+     * Call create() to make this Song playable.
+     * @param path to a song or loop file.
+     * @throws LoadingFailedException if the path doesn't exist or if the loading of the loop file fails.
+     */
     public Song(File path) throws LoadingFailedException {
         if(path == null || !path.exists()) {
             throw new LoadingFailedException("Failed to load song: \"" + path + "\" does not exist");
@@ -78,6 +88,13 @@ public class Song extends Playback {
             mTitle = title;
     }
 
+    /**
+     * Creates a fully created Song object which can be played directly after the constructor
+     * @param songFilePath path to a Song file
+     * @param startTime offset in milliseconds when the song should start playing
+     * @param endTime offset in milliseconds when the song should stop playing
+     * @throws LoadingFailedException if the path doesn't exist or if the loading of the loop file fails.
+     */
     public Song(Context context, File songFilePath, int startTime, int endTime) throws LoadingFailedException {
         this(context, songFilePath);
         mStartTime = startTime;
@@ -255,6 +272,10 @@ public class Song extends Playback {
     public void setOnMediaPlayerCompletionListener(MediaPlayer.OnCompletionListener listener) { mMediaPlayer.setOnCompletionListener(listener); }
     public boolean isLooping() { return mLooping; }
 
+    /**
+     * Checks if two Song objects are equal in all their uninitialized data. Doesn't require
+     * Song to be created.
+     */
     public boolean equalsUninitialized(@Nullable Song obj) {
         if(obj == null)
             return false;
@@ -266,6 +287,9 @@ public class Song extends Playback {
         return equals;
     }
 
+    /**
+     * Checks if two Song objects are equal. Requires Song to be created.
+     */
     public boolean equals(@Nullable Song obj) {
         if(obj == null)
             return false;
@@ -277,6 +301,11 @@ public class Song extends Playback {
         return equals;
     }
 
+    /**
+     * Parses the loop file. Doesn't do any checking if the file is correctly formatted.
+     * @param file path to loop file
+     * @throws IOException if reading fails
+     */
     private void parseLoopFile(File file) throws IOException {
         Log.d("Mucify.Song", "Parsing loop file " + file);
 
@@ -288,7 +317,7 @@ public class Song extends Playback {
     }
 
 
-    public class LoadingFailedException extends Exception {
+    public static class LoadingFailedException extends Exception {
         public LoadingFailedException(String msg) {
             super(msg);
         }
