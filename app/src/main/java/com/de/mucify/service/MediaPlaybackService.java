@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaMetadata;
+import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -310,6 +311,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         mPlayback.create(MediaPlaybackService.this);
 
                     mPlayback.start(MediaPlaybackService.this);
+
+                    // Called when one loop is done. The MediaPlayer position changes back to startPos
+                    // and we need to update seekbars.
+                    mPlayback.getCurrentSong().setOnMediaPlayerCompletionListener(mp -> repostNotification());
                     savePlaybackToSettings();
                 }
 

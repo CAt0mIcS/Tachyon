@@ -296,6 +296,11 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
                 }
             }
 
+            if(mPreviousPlaybackState == null || state.getPosition() != mPreviousPlaybackState.getPosition()) {
+                for(Callback c : mCallbacks)
+                    c.onSeekTo((int) state.getPosition());
+            }
+
             mPreviousPlaybackState = state;
         }
 
@@ -322,6 +327,7 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         public void onSongChanged(Song newSong) {}
         public void onTitleChanged(String title) {}
         public void onArtistChanged(String artist) {}
+        public void onSeekTo(int millis) {}
     }
 
 }

@@ -208,6 +208,11 @@ public class ActivityPlayer extends MediaControllerActivity {
         public void onArtistChanged(String artist) {
             mTxtSubtitle.setText(artist);
         }
+
+        @Override
+        public void onSeekTo(int millis) {
+            mSbProgress.setProgress(millis / UserData.AudioUpdateInterval);
+        }
     }
 
     private void updatePerSongData() {
