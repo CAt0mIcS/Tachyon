@@ -174,7 +174,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             mediaItems.add(new MediaBrowserCompat.MediaItem(mediaDesc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE));
         }
-        // MY_TODO: Playlists
+        for(Playlist p : Media.AvailablePlaylists) {
+            MediaDescriptionCompat mediaDesc = new MediaDescriptionCompat.Builder()
+                    .setMediaId(p.getMediaId())
+                    .setTitle(p.getName())
+                    .build();
+
+            mediaItems.add(new MediaBrowserCompat.MediaItem(mediaDesc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE));
+        }
 
         result.sendResult(mediaItems);
     }

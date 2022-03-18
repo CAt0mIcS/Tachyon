@@ -18,10 +18,7 @@ public class MediaLibrary {
     public File MusicDirectory;
 
     public static final String LoopFileExtension = ".loop";
-    public static final String LoopFileIdentifier = "LOOP_";
-
     public static final String PlaylistFileExtension = ".playlist";
-    public static final String PlaylistFileIdentifier = "PLAYLIST_";
 
     public static final List<String> SupportedAudioExtensions = Arrays.asList(".3gp", ".mp4", ".m4a", ".aac", ".ts", ".amr", ".flac", ".ota", ".imy", ".mp3", ".mkv", ".ogg", ".wav");
 
@@ -29,18 +26,8 @@ public class MediaLibrary {
     public final ArrayList<Song> AvailableLoops = new ArrayList<>();
     public final ArrayList<Playlist> AvailablePlaylists = new ArrayList<>();
 
-    private final Comparator<Song> mSongComparator = new Comparator<Song>() {
-        @Override
-        public int compare(Song o1, Song o2) {
-            return o1.getTitle().compareToIgnoreCase(o2.getTitle());
-        }
-    };
-    private final Comparator<Playlist> mPlaylistComparator = new Comparator<Playlist>() {
-        @Override
-        public int compare(Playlist o1, Playlist o2) {
-            return o1.getName().compareToIgnoreCase(o2.getName());
-        }
-    };
+    private final Comparator<Song> mSongComparator = (o1, o2) -> o1.getTitle().compareToIgnoreCase(o2.getTitle());
+    private final Comparator<Playlist> mPlaylistComparator = (o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName());
 
     public MediaLibrary(ContextWrapper context) {
         DataDirectory = context.getFilesDir();
@@ -50,25 +37,22 @@ public class MediaLibrary {
             DataDirectory.mkdirs();
     }
 
-    public ArrayList<Song> loadAvailableSongs() {
+    public void loadAvailableSongs() {
         AvailableSongs.clear();
         loadFiles(MusicDirectory, true, false, false);
         Collections.sort(AvailableSongs, mSongComparator);
-        return AvailableSongs;
     }
 
-    public ArrayList<Song> loadAvailableLoops() {
+    public void loadAvailableLoops() {
         AvailableLoops.clear();
         loadFiles(DataDirectory, false, true, false);
         Collections.sort(AvailableLoops, mSongComparator);
-        return AvailableLoops;
     }
 
-    public ArrayList<Playlist> loadAvailablePlaylists() {
+    public void loadAvailablePlaylists() {
         AvailablePlaylists.clear();
         loadFiles(DataDirectory, false, false, true);
         Collections.sort(AvailablePlaylists, mPlaylistComparator);
-        return AvailablePlaylists;
     }
 
     public int getSongIndex(Song song) {
@@ -129,7 +113,7 @@ public class MediaLibrary {
                         }
                         else if(loop) {
                             String extension = FileManager.getFileExtension(file.getName());
-                            if(extension.equals(LoopFileExtension) && file.getName().indexOf(LoopFileIdentifier) == 0) {
+                            if(extension.equals(LoopFileExtension)) {
                                 try {
                                     AvailableLoops.add(new Song(file));
                                 } catch (Song.LoadingFailedException e) {
@@ -139,7 +123,7 @@ public class MediaLibrary {
                         }
                         else if(playlist) {
                             String extension = FileManager.getFileExtension(file.getName());
-                            if(extension.equals(PlaylistFileExtension) && file.getName().indexOf(PlaylistFileIdentifier) == 0) {
+                            if(extension.equals(PlaylistFileExtension)) {
                                 AvailablePlaylists.add(new Playlist(file));
                             }
                         }

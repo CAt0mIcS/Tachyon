@@ -12,7 +12,7 @@ public class FileManager {
     }
 
     public static boolean isLoopFile(File path) {
-        return path.isFile() && getFileExtension(path.getName()).equals(MediaLibrary.LoopFileExtension) && path.getName().indexOf(MediaLibrary.LoopFileIdentifier) == 0;
+        return path.isFile() && getFileExtension(path.getName()).equals(MediaLibrary.LoopFileExtension);
     }
 
     public static boolean isSongFile(File path) {
@@ -20,23 +20,23 @@ public class FileManager {
     }
 
     public static boolean isPlaylistFile(File path) {
-        return path.isFile() && getFileExtension(path.getName()).equals(MediaLibrary.PlaylistFileExtension) && path.getName().indexOf(MediaLibrary.PlaylistFileIdentifier) == 0;
+        return path.isFile() && getFileExtension(path.getName()).equals(MediaLibrary.PlaylistFileExtension);
     }
 
     public static String playlistNameFromFile(File path) {
-        return path.getName().replace(MediaLibrary.PlaylistFileExtension, "").replace(MediaLibrary.PlaylistFileIdentifier, "");
+        return path.getName().replace(MediaLibrary.PlaylistFileExtension, "");
     }
 
     public static File playlistNameToFile(String playlistName) {
-        return new File(MediaPlaybackService.Media.DataDirectory + "/" + MediaLibrary.PlaylistFileIdentifier + playlistName + MediaLibrary.PlaylistFileExtension);
+        return new File(MediaPlaybackService.Media.DataDirectory + "/" + playlistName + MediaLibrary.PlaylistFileExtension);
     }
 
     public static File loopNameToFile(String loopName, String songName, String songAuthor) {
-        return new File(MediaPlaybackService.Media.DataDirectory + "/" + MediaLibrary.LoopFileIdentifier + loopName + "_" + songName + "_" + songAuthor + MediaLibrary.LoopFileExtension);
+        return new File(MediaPlaybackService.Media.DataDirectory + "/" + loopName + "_" + songName + "_" + songAuthor + MediaLibrary.LoopFileExtension);
     }
 
     public static String loopNameFromFile(File path) {
-        String name = path.getName().replace(MediaLibrary.LoopFileIdentifier, "").replace(MediaLibrary.LoopFileExtension, "");
+        String name = path.getName().replace(MediaLibrary.LoopFileExtension, "");
         return name.substring(0, name.indexOf("_"));
     }
 }
