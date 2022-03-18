@@ -50,8 +50,8 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         // which doesn't happen until we actually start playing audio
         startService(new Intent(this, MediaPlaybackService.class));
 
-        mMediaBrowser = new MediaBrowserCompat(MediaControllerActivity.this,
-                new ComponentName(MediaControllerActivity.this, MediaPlaybackService.class),
+        mMediaBrowser = new MediaBrowserCompat(this,
+                new ComponentName(this, MediaPlaybackService.class),
                 new ConnectionCallback(),
                 null);
 
@@ -63,7 +63,6 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         mMediaBrowser.connect();
-
         Log.d("Mucify", "Started connecting to MediaController");
     }
 
@@ -77,8 +76,8 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         super.onStop();
-        if (MediaControllerCompat.getMediaController(MediaControllerActivity.this) != null) {
-            MediaControllerCompat.getMediaController(MediaControllerActivity.this).unregisterCallback(mControllerCallback);
+        if (MediaControllerCompat.getMediaController(this) != null) {
+            MediaControllerCompat.getMediaController(this).unregisterCallback(mControllerCallback);
         }
         mMediaBrowser.disconnect();
         Log.d("Mucify", "Started disconnecting from MediaController");
@@ -245,7 +244,10 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
             MediaControllerCompat.setMediaController(MediaControllerActivity.this, mediaController);
 
             // Finish building the UI
-            buildTransportControls();
+            MediaControllerActivity.this.onConnected();
+
+            // Register a Callback to stay in sync
+            MediaControllerCompat.getMediaController(MediaControllerActivity.this).registerCallback(mControllerCallback);
             Log.d("Mucify", "MediaController connection established");
         }
 
@@ -312,19 +314,10 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         }
     }
 
-    private void buildTransportControls()
-    {
-        onConnected();
-        MediaControllerCompat mediaController = MediaControllerCompat.getMediaController(MediaControllerActivity.this);
-        // Register a Callback to stay in sync
-        mediaController.registerCallback(mControllerCallback);
-    }
-
 
     public abstract static class Callback {
         public void onStart() {}
         public void onPause() {}
-        public void onSongChanged(Song newSong) {}
         public void onTitleChanged(String title) {}
         public void onArtistChanged(String artist) {}
         public void onSeekTo(int millis) {}

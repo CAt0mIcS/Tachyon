@@ -169,6 +169,7 @@ public class ActivityPlayer extends MediaControllerActivity {
             mPlaybackCallback.onStart();
         updatePerSongData();
 
+        // Call the event handlers once to set all the values to the current song
         if(isCreated()) {
             mPlaybackCallback.onTitleChanged(getSongTitle());
             mPlaybackCallback.onArtistChanged(getSongArtist());
@@ -215,6 +216,9 @@ public class ActivityPlayer extends MediaControllerActivity {
         }
     }
 
+    /**
+     * Should be called whenever a new song is started
+     */
     private void updatePerSongData() {
         int duration = isCreated() ? getDuration() / UserData.AudioUpdateInterval : 0;
         mSbProgress.setMax(duration);

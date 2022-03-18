@@ -9,6 +9,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.de.mucify.FileManager;
+import com.de.mucify.R;
 import com.de.mucify.service.MediaPlaybackService;
 
 import java.io.BufferedReader;
@@ -149,6 +150,12 @@ public class Song extends Playback {
 
         if(mEndTime == 0)
             mEndTime = mMediaPlayer.getDuration();
+
+        // Use string resources for the 'Unknown Artist' string to support translation.
+        // MY_TODO: Songs that aren't created with a context still use "Unknown Artist" which is
+        //          visible in e.g. the RecyclerView list of songs.
+//        if(mArtist.equals("Unknown Artist"))
+//            mArtist = context.getString(R.string.unknown_artist);
 
         Log.d("Mucify.Song", "Song.create");
     }

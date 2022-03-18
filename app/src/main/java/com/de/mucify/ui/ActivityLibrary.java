@@ -46,11 +46,13 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         toolbar.inflateMenu(R.menu.toolbar_default);
         toolbar.setTitle(getString(R.string.library));
 
+        // MY_TEMPORARY: Set dark theme just to make it look better in the emulator
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
         btmNav.setSelectedItemId(R.id.btmNavLibrary);
 
+        // MY_TEMPORARY
         if(!checkPermission())
             requestPermission();
 
@@ -79,11 +81,6 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
     public void onConnected() {
         Playback miniplayerPlayback = MediaPlaybackService.Media.getSong(UserData.LastPlayedPlayback);
         if(miniplayerPlayback == null) {
@@ -93,12 +90,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         }
 
         if(miniplayerPlayback != null) {
-            FragmentMinimizedPlayer fragmentMinimizedPlayer =
-                    new FragmentMinimizedPlayer(miniplayerPlayback.getMediaId(), miniplayerPlayback.getTitle(),
-                            miniplayerPlayback.getSubtitle(), UserData.LastPlayedPlaybackPos, this);
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
-                    .commit();
+            startMinimizedPlayer(miniplayerPlayback);
         }
 
         RecyclerView rvHistory = findViewById(R.id.rvHistory);
@@ -114,31 +106,59 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         rvHistory.setAdapter(adapter);
     }
 
+    /**
+     * Called whenever we click on a RecyclerView Song item. Starts playing the clicked audio
+     */
     @Override
     public void onClick(ViewHolderSong holder) {
         startAudio(mHistory.get(holder.getAdapterPosition()));
     }
 
+    /**
+     * Called whenever we click on a RecyclerView Loop item. Starts playing the clicked audio
+     */
     @Override
     public void onClick(ViewHolderLoop holder) {
         startAudio(mHistory.get(holder.getAdapterPosition()));
     }
 
+    /**
+     * Called whenever we click on a RecyclerView Playlist item. Starts playing the clicked audio
+     */
     @Override
     public void onClick(ViewHolderPlaylist holder) {
         startAudio(mHistory.get(holder.getAdapterPosition()));
     }
 
+    /**
+     * Starts the audio and calls startMinimizedPlayer to start the FragmentMinimizedPlayer.
+     */
     private void startAudio(Playback playback) {
         play(playback.getMediaId());
+        startMinimizedPlayer(playback);
+    }
 
-        FragmentMinimizedPlayer fragmentMinimizedPlayer = new FragmentMinimizedPlayer(playback.getMediaId(), playback.getTitle(), playback.getSubtitle(), this);
+    /**
+     * Sets the data that the FragmentMinimizedPlayer needs and adds it to the fragment manager
+     */
+    private void startMinimizedPlayer(Playback playback) {
+        Bundle bundle = new Bundle();
+        bundle.putString("MediaId", playback.getMediaId());
+        bundle.putString("Title", playback.getTitle());
+        bundle.putString("Subtitle", playback.getSubtitle());
+
+        FragmentMinimizedPlayer fragmentMinimizedPlayer = new FragmentMinimizedPlayer();
+        fragmentMinimizedPlayer.setArguments(bundle);
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
                 .commit();
     }
 
 
+    /**
+     * MY_TEMPORARY: Checks if we have all permissions, copied here to quickly write every unhandled
+     * exception to a external file
+     */
     private boolean checkPermission() {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             return Environment.isExternalStorageManager();
@@ -149,6 +169,10 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         }
     }
 
+    /**
+     * Requests permission to manage all external files. This is used to log unhandled exceptions
+     * to an external file and is MY_TEMPORARY.
+     */
     private void requestPermission() {
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             try {

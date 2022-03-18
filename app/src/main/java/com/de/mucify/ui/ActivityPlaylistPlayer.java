@@ -9,7 +9,6 @@ import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 
 public class ActivityPlaylistPlayer extends MediaControllerActivity {
-    private int mPlaybackSeekPos = 0;
     private final PlaybackCallback mPlaybackCallback = new PlaybackCallback();
 
     @Override
@@ -22,8 +21,6 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
     public void onConnected() {
         if(!getIntent().getBooleanExtra("IsPlaying", false))
             play(getIntent().getStringExtra("MediaId"));
-
-        mPlaybackSeekPos = getIntent().getIntExtra("SeekPos", 0);
     }
 
     private class PlaybackCallback extends Callback {

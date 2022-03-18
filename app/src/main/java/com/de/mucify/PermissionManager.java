@@ -10,9 +10,11 @@ import androidx.core.content.ContextCompat;
 
 public class PermissionManager {
 
-    // Register the permissions callback, which handles the user's response to the
-    // system permissions dialog. Save the return value, an instance of
-    // ActivityResultLauncher, as an instance variable.
+    /**
+     * Register the permissions callback, which handles the user's response to the
+     * system permissions dialog. Save the return value, an instance of
+     * ActivityResultLauncher, as an instance variable.
+     */
     private static ActivityResultLauncher<String> mRequestPermissionLauncher = null;
 
     private static boolean mPermissionGranted = false;
@@ -20,7 +22,8 @@ public class PermissionManager {
 
 
     public static boolean requestPermission(AppCompatActivity activity, String permission) {
-        // MY_TODO: Wait until dialog finished and return result
+        // MY_TODO: Already load certain things while user still accepts permission
+        // MY_TODO: Dialog explaining why we need permission
 
         if(mRequestPermissionLauncher == null)
             mRequestPermissionLauncher = activity.registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {

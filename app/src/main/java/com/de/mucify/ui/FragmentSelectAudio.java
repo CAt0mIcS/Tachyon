@@ -25,6 +25,9 @@ import com.de.mucify.service.MediaPlaybackService;
 
 import java.util.ArrayList;
 
+/**
+ * Fragment for displaying a list of all available songs, loops, or playlists.
+ */
 public class FragmentSelectAudio extends Fragment implements AdapterEventListener {
 
     ArrayList<Playback> mPlaybacks = new ArrayList<>();
@@ -63,7 +66,6 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
         PlayableListItemAdapter adapter = new PlayableListItemAdapter(getContext(), mPlaybacks);
         adapter.setListener(this);
         rvFiles.setAdapter(adapter);
-        rvFiles.getAdapter().notifyDataSetChanged();
     }
 
     @Override
@@ -84,12 +86,18 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
         startPlayingPlaylistActivity(s.getMediaId());
     }
 
+    /**
+     * Starts the ActivityPlayer with the specified MediaId
+     */
     private void startPlayingActivity(String mediaId) {
         Intent i = new Intent(getActivity(), ActivityPlayer.class);
         i.putExtra("MediaId", mediaId);
         startActivity(i);
     }
 
+    /**
+     * Starts the ActivityPlaylistPlayer with the specified MediaId
+     */
     private void startPlayingPlaylistActivity(String mediaId) {
         Intent i = new Intent(getActivity(), ActivityPlaylistPlayer.class);
         i.putExtra("MediaId", mediaId);

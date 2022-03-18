@@ -11,14 +11,12 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.de.mucify.R;
+import com.de.mucify.UserData;
 import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 
 public class FragmentMinimizedPlayer extends Fragment {
 
-    private String mMediaId;
-    private String mTitle;
-    private String mArtist;
     private ImageButton mPlayPause;
     private TextView mTxtTitle;
     private TextView mTxtArtist;
@@ -26,48 +24,39 @@ public class FragmentMinimizedPlayer extends Fragment {
     private MediaControllerActivity mMediaController;
 
     private final PlaybackCallback mPlaybackCallback = new PlaybackCallback();
-    private int mPlaybackSeekPos;
 
     public FragmentMinimizedPlayer() {
-        super();
-    }
-
-    public FragmentMinimizedPlayer(String mediaId, String title, String artist, int playbackSeekPos, MediaControllerActivity controller) {
         super(R.layout.fragment_minimized_player);
-        mMediaController = controller;
-        mPlaybackSeekPos = playbackSeekPos;
-        mMediaId = mediaId;
-        mTitle = title;
-        mArtist = artist;
-
-        mMediaController.addCallback(mPlaybackCallback);
-    }
-
-    public FragmentMinimizedPlayer(String mediaId, String title, String artist, MediaControllerActivity controller) {
-        this(mediaId, title, artist, 0, controller);
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
+        mMediaController = (MediaControllerActivity)getActivity();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        if(getArguments() == null)
+            throw new UnsupportedOperationException("Argument for FragmentMinimizedPlayer must be set");
+        if(mMediaController == null)
+            throw new UnsupportedOperationException("FragmentMinimizedPlayer must've been started with a MediaControllerActivity");
+        mMediaController.addCallback(mPlaybackCallback);
+
         mTxtTitle = view.findViewById(R.id.txtTitle);
         mTxtArtist = view.findViewById(R.id.txtArtist);
-        mTxtTitle.setText(mTitle);
-        mTxtArtist.setText(mArtist);
+        mTxtTitle.setText(getArguments().getString("Title"));
+        mTxtArtist.setText(getArguments().getString("Subtitle"));
 
         mPlayPause = view.findViewById(R.id.btnPlayPause);
         mPlayPause.setOnClickListener(v -> {
             if(!mMediaController.isCreated()) {
-                mMediaController.play(mMediaId);
-                if(mPlaybackSeekPos != 0) {
-                    mMediaController.seekTo(mPlaybackSeekPos);
+                mMediaController.play(getArguments().getString("MediaId"));
+                if(UserData.LastPlayedPlaybackPos != 0) {
+                    mMediaController.seekTo(UserData.LastPlayedPlaybackPos);
                 }
 
             }
@@ -80,7 +69,7 @@ public class FragmentMinimizedPlayer extends Fragment {
         // Clicking on minimized player should open the large player
         view.setOnClickListener(v -> {
             Intent i = new Intent(getActivity(), ActivityPlayer.class);
-            i.putExtra("MediaId", mMediaId);
+            i.putExtra("MediaId", getArguments().getString("MediaId"));
 
             // Player only needs title and artist if the Playback hasn't been started yet
             if(!mMediaController.isCreated()) {
@@ -89,8 +78,8 @@ public class FragmentMinimizedPlayer extends Fragment {
             }
 
             i.putExtra("IsPlaying", true);
-            if(mPlaybackSeekPos != 0)
-                i.putExtra("SeekPos", mPlaybackSeekPos);
+            if(UserData.LastPlayedPlaybackPos != 0)
+                i.putExtra("SeekPos", UserData.LastPlayedPlaybackPos);
             startActivity(i);
         });
 
