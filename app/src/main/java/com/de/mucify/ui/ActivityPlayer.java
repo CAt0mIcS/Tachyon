@@ -38,6 +38,8 @@ public class ActivityPlayer extends MediaControllerActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player_layout);
 
+        addCallback(mPlaybackCallback);
+
         mSbProgress = findViewById(R.id.sbPos);
         mSbStartTime = findViewById(R.id.sbStartPos);
         mSbEndTime = findViewById(R.id.sbEndPos);
@@ -59,7 +61,6 @@ public class ActivityPlayer extends MediaControllerActivity {
         mPlaybackSeekPos = getIntent().getIntExtra("SeekPos", 0);
 
         mSong = (Song)Util.getPlaybackFromMediaId(getIntent().getStringExtra("MediaId"));
-        mSong.addCallback(mPlaybackCallback);
 
         runOnUiThread(new Runnable() {
             @Override
@@ -176,19 +177,13 @@ public class ActivityPlayer extends MediaControllerActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mSong.removeCallback(mPlaybackCallback);
+        removeCallback(mPlaybackCallback);
     }
 
-    private class PlaybackCallback extends Playback.Callback {
+    private class PlaybackCallback extends Callback {
         @Override
-        public void onNext(Song next) {
-            mSong = next;
-            updatePerSongData();
-        }
-
-        @Override
-        public void onPrevious(Song previous) {
-            mSong = previous;
+        public void onSongChanged(Song newSong) {
+            mSong = newSong;
             updatePerSongData();
         }
 

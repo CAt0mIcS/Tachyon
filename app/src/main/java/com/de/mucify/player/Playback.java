@@ -7,21 +7,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 public abstract class Playback {
-    protected ArrayList<Callback> mCallbacks = new ArrayList<>();
-
-    public abstract static class Callback {
-        public void onStart() {}
-        public void onPause() {}
-        public void onSeek(int millis) {}
-        public void onStop() {}
-        public void onReset() {}
-        public void onNext(Song next) {}
-        public void onPrevious(Song previous) {}
-    }
-
-    public void addCallback(Callback callback) { mCallbacks.add(callback); }
-    public void removeCallback(Callback callback) { mCallbacks.remove(callback); }
-
     /**
      * Starts or resumes playback.
      * If playback had previously been paused, playback will continue from where it was paused.

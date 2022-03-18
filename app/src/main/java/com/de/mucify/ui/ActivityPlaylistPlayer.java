@@ -15,6 +15,7 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        addCallback(mPlaybackCallback);
     }
 
     @Override
@@ -23,12 +24,10 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
             play(getIntent().getStringExtra("MediaId"));
 
         mPlaybackSeekPos = getIntent().getIntExtra("SeekPos", 0);
-
         mPlaylist = (Playlist)Util.getPlaybackFromMediaId(getIntent().getStringExtra("MediaId"));
-        mPlaylist.addCallback(mPlaybackCallback);
     }
 
-    private class PlaybackCallback extends Playback.Callback {
+    private class PlaybackCallback extends Callback {
 
     }
 }

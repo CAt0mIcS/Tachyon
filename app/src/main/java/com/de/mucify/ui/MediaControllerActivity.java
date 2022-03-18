@@ -11,6 +11,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.telecom.Call;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,10 +23,17 @@ import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 import com.de.mucify.service.MediaPlaybackService;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public abstract class MediaControllerActivity extends AppCompatActivity {
     private MediaBrowserCompat mMediaBrowser;
     private final MediaControllerCallback mControllerCallback = new MediaControllerCallback();
+    private final ArrayList<Callback> mCallbacks = new ArrayList<>();
+
+    private MediaMetadataCompat mPreviousMetadata;
+    private PlaybackStateCompat mPreviousPlaybackState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +78,14 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         }
         mMediaBrowser.disconnect();
         Log.d("Mucify", "Started disconnecting from MediaController");
+    }
+
+    public void addCallback(Callback c) {
+        mCallbacks.add(c);
+    }
+
+    public void removeCallback(Callback c) {
+        mCallbacks.remove(c);
     }
 
     public void unpause() {
@@ -149,11 +165,37 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         @Override
         public void onMetadataChanged(MediaMetadataCompat metadata) {
             Log.d("Mucify", "MediaController metadata changed");
+
+            String newTitle = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
+            String newArtist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
+
+            if(mPreviousMetadata == null || !mPreviousMetadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE).equals(newTitle))
+                for(Callback c : mCallbacks)
+                    c.onTitleChanged(newTitle);
+
+            if(mPreviousMetadata == null || !mPreviousMetadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST).equals(newArtist))
+                for(Callback c : mCallbacks)
+                    c.onArtistChanged(newArtist);
+
+            mPreviousMetadata = metadata;
         }
 
         @Override
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
             Log.d("Mucify", "MediaController playback state changed" + state);
+
+            if(mPreviousPlaybackState == null || state.getState() != mPreviousPlaybackState.getState()) {
+                if(state.getState() == PlaybackStateCompat.STATE_PAUSED) {
+                    for(Callback c : mCallbacks)
+                        c.onPause();
+                }
+                else if (mPreviousPlaybackState == null || state.getState() == PlaybackStateCompat.STATE_PLAYING) {
+                    for(Callback c : mCallbacks)
+                        c.onStart();
+                }
+            }
+
+            mPreviousPlaybackState = state;
         }
 
         @Override
@@ -162,5 +204,13 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
             mMediaBrowser.disconnect();
             // maybe schedule a reconnection using a new MediaBrowser instance
         }
+    }
+
+    public abstract static class Callback {
+        public void onStart() {}
+        public void onPause() {}
+        public void onSongChanged(Song newSong) {}
+        public void onTitleChanged(String title) {}
+        public void onArtistChanged(String artist) {}
     }
 }

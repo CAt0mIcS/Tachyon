@@ -109,27 +109,18 @@ public class Song extends Playback {
     @Override
     public void seekTo(int millis) {
         mMediaPlayer.seekTo(millis);
-
-        for(Callback c : mCallbacks)
-            c.onSeek(millis);
         Log.d("Mucify.Song", "Song.seekTo " + millis);
     }
 
     @Override
     public void start(Context context) {
         mMediaPlayer.start();
-
-        for(Callback c : mCallbacks)
-            c.onStart();
         Log.d("Mucify.Song", "Song.start");
     }
 
     @Override
     public void pause() {
         mMediaPlayer.pause();
-
-        for(Callback c : mCallbacks)
-            c.onPause();
         Log.d("Mucify.Song", "Song.pause");
     }
 
@@ -141,9 +132,6 @@ public class Song extends Playback {
     @Override
     public void stop() {
         mMediaPlayer.stop();
-
-        for(Callback c : mCallbacks)
-            c.onStop();
         Log.d("Mucify.Song", "Song.stop");
     }
 
@@ -151,9 +139,6 @@ public class Song extends Playback {
     public void reset() {
         mMediaPlayer.release();
         mMediaPlayer = null;
-
-        for(Callback c : mCallbacks)
-            c.onReset();
         Log.d("Mucify.Song", "Song.reset");
     }
 
@@ -201,9 +186,6 @@ public class Song extends Playback {
             s = MediaPlaybackService.Media.AvailableLoops.get(idx);
         }
         s.create(context);
-
-        for(Callback c : mCallbacks)
-            c.onNext(s);
         return s;
     }
 
@@ -225,9 +207,6 @@ public class Song extends Playback {
             s = MediaPlaybackService.Media.AvailableLoops.get(idx);
         }
         s.create(context);
-
-        for(Callback c : mCallbacks)
-            c.onPrevious(s);
         return s;
     }
 

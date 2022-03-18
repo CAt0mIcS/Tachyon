@@ -32,11 +32,12 @@ public class FragmentMinimizedPlayer extends Fragment {
     public FragmentMinimizedPlayer(Playback playback, int playbackSeekPos, MediaControllerActivity controller) {
         super(R.layout.fragment_minimized_player);
         mPlayback = playback;
-        mPlayback.addCallback(mPlaybackCallback);
         mTitle = playback.getTitle();
         mArtist = playback.getSubtitle();
         mMediaController = controller;
         mPlaybackSeekPos = playbackSeekPos;
+
+        mMediaController.addCallback(mPlaybackCallback);
     }
 
     public FragmentMinimizedPlayer(Playback playback, MediaControllerActivity controller) {
@@ -90,10 +91,11 @@ public class FragmentMinimizedPlayer extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mPlayback.removeCallback(mPlaybackCallback);
+        mMediaController.removeCallback(mPlaybackCallback);
     }
 
-    private class PlaybackCallback extends Playback.Callback {
+
+    private class PlaybackCallback extends MediaControllerActivity.Callback {
         @Override
         public void onStart() {
             if(mPlayPause != null)
