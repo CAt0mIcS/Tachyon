@@ -369,7 +369,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 if(mPlayback != null)
                     mPlayback.reset();
 
-                mPlayback = Util.getPlaybackFromMediaId(mediaId);
+                mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
                 mPlayback.create(MediaPlaybackService.this);
             }
             onPlay();

@@ -74,33 +74,4 @@ public class Util {
 
         return ((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(onChanged);
     }
-
-    public static boolean isSongMediaId(String mediaId) {
-        return mediaId.contains("Song_");
-    }
-    public static boolean isLoopMediaId(String mediaId) {
-        return mediaId.contains("Loop_");
-    }
-    public static boolean isPlaylistMediaId(String mediaId) {
-        return mediaId.contains("Playlist_");
-    }
-
-    public static int getIndexFromMediaId(String mediaId) {
-        return Integer.parseInt(mediaId.substring(mediaId.lastIndexOf('_') + 1));
-    }
-
-    public static Playback getPlaybackFromMediaId(String mediaId) {
-        if(Util.isSongMediaId(mediaId)) {
-            return MediaPlaybackService.Media.AvailableSongs.get(Util.getIndexFromMediaId(mediaId));
-        }
-        else if(Util.isLoopMediaId(mediaId)) {
-            return MediaPlaybackService.Media.AvailableLoops.get(Util.getIndexFromMediaId(mediaId));
-        }
-        else if (Util.isPlaylistMediaId(mediaId)) {
-            return MediaPlaybackService.Media.AvailablePlaylists.get(Util.getIndexFromMediaId(mediaId));
-        }
-
-        Log.e("Mucify: ", "Invalid media id " + mediaId);
-        return null;
-    }
 }

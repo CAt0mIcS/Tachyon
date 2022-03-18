@@ -156,16 +156,8 @@ public class Song extends Playback {
     @Override
     public String getMediaId() {
         if(isLoop())
-            return getLoopMediaId(this);
-        return getSongMediaId(this);
-    }
-
-    public static String getSongMediaId(Song song) {
-        return "Song_" + MediaPlaybackService.Media.getSongIndex(song);
-    }
-
-    public static String getLoopMediaId(Song song) {
-        return "Loop_" + MediaPlaybackService.Media.getLoopIndex(song);
+            return "Loop_" + getLoopPath();
+        return "Song_" + getSongPath();
     }
 
     @Override

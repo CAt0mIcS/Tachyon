@@ -2,10 +2,12 @@ package com.de.mucify;
 
 import android.content.ContextWrapper;
 import android.os.Environment;
+import android.util.Log;
 
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
+import com.de.mucify.service.MediaPlaybackService;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -55,6 +57,41 @@ public class MediaLibrary {
         loadFiles(DataDirectory, false, false, true);
         Collections.sort(AvailablePlaylists, mPlaylistComparator);
     }
+
+    public static boolean isSongMediaId(String mediaId) {
+        return mediaId.contains("Song_");
+    }
+    public static boolean isLoopMediaId(String mediaId) {
+        return mediaId.contains("Loop_");
+    }
+    public static boolean isPlaylistMediaId(String mediaId) {
+        return mediaId.contains("Playlist_");
+    }
+    public static File getPathFromMediaId(String mediaId) {
+        return new File(mediaId.substring(mediaId.indexOf('_') + 1));
+    }
+
+    public static Playback getPlaybackFromMediaId(String mediaId) {
+        if (isSongMediaId(mediaId)) {
+            for (Song s : MediaPlaybackService.Media.AvailableSongs) {
+                if (s.getPath().equals(getPathFromMediaId(mediaId)))
+                    return s;
+            }
+        } else if (isLoopMediaId(mediaId)) {
+            for(Song s : MediaPlaybackService.Media.AvailableLoops) {
+                if(s.getPath().equals(getPathFromMediaId(mediaId)))
+                    return s;
+            }
+        } else if (isPlaylistMediaId(mediaId)) {
+            for(Playlist p : MediaPlaybackService.Media.AvailablePlaylists) {
+                if(p.getPath().equals(getPathFromMediaId(mediaId)))
+                    return p;
+            }
+        }
+        Log.e("Mucify: ", "Invalid media id " + mediaId);
+        return null;
+    }
+
 
     public int getSongIndex(Song song) {
         for(int i = 0; i < AvailableSongs.size(); ++i) {

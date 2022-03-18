@@ -91,7 +91,7 @@ public class Playlist extends Playback {
 
     @Override
     public String getMediaId() {
-        return getMediaId(this);
+        return "Playlist_" + getPath();
     }
 
     @Override
@@ -147,10 +147,6 @@ public class Playlist extends Playback {
      */
     public String getName() {
         return mName;
-    }
-
-    public static String getMediaId(Playlist playlist) {
-        return "Playlist_" + MediaPlaybackService.Media.getPlaylistIndex(playlist);
     }
 
     /**

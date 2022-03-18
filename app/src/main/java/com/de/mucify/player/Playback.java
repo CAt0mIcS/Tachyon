@@ -111,8 +111,8 @@ public abstract class Playback {
     public abstract String getSubtitle();
 
     /**
-     * MediaIds are constructed with the type of Playback (Song_, Loop_, Playlist_) and the Playback's
-     * index in the MediaLibrary. Note that all MediaIds become invalid once the MediaLibrary adds a new Playback.
+     * MediaIds are constructed with the type of Playback (Song_, Loop_, Playlist_) and the path
+     * to either the song, loop, or playlist file.
      * @return The media id of the current playback
      */
     public abstract String getMediaId();
