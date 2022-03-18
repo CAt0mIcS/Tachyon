@@ -123,84 +123,17 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             Media.loadAvailablePlaylists();
         }
 
-        mMediaSession = new MediaSessionCompat(this, "com.de.mucify.MediaPlaybackService");
-        mMediaSession.setFlags(
-                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
-                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-
-        PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
-                .setActions(PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PLAY_PAUSE);
-        mMediaSession.setPlaybackState(stateBuilder.build());
-        mMediaSession.setCallback(new MediaSessionCallback());
-        setSessionToken(mMediaSession.getSessionToken());
+        createMediaSession();
 
         mNotificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel();
         }
 
-        mPlayAction = new NotificationCompat.Action(
-                R.drawable.play,
-                getString(R.string.play),
-                MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        this,
-                        PlaybackStateCompat.ACTION_PLAY));
-        mPauseAction = new NotificationCompat.Action(
-                R.drawable.pause,
-                getString(R.string.pause),
-                MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        this,
-                        PlaybackStateCompat.ACTION_PAUSE));
-        mNextAction = new NotificationCompat.Action(
-                R.drawable.next,
-                getString(R.string.next),
-                MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        this,
-                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT));
-        mPreviousAction = new NotificationCompat.Action(
-                R.drawable.previous,
-                getString(R.string.previous),
-                MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        this,
-                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS));
-
-        // Thread checks every User.AudioUpdateInterval if the song has finished playing. If so
-        // the song will either be restarted (Song) or the next song will be played (Playlist)
-        new Thread(() -> {
-            Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
-
-            while(true) {
-
-                synchronized (mPlaybackLock) {
-                    if(mPlayback != null && mPlayback.isCreated()) {
-                        int currentPos = mPlayback.getCurrentPosition();
-                        Song currentSong = mPlayback.getCurrentSong();
-
-                        if(currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime()) {
-                            if(mPlayback instanceof Playlist) {
-                                mPlayback.next(this);
-                            }
-                            else {
-                                mMediaSession.getController().getTransportControls().seekTo(currentSong.getStartTime());
-                            }
-
-                        }
-                    }
-                }
-
-                try {
-                    synchronized (UserData.SettingsLock) {
-                        Thread.sleep(UserData.AudioUpdateInterval);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+        createNotificationActions();
+        startPlaybackUpdateThread();
 
         Log.d("Mucify", "Created MediaPlaybackService");
-
         Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
     }
 
@@ -482,5 +415,88 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             onPlay();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSkipToPrevious");
         }
+    }
+
+    /**
+     * Creates and initializes media default media session with Play/Pause actions, MediaSessionCallback and
+     * sets the current session token
+     */
+    private void createMediaSession() {
+        mMediaSession = new MediaSessionCompat(this, "com.de.mucify.MediaPlaybackService");
+        mMediaSession.setFlags(
+                MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
+                        MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
+
+        PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder()
+                .setActions(PlaybackStateCompat.ACTION_PLAY | PlaybackStateCompat.ACTION_PLAY_PAUSE);
+        mMediaSession.setPlaybackState(stateBuilder.build());
+        mMediaSession.setCallback(new MediaSessionCallback());
+        setSessionToken(mMediaSession.getSessionToken());
+    }
+
+    private void createNotificationActions() {
+        mPlayAction = new NotificationCompat.Action(
+                R.drawable.play,
+                getString(R.string.play),
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        this,
+                        PlaybackStateCompat.ACTION_PLAY));
+        mPauseAction = new NotificationCompat.Action(
+                R.drawable.pause,
+                getString(R.string.pause),
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        this,
+                        PlaybackStateCompat.ACTION_PAUSE));
+        mNextAction = new NotificationCompat.Action(
+                R.drawable.next,
+                getString(R.string.next),
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        this,
+                        PlaybackStateCompat.ACTION_SKIP_TO_NEXT));
+        mPreviousAction = new NotificationCompat.Action(
+                R.drawable.previous,
+                getString(R.string.previous),
+                MediaButtonReceiver.buildMediaButtonPendingIntent(
+                        this,
+                        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS));
+    }
+
+    /**
+     * Thread checks every User.AudioUpdateInterval if the song has finished playing. If so
+     * the song will either be restarted (Song) or the next song will be played (Playlist)
+     */
+    private void startPlaybackUpdateThread() {
+
+        new Thread(() -> {
+            Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
+
+            while(true) {
+
+                synchronized (mPlaybackLock) {
+                    if(mPlayback != null && mPlayback.isCreated()) {
+                        int currentPos = mPlayback.getCurrentPosition();
+                        Song currentSong = mPlayback.getCurrentSong();
+
+                        if(currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime()) {
+                            if(mPlayback instanceof Playlist) {
+                                mPlayback.next(this);
+                            }
+                            else {
+                                mMediaSession.getController().getTransportControls().seekTo(currentSong.getStartTime());
+                            }
+
+                        }
+                    }
+                }
+
+                try {
+                    synchronized (UserData.SettingsLock) {
+                        Thread.sleep(UserData.AudioUpdateInterval);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 }
