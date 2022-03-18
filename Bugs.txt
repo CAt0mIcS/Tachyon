@@ -1,0 +1,1 @@
+Playing audio --> Pausing --> Swiping notification away --> quickly opening e.g. Youtube and playing a random video --> Notification reapears
