@@ -53,6 +53,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private final Object mPlaybackLock = new Object();
 
     /**
+     * Used to handle the case where the player is paused and we gain audio focus in which case
+     * the player would start again. This is set to true if the player is paused.
+     */
+    private boolean mKeepPausedAfterAudioFocusGain = false;
+
+    /**
      * One global instance of the MediaLibrary. This is placed here to avoid it being unloaded when
      * the phone is shut down and the MediaPlaybackService is running in the background but requires
      * access to the MediaLibrary. (MY_TODO: Terrible code)
@@ -73,7 +79,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
                     mPlayback.setVolume(1.f, 1.f);
-                    mMediaSession.getController().getTransportControls().play();
+                    if(!mKeepPausedAfterAudioFocusGain)
+                        mMediaSession.getController().getTransportControls().play();
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
                     mMediaSession.getController().getTransportControls().pause();
@@ -311,6 +318,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         mPlayback.create(MediaPlaybackService.this);
 
                     mPlayback.start(MediaPlaybackService.this);
+                    mKeepPausedAfterAudioFocusGain = false;
 
                     if(mPlayback instanceof Playlist) {
                         // Called when the song finished and we need to skip to the next one in the playlist
@@ -344,6 +352,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             synchronized (mPlaybackLock) {
                 mPlayback.pause();
             }
+            mKeepPausedAfterAudioFocusGain = true;
 //            unregisterReceiver(myNoisyAudioStreamReceiver);
 
             repostNotification();
@@ -508,7 +517,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
                         if(currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime()) {
                             if(mPlayback instanceof Playlist) {
-                                mPlayback.next(this);
+                                mMediaSession.getController().getTransportControls().skipToNext();
                             }
                             else {
                                 mMediaSession.getController().getTransportControls().seekTo(currentSong.getStartTime());
