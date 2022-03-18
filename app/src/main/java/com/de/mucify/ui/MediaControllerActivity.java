@@ -21,10 +21,14 @@ import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
+import com.de.mucify.service.MediaAction;
 import com.de.mucify.service.MediaPlaybackService;
+import com.de.mucify.service.MetadataKey;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import kotlin.Metadata;
 
 
 public abstract class MediaControllerActivity extends AppCompatActivity {
@@ -114,8 +118,57 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING;
     }
 
+    public boolean isCreated() {
+        int state = MediaControllerCompat.getMediaController(this).getPlaybackState().getState();
+        return state != PlaybackStateCompat.STATE_NONE;
+    }
+
     public boolean isPaused() {
         return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PAUSED;
+    }
+
+    public void setStartTime(int millis) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(MediaAction.StartTime, millis);
+        MediaControllerCompat.getMediaController(this).getTransportControls().sendCustomAction(MediaAction.SetStartTime, bundle);
+    }
+
+    public void setEndTime(int millis) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(MediaAction.EndTime, millis);
+        MediaControllerCompat.getMediaController(this).getTransportControls().sendCustomAction(MediaAction.SetEndTime, bundle);
+    }
+
+    public int getStartTime() {
+        return (int) getMetadata().getLong(MetadataKey.StartPos);
+    }
+
+    public int getEndTime() {
+        return (int) getMetadata().getLong(MetadataKey.EndPos);
+    }
+
+    public int getCurrentPosition() {
+        return (int) getPlaybackState().getPosition();
+    }
+
+    public int getDuration() {
+        return (int) getMetadata().getLong(MetadataKey.Duration);
+    }
+
+    public String getSongTitle() {
+        return getMetadata().getString(MetadataKey.Title);
+    }
+
+    public String getSongArtist() {
+        return getMetadata().getString(MetadataKey.Artist);
+    }
+
+    public PlaybackStateCompat getPlaybackState() {
+        return MediaControllerCompat.getMediaController(this).getPlaybackState();
+    }
+
+    public MediaMetadataCompat getMetadata() {
+        return MediaControllerCompat.getMediaController(this).getMetadata();
     }
 
     private void buildTransportControls()
@@ -166,14 +219,14 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         public void onMetadataChanged(MediaMetadataCompat metadata) {
             Log.d("Mucify", "MediaController metadata changed");
 
-            String newTitle = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
-            String newArtist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
+            String newTitle = metadata.getString(MetadataKey.Title);
+            String newArtist = metadata.getString(MetadataKey.Artist);
 
-            if(mPreviousMetadata == null || !mPreviousMetadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE).equals(newTitle))
+            if(mPreviousMetadata == null || !mPreviousMetadata.getString(MetadataKey.Title).equals(newTitle))
                 for(Callback c : mCallbacks)
                     c.onTitleChanged(newTitle);
 
-            if(mPreviousMetadata == null || !mPreviousMetadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST).equals(newArtist))
+            if(mPreviousMetadata == null || !mPreviousMetadata.getString(MetadataKey.Artist).equals(newArtist))
                 for(Callback c : mCallbacks)
                     c.onArtistChanged(newArtist);
 

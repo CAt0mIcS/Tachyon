@@ -16,10 +16,13 @@ import com.de.mucify.player.Playback;
 
 public class FragmentMinimizedPlayer extends Fragment {
 
+    private String mMediaId;
     private String mTitle;
     private String mArtist;
-    private Playback mPlayback;
     private ImageButton mPlayPause;
+    private TextView mTxtTitle;
+    private TextView mTxtArtist;
+
     private MediaControllerActivity mMediaController;
 
     private final PlaybackCallback mPlaybackCallback = new PlaybackCallback();
@@ -29,19 +32,19 @@ public class FragmentMinimizedPlayer extends Fragment {
         super();
     }
 
-    public FragmentMinimizedPlayer(Playback playback, int playbackSeekPos, MediaControllerActivity controller) {
+    public FragmentMinimizedPlayer(String mediaId, String title, String artist, int playbackSeekPos, MediaControllerActivity controller) {
         super(R.layout.fragment_minimized_player);
-        mPlayback = playback;
-        mTitle = playback.getTitle();
-        mArtist = playback.getSubtitle();
         mMediaController = controller;
         mPlaybackSeekPos = playbackSeekPos;
+        mMediaId = mediaId;
+        mTitle = title;
+        mArtist = artist;
 
         mMediaController.addCallback(mPlaybackCallback);
     }
 
-    public FragmentMinimizedPlayer(Playback playback, MediaControllerActivity controller) {
-        this(playback, 0, controller);
+    public FragmentMinimizedPlayer(String mediaId, String title, String artist, MediaControllerActivity controller) {
+        this(mediaId, title, artist, 0, controller);
     }
 
     @Override
@@ -54,13 +57,15 @@ public class FragmentMinimizedPlayer extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ((TextView)view.findViewById(R.id.txtTitle)).setText(mTitle);
-        ((TextView)view.findViewById(R.id.txtArtist)).setText(mArtist);
+        mTxtTitle = view.findViewById(R.id.txtTitle);
+        mTxtArtist = view.findViewById(R.id.txtArtist);
+        mTxtTitle.setText(mTitle);
+        mTxtArtist.setText(mArtist);
 
         mPlayPause = view.findViewById(R.id.btnPlayPause);
         mPlayPause.setOnClickListener(v -> {
-            if(!mPlayback.isCreated()) {
-                mMediaController.play(mPlayback);
+            if(!mMediaController.isCreated()) {
+                mMediaController.play(mMediaId);
                 if(mPlaybackSeekPos != 0) {
                     mMediaController.seekTo(mPlaybackSeekPos);
                 }
@@ -75,14 +80,21 @@ public class FragmentMinimizedPlayer extends Fragment {
         // Clicking on minimized player should open the large player
         view.setOnClickListener(v -> {
             Intent i = new Intent(getActivity(), ActivityPlayer.class);
-            i.putExtra("MediaId", mPlayback.getMediaId());
+            i.putExtra("MediaId", mMediaId);
+
+            // Player only needs title and artist if the Playback hasn't been started yet
+            if(!mMediaController.isCreated()) {
+                i.putExtra("Title", mTxtTitle.getText().toString());
+                i.putExtra("Subtitle", mTxtArtist.getText().toString());
+            }
+
             i.putExtra("IsPlaying", true);
             if(mPlaybackSeekPos != 0)
                 i.putExtra("SeekPos", mPlaybackSeekPos);
             startActivity(i);
         });
 
-        if(!mPlayback.isCreated() || mPlayback.isPaused())
+        if(!mMediaController.isCreated() || mMediaController.isPaused())
             mPlaybackCallback.onPause();
         else
             mPlaybackCallback.onStart();
@@ -106,6 +118,16 @@ public class FragmentMinimizedPlayer extends Fragment {
         public void onPause() {
             if(mPlayPause != null)
                 mPlayPause.setImageResource(R.drawable.play);
+        }
+
+        @Override
+        public void onTitleChanged(String title) {
+            mTxtTitle.setText(title);
+        }
+
+        @Override
+        public void onArtistChanged(String artist) {
+            mTxtArtist.setText(artist);
         }
     }
 }

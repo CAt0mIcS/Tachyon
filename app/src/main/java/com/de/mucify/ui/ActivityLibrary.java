@@ -94,7 +94,8 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
 
         if(miniplayerPlayback != null) {
             FragmentMinimizedPlayer fragmentMinimizedPlayer =
-                    new FragmentMinimizedPlayer(miniplayerPlayback, UserData.LastPlayedPlaybackPos, this);
+                    new FragmentMinimizedPlayer(miniplayerPlayback.getMediaId(), miniplayerPlayback.getTitle(),
+                            miniplayerPlayback.getSubtitle(), UserData.LastPlayedPlaybackPos, this);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
                     .commit();
@@ -131,7 +132,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
     private void startAudio(Playback playback) {
         play(playback);
 
-        FragmentMinimizedPlayer fragmentMinimizedPlayer = new FragmentMinimizedPlayer(playback, this);
+        FragmentMinimizedPlayer fragmentMinimizedPlayer = new FragmentMinimizedPlayer(playback.getMediaId(), playback.getTitle(), playback.getSubtitle(), this);
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
                 .commit();

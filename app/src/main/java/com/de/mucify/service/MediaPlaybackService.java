@@ -251,9 +251,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private MediaMetadataCompat getMetadata() {
         synchronized (mPlaybackLock) {
             return mMetadataBuilder
-                    .putString(MediaMetadata.METADATA_KEY_TITLE, mPlayback.getTitle())
-                    .putString(MediaMetadata.METADATA_KEY_ARTIST, mPlayback.getSubtitle())
-                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, mPlayback.getDuration())
+                    .putString(MetadataKey.Title, mPlayback.getTitle())
+                    .putString(MetadataKey.Artist, mPlayback.getSubtitle())
+                    .putLong(MetadataKey.Duration, mPlayback.getDuration())
+                    .putLong(MetadataKey.StartPos, mPlayback.getCurrentSong().getStartTime())
+                    .putLong(MetadataKey.EndPos, mPlayback.getCurrentSong().getEndTime())
                     .build();
         }
     }
@@ -411,6 +413,25 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             }
             onPlay();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSkipToPrevious");
+        }
+
+        /**
+         * Handles custom events to the player. Because we don't want the Playable object to be used
+         * in the UI code, we'll have to handle things like setting start/end time like this. All
+         * possible events are defined in MediaAction.
+         */
+        @Override
+        public void onCustomAction(String action, Bundle extras) {
+            switch(action) {
+                case MediaAction.SetStartTime:
+                    if(mPlayback instanceof Song && !((Song)mPlayback).isLoop())
+                        mPlayback.getCurrentSong().setStartTime(extras.getInt(MediaAction.StartTime));
+                    break;
+                case MediaAction.SetEndTime:
+                    if(mPlayback instanceof Song && !((Song)mPlayback).isLoop())
+                        mPlayback.getCurrentSong().setEndTime(extras.getInt(MediaAction.EndTime));
+                    break;
+            }
         }
     }
 
