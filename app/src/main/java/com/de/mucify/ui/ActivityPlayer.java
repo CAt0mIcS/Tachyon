@@ -53,7 +53,7 @@ public class ActivityPlayer extends MediaControllerActivity {
     }
 
     @Override
-    public void onBuildTransportControls() {
+    public void onConnected() {
         if(!getIntent().getBooleanExtra("IsPlaying", false))
             play(getIntent().getStringExtra("MediaId"));
 

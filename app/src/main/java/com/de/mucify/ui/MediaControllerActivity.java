@@ -87,99 +87,148 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
     public void addCallback(Callback c) {
         mCallbacks.add(c);
     }
-
     public void removeCallback(Callback c) {
         mCallbacks.remove(c);
     }
 
+    /**
+     * Unpauses the paused audio. Expects that the Playback has already been started using start(String)
+     */
     public void unpause() {
         MediaControllerCompat.getMediaController(this).getTransportControls().play();
     }
 
+    /**
+     * Pauses the currently playing audio. Crashes if the Playback hasn't been started yet.
+     */
     public void pause() {
         MediaControllerCompat.getMediaController(this).getTransportControls().pause();
     }
 
+    /**
+     * Seeks the currently playing audio to the specified offset. Crashes if the Playback hasn't been started yet.
+     */
     public void seekTo(int millis) {
         MediaControllerCompat.getMediaController(this).getTransportControls().seekTo(millis);
     }
 
-    public void play(Playback playback) {
-        MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(playback.getMediaId(), null);
-    }
-
-
+    /**
+     * Plays new audio with specified MediaId. Afterwards all operations like seekTo, pause, isPlaying, ...
+     * are safe to be called.
+     */
     public void play(String mediaId) {
         MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(mediaId, null);
     }
 
 
+    /**
+     * Checks if the playback state is equal to playing. Crashes if the Playback hasn't been started yet.
+     */
     public boolean isPlaying() {
         return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING;
     }
 
+    /**
+     * Checks if the playback state is not none, in which case the Playback is assumed to be created.
+     * Crashes if the Playback hasn't been started yet.
+     */
     public boolean isCreated() {
         int state = MediaControllerCompat.getMediaController(this).getPlaybackState().getState();
         return state != PlaybackStateCompat.STATE_NONE;
     }
 
+    /**
+     * Checks if the playback state is equal to paused. Crashes if the Playback hasn't been started yet.
+     */
     public boolean isPaused() {
         return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PAUSED;
     }
 
+    /**
+     * Uses a custom event to call onCustomEvent in MediaPlaybackService. Only sets the start time
+     * if the currently playing Playback is neither Loop nor Playlist, does nothing otherwise.
+     * Crashes if the Playback hasn't been started yet.
+     * @param millis offset from audio position zero.
+     */
     public void setStartTime(int millis) {
         Bundle bundle = new Bundle();
         bundle.putInt(MediaAction.StartTime, millis);
         MediaControllerCompat.getMediaController(this).getTransportControls().sendCustomAction(MediaAction.SetStartTime, bundle);
     }
 
+    /**
+     * Uses a custom event to call onCustomEvent in MediaPlaybackService. Only sets the end time
+     * if the currently playing Playback is neither Loop nor Playlist, does nothing otherwise.
+     * Crashes if the Playback hasn't been started yet.
+     * @param millis offset from audio duration.
+     */
     public void setEndTime(int millis) {
         Bundle bundle = new Bundle();
         bundle.putInt(MediaAction.EndTime, millis);
         MediaControllerCompat.getMediaController(this).getTransportControls().sendCustomAction(MediaAction.SetEndTime, bundle);
     }
 
+    /**
+     * Gets the start time of the currently playing song. Crashes if the Playback hasn't been started yet.
+     */
     public int getStartTime() {
         return (int) getMetadata().getLong(MetadataKey.StartPos);
     }
 
+    /**
+     * Gets the end time of the currently playing song. Crashes if the Playback hasn't been started yet.
+     */
     public int getEndTime() {
         return (int) getMetadata().getLong(MetadataKey.EndPos);
     }
 
+    /**
+     * Gets the current position of the currently playing song. Crashes if the Playback hasn't been started yet.
+     */
     public int getCurrentPosition() {
         return (int) getPlaybackState().getPosition();
     }
 
+    /**
+     * Gets the duration of the currently playing song. Crashes if the Playback hasn't been started yet.
+     */
     public int getDuration() {
         return (int) getMetadata().getLong(MetadataKey.Duration);
     }
 
+    /**
+     * Gets the title of the currently playing song. Metadata must've been set, otherwise the
+     * function will crash.
+     */
     public String getSongTitle() {
         return getMetadata().getString(MetadataKey.Title);
     }
 
+    /**
+     * Gets the artist of the currently playing song. Metadata must've been set, otherwise the
+     * function will crash.
+     */
     public String getSongArtist() {
         return getMetadata().getString(MetadataKey.Artist);
     }
 
+    /**
+     * @return playback state which was set in MediaPlaybackService
+     */
     public PlaybackStateCompat getPlaybackState() {
         return MediaControllerCompat.getMediaController(this).getPlaybackState();
     }
 
+    /**
+     * @return metadata which was set in the MediaPlaybackService
+     */
     public MediaMetadataCompat getMetadata() {
         return MediaControllerCompat.getMediaController(this).getMetadata();
     }
 
-    private void buildTransportControls()
-    {
-        onBuildTransportControls();
-        MediaControllerCompat mediaController = MediaControllerCompat.getMediaController(MediaControllerActivity.this);
-        // Register a Callback to stay in sync
-        mediaController.registerCallback(mControllerCallback);
-    }
-
-    protected void onBuildTransportControls() {}
+    /**
+     * Connection to the MediaPlaybackService has been established.
+     */
     protected void onConnected() {}
 
 
@@ -197,7 +246,6 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
 
             // Finish building the UI
             buildTransportControls();
-            MediaControllerActivity.this.onConnected();
             Log.d("Mucify", "MediaController connection established");
         }
 
@@ -259,6 +307,15 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         }
     }
 
+    private void buildTransportControls()
+    {
+        onConnected();
+        MediaControllerCompat mediaController = MediaControllerCompat.getMediaController(MediaControllerActivity.this);
+        // Register a Callback to stay in sync
+        mediaController.registerCallback(mControllerCallback);
+    }
+
+
     public abstract static class Callback {
         public void onStart() {}
         public void onPause() {}
@@ -266,4 +323,5 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         public void onTitleChanged(String title) {}
         public void onArtistChanged(String artist) {}
     }
+
 }
