@@ -85,23 +85,14 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
     }
 
     public void play(Playback playback) {
-        if(playback instanceof Song)
-            play((Song)playback);
-        else
-            play((Playlist)playback);
+        MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(playback.getMediaId(), null);
     }
 
-    public void play(Song song) {
-        MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(song.getMediaId(), null);
-    }
 
     public void play(String mediaId) {
         MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(mediaId, null);
     }
 
-    public void play(Playlist playlist) {
-        MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(playlist.getMediaId(), null);
-    }
 
     public boolean isPlaying() {
         return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING;

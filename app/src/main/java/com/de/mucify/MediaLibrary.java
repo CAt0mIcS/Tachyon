@@ -3,6 +3,7 @@ package com.de.mucify;
 import android.content.ContextWrapper;
 import android.os.Environment;
 
+import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 
@@ -88,6 +89,13 @@ public class MediaLibrary {
             if(s.getLoopPath().equals(songLoopPath))
                 return s;
 
+        return null;
+    }
+
+    public Playlist getPlaylist(File path) {
+        for(Playlist p : AvailablePlaylists)
+            if(p.getPath().equals(path))
+                return p;
         return null;
     }
 

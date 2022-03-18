@@ -259,6 +259,16 @@ public class Song extends Playback {
         return this;
     }
 
+    /**
+     * @return path to either song or loop file
+     */
+    @Override
+    public File getPath() {
+        if(isLoop())
+            return getLoopPath();
+        return getSongPath();
+    }
+
     public void setStartTime(int startTime) { mStartTime = startTime; }
     public void setEndTime(int endTime) { mEndTime = endTime; }
     public String getArtist() { return mArtist; }

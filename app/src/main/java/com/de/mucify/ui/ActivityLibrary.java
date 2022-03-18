@@ -27,6 +27,7 @@ import com.de.mucify.adapter.ViewHolderLoop;
 import com.de.mucify.adapter.ViewHolderPlaylist;
 import com.de.mucify.adapter.ViewHolderSong;
 import com.de.mucify.player.Playback;
+import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 import com.de.mucify.service.MediaPlaybackService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -84,15 +85,20 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
 
     @Override
     public void onConnected() {
-        Song miniplayerSong = MediaPlaybackService.Media.getSong(UserData.LastPlayedPlayback);
-        if(miniplayerSong != null) {
+        Playback miniplayerPlayback = MediaPlaybackService.Media.getSong(UserData.LastPlayedPlayback);
+        if(miniplayerPlayback == null) {
+            miniplayerPlayback = MediaPlaybackService.Media.getPlaylist(UserData.LastPlayedPlayback);
+            if(miniplayerPlayback != null && UserData.LastPlayedPlaybackInPlaylist != null)
+                ((Playlist)miniplayerPlayback).setCurrentSong(MediaPlaybackService.Media.getSong(UserData.LastPlayedPlaybackInPlaylist));
+        }
+
+        if(miniplayerPlayback != null) {
             FragmentMinimizedPlayer fragmentMinimizedPlayer =
-                    new FragmentMinimizedPlayer(miniplayerSong, UserData.LastPlayedPlaybackPos, this);
+                    new FragmentMinimizedPlayer(miniplayerPlayback, UserData.LastPlayedPlaybackPos, this);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragmentMinimizedPlayer, fragmentMinimizedPlayer)
                     .commit();
         }
-
 
         RecyclerView rvHistory = findViewById(R.id.rvHistory);
         rvHistory.setLayoutManager(new LinearLayoutManager(this));

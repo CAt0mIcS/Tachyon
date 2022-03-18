@@ -124,6 +124,14 @@ public class Playlist extends Playback {
         return mSongs.get(mCurrentSongIndex);
     }
 
+    /**
+     * @return the path to the playlist file
+     */
+    @Override
+    public File getPath() {
+        return mPlaylistFilePath;
+    }
+
     @Override
     public void setVolume(float left, float right) {
         getCurrentSong().setVolume(left, right);
@@ -180,14 +188,22 @@ public class Playlist extends Playback {
     }
 
     /**
-     * @return the path to the playlist file
-     */
-    public File getPlaylistFilePath() { return mPlaylistFilePath; }
-
-    /**
      * @return list of all songs in the playlist
      */
     public ArrayList<Song> getSongs() { return mSongs; }
+
+    /**
+     * Sets the Song to be played to @param song. Does nothing if the Song doesn't exist.
+     * Only sets the index in the song list to be played next. A call to create and start will actually
+     * start the set song.
+     */
+    public void setCurrentSong(Song song) {
+        for(int i = 0; i < mSongs.size(); ++i)
+            if(song.equalsUninitialized(mSongs.get(i))) {
+                mCurrentSongIndex = i;
+                return;
+            }
+    }
 
     @Override
     public int hashCode() {

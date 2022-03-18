@@ -308,17 +308,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         mPlayback.create(MediaPlaybackService.this);
 
                     mPlayback.start(MediaPlaybackService.this);
-                    synchronized (UserData.SettingsLock) {
-                        if(mPlayback instanceof Song) {
-                            if(((Song)mPlayback).isLoop())
-                                UserData.LastPlayedPlayback = ((Song)mPlayback).getLoopPath();
-                            else
-                                UserData.LastPlayedPlayback = ((Song)mPlayback).getSongPath();
-                        }
-                        else
-                            UserData.LastPlayedPlayback = ((Playlist)mPlayback).getCurrentAudioPath();
-                    }
-                    UserData.save();
+                    savePlaybackToSettings();
                 }
 
 
@@ -346,10 +336,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             repostNotification();
 //            stopForeground(false);
 
-            synchronized (UserData.SettingsLock) {
-                UserData.LastPlayedPlaybackPos = mPlayback.getCurrentPosition();
-            }
-            UserData.save();
+            savePlaybackToSettings();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPause");
         }
 
@@ -519,5 +506,17 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         openUI.putExtra("IsPlaying", true);
             return PendingIntent.getActivity(
                     this, 0, openUI, PendingIntent.FLAG_CANCEL_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0));
+    }
+
+    private void savePlaybackToSettings() {
+        synchronized (UserData.SettingsLock) {
+                UserData.LastPlayedPlayback = mPlayback.getPath();
+                UserData.LastPlayedPlaybackPos = mPlayback.getCurrentPosition();
+                if(mPlayback instanceof Playlist) {
+                    Playlist playlist = (Playlist)mPlayback;
+                    UserData.LastPlayedPlaybackInPlaylist = playlist.getCurrentSong().getPath();
+                }
+        }
+        UserData.save();
     }
 }

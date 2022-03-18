@@ -29,6 +29,7 @@ public class UserData {
     public static int AudioUpdateInterval = 100;
 
     public static File LastPlayedPlayback;
+    public static File LastPlayedPlaybackInPlaylist;
     public static int LastPlayedPlaybackPos = 0;
 
     public static void load(ContextWrapper context) {
@@ -63,6 +64,8 @@ public class UserData {
 
                 if(json.has("LastPlayedPlayback"))
                     LastPlayedPlayback = new File(json.getString("LastPlayedPlayback"));
+                if(json.has("LastPlayedPlaybackInPlaylist"))
+                    LastPlayedPlaybackInPlaylist = new File(json.getString("LastPlayedPlaybackInPlaylist"));
             }
 
         } catch (JSONException e) {
@@ -82,6 +85,8 @@ public class UserData {
                 map.put("LastPlayedPlayback", LastPlayedPlayback.getAbsolutePath());
                 map.put("LastPlayedPlaybackPos", String.valueOf(LastPlayedPlaybackPos));
             }
+            if(LastPlayedPlaybackInPlaylist != null)
+                map.put("LastPlayedPlaybackInPlaylist", LastPlayedPlaybackInPlaylist.getAbsolutePath());
         }
 
         try {

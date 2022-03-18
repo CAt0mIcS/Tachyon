@@ -2,6 +2,8 @@ package com.de.mucify.player;
 
 
 import android.content.Context;
+
+import java.io.File;
 import java.util.ArrayList;
 
 public abstract class Playback {
@@ -96,6 +98,11 @@ public abstract class Playback {
      * @return Current active song, only useful for Playlist. In Song, instance itself is returned.
      */
     public abstract Song getCurrentSong();
+
+    /**
+     * @return either the path to the song, loop, or playlist file
+     */
+    public abstract File getPath();
 
     /**
      * Sets the volume for this media player and the current Song in the playlist, if one is running.
