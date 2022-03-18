@@ -3,6 +3,7 @@ package com.de.mucify.service;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,6 +36,8 @@ import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
+import com.de.mucify.ui.ActivityPlayer;
+import com.de.mucify.ui.ActivityPlaylistPlayer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -201,7 +204,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         .setMediaSession(mMediaSession.getSessionToken()))
 
                 // Pending intent that is fired when user clicks on notification.
-                .setContentIntent(mMediaSession.getController().getSessionActivity())
+                .setContentIntent(createContentIntent())
 
                 // Add previous song action
                 .addAction(mPreviousAction)
@@ -498,5 +501,17 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 }
             }
         }).start();
+    }
+
+    /**
+     * Creates the PendingIntent to open the (playlist)player activity.
+     */
+    private PendingIntent createContentIntent() {
+        Intent openUI = new Intent(this, mPlayback instanceof Playlist ? ActivityPlaylistPlayer.class : ActivityPlayer.class);
+        openUI.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        openUI.putExtra("MediaId", mPlayback.getMediaId());
+        openUI.putExtra("IsPlaying", true);
+            return PendingIntent.getActivity(
+                    this, 0, openUI, PendingIntent.FLAG_CANCEL_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0));
     }
 }
