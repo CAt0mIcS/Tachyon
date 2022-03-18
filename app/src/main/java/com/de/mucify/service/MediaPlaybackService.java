@@ -494,7 +494,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                             else {
                                 mMediaSession.getController().getTransportControls().seekTo(currentSong.getStartTime());
                             }
-
                         }
                     }
                 }

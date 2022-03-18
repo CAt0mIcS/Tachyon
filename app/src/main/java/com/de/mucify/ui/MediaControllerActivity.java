@@ -34,10 +34,9 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
         // MY_TODO: Better waiting and figure out what to do if permission not granted
         PermissionManager.requestPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            startForegroundService(new Intent(this, MediaPlaybackService.class));
-        else
-            startService(new Intent(this, MediaPlaybackService.class));
+        // Not using startForegroundService because the service only has 5 seconds to call Service.startForeground
+        // which doesn't happen until we actually start playing audio
+        startService(new Intent(this, MediaPlaybackService.class));
 
         mMediaBrowser = new MediaBrowserCompat(MediaControllerActivity.this,
                 new ComponentName(MediaControllerActivity.this, MediaPlaybackService.class),
