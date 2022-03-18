@@ -1,6 +1,7 @@
 package com.de.mucify.player;
 
 import android.content.Context;
+import android.media.MediaPlayer;
 
 import androidx.annotation.Nullable;
 
@@ -19,11 +20,13 @@ import java.util.Objects;
 public class Playlist extends Playback {
     private String mName;
     private File mPlaylistFilePath;
-    private ArrayList<Song> mSongs = new ArrayList<>();
+    private final ArrayList<Song> mSongs = new ArrayList<>();
     private int mCurrentSongIndex = 0;
 
+
     /**
-     * Creates a Playlist. Afterwards you'll need to call create() and start() to play the first song
+     * Creates a Playlist. Afterwards you'll need to call create() and start() to play the first song.
+     * You also need to set the context using setContext().
      * @param path path to the playlist file
      */
     public Playlist(File path) {

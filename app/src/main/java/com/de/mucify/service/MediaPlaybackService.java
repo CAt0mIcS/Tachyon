@@ -312,9 +312,15 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
                     mPlayback.start(MediaPlaybackService.this);
 
-                    // Called when one loop is done. The MediaPlayer position changes back to startPos
-                    // and we need to update seekbars.
-                    mPlayback.getCurrentSong().setOnMediaPlayerCompletionListener(mp -> repostNotification());
+                    if(mPlayback instanceof Playlist) {
+                        // Called when the song finished and we need to skip to the next one in the playlist
+                        mPlayback.getCurrentSong().setOnMediaPlayerCompletionListener(mp -> onSkipToNext());
+                    } else {
+                        // Called when one loop is done. The MediaPlayer position changes back to startPos
+                        // and we need to update seekbars.
+                        mPlayback.getCurrentSong().setOnMediaPlayerCompletionListener(mp -> repostNotification());
+                    }
+
                     savePlaybackToSettings();
                 }
 
