@@ -31,7 +31,7 @@ import java.util.List;
 import kotlin.Metadata;
 
 
-public abstract class MediaControllerActivity extends AppCompatActivity {
+public abstract class MediaControllerActivity extends CastActivity {
     private MediaBrowserCompat mMediaBrowser;
     private final MediaControllerCallback mControllerCallback = new MediaControllerCallback();
     private final ArrayList<Callback> mCallbacks = new ArrayList<>();
@@ -115,7 +115,9 @@ public abstract class MediaControllerActivity extends AppCompatActivity {
      * Plays new audio with specified MediaId. Afterwards all operations like seekTo, pause, isPlaying, ...
      * are safe to be called.
      */
+    @Override
     public void play(String mediaId) {
+        super.play(mediaId);
         MediaControllerCompat.getMediaController(this).getTransportControls().playFromMediaId(mediaId, null);
     }
 

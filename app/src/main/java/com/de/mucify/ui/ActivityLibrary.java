@@ -8,6 +8,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -30,6 +32,8 @@ import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 import com.de.mucify.service.MediaPlaybackService;
+import com.google.android.gms.cast.framework.CastButtonFactory;
+import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.ArrayList;
@@ -41,10 +45,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_library);
-
-        Toolbar toolbar = findViewById(R.id.my_toolbar);
-        toolbar.inflateMenu(R.menu.toolbar_default);
-        toolbar.setTitle(getString(R.string.library));
+        initializeToolbar();
 
         // MY_TEMPORARY: Set dark theme just to make it look better in the emulator
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
@@ -55,7 +56,6 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         // MY_TEMPORARY
         if(!checkPermission())
             requestPermission();
-
 
         findViewById(R.id.relLayoutSongs).setOnClickListener(v -> {
             FragmentSelectAudio fragment = new FragmentSelectAudio(AudioType.Song);
@@ -78,6 +78,8 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
                     .add(R.id.fragment_container_view, fragment)
                     .commit();
         });
+
+        CastContext castContext = CastContext.getSharedInstance(this);
     }
 
     @Override
