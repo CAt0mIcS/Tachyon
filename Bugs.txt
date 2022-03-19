@@ -1,15 +1,3 @@
 Playing audio --> Pausing --> Swiping notification away --> quickly opening e.g. Youtube and playing a random video --> Notification reapears
 
 Notification can also appear randomly
-
-Attempt to invoke virtual method 'boolean java.lang.String.equals(java.lang.Object)' on a null object reference
-[com.de.mucify.ui.MediaControllerActivity$MediaControllerCallback.onMetadataChanged(MediaControllerActivity.java:279), 
-android.support.v4.media.session.MediaControllerCompat$Callback$MediaControllerCallbackApi21.onMetadataChanged(MediaControllerCompat.java:895), 
-android.media.session.MediaController$MessageHandler.handleMessage(MediaController.java:1236), 
-android.os.Handler.dispatchMessage(Handler.java:106), 
-android.os.Looper.loopOnce(Looper.java:201), 
-android.os.Looper.loop(Looper.java:288), 
-android.app.ActivityThread.main(ActivityThread.java:7842), 
-java.lang.reflect.Method.invoke(Native Method), 
-com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:548), 
-com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1003)]

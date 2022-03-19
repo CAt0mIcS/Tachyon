@@ -79,11 +79,13 @@ public class Song extends Playback {
         } catch(IllegalArgumentException e) {
             e.printStackTrace();
         }
-        // Always returns either the actual artist or "Unknown Artist" (probably localized: MY_TODO: Test)
-        mArtist = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+
+        String artist = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
         String title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         if(title != null)
             mTitle = title;
+        if(artist != null)
+            mArtist = artist;
     }
 
     /**
@@ -97,6 +99,14 @@ public class Song extends Playback {
         this(context, songFilePath);
         mStartTime = startTime;
         mEndTime = endTime;
+    }
+
+    public boolean isArtistUnknown() {
+        return mArtist == null;
+    }
+
+    public void setArtist(String artist) {
+        mArtist = artist;
     }
 
     @Override

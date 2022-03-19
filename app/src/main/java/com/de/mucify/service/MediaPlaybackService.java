@@ -132,6 +132,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             Media.loadAvailableSongs();
             Media.loadAvailableLoops();
             Media.loadAvailablePlaylists();
+            setLocalizedUnknownArtist();
         }
 
         createMediaSession();
@@ -559,5 +560,23 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 }
         }
         UserData.save();
+    }
+
+    /**
+     * We need to translate "Unknown Artist". Thus we'll set it with string resource
+     */
+    private void setLocalizedUnknownArtist() {
+        for(Song s : Media.AvailableSongs)
+            if(s.isArtistUnknown())
+                s.setArtist(getString(R.string.unknown_artist));
+
+        for(Song s : Media.AvailableLoops)
+            if(s.isArtistUnknown())
+                s.setArtist(getString(R.string.unknown_artist));
+
+        for(Playlist p : Media.AvailablePlaylists)
+            for(Song s : p.getSongs())
+                if(s.isArtistUnknown())
+                    s.setArtist(getString(R.string.unknown_artist));
     }
 }
