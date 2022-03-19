@@ -238,6 +238,11 @@ public abstract class MediaControllerActivity extends CastActivity {
      */
     protected void onConnected() {}
 
+    /**
+     * Connection to the MediaPlaybackService was closed.
+     */
+    protected void onDisconnected() {}
+
 
     private class ConnectionCallback extends MediaBrowserCompat.ConnectionCallback {
         @Override
@@ -319,6 +324,7 @@ public abstract class MediaControllerActivity extends CastActivity {
             Log.d("Mucify", "MediaController session destroyed");
             mMediaBrowser.disconnect();
             // maybe schedule a reconnection using a new MediaBrowser instance
+            onDisconnected();
         }
     }
 

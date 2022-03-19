@@ -40,13 +40,17 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import java.util.ArrayList;
 
 public class ActivityLibrary extends MediaControllerActivity implements AdapterEventListener {
-    ArrayList<Playback> mHistory = new ArrayList<>();
+    private ArrayList<Playback> mHistory = new ArrayList<>();
+    private UserDataCallback mUserDataCallback = new UserDataCallback();
+    private RecyclerView mRvHistory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_library);
         initializeToolbar();
+
+        mRvHistory = findViewById(R.id.rvHistory);
 
         // MY_TEMPORARY: Set dark theme just to make it look better in the emulator
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
@@ -85,8 +89,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
 
     @Override
     public void onConnected() {
-        RecyclerView rvHistory = findViewById(R.id.rvHistory);
-        rvHistory.setLayoutManager(new LinearLayoutManager(this));
+        mRvHistory.setLayoutManager(new LinearLayoutManager(this));
         mHistory.clear();
 
         Playback miniplayerPlayback;
@@ -104,18 +107,16 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
             startMinimizedPlayer(miniplayerPlayback);
         }
 
-        for(int i = UserData.PlaybackInfos.size() - 1; i >= 0; --i) {
-            if(UserData.PlaybackInfos.get(i).isPlaylist()) {
-                mHistory.add(MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).LastPlayedPlaybackInPlaylist));
-            }
-            else {
-                mHistory.add(MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).PlaybackPath));
-            }
-        }
-
+        UserData.addCallback(mUserDataCallback);
         PlayableListItemAdapter adapter = new PlayableListItemAdapter(this, mHistory);
         adapter.setListener(this);
-        rvHistory.setAdapter(adapter);
+        mRvHistory.setAdapter(adapter);
+        mUserDataCallback.onPlaybackInfoChanged(UserData.PlaybackInfos);
+    }
+
+    @Override
+    public void onDisconnected() {
+        UserData.removeCallback(mUserDataCallback);
     }
 
     /**
@@ -200,6 +201,27 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         } else {
             //below android 11
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2296);
+        }
+    }
+
+
+    /**
+     * Used to update the RecyclerView listing the history. MY_TODO: Make more efficient by
+     * adding information about which items changed and not using Adapter.notifyDataSetChanged()
+     */
+    private class UserDataCallback extends UserData.Callback {
+        @Override
+        public void onPlaybackInfoChanged(ArrayList<UserData.PlaybackInfo> playbackInfos) {
+            mHistory.clear();
+            for(int i = UserData.PlaybackInfos.size() - 1; i >= 0; --i) {
+                if(UserData.PlaybackInfos.get(i).isPlaylist()) {
+                    mHistory.add(MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).LastPlayedPlaybackInPlaylist));
+                }
+                else {
+                    mHistory.add(MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).PlaybackPath));
+                }
+            }
+            mRvHistory.getAdapter().notifyDataSetChanged();
         }
     }
 }

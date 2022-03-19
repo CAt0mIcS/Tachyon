@@ -149,6 +149,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
     @Nullable
     @Override
     public BrowserRoot onGetRoot(@NonNull String clientPackageName, int clientUid, @Nullable Bundle rootHints) {

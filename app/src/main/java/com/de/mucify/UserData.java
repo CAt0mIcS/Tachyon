@@ -1,6 +1,7 @@
 package com.de.mucify;
 
 import android.content.ContextWrapper;
+import android.telecom.Call;
 
 
 import androidx.annotation.NonNull;
@@ -21,6 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public class UserData {
+    private static final ArrayList<Callback> mCallbacks = new ArrayList<>();
+
     public static final Object SettingsLock = new Object();
 
     public static File mSettingsFile;
@@ -170,12 +173,18 @@ public class UserData {
             if(info.equals(PlaybackInfos.get(i))) {
                 PlaybackInfos.remove(i);
                 PlaybackInfos.add(info);
+                for(Callback c : mCallbacks)
+                    c.onPlaybackInfoChanged(PlaybackInfos);
+
                 return;
             }
         }
         synchronized (SettingsLock) {
             PlaybackInfos.add(info);
         }
+
+        for(Callback c : mCallbacks)
+            c.onPlaybackInfoChanged(PlaybackInfos);
     }
 
     public static void reset() {
@@ -186,5 +195,17 @@ public class UserData {
             MaxPlaybacksInHistory = 25;
         }
         mSettingsFile.delete();
+    }
+
+    public static void addCallback(Callback callback) {
+        mCallbacks.add(callback);
+    }
+
+    public static void removeCallback(Callback callback) {
+        mCallbacks.remove(callback);
+    }
+
+    public static class Callback {
+        public void onPlaybackInfoChanged(ArrayList<PlaybackInfo> playbackInfos) {}
     }
 }
