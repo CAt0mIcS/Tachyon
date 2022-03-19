@@ -89,13 +89,6 @@ public class FragmentMinimizedPlayer extends Fragment {
             mPlaybackCallback.onStart();
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mMediaController.removeCallback(mPlaybackCallback);
-    }
-
-
     private class PlaybackCallback extends MediaControllerActivity.Callback {
         @Override
         public void onStart() {
