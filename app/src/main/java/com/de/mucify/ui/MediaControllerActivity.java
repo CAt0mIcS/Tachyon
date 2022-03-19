@@ -100,6 +100,7 @@ public abstract class MediaControllerActivity extends CastActivity {
     /**
      * Pauses the currently playing audio. Crashes if the Playback hasn't been started yet.
      */
+    @Override
     public void pause() {
         MediaControllerCompat.getMediaController(this).getTransportControls().pause();
     }
@@ -125,6 +126,7 @@ public abstract class MediaControllerActivity extends CastActivity {
     /**
      * Checks if the playback state is equal to playing. Crashes if the Playback hasn't been started yet.
      */
+    @Override
     public boolean isPlaying() {
         return MediaControllerCompat.getMediaController(this).getPlaybackState().getState() == PlaybackStateCompat.STATE_PLAYING;
     }
@@ -186,6 +188,7 @@ public abstract class MediaControllerActivity extends CastActivity {
     /**
      * Gets the current position of the currently playing song. Crashes if the Playback hasn't been started yet.
      */
+    @Override
     public int getCurrentPosition() {
         return (int) getPlaybackState().getPosition();
     }
@@ -193,6 +196,7 @@ public abstract class MediaControllerActivity extends CastActivity {
     /**
      * Gets the duration of the currently playing song. Crashes if the Playback hasn't been started yet.
      */
+    @Override
     public int getDuration() {
         return (int) getMetadata().getLong(MetadataKey.Duration);
     }
@@ -201,6 +205,7 @@ public abstract class MediaControllerActivity extends CastActivity {
      * Gets the title of the currently playing song. Metadata must've been set, otherwise the
      * function will crash.
      */
+    @Override
     public String getSongTitle() {
         return getMetadata().getString(MetadataKey.Title);
     }
@@ -209,6 +214,7 @@ public abstract class MediaControllerActivity extends CastActivity {
      * Gets the artist of the currently playing song. Metadata must've been set, otherwise the
      * function will crash.
      */
+    @Override
     public String getSongArtist() {
         return getMetadata().getString(MetadataKey.Artist);
     }
