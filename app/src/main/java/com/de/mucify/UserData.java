@@ -183,6 +183,8 @@ public class UserData {
             IgnoreAudioFocus = false;
             SongIncDecInterval = 100;
             AudioUpdateInterval = 100;
+            MaxPlaybacksInHistory = 25;
         }
+        mSettingsFile.delete();
     }
 }
