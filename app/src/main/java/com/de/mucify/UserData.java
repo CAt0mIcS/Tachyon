@@ -32,6 +32,8 @@ public class UserData {
     public static int SongIncDecInterval = 100;
     // Interval by which the loop/song done check will be run
     public static int AudioUpdateInterval = 100;
+    // Max number of playbacks stored in the history
+    public static int MaxPlaybacksInHistory = 25;
 
     public static final ArrayList<PlaybackInfo> PlaybackInfos = new ArrayList<>();
 
@@ -94,6 +96,7 @@ public class UserData {
                 IgnoreAudioFocus = json.optBoolean("IgnoreAudioFocus", IgnoreAudioFocus);
                 SongIncDecInterval = json.optInt("SongIncDecInterval", SongIncDecInterval);
                 AudioUpdateInterval = json.optInt("AudioUpdateInterval", AudioUpdateInterval);
+                MaxPlaybacksInHistory = json.optInt("MaxPlaybacksInHistory", MaxPlaybacksInHistory);
 
                 PlaybackInfos.clear();
                 JSONArray playbackInfos = json.getJSONArray("PlaybackInfos");
@@ -108,6 +111,10 @@ public class UserData {
                         info.LastPlayedPlaybackInPlaylist = new File(obj.getString("LastPlayedPlaybackInPlaylist"));
                     PlaybackInfos.add(info);
                 }
+
+                // Remove oldest playbacks if we exceed max playbacks in history
+                if(PlaybackInfos.size() > MaxPlaybacksInHistory)
+                    PlaybackInfos.subList(0, PlaybackInfos.size() - MaxPlaybacksInHistory).clear();
             }
 
         } catch (JSONException e) {
@@ -123,6 +130,7 @@ public class UserData {
             map.put("IgnoreAudioFocus", String.valueOf(IgnoreAudioFocus));
             map.put("SongIncDecInterval", String.valueOf(SongIncDecInterval));
             map.put("AudioUpdateInterval", String.valueOf(AudioUpdateInterval));
+            map.put("MaxPlaybacksInHistory", String.valueOf(MaxPlaybacksInHistory));
         }
 
         JSONObject json = new JSONObject(map);
