@@ -1,16 +1,11 @@
 package com.de.mucify.ui;
 
-import android.content.Intent;
-import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Environment;
-import android.support.v4.media.MediaMetadataCompat;
-import android.text.format.Formatter;
 import android.util.Log;
 import android.view.MenuItem;
 import android.webkit.MimeTypeMap;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -26,15 +21,11 @@ import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
 import com.google.android.gms.cast.framework.SessionManagerListener;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
-import com.google.android.gms.common.images.WebImage;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.Map;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -117,41 +108,41 @@ public abstract class CastActivity extends AppCompatActivity {
         mSessionManagerListener = new SessionManagerListener<CastSession>() {
 
             @Override
-            public void onSessionEnded(CastSession session, int error) {
+            public void onSessionEnded(@NonNull CastSession session, int error) {
                 onApplicationDisconnected();
             }
 
             @Override
-            public void onSessionResumed(CastSession session, boolean wasSuspended) {
+            public void onSessionResumed(@NonNull CastSession session, boolean wasSuspended) {
                 onApplicationConnected(session);
             }
 
             @Override
-            public void onSessionResumeFailed(CastSession session, int error) {
+            public void onSessionResumeFailed(@NonNull CastSession session, int error) {
                 onApplicationDisconnected();
             }
 
             @Override
-            public void onSessionStarted(CastSession session, String sessionId) {
+            public void onSessionStarted(@NonNull CastSession session, @NonNull String sessionId) {
                 onApplicationConnected(session);
             }
 
             @Override
-            public void onSessionStartFailed(CastSession session, int error) {
+            public void onSessionStartFailed(@NonNull CastSession session, int error) {
                 onApplicationDisconnected();
             }
 
             @Override
-            public void onSessionStarting(CastSession session) {}
+            public void onSessionStarting(@NonNull CastSession session) {}
 
             @Override
-            public void onSessionEnding(CastSession session) {}
+            public void onSessionEnding(@NonNull CastSession session) {}
 
             @Override
-            public void onSessionResuming(CastSession session, String sessionId) {}
+            public void onSessionResuming(@NonNull CastSession session, @NonNull String sessionId) {}
 
             @Override
-            public void onSessionSuspended(CastSession session, int reason) {}
+            public void onSessionSuspended(@NonNull CastSession session, int reason) {}
 
             private void onApplicationConnected(CastSession castSession) {
                 mCastSession = castSession;
@@ -187,15 +178,7 @@ public abstract class CastActivity extends AppCompatActivity {
         if (remoteMediaClient == null) {
             return;
         }
-
-//        remoteMediaClient.registerCallback(new RemoteMediaClient.Callback() {
-//            @Override
-//            public void onStatusUpdated() {
-//                Intent intent = new Intent(LocalPlayerActivity.this, ExpandedControlsActivity.class);
-//                startActivity(intent);
-//                remoteMediaClient.unregisterCallback(this);
-//            }
-//        });
+        
         remoteMediaClient.load(new MediaLoadRequestData.Builder()
                 .setMediaInfo(buildMediaInfo())
                 .setAutoplay(autoPlay)
