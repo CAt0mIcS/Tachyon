@@ -1,0 +1,10 @@
+Bugs:
+Playing audio --> Pausing --> Swiping notification away --> quickly opening e.g. Youtube and playing a random video --> Notification reapears
+
+Notification can also appear randomly
+
+
+
+
+TODO:
+Validate that number entered in SettingsActivity is valid, use error text to display error (https://material.io/components/text-fields/android#using-text-fields)
