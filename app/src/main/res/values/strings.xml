@@ -25,4 +25,12 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
     <string name="unknown_artist">Unknown Artist</string>
+    <string name="refresh">Refresh</string>
+    <string name="reset_settings">Reset Settings</string>
+    <string name="setting_developer">Developer Settings</string>
+    <string name="setting_standard">Standard Settings</string>
+    <string name="audio_focus">Audio Focus</string>
+    <string name="setting_developer_songIncDecInterval">Song Inc/Dec Interval</string>
+    <string name="song_inc_dec_hint">1 - ∞</string>
+    <string name="setting_developer_audioUpdateInterval">Audio Update Interval</string>
 </resources>
