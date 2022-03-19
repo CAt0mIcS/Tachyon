@@ -19,7 +19,7 @@ import java.io.IOException;
 
 public class Song extends Playback {
     private String mTitle;
-    private String mArtist;
+    private String mArtist = null;
 
     private MediaPlayer mMediaPlayer;
 
@@ -79,12 +79,9 @@ public class Song extends Playback {
         } catch(IllegalArgumentException e) {
             e.printStackTrace();
         }
-        String artist =  metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
+        // Always returns either the actual artist or "Unknown Artist" (probably localized: MY_TODO: Test)
+        mArtist = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
         String title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
-        if(artist != null)
-            mArtist = artist;
-        else
-            mArtist = "Unknown Artist";
         if(title != null)
             mTitle = title;
     }
@@ -150,12 +147,6 @@ public class Song extends Playback {
 
         if(mEndTime == 0)
             mEndTime = mMediaPlayer.getDuration();
-
-        // Use string resources for the 'Unknown Artist' string to support translation.
-        // MY_TODO: Songs that aren't created with a context still use "Unknown Artist" which is
-        //          visible in e.g. the RecyclerView list of songs.
-//        if(mArtist.equals("Unknown Artist"))
-//            mArtist = context.getString(R.string.unknown_artist);
 
         Log.d("Mucify.Song", "Song.create");
     }
