@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.AudioType;
+import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
 import com.de.mucify.Util;
@@ -84,24 +85,33 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
 
     @Override
     public void onConnected() {
-        Playback miniplayerPlayback = MediaPlaybackService.Media.getSong(UserData.LastPlayedPlayback);
+        RecyclerView rvHistory = findViewById(R.id.rvHistory);
+        rvHistory.setLayoutManager(new LinearLayoutManager(this));
+        mHistory.clear();
+
+        Playback miniplayerPlayback;
+        if(UserData.PlaybackInfos.size() == 0)
+            return;
+        miniplayerPlayback = MediaPlaybackService.Media.getSong(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPath);
+
         if(miniplayerPlayback == null) {
-            miniplayerPlayback = MediaPlaybackService.Media.getPlaylist(UserData.LastPlayedPlayback);
-            if(miniplayerPlayback != null && UserData.LastPlayedPlaybackInPlaylist != null)
-                ((Playlist)miniplayerPlayback).setCurrentSong(MediaPlaybackService.Media.getSong(UserData.LastPlayedPlaybackInPlaylist));
+            miniplayerPlayback = MediaPlaybackService.Media.getPlaylist(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPath);
+            if(miniplayerPlayback != null && UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).LastPlayedPlaybackInPlaylist != null)
+                ((Playlist)miniplayerPlayback).setCurrentSong(MediaPlaybackService.Media.getSong(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).LastPlayedPlaybackInPlaylist));
         }
 
         if(miniplayerPlayback != null) {
             startMinimizedPlayer(miniplayerPlayback);
         }
 
-        RecyclerView rvHistory = findViewById(R.id.rvHistory);
-        rvHistory.setLayoutManager(new LinearLayoutManager(this));
-
-        mHistory.clear();
-        mHistory.addAll(MediaPlaybackService.Media.AvailableSongs);
-        mHistory.addAll(MediaPlaybackService.Media.AvailableLoops);
-        mHistory.addAll(MediaPlaybackService.Media.AvailablePlaylists);
+        for(int i = UserData.PlaybackInfos.size() - 1; i >= 0; --i) {
+            if(UserData.PlaybackInfos.get(i).isPlaylist()) {
+                mHistory.add(MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).LastPlayedPlaybackInPlaylist));
+            }
+            else {
+                mHistory.add(MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).PlaybackPath));
+            }
+        }
 
         PlayableListItemAdapter adapter = new PlayableListItemAdapter(this, mHistory);
         adapter.setListener(this);

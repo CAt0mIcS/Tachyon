@@ -3,6 +3,9 @@ package com.de.mucify;
 import android.content.ContextWrapper;
 
 
+import androidx.annotation.NonNull;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,8 +15,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class UserData {
     public static final Object SettingsLock = new Object();
@@ -28,9 +33,38 @@ public class UserData {
     // Interval by which the loop/song done check will be run
     public static int AudioUpdateInterval = 100;
 
-    public static File LastPlayedPlayback;
-    public static File LastPlayedPlaybackInPlaylist;
-    public static int LastPlayedPlaybackPos = 0;
+    public static final ArrayList<PlaybackInfo> PlaybackInfos = new ArrayList<>();
+
+    public static class PlaybackInfo {
+
+        /**
+         * Path to the last file which was opened. Could be path to playlist, loop or song file
+         */
+        public File PlaybackPath;
+
+        /**
+         * Is PlaybackPath is a playlist then this will be set to the last song/loop that was played
+         * in the playlist
+         */
+        public File LastPlayedPlaybackInPlaylist;
+
+        /**
+         * Position in milliseconds of the song or loop
+         */
+        public int PlaybackPos = 0;
+
+        public boolean isPlaylist() {
+            return LastPlayedPlaybackInPlaylist != null;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            PlaybackInfo that = (PlaybackInfo) o;
+            return PlaybackPath.equals(that.PlaybackPath) && Objects.equals(LastPlayedPlaybackInPlaylist, that.LastPlayedPlaybackInPlaylist);
+        }
+    }
 
     public static void load(ContextWrapper context) {
         mSettingsFile = new File(context.getFilesDir().getAbsolutePath() + "/Settings.txt");
@@ -60,12 +94,20 @@ public class UserData {
                 IgnoreAudioFocus = json.optBoolean("IgnoreAudioFocus", IgnoreAudioFocus);
                 SongIncDecInterval = json.optInt("SongIncDecInterval", SongIncDecInterval);
                 AudioUpdateInterval = json.optInt("AudioUpdateInterval", AudioUpdateInterval);
-                LastPlayedPlaybackPos = json.optInt("LastPlayedPlaybackPos", LastPlayedPlaybackPos);
 
-                if(json.has("LastPlayedPlayback"))
-                    LastPlayedPlayback = new File(json.getString("LastPlayedPlayback"));
-                if(json.has("LastPlayedPlaybackInPlaylist"))
-                    LastPlayedPlaybackInPlaylist = new File(json.getString("LastPlayedPlaybackInPlaylist"));
+                PlaybackInfos.clear();
+                JSONArray playbackInfos = json.getJSONArray("PlaybackInfos");
+                for(int i = 0; i < playbackInfos.length(); ++i) {
+                    JSONObject obj = playbackInfos.getJSONObject(i);
+                    PlaybackInfo info = new PlaybackInfo();
+
+                    info.PlaybackPos = obj.optInt("PlaybackPos");
+                    if(obj.has("PlaybackPath"))
+                        info.PlaybackPath = new File(obj.getString("PlaybackPath"));
+                    if(obj.has("LastPlayedPlaybackInPlaylist"))
+                        info.LastPlayedPlaybackInPlaylist = new File(obj.getString("LastPlayedPlaybackInPlaylist"));
+                    PlaybackInfos.add(info);
+                }
             }
 
         } catch (JSONException e) {
@@ -81,20 +123,50 @@ public class UserData {
             map.put("IgnoreAudioFocus", String.valueOf(IgnoreAudioFocus));
             map.put("SongIncDecInterval", String.valueOf(SongIncDecInterval));
             map.put("AudioUpdateInterval", String.valueOf(AudioUpdateInterval));
-            if(LastPlayedPlayback != null) {
-                map.put("LastPlayedPlayback", LastPlayedPlayback.getAbsolutePath());
-                map.put("LastPlayedPlaybackPos", String.valueOf(LastPlayedPlaybackPos));
+        }
+
+        JSONObject json = new JSONObject(map);
+        JSONArray array = new JSONArray();
+        for(int i = 0; i < PlaybackInfos.size(); ++i) {
+            JSONObject obj = new JSONObject();
+            PlaybackInfo info = PlaybackInfos.get(i);
+            try {
+                // Only store playback position for previously played playback
+                if(i == PlaybackInfos.size() - 1)
+                    obj.put("PlaybackPos", info.PlaybackPos);
+                obj.putOpt("PlaybackPath", info.PlaybackPath);
+                obj.putOpt("LastPlayedPlaybackInPlaylist", info.LastPlayedPlaybackInPlaylist);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-            if(LastPlayedPlaybackInPlaylist != null)
-                map.put("LastPlayedPlaybackInPlaylist", LastPlayedPlaybackInPlaylist.getAbsolutePath());
+
+            array.put(obj);
+        }
+        try {
+            json.put("PlaybackInfos", array);
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(mSettingsFile));
-            writer.write(new JSONObject(map).toString());
+            writer.write(json.toString(4));
             writer.close();
-        } catch (IOException e) {
+        } catch (IOException | JSONException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void addPlaybackInfo(@NonNull PlaybackInfo info) {
+        for(int i = 0; i < PlaybackInfos.size(); ++i) {
+            if(info.equals(PlaybackInfos.get(i))) {
+                PlaybackInfos.remove(i);
+                PlaybackInfos.add(info);
+                return;
+            }
+        }
+        synchronized (SettingsLock) {
+            PlaybackInfos.add(info);
         }
     }
 
@@ -103,7 +175,6 @@ public class UserData {
             IgnoreAudioFocus = false;
             SongIncDecInterval = 100;
             AudioUpdateInterval = 100;
-            LastPlayedPlaybackPos = 0;
         }
     }
 }

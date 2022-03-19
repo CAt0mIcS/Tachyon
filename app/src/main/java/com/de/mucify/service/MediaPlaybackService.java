@@ -550,14 +550,19 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     this, 0, openUI, PendingIntent.FLAG_CANCEL_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0));
     }
 
+    /**
+     * When a new audio is started, save it to history
+     */
     private void savePlaybackToSettings() {
+        UserData.PlaybackInfo playbackInfo = new UserData.PlaybackInfo();
+        playbackInfo.PlaybackPath = mPlayback.getPath();
+        playbackInfo.PlaybackPos = mPlayback.getCurrentPosition();
+        if(mPlayback instanceof Playlist) {
+            playbackInfo.LastPlayedPlaybackInPlaylist = mPlayback.getCurrentSong().getPath();
+        }
+
         synchronized (UserData.SettingsLock) {
-                UserData.LastPlayedPlayback = mPlayback.getPath();
-                UserData.LastPlayedPlaybackPos = mPlayback.getCurrentPosition();
-                if(mPlayback instanceof Playlist) {
-                    Playlist playlist = (Playlist)mPlayback;
-                    UserData.LastPlayedPlaybackInPlaylist = playlist.getCurrentSong().getPath();
-                }
+            UserData.addPlaybackInfo(playbackInfo);
         }
         UserData.save();
     }

@@ -92,6 +92,21 @@ public class MediaLibrary {
         return null;
     }
 
+    public static Playback getPlaybackFromPath(File playbackPath) {
+        for(Song s : MediaPlaybackService.Media.AvailableSongs)
+            if(s.getPath().equals(playbackPath))
+                return s;
+
+        for(Song s : MediaPlaybackService.Media.AvailableLoops)
+            if(s.getPath().equals(playbackPath))
+                return s;
+
+        for(Playlist s : MediaPlaybackService.Media.AvailablePlaylists)
+            if(s.getPath().equals(playbackPath))
+                return s;
+        return null;
+    }
+
 
     public int getSongIndex(Song song) {
         for(int i = 0; i < AvailableSongs.size(); ++i) {

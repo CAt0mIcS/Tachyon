@@ -5,9 +5,11 @@
     android:id="@+id/fragment_container_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_marginTop="?attr/actionBarSize"
     android:clickable="true"
     android:background="?android:colorBackground"
-    tools:context=".ui.ActivityLibrary">
+    tools:context=".ui.ActivityLibrary"
+    android:focusable="true">
 
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"

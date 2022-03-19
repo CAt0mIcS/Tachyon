@@ -55,8 +55,8 @@ public class FragmentMinimizedPlayer extends Fragment {
         mPlayPause.setOnClickListener(v -> {
             if(!mMediaController.isCreated()) {
                 mMediaController.play(getArguments().getString("MediaId"));
-                if(UserData.LastPlayedPlaybackPos != 0) {
-                    mMediaController.seekTo(UserData.LastPlayedPlaybackPos);
+                if(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPos != 0) {
+                    mMediaController.seekTo(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPos);
                 }
 
             }
@@ -78,8 +78,8 @@ public class FragmentMinimizedPlayer extends Fragment {
             }
 
             i.putExtra("IsPlaying", true);
-            if(UserData.LastPlayedPlaybackPos != 0)
-                i.putExtra("SeekPos", UserData.LastPlayedPlaybackPos);
+            if(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPos != 0)
+                i.putExtra("SeekPos", UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPos);
             startActivity(i);
         });
 
