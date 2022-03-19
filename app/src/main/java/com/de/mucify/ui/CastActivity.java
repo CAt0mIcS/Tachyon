@@ -1,5 +1,6 @@
 package com.de.mucify.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -98,6 +99,10 @@ public abstract class CastActivity extends AppCompatActivity {
         toolbar.inflateMenu(R.menu.toolbar_default);
         toolbar.setTitle(getString(R.string.library));
         mMediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(getApplicationContext(), toolbar.getMenu(), R.id.media_route_menu_item);
+        toolbar.findViewById(R.id.action_settings).setOnClickListener(v -> {
+            Intent i = new Intent(CastActivity.this, ActivitySettings.class);
+            startActivity(i);
+        });
     }
 
     /**

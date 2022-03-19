@@ -97,4 +97,13 @@ public class UserData {
             e.printStackTrace();
         }
     }
+
+    public static void reset() {
+        synchronized (SettingsLock) {
+            IgnoreAudioFocus = false;
+            SongIncDecInterval = 100;
+            AudioUpdateInterval = 100;
+            LastPlayedPlaybackPos = 0;
+        }
+    }
 }

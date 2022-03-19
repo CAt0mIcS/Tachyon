@@ -33,4 +33,7 @@
     <string name="setting_developer_songIncDecInterval">Song Inc/Dec Interval</string>
     <string name="song_inc_dec_hint">1 - ∞</string>
     <string name="setting_developer_audioUpdateInterval">Audio Update Interval</string>
+    <string name="error_number_invalid">Invalid Number</string>
+    <string name="cancel">Cancel</string>
+    <string name="dialog_reset_message">Are you sure you want to reset all settings?</string>
 </resources>
