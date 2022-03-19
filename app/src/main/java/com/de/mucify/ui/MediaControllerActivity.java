@@ -280,11 +280,11 @@ public abstract class MediaControllerActivity extends CastActivity {
             String newTitle = metadata.getString(MetadataKey.Title);
             String newArtist = metadata.getString(MetadataKey.Artist);
 
-            if(mPreviousMetadata == null || !mPreviousMetadata.getString(MetadataKey.Title).equals(newTitle))
+            if(mPreviousMetadata == null || !newTitle.equals(mPreviousMetadata.getString(MetadataKey.Title)))
                 for(Callback c : mCallbacks)
                     c.onTitleChanged(newTitle);
 
-            if(mPreviousMetadata == null || !mPreviousMetadata.getString(MetadataKey.Artist).equals(newArtist))
+            if(mPreviousMetadata == null || !newArtist.equals(mPreviousMetadata.getString(MetadataKey.Artist)))
                 for(Callback c : mCallbacks)
                     c.onArtistChanged(newArtist);
 

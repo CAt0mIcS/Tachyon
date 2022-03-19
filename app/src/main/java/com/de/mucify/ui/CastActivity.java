@@ -178,7 +178,7 @@ public abstract class CastActivity extends AppCompatActivity {
         if (remoteMediaClient == null) {
             return;
         }
-        
+
         remoteMediaClient.load(new MediaLoadRequestData.Builder()
                 .setMediaInfo(buildMediaInfo())
                 .setAutoplay(autoPlay)
