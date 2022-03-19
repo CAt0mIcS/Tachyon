@@ -4,6 +4,7 @@ import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
+import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.util.Log;
 
@@ -16,6 +17,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -73,5 +78,21 @@ public class Util {
             return 0;
 
         return ((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(onChanged);
+    }
+
+    public static String getIPAddress(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        if(wifiManager.getConnectionInfo() != null) {
+            try {
+                return InetAddress.getByAddress(
+                        ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
+                                .putInt(wifiManager.getConnectionInfo().getIpAddress())
+                                .array()
+                ).getHostAddress();
+            } catch (UnknownHostException e) {
+                Log.e("Mucify", "Error finding IpAddress: " + e.getMessage());
+            }
+        }
+        return null;
     }
 }

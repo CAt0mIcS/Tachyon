@@ -170,7 +170,7 @@ public abstract class CastActivity extends AppCompatActivity {
             private void onApplicationDisconnected() {
                 mPlaybackLocation = PlaybackLocation.Local;
                 mServer.stop();
-                Util.logGlobal("Stopping Cast server");
+                Log.i("Mucify", "Stopping Cast server");
                 supportInvalidateOptionsMenu();
             }
         };
@@ -213,7 +213,7 @@ public abstract class CastActivity extends AppCompatActivity {
         metadata.putString(MediaMetadata.KEY_SUBTITLE, getSongArtist());
 
         String url = "http://" + mIP + ":" + WebServer.PORT + "/audio";
-        Log.d("Mucify", "Loading Cast MediaInfo with URL: " + url);
+        Log.i("Mucify", "Loading Cast MediaInfo with URL: " + url);
         return new MediaInfo.Builder(url)
                 .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
                 .setContentType(mMIMEType)
@@ -232,9 +232,12 @@ public abstract class CastActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-        mIP = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-        Util.logGlobal( "Starting Cast server: " + mIP);
+        mIP = Util.getIPAddress(this);
+        if(mIP == null) {
+            // MY_TODO: Tell user to connect to WIFI
+            throw new UnsupportedOperationException("Failed to get IP address");
+        }
+        Log.i("Mucify", "Starting Cast server: " + mIP);
     }
 
 
