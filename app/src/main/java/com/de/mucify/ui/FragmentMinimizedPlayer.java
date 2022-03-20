@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
 import com.de.mucify.Util;
-import com.de.mucify.player.Playback;
 
 public class FragmentMinimizedPlayer extends Fragment {
 
@@ -43,7 +42,7 @@ public class FragmentMinimizedPlayer extends Fragment {
         if(getArguments() == null)
             throw new UnsupportedOperationException("Argument for FragmentMinimizedPlayer must be set");
         if(mMediaController == null)
-            throw new UnsupportedOperationException("FragmentMinimizedPlayer must've been started with a MediaControllerActivity");
+            throw new UnsupportedOperationException("FragmentMinimizedPlayer must've been started with a MediaBrowserController");
         mMediaController.addCallback(mPlaybackCallback);
 
         mTxtTitle = view.findViewById(R.id.txtTitle);
@@ -88,6 +87,7 @@ public class FragmentMinimizedPlayer extends Fragment {
         else
             mPlaybackCallback.onStart();
     }
+
 
     private class PlaybackCallback extends MediaControllerActivity.Callback {
         @Override

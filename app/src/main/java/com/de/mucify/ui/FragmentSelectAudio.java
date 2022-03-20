@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.AudioType;
+import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.Util;
 import com.de.mucify.adapter.AdapterEventListener;
@@ -53,13 +54,13 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
 
         switch (mAudioType) {
             case Song:
-                mPlaybacks.addAll(MediaPlaybackService.Media.AvailableSongs);
+                mPlaybacks.addAll(MediaLibrary.AvailableSongs);
                 break;
             case Loop:
-                mPlaybacks.addAll(MediaPlaybackService.Media.AvailableLoops);
+                mPlaybacks.addAll(MediaLibrary.AvailableLoops);
                 break;
             case Playlist:
-                mPlaybacks.addAll(MediaPlaybackService.Media.AvailablePlaylists);
+                mPlaybacks.addAll(MediaLibrary.AvailablePlaylists);
                 break;
         }
 

@@ -40,6 +40,7 @@ public class Util {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Log.e("Mucify", msg);
     }
 
 

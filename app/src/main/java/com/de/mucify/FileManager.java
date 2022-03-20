@@ -28,11 +28,11 @@ public class FileManager {
     }
 
     public static File playlistNameToFile(String playlistName) {
-        return new File(MediaPlaybackService.Media.DataDirectory + "/" + playlistName + MediaLibrary.PlaylistFileExtension);
+        return new File(MediaLibrary.DataDirectory + "/" + playlistName + MediaLibrary.PlaylistFileExtension);
     }
 
     public static File loopNameToFile(String loopName, String songName, String songAuthor) {
-        return new File(MediaPlaybackService.Media.DataDirectory + "/" + loopName + "_" + songName + "_" + songAuthor + MediaLibrary.LoopFileExtension);
+        return new File(MediaLibrary.DataDirectory + "/" + loopName + "_" + songName + "_" + songAuthor + MediaLibrary.LoopFileExtension);
     }
 
     public static String loopNameFromFile(File path) {

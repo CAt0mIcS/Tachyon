@@ -10,8 +10,6 @@ import android.widget.TextView;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
 import com.de.mucify.Util;
-import com.de.mucify.player.Playback;
-import com.de.mucify.player.Song;
 
 public class ActivityPlayer extends MediaControllerActivity {
     private SeekBar mSbProgress;

@@ -1,13 +1,11 @@
 package com.de.mucify.ui;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.de.mucify.FileManager;
@@ -27,10 +25,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import fi.iki.elonen.NanoHTTPD;
 
-public abstract class CastActivity extends AppCompatActivity {
+public class CastController implements IMediaController {
     public enum PlaybackLocation {
         Remote, Local
     }
@@ -51,22 +50,39 @@ public abstract class CastActivity extends AppCompatActivity {
     private CastSession mCastSession;
     private SessionManagerListener<CastSession> mSessionManagerListener;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    private MediaControllerActivity mActivity;
+    private ArrayList<MediaControllerActivity.Callback> mCallbacks;
+
+
+    public CastController(MediaControllerActivity activity, ArrayList<MediaControllerActivity.Callback> callbacks) {
+        mActivity = activity;
+        mCallbacks = callbacks;
         setupCastListener();
 
-        mCastContext = CastContext.getSharedInstance(this);
+        mCastContext = CastContext.getSharedInstance(mActivity);
         mCastSession = mCastContext.getSessionManager().getCurrentCastSession();
         mServer = new WebServer();
     }
 
-    @Override
     protected void onResume() {
-        super.onResume();
         mCastContext.getSessionManager().addSessionManagerListener(
                 mSessionManagerListener, CastSession.class);
-        Log.d("Mucify", "CastActivity.onResume");
+        Log.d("Mucify", "CastController.onResume");
+    }
+
+    @Override
+    public void unpause() {
+
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void seekTo(int millis) {
+
     }
 
     /**
@@ -74,6 +90,7 @@ public abstract class CastActivity extends AppCompatActivity {
      * upload the local device file to a local server and have the receiver download it from there.
      * (https://stackoverflow.com/questions/32049851/it-is-posible-to-cast-or-stream-android-chromecast-a-local-file)
      */
+    @Override
     public void play(String mediaId) {
         mPlaybackPath = MediaLibrary.getPathFromMediaId(mediaId);
 
@@ -81,12 +98,64 @@ public abstract class CastActivity extends AppCompatActivity {
         mMIMEType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileManager.getFileExtension(mPlaybackPath.getPath()).substring(1));
     }
 
-    public abstract void pause();
-    public abstract boolean isPlaying();
-    public abstract int getCurrentPosition();
-    public abstract int getDuration();
-    public abstract String getSongTitle();
-    public abstract String getSongArtist();
+    @Override
+    public boolean isPlaying() {
+        return false;
+    }
+
+    @Override
+    public boolean isCreated() {
+        return false;
+    }
+
+    @Override
+    public boolean isPaused() {
+        return false;
+    }
+
+    @Override
+    public void setStartTime(int millis) {
+
+    }
+
+    @Override
+    public void setEndTime(int millis) {
+
+    }
+
+    @Override
+    public int getStartTime() {
+        return 0;
+    }
+
+    @Override
+    public int getEndTime() {
+        return 0;
+    }
+
+    @Override
+    public int getCurrentPosition() {
+        return 0;
+    }
+
+    @Override
+    public int getDuration() {
+        return 0;
+    }
+
+    @Override
+    public String getSongTitle() {
+        return null;
+    }
+
+    @Override
+    public String getSongArtist() {
+        return null;
+    }
+
+    public boolean isCasting() {
+        return mCastSession != null && mCastSession.isConnected();
+    }
 
 
     /**
@@ -95,13 +164,13 @@ public abstract class CastActivity extends AppCompatActivity {
      * to have a toolbar with id equal to my_toolbar
      */
     protected void initializeToolbar() {
-        Toolbar toolbar = findViewById(R.id.my_toolbar);
+        Toolbar toolbar = mActivity.findViewById(R.id.my_toolbar);
         toolbar.inflateMenu(R.menu.toolbar_default);
-        toolbar.setTitle(getString(R.string.library));
-        mMediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(getApplicationContext(), toolbar.getMenu(), R.id.media_route_menu_item);
+        toolbar.setTitle(mActivity.getString(R.string.library));
+        mMediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(mActivity.getApplicationContext(), toolbar.getMenu(), R.id.media_route_menu_item);
         toolbar.findViewById(R.id.action_settings).setOnClickListener(v -> {
-            Intent i = new Intent(CastActivity.this, ActivitySettings.class);
-            startActivity(i);
+            Intent i = new Intent(mActivity, ActivitySettings.class);
+            mActivity.startActivity(i);
         });
     }
 
@@ -160,14 +229,14 @@ public abstract class CastActivity extends AppCompatActivity {
                     return;
                 }
 
-                supportInvalidateOptionsMenu();
+                mActivity.supportInvalidateOptionsMenu();
             }
 
             private void onApplicationDisconnected() {
                 mPlaybackLocation = PlaybackLocation.Local;
                 mServer.stop();
                 Log.i("Mucify", "Stopping Cast server");
-                supportInvalidateOptionsMenu();
+                mActivity.supportInvalidateOptionsMenu();
             }
         };
     }
@@ -220,7 +289,7 @@ public abstract class CastActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        mIP = Util.getIPAddress(this);
+        mIP = Util.getIPAddress(mActivity);
         if(mIP == null) {
             // MY_TODO: Tell user to connect to WIFI
             throw new UnsupportedOperationException("Failed to get IP address");

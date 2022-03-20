@@ -58,13 +58,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
      */
     private boolean mKeepPausedAfterAudioFocusGain = false;
 
-    /**
-     * One global instance of the MediaLibrary. This is placed here to avoid it being unloaded when
-     * the phone is shut down and the MediaPlaybackService is running in the background but requires
-     * access to the MediaLibrary. (MY_TODO: Terrible code)
-     */
-    public static MediaLibrary Media;
-
     private final IntentFilter mBecomeNoisyIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
@@ -125,15 +118,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     public void onCreate() {
         super.onCreate();
 
-        // MY_TODO: Find a good location to load MediaLibrary and UserData
-        UserData.load(this);
-        if(Media == null) {
-            Media = new MediaLibrary(this);
-            Media.loadAvailableSongs();
-            Media.loadAvailableLoops();
-            Media.loadAvailablePlaylists();
-            setLocalizedUnknownArtist();
-        }
+        setLocalizedUnknownArtist();
 
         createMediaSession();
 
@@ -170,7 +155,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();
 
-        for(Song s : Media.AvailableSongs) {
+        for(Song s : MediaLibrary.AvailableSongs) {
             MediaDescriptionCompat mediaDesc = new MediaDescriptionCompat.Builder()
                     .setMediaId(s.getMediaId())
                     .setTitle(s.getTitle())
@@ -179,7 +164,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             mediaItems.add(new MediaBrowserCompat.MediaItem(mediaDesc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE));
         }
-        for(Song s : Media.AvailableLoops) {
+        for(Song s : MediaLibrary.AvailableLoops) {
             MediaDescriptionCompat mediaDesc = new MediaDescriptionCompat.Builder()
                     .setMediaId(s.getMediaId())
                     .setTitle(s.getTitle())
@@ -188,7 +173,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             mediaItems.add(new MediaBrowserCompat.MediaItem(mediaDesc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE));
         }
-        for(Playlist p : Media.AvailablePlaylists) {
+        for(Playlist p : MediaLibrary.AvailablePlaylists) {
             MediaDescriptionCompat mediaDesc = new MediaDescriptionCompat.Builder()
                     .setMediaId(p.getMediaId())
                     .setTitle(p.getName())
@@ -576,15 +561,15 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
      * We need to translate "Unknown Artist". Thus we'll set it with string resource
      */
     private void setLocalizedUnknownArtist() {
-        for(Song s : Media.AvailableSongs)
+        for(Song s : MediaLibrary.AvailableSongs)
             if(s.isArtistUnknown())
                 s.setArtist(getString(R.string.unknown_artist));
 
-        for(Song s : Media.AvailableLoops)
+        for(Song s : MediaLibrary.AvailableLoops)
             if(s.isArtistUnknown())
                 s.setArtist(getString(R.string.unknown_artist));
 
-        for(Playlist p : Media.AvailablePlaylists)
+        for(Playlist p : MediaLibrary.AvailablePlaylists)
             for(Song s : p.getSongs())
                 if(s.isArtistUnknown())
                     s.setArtist(getString(R.string.unknown_artist));

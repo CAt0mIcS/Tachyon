@@ -1,5 +1,6 @@
 package com.de.mucify;
 
+import android.content.Context;
 import android.content.ContextWrapper;
 import android.telecom.Call;
 
@@ -71,7 +72,7 @@ public class UserData {
         }
     }
 
-    public static void load(ContextWrapper context) {
+    public static void load(Context context) {
         mSettingsFile = new File(context.getFilesDir().getAbsolutePath() + "/Settings.txt");
 
         String jsonString;

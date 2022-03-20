@@ -8,12 +8,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
-import android.view.Menu;
-import android.view.MenuItem;
 
-import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,7 +20,6 @@ import com.de.mucify.AudioType;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
-import com.de.mucify.Util;
 import com.de.mucify.adapter.AdapterEventListener;
 import com.de.mucify.adapter.PlayableListItemAdapter;
 import com.de.mucify.adapter.ViewHolderLoop;
@@ -31,9 +27,7 @@ import com.de.mucify.adapter.ViewHolderPlaylist;
 import com.de.mucify.adapter.ViewHolderSong;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
-import com.de.mucify.player.Song;
 import com.de.mucify.service.MediaPlaybackService;
-import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -49,6 +43,13 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_library);
         initializeToolbar();
+
+        // MY_TODO: Find a good location to load MediaLibrary and UserData
+        UserData.load(this);
+        MediaLibrary.load(this);
+        MediaLibrary.loadAvailableSongs();
+        MediaLibrary.loadAvailableLoops();
+        MediaLibrary.loadAvailablePlaylists();
 
         mRvHistory = findViewById(R.id.rvHistory);
 
@@ -83,8 +84,11 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
                     .add(R.id.fragment_container_view, fragment)
                     .commit();
         });
+    }
 
-        CastContext castContext = CastContext.getSharedInstance(this);
+    @Override
+    protected void onStop() {
+        super.onStop();
     }
 
     @Override
@@ -95,12 +99,12 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         Playback miniplayerPlayback;
         if(UserData.PlaybackInfos.size() == 0)
             return;
-        miniplayerPlayback = MediaPlaybackService.Media.getSong(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPath);
+        miniplayerPlayback = MediaLibrary.getSong(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPath);
 
         if(miniplayerPlayback == null) {
-            miniplayerPlayback = MediaPlaybackService.Media.getPlaylist(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPath);
+            miniplayerPlayback = MediaLibrary.getPlaylist(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPath);
             if(miniplayerPlayback != null && UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).LastPlayedPlaybackInPlaylist != null)
-                ((Playlist)miniplayerPlayback).setCurrentSong(MediaPlaybackService.Media.getSong(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).LastPlayedPlaybackInPlaylist));
+                ((Playlist)miniplayerPlayback).setCurrentSong(MediaLibrary.getSong(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).LastPlayedPlaybackInPlaylist));
         }
 
         if(miniplayerPlayback != null) {

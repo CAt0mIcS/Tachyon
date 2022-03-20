@@ -9,6 +9,7 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.de.mucify.FileManager;
+import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.service.MediaPlaybackService;
 
@@ -174,16 +175,16 @@ public class Song extends Playback {
 
         Song s;
         if(!isLoop()) {
-            int idx = MediaPlaybackService.Media.getSongIndex(this) + 1;
-            if(idx >= MediaPlaybackService.Media.AvailableSongs.size())
+            int idx = MediaLibrary.getSongIndex(this) + 1;
+            if(idx >= MediaLibrary.AvailableSongs.size())
                 idx = 0;
-            s = MediaPlaybackService.Media.AvailableSongs.get(idx);
+            s = MediaLibrary.AvailableSongs.get(idx);
         }
         else {
-            int idx = MediaPlaybackService.Media.getLoopIndex(this) + 1;
-            if(idx >= MediaPlaybackService.Media.AvailableLoops.size())
+            int idx = MediaLibrary.getLoopIndex(this) + 1;
+            if(idx >= MediaLibrary.AvailableLoops.size())
                 idx = 0;
-            s = MediaPlaybackService.Media.AvailableLoops.get(idx);
+            s = MediaLibrary.AvailableLoops.get(idx);
         }
         s.create(context);
         return s;
@@ -195,16 +196,16 @@ public class Song extends Playback {
 
         Song s;
         if(!isLoop()) {
-            int idx = MediaPlaybackService.Media.getSongIndex(this) - 1;
+            int idx = MediaLibrary.getSongIndex(this) - 1;
             if(idx < 0)
-                idx = MediaPlaybackService.Media.AvailableSongs.size() - 1;
-            s = MediaPlaybackService.Media.AvailableSongs.get(idx);
+                idx = MediaLibrary.AvailableSongs.size() - 1;
+            s = MediaLibrary.AvailableSongs.get(idx);
         }
         else {
-            int idx = MediaPlaybackService.Media.getLoopIndex(this) - 1;
+            int idx = MediaLibrary.getLoopIndex(this) - 1;
             if(idx < 0)
-                idx = MediaPlaybackService.Media.AvailableLoops.size() - 1;
-            s = MediaPlaybackService.Media.AvailableLoops.get(idx);
+                idx = MediaLibrary.AvailableLoops.size() - 1;
+            s = MediaLibrary.AvailableLoops.get(idx);
         }
         s.create(context);
         return s;
