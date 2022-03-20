@@ -12,6 +12,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.de.mucify.FileManager;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
+import com.de.mucify.UserData;
 import com.de.mucify.Util;
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaLoadRequestData;
@@ -232,7 +233,12 @@ public class CastController implements IMediaController {
             public void onSessionStarting(@NonNull CastSession session) {}
 
             @Override
-            public void onSessionEnding(@NonNull CastSession session) {}
+            public void onSessionEnding(@NonNull CastSession session) {
+                synchronized (UserData.SettingsLock) {
+                    UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPos = getCurrentPosition();
+                }
+                UserData.save();
+            }
 
             @Override
             public void onSessionResuming(@NonNull CastSession session, @NonNull String sessionId) {}
@@ -271,6 +277,10 @@ public class CastController implements IMediaController {
                 Log.i("Mucify", "Stopping Cast server");
                 mActivity.supportInvalidateOptionsMenu();
                 mActivity.onCastDisconnected();
+
+                // Playback is paused when cast ends
+                for(MediaControllerActivity.Callback c : mCallbacks)
+                   c.onPause();
             }
         };
     }
