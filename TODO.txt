@@ -2,7 +2,7 @@ Bugs:
 Playing audio --> Pausing --> Swiping notification away --> quickly opening e.g. Youtube and playing a random video --> Notification reapears
 
 Notification can also appear randomly
-
+Large numbers in settings cause crash
 
 
 

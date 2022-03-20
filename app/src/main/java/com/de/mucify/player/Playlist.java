@@ -29,7 +29,7 @@ public class Playlist extends Playback {
      * You also need to set the context using setContext().
      * @param path path to the playlist file
      */
-    public Playlist(File path) {
+    public Playlist(Context context, File path) {
         if(!path.exists()) {
 //            Utils.startErrorActivity("Failed to load playlist: \"" + path + "\" does not exist.");
             return;
@@ -37,9 +37,11 @@ public class Playlist extends Playback {
 
         mPlaylistFilePath = path;
         mName = FileManager.playlistNameFromFile(path);
-        loadPlaylist();
-        for(Song s : mSongs)
+        loadPlaylist(context);
+        for(Song s : mSongs) {
             s.setLooping(false);
+        }
+
     }
 
     @Override
@@ -224,13 +226,13 @@ public class Playlist extends Playback {
     /**
      * Parses the playlist file set in the constructor. Doesn't do any checking if the file is correctly formatted.
      */
-    private void loadPlaylist() {
+    private void loadPlaylist(Context context) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(mPlaylistFilePath));
 
             while(reader.ready()) {
                 try {
-                    mSongs.add(new Song(new File(reader.readLine())));
+                    mSongs.add(new Song(context, new File(reader.readLine())));
                 } catch(Song.LoadingFailedException e) {
                     // MY_TODO: Remove from playlist and display error message to user
                     e.printStackTrace();

@@ -1,8 +1,16 @@
 package com.de.mucify;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.IntentSender;
+import android.database.Cursor;
+import android.media.MediaSync;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.provider.MediaStore;
 import android.util.Log;
 
 import com.de.mucify.player.Playback;
@@ -41,33 +49,39 @@ public class MediaLibrary {
             DataDirectory.mkdirs();
     }
 
-    public static void loadAvailableSongs() {
-        AvailableSongs.clear();
-        loadFiles(MusicDirectory, true, false, false);
-        Collections.sort(AvailableSongs, mSongComparator);
+    public static void loadLoopsAndPlaylists(Context context, ThreadFinishedCallback onFinished) {
+        new Thread(() -> {
+            AvailablePlaylists.clear();
+            AvailableLoops.clear();
+
+            loadLoopsAndPlaylists(context);
+            Collections.sort(AvailableLoops, mSongComparator);
+            Collections.sort(AvailablePlaylists, mPlaylistComparator);
+            onFinished.onFinished();
+        }).start();
     }
 
-    public static void loadAvailableLoops() {
-        AvailableLoops.clear();
-        loadFiles(DataDirectory, false, true, false);
-        Collections.sort(AvailableLoops, mSongComparator);
-    }
-
-    public static void loadAvailablePlaylists() {
-        AvailablePlaylists.clear();
-        loadFiles(DataDirectory, false, false, true);
-        Collections.sort(AvailablePlaylists, mPlaylistComparator);
+    public static void loadSongs(Context context, ThreadFinishedCallback onFinished) {
+        new Thread(() -> {
+            AvailableSongs.clear();
+            loadSongs(context);
+            Collections.sort(AvailableSongs, mSongComparator);
+            onFinished.onFinished();
+        }).start();
     }
 
     public static boolean isSongMediaId(String mediaId) {
         return mediaId.contains("Song_");
     }
+
     public static boolean isLoopMediaId(String mediaId) {
         return mediaId.contains("Loop_");
     }
+
     public static boolean isPlaylistMediaId(String mediaId) {
         return mediaId.contains("Playlist_");
     }
+
     public static File getPathFromMediaId(String mediaId) {
         return new File(mediaId.substring(mediaId.indexOf('_') + 1));
     }
@@ -153,44 +167,69 @@ public class MediaLibrary {
     }
 
 
-    private static void loadFiles(File dir, boolean song, boolean loop, boolean playlist) {
-        if (dir != null && dir.exists()) {
-            File[] files = dir.listFiles();
-            if (files != null) {
+    private static void loadSongs(Context context) {
+        // Query external audio
+        ContentResolver musicResolver = context.getApplicationContext().getContentResolver();
 
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        loadFiles(file, song, loop, playlist);
-                    } else {
-                        if(song) {
-                            String extension = FileManager.getFileExtension(file.getName());
-                            if(SupportedAudioExtensions.contains(extension)) {
-                                try {
-                                    AvailableSongs.add(new Song(file));
-                                } catch (Song.LoadingFailedException e) {
-//                                    Utils.startErrorActivity("Failed to load song: " + file + "\n" + Utils.getDetailedError(e));
-                                }
-                            }
-                        }
-                        else if(loop) {
-                            String extension = FileManager.getFileExtension(file.getName());
-                            if(extension.equals(LoopFileExtension)) {
-                                try {
-                                    AvailableLoops.add(new Song(file));
-                                } catch (Song.LoadingFailedException e) {
-//                                    Utils.startErrorActivity("Failed to load loop: " + file + "\n" + Utils.getDetailedError(e));
-                                }
-                            }
-                        }
-                        else if(playlist) {
-                            String extension = FileManager.getFileExtension(file.getName());
-                            if(extension.equals(PlaylistFileExtension)) {
-                                AvailablePlaylists.add(new Playlist(file));
-                            }
-                        }
-                    }
+        Uri musicUri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            musicUri = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+        else
+            musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+
+        String[] projection = {
+                MediaStore.Audio.Media.DATA
+        };
+//        String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
+
+        // MY_TODO: We could also sort the songs here, but we'd need to request MediaStore.Audio.Media.TITLE, which is faster?
+        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
+
+        if(musicCursor != null && musicCursor.moveToFirst()){
+            int pathColumn = musicCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
+
+            do {
+                File path = new File(musicCursor.getString(pathColumn));
+                try {
+                    AvailableSongs.add(new Song(context, path));
+                } catch (Song.LoadingFailedException e) {
+                    e.printStackTrace();
+                    // MY_TODO: Error handling
                 }
             }
+            while (musicCursor.moveToNext());
         }
+
+        if(musicCursor != null)
+            musicCursor.close();
+    }
+
+    private static void loadLoopsAndPlaylists(Context context) {
+        if(DataDirectory == null || !DataDirectory.exists())
+            return;
+
+        File[] files = DataDirectory.listFiles();
+        if(files == null)
+            return;
+
+        for(File file : files) {
+            if(FileManager.isLoopFile(file)) {
+                try {
+                    AvailableLoops.add(new Song(context, file));
+                } catch (Song.LoadingFailedException e) {
+                    e.printStackTrace();
+                    // MY_TODO: Error handling
+                }
+            }
+            else if(FileManager.isPlaylistFile(file)) {
+                AvailablePlaylists.add(new Playlist(context, file));
+            }
+
+        }
+    }
+
+
+    public interface ThreadFinishedCallback {
+        void onFinished();
     }
 }

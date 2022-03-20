@@ -31,25 +31,31 @@ import com.de.mucify.service.MediaPlaybackService;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ActivityLibrary extends MediaControllerActivity implements AdapterEventListener {
     private ArrayList<Playback> mHistory = new ArrayList<>();
     private UserDataCallback mUserDataCallback = new UserDataCallback();
     private RecyclerView mRvHistory;
 
+    private final CountDownLatch mMediaLibraryLoaderLatch = new CountDownLatch(2);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_library);
         initializeToolbar();
 
         // MY_TODO: Find a good location to load MediaLibrary and UserData
         UserData.load(this);
         MediaLibrary.load(this);
-        MediaLibrary.loadAvailableSongs();
-        MediaLibrary.loadAvailableLoops();
-        MediaLibrary.loadAvailablePlaylists();
+        MediaLibrary.loadSongs(this, mMediaLibraryLoaderLatch::countDown);
+        MediaLibrary.loadLoopsAndPlaylists(this, mMediaLibraryLoaderLatch::countDown);
 
         mRvHistory = findViewById(R.id.rvHistory);
 
@@ -93,6 +99,13 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
 
     @Override
     public void onConnected() {
+        try {
+            mMediaLibraryLoaderLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return;
+        }
+
         mRvHistory.setLayoutManager(new LinearLayoutManager(this));
         mHistory.clear();
 
@@ -219,10 +232,14 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
             mHistory.clear();
             for(int i = UserData.PlaybackInfos.size() - 1; i >= 0; --i) {
                 if(UserData.PlaybackInfos.get(i).isPlaylist()) {
-                    mHistory.add(MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).LastPlayedPlaybackInPlaylist));
+                    Playback playback = MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).LastPlayedPlaybackInPlaylist);
+                    if(playback != null)
+                        mHistory.add(playback);
                 }
                 else {
-                    mHistory.add(MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).PlaybackPath));
+                    Playback playback = MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).PlaybackPath);
+                    if(playback != null)
+                        mHistory.add(playback);
                 }
             }
             mRvHistory.getAdapter().notifyDataSetChanged();

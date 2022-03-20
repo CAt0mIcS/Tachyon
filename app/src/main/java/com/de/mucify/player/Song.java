@@ -33,22 +33,12 @@ public class Song extends Playback {
     private File mLoopFilePath;
 
     /**
-     * Creates a fully created Song object, can be started directly after the constructor call.
-     * @param path path to a song or loop file.
-     * @throws LoadingFailedException if the path doesn't exist or if the loading of the loop file fails.
-     */
-    public Song(Context context, File path) throws LoadingFailedException {
-        this(path);
-        create(context);
-    }
-
-    /**
      * Creates a Song object which only has basic data (title, artist, path, startTime, endTime) set.
      * Call create() to make this Song playable.
      * @param path to a song or loop file.
      * @throws LoadingFailedException if the path doesn't exist or if the loading of the loop file fails.
      */
-    public Song(File path) throws LoadingFailedException {
+    public Song(Context context, File path) throws LoadingFailedException {
         if(path == null || !path.exists()) {
             throw new LoadingFailedException("Failed to load song: \"" + path + "\" does not exist");
         }
@@ -72,8 +62,6 @@ public class Song extends Playback {
             throw new LoadingFailedException("Failed to load song: \"" + mSongFilePath + "\" does not exist");
         }
 
-        mTitle = mSongFilePath.getName().replace(FileManager.getFileExtension(mSongFilePath.getName()), "");
-
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
         try {
             metaRetriever.setDataSource(mSongFilePath.getAbsolutePath());
@@ -85,8 +73,13 @@ public class Song extends Playback {
         String title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
         if(title != null)
             mTitle = title;
+        else
+            mTitle = mSongFilePath.getName().replace(FileManager.getFileExtension(mSongFilePath.getName()), "");
+
         if(artist != null)
             mArtist = artist;
+        else
+            mArtist = context.getString(R.string.unknown_artist);
     }
 
     /**
