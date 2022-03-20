@@ -36,4 +36,7 @@
     <string name="error_number_invalid">Invalid Number</string>
     <string name="cancel">Cancel</string>
     <string name="dialog_reset_message">Are you sure you want to reset all settings and user data (except for logins)?</string>
+    <string name="save_playlist">Add to playlists</string>
+    <string name="close_dialogue">Close Dialog</string>
+    <string name="create_playlist">Create new playlist</string>
 </resources>

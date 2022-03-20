@@ -122,9 +122,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        setLocalizedUnknownArtist();
-
         createMediaSession();
 
         mNotificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
@@ -524,8 +521,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         new Thread(() -> {
             Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
-            if(mPlaybackUpdateThread)
-                Util.logGlobal("MediaPlaybackService update thread started");
 
             while(mPlaybackUpdateThread) {
 
@@ -581,23 +576,5 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         UserData.addPlaybackInfo(playbackInfo);
         UserData.save();
-    }
-
-    /**
-     * We need to translate "Unknown Artist". Thus we'll set it with string resource
-     */
-    private void setLocalizedUnknownArtist() {
-        for(Song s : MediaLibrary.AvailableSongs)
-            if(s.isArtistUnknown())
-                s.setArtist(getString(R.string.unknown_artist));
-
-        for(Song s : MediaLibrary.AvailableLoops)
-            if(s.isArtistUnknown())
-                s.setArtist(getString(R.string.unknown_artist));
-
-        for(Playlist p : MediaLibrary.AvailablePlaylists)
-            for(Song s : p.getSongs())
-                if(s.isArtistUnknown())
-                    s.setArtist(getString(R.string.unknown_artist));
     }
 }

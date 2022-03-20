@@ -31,6 +31,14 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
 
         mBrowserController = new MediaBrowserController(this, mCallbacks);
         mCastController = new CastController(this, mCallbacks);
+
+        // Removes our notification because Google Cast has its own
+        addCallback(new Callback() {
+            @Override
+            public void onCastConnected() {
+                mBrowserController.sendCustomAction(MediaAction.CastStarted);
+            }
+        });
     }
 
     public void initializeToolbar() {
@@ -169,17 +177,6 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         return mBrowserController.getSongArtist();
     }
 
-    /**
-     * Removes our notification because Google Cast has its own
-     */
-    public void onCastConnected() {
-        mBrowserController.sendCustomAction(MediaAction.CastStarted);
-    }
-
-    public void onCastDisconnected() {
-
-    }
-
 
     public void addCallback(Callback c) {
         mCallbacks.add(c);
@@ -197,5 +194,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         public void onTitleChanged(String title) {}
         public void onArtistChanged(String artist) {}
         public void onSeekTo(int millis) {}
+        public void onCastConnected() {}
+        public void onCastDisconnected() {}
     }
 }

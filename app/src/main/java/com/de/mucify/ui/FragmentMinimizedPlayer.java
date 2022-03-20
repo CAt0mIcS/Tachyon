@@ -111,5 +111,15 @@ public class FragmentMinimizedPlayer extends Fragment {
         public void onArtistChanged(String artist) {
             mTxtArtist.setText(artist);
         }
+
+        @Override
+        public void onCastConnected() {
+            mMediaController.play(getArguments().getString("MediaId"));
+        }
+
+        @Override
+        public void onCastDisconnected() {
+
+        }
     }
 }

@@ -206,6 +206,24 @@ public class Song extends Playback {
         return mMediaPlayer.getDuration();
     }
 
+    public int getDurationUninitialized() {
+        MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
+        try {
+            metaRetriever.setDataSource(mSongFilePath.getAbsolutePath());
+        } catch(IllegalArgumentException e) {
+            e.printStackTrace();
+        }
+
+        String durationStr = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        return Integer.parseInt(durationStr);
+    }
+
+    public int getEndTimeUninitialized() {
+        if(mEndTime == 0)
+            return getDurationUninitialized();
+        return mEndTime;
+    }
+
     @Override
     public String getTitle() {
         return mTitle;
@@ -293,7 +311,6 @@ public class Song extends Playback {
         mEndTime = Integer.parseInt(reader.readLine());
         reader.close();
     }
-
 
     public static class LoadingFailedException extends Exception {
         public LoadingFailedException(String msg) {

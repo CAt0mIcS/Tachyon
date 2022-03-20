@@ -7,6 +7,6 @@ Large numbers in settings cause crash
 
 
 TODO:
-ActivitySettings loads and edits very slowly
 fragment_select_audio_layout doesn't have minimized player(does it need to?) and is a little outside of the toolbar
 activity library: Bottom elements of history aren't displayed anymore
+Possible thread problems with UserData

@@ -1,6 +1,8 @@
 package com.de.mucify.ui;
 
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.telecom.Call;
 import android.util.Log;
 import android.view.MenuItem;
@@ -16,6 +18,7 @@ import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
 import com.de.mucify.Util;
+import com.de.mucify.player.Playback;
 import com.google.android.gms.cast.ApplicationMetadata;
 import com.google.android.gms.cast.Cast;
 import com.google.android.gms.cast.CastDevice;
@@ -34,17 +37,35 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Phaser;
 
 import fi.iki.elonen.NanoHTTPD;
 
 public class CastController implements IMediaController {
+
     public enum PlaybackLocation {
         Remote, Local
     }
 
     private MenuItem mMediaRouteMenuItem;
     private PlaybackLocation mPlaybackLocation;
-    private File mPlaybackPath;
+    private Playback mPlayback;
+    private static final Handler mPlaybackUpdateHandler = new Handler();
+    private final Runnable mPlaybackUpdateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // MY_TODO: Test with loops and playlists
+            int currPos = getCurrentPosition();
+            if(currPos == 0 || currPos >= mPlayback.getCurrentSong().getEndTimeUninitialized()) {
+                if(currPos != 0)
+                    mCastSession.getRemoteMediaClient().stop();
+                play(mPlayback.getMediaId());
+            }
+            else
+                mPlaybackUpdateHandler.postDelayed(this, mPlayback.getCurrentSong().getEndTimeUninitialized() - currPos);
+        }
+    };
 
     private final WebServer mServer = new WebServer();
     private String mIP;
@@ -101,12 +122,23 @@ public class CastController implements IMediaController {
 
         for(MediaControllerActivity.Callback c : mCallbacks)
             c.onSeekTo(millis);
+
+        mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
+        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition());
     }
 
 
     @Override
     public void play(String mediaId) {
+        mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
 
+        loadRemoteMedia(mCastSession.getRemoteMediaClient(), 0, true);
+        mPlaybackLocation = PlaybackLocation.Remote;
+
+        for(MediaControllerActivity.Callback c : mCallbacks)
+            c.onStart();
+
+        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, mPlayback.getCurrentSong().getEndTimeUninitialized() + 1000);
     }
 
     @Override
@@ -196,10 +228,11 @@ public class CastController implements IMediaController {
      * (https://stackoverflow.com/questions/32049851/it-is-posible-to-cast-or-stream-android-chromecast-a-local-file)
      */
     public void setPlayback(String mediaId) {
-        mPlaybackPath = MediaLibrary.getPathFromMediaId(mediaId);
+        mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
 
         // Guess the MIME type of the playback, remove the . in the file extension
-        mMIMEType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileManager.getFileExtension(mPlaybackPath.getPath()).substring(1));
+        mMIMEType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileManager.getFileExtension(
+                mPlayback.getCurrentSong().getSongPath().getPath()).substring(1));
     }
 
     /**
@@ -251,19 +284,7 @@ public class CastController implements IMediaController {
 
             private void onApplicationConnected(CastSession castSession) {
                 startServer();
-
-                int currentPos = mActivity.getCurrentPosition();
-                boolean wasPlaying = mActivity.isPlaying();
-                if (wasPlaying) {
-                    loadRemoteMedia(castSession.getRemoteMediaClient(), currentPos, true);
-
-                    for(MediaControllerActivity.Callback c : mCallbacks)
-                        c.onStart();
-                }
-
-
                 mCastSession = castSession;
-                mPlaybackLocation = PlaybackLocation.Remote;
 
                 mCastSession.getRemoteMediaClient().registerCallback(new RemoteMediaClient.Callback() {
                     @Override
@@ -280,14 +301,9 @@ public class CastController implements IMediaController {
                     }
                 });
 
-
                 mActivity.supportInvalidateOptionsMenu();
-                mActivity.onCastConnected();
-
-                if(wasPlaying) {
-                    for(MediaControllerActivity.Callback c : mCallbacks)
-                        c.onStart();
-                }
+                for(MediaControllerActivity.Callback c : mCallbacks)
+                    c.onCastConnected();
             }
 
             private void onApplicationDisconnected() {
@@ -295,11 +311,13 @@ public class CastController implements IMediaController {
                 mServer.stop();
                 Log.i("Mucify", "Stopping Cast server");
                 mActivity.supportInvalidateOptionsMenu();
-                mActivity.onCastDisconnected();
 
                 // Playback is paused when cast ends
-                for(MediaControllerActivity.Callback c : mCallbacks)
+                for(MediaControllerActivity.Callback c : mCallbacks) {
+                    c.onCastDisconnected();
                     c.onPause();
+                }
+
             }
         };
     }
@@ -325,9 +343,8 @@ public class CastController implements IMediaController {
      */
     private MediaInfo buildMediaInfo() {
         MediaMetadata metadata = new MediaMetadata(MediaMetadata.MEDIA_TYPE_MUSIC_TRACK);
-        metadata.putString(MediaMetadata.KEY_TITLE, mActivity.getSongTitle());
-        metadata.putString(MediaMetadata.KEY_ARTIST, mActivity.getSongArtist());
-        metadata.putString(MediaMetadata.KEY_SUBTITLE, mActivity.getSongArtist());
+        metadata.putString(MediaMetadata.KEY_TITLE, mPlayback.getTitle());
+        metadata.putString(MediaMetadata.KEY_ARTIST, mPlayback.getSubtitle());
 
         String url = "http://" + mIP + ":" + WebServer.PORT + "/audio";
         Log.i("Mucify", "Loading Cast MediaInfo with URL: " + url);
@@ -335,7 +352,7 @@ public class CastController implements IMediaController {
                 .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
                 .setContentType(mMIMEType)
                 .setMetadata(metadata)
-                .setStreamDuration(mActivity.getDuration())
+                .setStreamDuration(mPlayback.getCurrentSong().getDurationUninitialized())
                 .build();
     }
 
@@ -378,7 +395,7 @@ public class CastController implements IMediaController {
 
                 FileInputStream fis = null;
                 try {
-                    fis = new FileInputStream(mPlaybackPath);
+                    fis = new FileInputStream(mPlayback.getCurrentSong().getSongPath());
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }

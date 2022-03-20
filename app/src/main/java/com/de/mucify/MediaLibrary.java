@@ -1,22 +1,12 @@
 package com.de.mucify;
 
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.IntentSender;
-import android.database.Cursor;
-import android.media.MediaSync;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
-import android.os.Handler;
-import android.provider.MediaStore;
 import android.util.Log;
 
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
-import com.de.mucify.service.MediaPlaybackService;
 
 import java.io.File;
 import java.util.ArrayList;
