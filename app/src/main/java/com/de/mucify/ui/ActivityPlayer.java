@@ -52,7 +52,7 @@ public class ActivityPlayer extends MediaControllerActivity {
 
     @Override
     public void onConnected() {
-        if(!getIntent().getBooleanExtra("IsPlaying", false))
+        if(!getIntent().getBooleanExtra("IsPlaying", false) && getIntent().getStringExtra("MediaId") != null)
             play(getIntent().getStringExtra("MediaId"));
 
         mPlaybackSeekPos = getIntent().getIntExtra("SeekPos", 0);

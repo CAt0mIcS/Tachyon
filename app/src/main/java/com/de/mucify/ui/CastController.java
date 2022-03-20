@@ -4,9 +4,11 @@ import android.content.Intent;
 import android.telecom.Call;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 
 import com.de.mucify.FileManager;
@@ -14,6 +16,9 @@ import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
 import com.de.mucify.Util;
+import com.google.android.gms.cast.ApplicationMetadata;
+import com.google.android.gms.cast.Cast;
+import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaLoadRequestData;
 import com.google.android.gms.cast.MediaMetadata;
@@ -261,6 +266,21 @@ public class CastController implements IMediaController {
 
                 mCastSession = castSession;
                 mPlaybackLocation = PlaybackLocation.Remote;
+
+                mCastSession.getRemoteMediaClient().registerCallback(new RemoteMediaClient.Callback() {
+                    @Override
+                    public void onStatusUpdated() {
+                        if(isPaused()) {
+                            for(MediaControllerActivity.Callback c : mCallbacks)
+                                c.onPause();
+                        }
+                        else if(isPlaying()) {
+                            for(MediaControllerActivity.Callback c : mCallbacks)
+                                c.onStart();
+                        }
+                    }
+                });
+
 
                 mActivity.supportInvalidateOptionsMenu();
                 mActivity.onCastConnected();

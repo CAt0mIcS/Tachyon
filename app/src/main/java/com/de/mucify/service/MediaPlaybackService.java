@@ -360,14 +360,28 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onStop() {
             Util.abandonAudioFocus(MediaPlaybackService.this, mAudioFocusChangedListener);
-            unregisterReceiver(myNoisyAudioStreamReceiver);
-            stopSelf();
-            mMediaSession.setActive(false);
+            try {
+                unregisterReceiver(myNoisyAudioStreamReceiver);
+            } catch (IllegalArgumentException ignored) {}
+
             synchronized (mPlaybackLock) {
-                mPlayback.reset();
+                if(mPlayback != null)
+                    mPlayback.reset();
+                mPlayback = null;
             }
-            mPlayback = null;
-            stopForeground(false);
+
+            mMediaSession.setPlaybackState(mPlaybackStateBuilder
+                    .setActions(0)
+                    .setState(PlaybackStateCompat.STATE_NONE,
+                            0,
+                            1.0f,
+                            SystemClock.elapsedRealtime())
+                    .build());
+
+            mMediaSession.setActive(false);
+            stopForeground(true);
+            mNotificationManager.cancel(NOTIFY_ID);
+            stopSelf();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onStop");
         }
 
@@ -443,21 +457,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         mPlayback.getCurrentSong().setEndTime(extras.getInt(MediaAction.EndTime));
                     break;
                 case MediaAction.CastStarted:
-                    synchronized (mPlaybackLock) {
-                        if(mPlayback != null && mPlayback.isCreated())
-                            mPlayback.reset();
-                        mPlayback = null;
-                        mMediaSession.setPlaybackState(mPlaybackStateBuilder
-                                .setActions(0)
-                                .setState(PlaybackStateCompat.STATE_NONE,
-                                        0,
-                                        1.0f,
-                                        SystemClock.elapsedRealtime())
-                                .build());
-                    }
-                    stopForeground(true);
-                    mNotificationManager.cancel(NOTIFY_ID);
-                    stopSelf();
+                    mMediaSession.getController().getTransportControls().stop();
                     break;
             }
         }
