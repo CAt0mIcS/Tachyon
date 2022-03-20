@@ -535,9 +535,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 }
 
                 try {
-                    synchronized (UserData.SettingsLock) {
-                        Thread.sleep(UserData.AudioUpdateInterval);
-                    }
+                    Thread.sleep(UserData.AudioUpdateInterval);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -553,8 +551,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         openUI.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         openUI.putExtra("MediaId", mPlayback.getMediaId());
         openUI.putExtra("IsPlaying", true);
-            return PendingIntent.getActivity(
-                    this, 0, openUI, PendingIntent.FLAG_CANCEL_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0));
+        return PendingIntent.getActivity(
+                this, 0, openUI, PendingIntent.FLAG_CANCEL_CURRENT | (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0));
     }
 
     /**
@@ -568,9 +566,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             playbackInfo.LastPlayedPlaybackInPlaylist = mPlayback.getCurrentSong().getPath();
         }
 
-        synchronized (UserData.SettingsLock) {
-            UserData.addPlaybackInfo(playbackInfo);
-        }
+        UserData.addPlaybackInfo(playbackInfo);
         UserData.save();
     }
 

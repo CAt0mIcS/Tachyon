@@ -239,9 +239,7 @@ public class CastController implements IMediaController {
 
             @Override
             public void onSessionEnding(@NonNull CastSession session) {
-                synchronized (UserData.SettingsLock) {
-                    UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPos = getCurrentPosition();
-                }
+                UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPos = getCurrentPosition();
                 UserData.save();
             }
 
@@ -301,7 +299,7 @@ public class CastController implements IMediaController {
 
                 // Playback is paused when cast ends
                 for(MediaControllerActivity.Callback c : mCallbacks)
-                   c.onPause();
+                    c.onPause();
             }
         };
     }

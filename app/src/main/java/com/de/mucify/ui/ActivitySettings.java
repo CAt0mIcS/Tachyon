@@ -28,9 +28,7 @@ public class ActivitySettings extends AppCompatActivity {
 
         mSwitchAudioFocus = findViewById(R.id.switchAudioFocus);
         mSwitchAudioFocus.setOnClickListener(v -> {
-            synchronized (UserData.SettingsLock) {
-                UserData.IgnoreAudioFocus = !mSwitchAudioFocus.isChecked();
-            }
+            UserData.IgnoreAudioFocus = !mSwitchAudioFocus.isChecked();
         });
 
         mAudioIncDecInterval = findViewById(R.id.editAudioIncDecInterval);
@@ -47,12 +45,10 @@ public class ActivitySettings extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 try {
-                    synchronized (UserData.SettingsLock) {
-                        int interval = Integer.parseInt(s.toString());
-                        if(interval == 0)
-                            throw new NumberFormatException();
-                        UserData.SongIncDecInterval = interval;
-                    }
+                    int interval = Integer.parseInt(s.toString());
+                    if(interval == 0)
+                        throw new NumberFormatException();
+                    UserData.SongIncDecInterval = interval;
                     mAudioIncDecInterval.setError(null);
                 } catch (NumberFormatException ignored) {
                     mAudioIncDecInterval.setError(getString(R.string.error_number_invalid));
@@ -69,12 +65,10 @@ public class ActivitySettings extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 try {
-                    synchronized (UserData.SettingsLock) {
-                        int interval = Integer.parseInt(s.toString());
-                        if(interval == 0)
-                            throw new NumberFormatException();
-                        UserData.AudioUpdateInterval = interval;
-                    }
+                    int interval = Integer.parseInt(s.toString());
+                    if(interval == 0)
+                        throw new NumberFormatException();
+                    UserData.AudioUpdateInterval = interval;
                     mAudioUpdateInterval.setError(null);
                 } catch (NumberFormatException ignored) {
                     mAudioUpdateInterval.setError(getString(R.string.error_number_invalid));
@@ -107,10 +101,8 @@ public class ActivitySettings extends AppCompatActivity {
 
     private void updateUI() {
         // MY_TODO: Figure out if we even need to synchronize reading (other thread might be writing at this exact moment?)
-        synchronized (UserData.SettingsLock) {
-            mSwitchAudioFocus.setChecked(!UserData.IgnoreAudioFocus);
-            mAudioIncDecInterval.setText(String.valueOf(UserData.SongIncDecInterval));
-            mAudioUpdateInterval.setText(String.valueOf(UserData.AudioUpdateInterval));
-        }
+        mSwitchAudioFocus.setChecked(!UserData.IgnoreAudioFocus);
+        mAudioIncDecInterval.setText(String.valueOf(UserData.SongIncDecInterval));
+        mAudioUpdateInterval.setText(String.valueOf(UserData.AudioUpdateInterval));
     }
 }
