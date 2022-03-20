@@ -64,7 +64,7 @@ public class MediaLibrary {
     public static void loadSongs(Context context, ThreadFinishedCallback onFinished) {
         new Thread(() -> {
             AvailableSongs.clear();
-            loadSongs(context);
+            loadSongs(MusicDirectory, context);
             Collections.sort(AvailableSongs, mSongComparator);
             onFinished.onFinished();
         }).start();
@@ -167,41 +167,28 @@ public class MediaLibrary {
     }
 
 
-    private static void loadSongs(Context context) {
-        // Query external audio
-        ContentResolver musicResolver = context.getApplicationContext().getContentResolver();
+    private static void loadSongs(File path, Context context) {
+        if(path == null || !path.exists())
+            return;
 
-        Uri musicUri;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            musicUri = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
-        else
-            musicUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        File[] files = path.listFiles();
+        if(files == null)
+            return;
 
-        String[] projection = {
-                MediaStore.Audio.Media.DATA
-        };
-//        String selection = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
-
-        // MY_TODO: We could also sort the songs here, but we'd need to request MediaStore.Audio.Media.TITLE, which is faster?
-        Cursor musicCursor = musicResolver.query(musicUri, null, null, null, null);
-
-        if(musicCursor != null && musicCursor.moveToFirst()){
-            int pathColumn = musicCursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
-
-            do {
-                File path = new File(musicCursor.getString(pathColumn));
-                try {
-                    AvailableSongs.add(new Song(context, path));
-                } catch (Song.LoadingFailedException e) {
-                    e.printStackTrace();
-                    // MY_TODO: Error handling
+        for(File file : files) {
+            if(file.isDirectory())
+                loadSongs(file, context);
+            else {
+                if(FileManager.isSongFile(file)) {
+                    try {
+                        AvailableSongs.add(new Song(context, file));
+                    } catch(Song.LoadingFailedException e ) {
+                        e.printStackTrace();
+                        // MY_TODO: Error handling
+                    }
                 }
             }
-            while (musicCursor.moveToNext());
         }
-
-        if(musicCursor != null)
-            musicCursor.close();
     }
 
     private static void loadLoopsAndPlaylists(Context context) {
