@@ -270,6 +270,7 @@ public class CastController implements IMediaController {
                 mCastSession.getRemoteMediaClient().registerCallback(new RemoteMediaClient.Callback() {
                     @Override
                     public void onStatusUpdated() {
+//                        mCastSession.getRemoteMediaClient().getMediaStatus()
                         if(isPaused()) {
                             for(MediaControllerActivity.Callback c : mCallbacks)
                                 c.onPause();
