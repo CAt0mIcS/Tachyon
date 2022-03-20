@@ -1,6 +1,7 @@
 package com.de.mucify.ui;
 
 import android.content.Intent;
+import android.telecom.Call;
 import android.util.Log;
 import android.view.MenuItem;
 import android.webkit.MimeTypeMap;
@@ -73,11 +74,17 @@ public class CastController implements IMediaController {
     @Override
     public void unpause() {
         mCastSession.getRemoteMediaClient().play();
+
+        for(MediaControllerActivity.Callback c : mCallbacks)
+            c.onStart();
     }
 
     @Override
     public void pause() {
         mCastSession.getRemoteMediaClient().pause();
+
+        for(MediaControllerActivity.Callback c : mCallbacks)
+            c.onPause();
     }
 
     @Override
@@ -85,6 +92,9 @@ public class CastController implements IMediaController {
         mCastSession.getRemoteMediaClient().seek(new MediaSeekOptions.Builder()
                 .setPosition(millis)
                 .build());
+
+        for(MediaControllerActivity.Callback c : mCallbacks)
+            c.onSeekTo(millis);
     }
 
 
@@ -234,9 +244,12 @@ public class CastController implements IMediaController {
                 startServer();
 
                 int currentPos = mActivity.getCurrentPosition();
-                if (mActivity.isPlaying()) {
-                    mActivity.pause();
+                boolean wasPlaying = mActivity.isPlaying();
+                if (wasPlaying) {
                     loadRemoteMedia(castSession.getRemoteMediaClient(), currentPos, true);
+
+                    for(MediaControllerActivity.Callback c : mCallbacks)
+                        c.onStart();
                 }
 
 
@@ -245,6 +258,11 @@ public class CastController implements IMediaController {
 
                 mActivity.supportInvalidateOptionsMenu();
                 mActivity.onCastConnected();
+
+                if(wasPlaying) {
+                    for(MediaControllerActivity.Callback c : mCallbacks)
+                        c.onStart();
+                }
             }
 
             private void onApplicationDisconnected() {
