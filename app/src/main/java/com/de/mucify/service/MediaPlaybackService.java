@@ -546,8 +546,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     e.printStackTrace();
                 }
             }
-
-            Util.logGlobal("MediaPlaybackService update thread exited");
         }).start();
     }
 

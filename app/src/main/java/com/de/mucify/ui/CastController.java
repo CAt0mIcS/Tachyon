@@ -55,15 +55,23 @@ public class CastController implements IMediaController {
     private final Runnable mPlaybackUpdateRunnable = new Runnable() {
         @Override
         public void run() {
+            Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
             // MY_TODO: Test with loops and playlists
+            Util.logGlobal("Runnable was triggered");
             int currPos = getCurrentPosition();
             if(currPos == 0 || currPos >= mPlayback.getCurrentSong().getEndTimeUninitialized()) {
-                if(currPos != 0)
+                if(currPos != 0) {
                     mCastSession.getRemoteMediaClient().stop();
+                    Util.logGlobal("Current Position is " + currPos + " stopping playback");
+                }
+                Util.logGlobal("Restarting casting playback");
                 play(mPlayback.getMediaId());
             }
-            else
-                mPlaybackUpdateHandler.postDelayed(this, mPlayback.getCurrentSong().getEndTimeUninitialized() - currPos);
+            else {
+                int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - currPos;
+                Util.logGlobal("Delaying for ms" + delay);
+                mPlaybackUpdateHandler.postDelayed(this, delay);
+            }
         }
     };
 
@@ -138,7 +146,9 @@ public class CastController implements IMediaController {
         for(MediaControllerActivity.Callback c : mCallbacks)
             c.onStart();
 
-        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, mPlayback.getCurrentSong().getEndTimeUninitialized() + 1000);
+        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() + 1000;
+        Util.logGlobal("Posting cast handler with delay ms" + delay);
+        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
     }
 
     @Override
