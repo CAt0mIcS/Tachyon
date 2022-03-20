@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.de.mucify.service.MediaAction;
 import com.google.android.gms.cast.framework.CastContext;
 
 import java.util.ArrayList;
@@ -165,6 +166,17 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         if(mCastController.isCasting())
             return mCastController.getSongArtist();
         return mBrowserController.getSongArtist();
+    }
+
+    /**
+     * Removes our notification because Google Cast has its own
+     */
+    public void onCastConnected() {
+        mBrowserController.sendCustomAction(MediaAction.CastStarted);
+    }
+
+    public void onCastDisconnected() {
+
     }
 
 

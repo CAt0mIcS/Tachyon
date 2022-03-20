@@ -233,16 +233,18 @@ public class CastController implements IMediaController {
             private void onApplicationConnected(CastSession castSession) {
                 startServer();
 
+                int currentPos = mActivity.getCurrentPosition();
                 if (mActivity.isPlaying()) {
                     mActivity.pause();
-                    loadRemoteMedia(castSession.getRemoteMediaClient(), mActivity.getCurrentPosition(), true);
-                    return;
+                    loadRemoteMedia(castSession.getRemoteMediaClient(), currentPos, true);
                 }
+
 
                 mCastSession = castSession;
                 mPlaybackLocation = PlaybackLocation.Remote;
 
                 mActivity.supportInvalidateOptionsMenu();
+                mActivity.onCastConnected();
             }
 
             private void onApplicationDisconnected() {
@@ -250,6 +252,7 @@ public class CastController implements IMediaController {
                 mServer.stop();
                 Log.i("Mucify", "Stopping Cast server");
                 mActivity.supportInvalidateOptionsMenu();
+                mActivity.onCastDisconnected();
             }
         };
     }

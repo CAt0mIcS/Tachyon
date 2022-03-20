@@ -214,6 +214,10 @@ public class MediaBrowserController implements IMediaController {
         return MediaControllerCompat.getMediaController(mActivity).getMetadata();
     }
 
+    public void sendCustomAction(String action) {
+        MediaControllerCompat.getMediaController(mActivity).getTransportControls().sendCustomAction(action, null);
+    }
+
 
     private class ConnectionCallback extends MediaBrowserCompat.ConnectionCallback {
         @Override

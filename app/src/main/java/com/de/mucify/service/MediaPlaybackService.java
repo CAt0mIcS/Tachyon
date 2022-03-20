@@ -442,6 +442,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     if(mPlayback instanceof Song && !((Song)mPlayback).isLoop())
                         mPlayback.getCurrentSong().setEndTime(extras.getInt(MediaAction.EndTime));
                     break;
+                case MediaAction.CastStarted:
+                    stopForeground(true);
+                    mNotificationManager.cancel(NOTIFY_ID);
+                    stopSelf();
+                    break;
             }
         }
     }
