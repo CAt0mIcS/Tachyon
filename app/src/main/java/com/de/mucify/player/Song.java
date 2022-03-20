@@ -27,8 +27,6 @@ public class Song extends Playback {
     private int mStartTime;
     private int mEndTime;
 
-    private boolean mLooping = true;
-
     private File mSongFilePath;
     private File mLoopFilePath;
 
@@ -147,7 +145,6 @@ public class Song extends Playback {
     @Override
     public void create(Context context) {
         mMediaPlayer = MediaPlayer.create(context, Uri.parse(mSongFilePath.getPath()));
-        mMediaPlayer.setLooping(mLooping);
 
         if(mEndTime == 0)
             mEndTime = mMediaPlayer.getDuration();
@@ -251,9 +248,7 @@ public class Song extends Playback {
     public File getLoopPath() { return mLoopFilePath; }
     public String getLoopName() { return FileManager.loopNameFromFile(mLoopFilePath); }
     public boolean isLoop() { return mLoopFilePath != null; }
-    public void setLooping(boolean looping) { if(isCreated()) mMediaPlayer.setLooping(looping); else mLooping = looping; }
     public void setOnMediaPlayerCompletionListener(MediaPlayer.OnCompletionListener listener) { mMediaPlayer.setOnCompletionListener(listener); }
-    public boolean isLooping() { return mLooping; }
 
     /**
      * Checks if two Song objects are equal in all their uninitialized data. Doesn't require

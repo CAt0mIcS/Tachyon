@@ -38,10 +38,6 @@ public class Playlist extends Playback {
         mPlaylistFilePath = path;
         mName = FileManager.playlistNameFromFile(path);
         loadPlaylist(context);
-        for(Song s : mSongs) {
-            s.setLooping(false);
-        }
-
     }
 
     @Override

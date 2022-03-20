@@ -58,6 +58,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
      */
     private boolean mKeepPausedAfterAudioFocusGain = false;
 
+    /**
+     * Determines whether the playback update thread should terminate (true --> running, false --> terminate)
+     */
+    private boolean mPlaybackUpdateThread = true;
+
     private final IntentFilter mBecomeNoisyIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
@@ -297,6 +302,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onPlay() {
             if (Util.requestAudioFocus(MediaPlaybackService.this, mAudioFocusChangedListener) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                mPlaybackUpdateThread = true;
                 // Start the service
                 startService(new Intent(MediaPlaybackService.this, MediaBrowserService.class));
 
@@ -315,9 +321,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         // Called when the song finished and we need to skip to the next one in the playlist
                         mPlayback.getCurrentSong().setOnMediaPlayerCompletionListener(mp -> onSkipToNext());
                     } else {
-                        // Called when one loop is done. The MediaPlayer position changes back to startPos
-                        // and we need to update seekbars.
-                        mPlayback.getCurrentSong().setOnMediaPlayerCompletionListener(mp -> repostNotification());
+                        // Move back to start pos and start playback again
+                        mPlayback.getCurrentSong().setOnMediaPlayerCompletionListener(mp -> {
+                            onSeekTo(mPlayback.getCurrentSong().getStartTime());
+                            onPlay();
+                        });
                     }
 
                     savePlaybackToSettings();
@@ -359,6 +367,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
          */
         @Override
         public void onStop() {
+            mPlaybackUpdateThread = false;
             Util.abandonAudioFocus(MediaPlaybackService.this, mAudioFocusChangedListener);
             try {
                 unregisterReceiver(myNoisyAudioStreamReceiver);
@@ -515,8 +524,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         new Thread(() -> {
             Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
+            if(mPlaybackUpdateThread)
+                Util.logGlobal("MediaPlaybackService update thread started");
 
-            while(true) {
+            while(mPlaybackUpdateThread) {
 
                 synchronized (mPlaybackLock) {
                     if(mPlayback != null && mPlayback.isCreated()) {
@@ -540,6 +551,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     e.printStackTrace();
                 }
             }
+
+            Util.logGlobal("MediaPlaybackService update thread exited");
         }).start();
     }
 
