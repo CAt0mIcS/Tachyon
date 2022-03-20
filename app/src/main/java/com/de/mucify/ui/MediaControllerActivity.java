@@ -10,6 +10,9 @@ import com.google.android.gms.cast.framework.CastContext;
 
 import java.util.ArrayList;
 
+/**
+ * Class which dispatches media events to the active controller (either MediaBrowserController or CastController)
+ */
 public class MediaControllerActivity extends AppCompatActivity implements IMediaController {
     private MediaBrowserController mBrowserController;
     private CastController mCastController;
@@ -35,23 +38,20 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
     @Override
     protected void onStart() {
         super.onStart();
-        if(!mCastController.isCasting())
-            mBrowserController.onStart();
+        mBrowserController.onStart();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
-        if(mCastController.isCasting())
-            mCastController.onResume();
+        mCastController.onResume();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if(!mCastController.isCasting())
-            mBrowserController.onStop();
+        mBrowserController.onStop();
     }
 
 
@@ -81,6 +81,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
 
     @Override
     public void play(String mediaId) {
+        mCastController.setPlayback(mediaId);
         if(mCastController.isCasting())
             mCastController.play(mediaId);
         else

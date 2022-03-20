@@ -15,6 +15,7 @@ import com.de.mucify.Util;
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaLoadRequestData;
 import com.google.android.gms.cast.MediaMetadata;
+import com.google.android.gms.cast.MediaSeekOptions;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
@@ -38,7 +39,7 @@ public class CastController implements IMediaController {
     private PlaybackLocation mPlaybackLocation;
     private File mPlaybackPath;
 
-    private WebServer mServer;
+    private final WebServer mServer = new WebServer();
     private String mIP;
 
     /**
@@ -46,12 +47,12 @@ public class CastController implements IMediaController {
      */
     private String mMIMEType;
 
-    private CastContext mCastContext;
+    private final CastContext mCastContext;
     private CastSession mCastSession;
     private SessionManagerListener<CastSession> mSessionManagerListener;
 
-    private MediaControllerActivity mActivity;
-    private ArrayList<MediaControllerActivity.Callback> mCallbacks;
+    private final MediaControllerActivity mActivity;
+    private final ArrayList<MediaControllerActivity.Callback> mCallbacks;
 
 
     public CastController(MediaControllerActivity activity, ArrayList<MediaControllerActivity.Callback> callbacks) {
@@ -61,10 +62,9 @@ public class CastController implements IMediaController {
 
         mCastContext = CastContext.getSharedInstance(mActivity);
         mCastSession = mCastContext.getSessionManager().getCurrentCastSession();
-        mServer = new WebServer();
     }
 
-    protected void onResume() {
+    public void onResume() {
         mCastContext.getSessionManager().addSessionManagerListener(
                 mSessionManagerListener, CastSession.class);
         Log.d("Mucify", "CastController.onResume");
@@ -72,45 +72,40 @@ public class CastController implements IMediaController {
 
     @Override
     public void unpause() {
-
+        mCastSession.getRemoteMediaClient().play();
     }
 
     @Override
     public void pause() {
-
+        mCastSession.getRemoteMediaClient().pause();
     }
 
     @Override
     public void seekTo(int millis) {
-
+        mCastSession.getRemoteMediaClient().seek(new MediaSeekOptions.Builder()
+                .setPosition(millis)
+                .build());
     }
 
-    /**
-     * Takes the playback and stores it. If the user then wants to cast to a device, we'll need to
-     * upload the local device file to a local server and have the receiver download it from there.
-     * (https://stackoverflow.com/questions/32049851/it-is-posible-to-cast-or-stream-android-chromecast-a-local-file)
-     */
+
     @Override
     public void play(String mediaId) {
-        mPlaybackPath = MediaLibrary.getPathFromMediaId(mediaId);
 
-        // Guess the MIME type of the playback, remove the . in the file extension
-        mMIMEType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileManager.getFileExtension(mPlaybackPath.getPath()).substring(1));
     }
 
     @Override
     public boolean isPlaying() {
-        return false;
+        return mCastSession.getRemoteMediaClient().isPlaying();
     }
 
     @Override
     public boolean isCreated() {
-        return false;
+        return mCastSession != null && mCastSession.getRemoteMediaClient() != null;
     }
 
     @Override
     public boolean isPaused() {
-        return false;
+        return mCastSession.getRemoteMediaClient().isPaused();
     }
 
     @Override
@@ -135,22 +130,27 @@ public class CastController implements IMediaController {
 
     @Override
     public int getCurrentPosition() {
-        return 0;
+        return (int) mCastSession.getRemoteMediaClient().getApproximateStreamPosition();
     }
 
     @Override
     public int getDuration() {
-        return 0;
+        return (int) mCastSession.getRemoteMediaClient().getStreamDuration();
     }
 
     @Override
     public String getSongTitle() {
-        return null;
+        return getMetadata().getString(MediaMetadata.KEY_TITLE);
     }
 
     @Override
     public String getSongArtist() {
-        return null;
+        return getMetadata().getString(MediaMetadata.KEY_ARTIST);
+    }
+
+
+    public MediaMetadata getMetadata() {
+        return mCastSession.getRemoteMediaClient().getMediaInfo().getMetadata();
     }
 
     public boolean isCasting() {
@@ -172,6 +172,18 @@ public class CastController implements IMediaController {
             Intent i = new Intent(mActivity, ActivitySettings.class);
             mActivity.startActivity(i);
         });
+    }
+
+    /**
+     * Takes the playback and stores it. If the user then wants to cast to a device, we'll need to
+     * upload the local device file to a local server and have the receiver download it from there.
+     * (https://stackoverflow.com/questions/32049851/it-is-posible-to-cast-or-stream-android-chromecast-a-local-file)
+     */
+    public void setPlayback(String mediaId) {
+        mPlaybackPath = MediaLibrary.getPathFromMediaId(mediaId);
+
+        // Guess the MIME type of the playback, remove the . in the file extension
+        mMIMEType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileManager.getFileExtension(mPlaybackPath.getPath()).substring(1));
     }
 
     /**
@@ -219,15 +231,16 @@ public class CastController implements IMediaController {
             public void onSessionSuspended(@NonNull CastSession session, int reason) {}
 
             private void onApplicationConnected(CastSession castSession) {
-                mCastSession = castSession;
-                mPlaybackLocation = PlaybackLocation.Remote;
                 startServer();
 
-                if (isPlaying()) {
-                    pause();
-                    loadRemoteMedia(getCurrentPosition(), true);
+                if (mActivity.isPlaying()) {
+                    mActivity.pause();
+                    loadRemoteMedia(castSession.getRemoteMediaClient(), mActivity.getCurrentPosition(), true);
                     return;
                 }
+
+                mCastSession = castSession;
+                mPlaybackLocation = PlaybackLocation.Remote;
 
                 mActivity.supportInvalidateOptionsMenu();
             }
@@ -244,16 +257,13 @@ public class CastController implements IMediaController {
     /**
      * Called when we start casting, sends audio to cast receiver
      */
-    private void loadRemoteMedia(int seekPos, boolean autoPlay) {
-        if (mCastSession == null) {
-            return;
-        }
-        final RemoteMediaClient remoteMediaClient = mCastSession.getRemoteMediaClient();
-        if (remoteMediaClient == null) {
+    private void loadRemoteMedia(RemoteMediaClient remoteClient, int seekPos, boolean autoPlay) {
+        if(remoteClient == null) {
+            Log.e("Mucify.Cast", "Remote media client is null");
             return;
         }
 
-        remoteMediaClient.load(new MediaLoadRequestData.Builder()
+        remoteClient.load(new MediaLoadRequestData.Builder()
                 .setMediaInfo(buildMediaInfo())
                 .setAutoplay(autoPlay)
                 .setCurrentTime(seekPos)
@@ -265,9 +275,9 @@ public class CastController implements IMediaController {
      */
     private MediaInfo buildMediaInfo() {
         MediaMetadata metadata = new MediaMetadata(MediaMetadata.MEDIA_TYPE_MUSIC_TRACK);
-        metadata.putString(MediaMetadata.KEY_TITLE, getSongTitle());
-        metadata.putString(MediaMetadata.KEY_ARTIST, getSongArtist());
-        metadata.putString(MediaMetadata.KEY_SUBTITLE, getSongArtist());
+        metadata.putString(MediaMetadata.KEY_TITLE, mActivity.getSongTitle());
+        metadata.putString(MediaMetadata.KEY_ARTIST, mActivity.getSongArtist());
+        metadata.putString(MediaMetadata.KEY_SUBTITLE, mActivity.getSongArtist());
 
         String url = "http://" + mIP + ":" + WebServer.PORT + "/audio";
         Log.i("Mucify", "Loading Cast MediaInfo with URL: " + url);
@@ -275,7 +285,7 @@ public class CastController implements IMediaController {
                 .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
                 .setContentType(mMIMEType)
                 .setMetadata(metadata)
-                .setStreamDuration(getDuration())
+                .setStreamDuration(mActivity.getDuration())
                 .build();
     }
 

@@ -29,7 +29,7 @@ public interface IMediaController {
     boolean isPlaying();
 
     /**
-     * Checks if the playback is created.
+     * Checks if the playback was set using start(String mediaId)
      * Crashes if the Playback hasn't been started yet.
      */
     boolean isCreated();
