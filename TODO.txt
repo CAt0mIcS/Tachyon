@@ -4,6 +4,72 @@ Playing audio --> Pausing --> Swiping notification away --> quickly opening e.g.
 Notification can also appear randomly
 Large numbers in settings cause crash
 
+// TEMPORARYLY COMMENTED OUT
+Attempt to invoke virtual method 'long com.google.android.gms.cast.framework.media.RemoteMediaClient.getApproximateStreamPosition()' on a null object reference
+[com.de.mucify.ui.CastController.getCurrentPosition(CastController.java:191), 
+com.de.mucify.ui.CastController$2.onSessionEnding(CastController.java:285), 
+com.de.mucify.ui.CastController$2.onSessionEnding(CastController.java:253), 
+com.google.android.gms.cast.framework.zzaw.zzd(com.google.android.gms:play-services-cast-framework@@20.1.0:3), 
+com.google.android.gms.cast.framework.zzam.zza(com.google.android.gms:play-services-cast-framework@@20.1.0:24), 
+com.google.android.gms.internal.cast.zzb.onTransact(com.google.android.gms:play-services-cast@@20.1.0:3), 
+android.os.Binder.transact(Binder.java:1100), 
+ma.P(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):2), 
+ta.g(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):0), 
+tm.w(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):4), 
+to.r(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):1), 
+to.n(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):1), 
+to.o(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):6), 
+sg.g(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):0), 
+tp.handleMessage(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):7), 
+android.os.Handler.dispatchMessage(Handler.java:102), 
+android.os.Looper.loopOnce(Looper.java:226), 
+android.os.Looper.loop(Looper.java:313), 
+android.app.ActivityThread.main(ActivityThread.java:8633), 
+java.lang.reflect.Method.invoke(Native Method), 
+com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:567), 
+com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1135)]
+
+
+
+// Cast not repeating
+Posting cast handler with delay ms167176
+Posting cast handler with delay ms12938
+Runnable was triggered
+Restarting casting playback
+Posting cast handler with delay ms12938
+
+startForegroundService() not allowed due to mAllowStartForeground false: service com.de.mucify/com.google.android.gms.cast.framework.media.MediaNotificationService
+[android.app.ForegroundServiceStartNotAllowedException$1.createFromParcel(ForegroundServiceStartNotAllowedException.java:54), 
+android.app.ForegroundServiceStartNotAllowedException$1.createFromParcel(ForegroundServiceStartNotAllowedException.java:50), 
+android.os.Parcel.readParcelable(Parcel.java:3345), 
+android.os.Parcel.createExceptionOrNull(Parcel.java:2432), 
+android.os.Parcel.createException(Parcel.java:2421), 
+android.os.Parcel.readException(Parcel.java:2404), 
+android.os.Parcel.readException(Parcel.java:2346), 
+android.app.IActivityManager$Stub$Proxy.startService(IActivityManager.java:6914), 
+android.app.ContextImpl.startServiceCommon(ContextImpl.java:1926), 
+android.app.ContextImpl.startForegroundService(ContextImpl.java:1892), 
+android.content.ContextWrapper.startForegroundService(ContextWrapper.java:796), 
+com.google.android.gms.cast.framework.media.internal.zzp.zzg(com.google.android.gms:play-services-cast-framework@@20.1.0:33), 
+com.google.android.gms.cast.framework.media.internal.zzp.onStatusUpdated(com.google.android.gms:play-services-cast-framework@@20.1.0:1), 
+com.google.android.gms.cast.framework.media.zzbo.zzm(com.google.android.gms:play-services-cast-framework@@20.1.0:4), 
+com.google.android.gms.cast.internal.zzap.zzaa(com.google.android.gms:play-services-cast@@20.1.0:1), 
+com.google.android.gms.cast.internal.zzap.zzQ(com.google.android.gms:play-services-cast@@20.1.0:63), 
+com.google.android.gms.cast.framework.media.RemoteMediaClient.onMessageReceived(com.google.android.gms:play-services-cast-framework@@20.1.0:1), 
+com.google.android.gms.cast.zzbn.run(com.google.android.gms:play-services-cast@@20.1.0:4), 
+android.os.Handler.handleCallback(Handler.java:938), 
+android.os.Handler.dispatchMessage(Handler.java:99), 
+android.os.Looper.loopOnce(Looper.java:226), 
+android.os.Looper.loop(Looper.java:313), 
+android.app.ActivityThread.main(ActivityThread.java:8633), 
+java.lang.reflect.Method.invoke(Native Method), 
+com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:567), 
+com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1135)]
+
+
+
+
+
 
 
 TODO:
