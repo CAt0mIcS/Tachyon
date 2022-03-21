@@ -1,4 +1,4 @@
-package com.de.mucify.adapter;
+package com.de.mucify.ui.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -14,7 +14,7 @@ import com.de.mucify.player.Song;
 
 import java.util.ArrayList;
 
-public class PlayableListItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class PlaybackListItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public final int ITEM_TYPE_LOOP = 1;
     public final int ITEM_TYPE_SONG = 2;
@@ -26,7 +26,7 @@ public class PlayableListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
     private AdapterEventListener mCallback;
 
 
-    public PlayableListItemAdapter(Context context, ArrayList<Playback> items) {
+    public PlaybackListItemAdapter(Context context, ArrayList<Playback> items) {
         mContext = context;
         mItems = items;
     }

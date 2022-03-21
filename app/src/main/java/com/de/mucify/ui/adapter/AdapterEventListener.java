@@ -1,4 +1,4 @@
-package com.de.mucify.adapter;
+package com.de.mucify.ui.adapter;
 
 public interface AdapterEventListener {
     void onClick(ViewHolderSong holder);

@@ -194,6 +194,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         public void onTitleChanged(String title) {}
         public void onArtistChanged(String artist) {}
         public void onSeekTo(int millis) {}
+        public void onMediaIdChanged(String mediaId) {}
         public void onCastConnected() {}
         public void onCastDisconnected() {}
     }

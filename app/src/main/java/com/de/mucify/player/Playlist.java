@@ -190,6 +190,17 @@ public class Playlist extends Playback {
     public ArrayList<Song> getSongs() { return mSongs; }
 
     /**
+     * Adds a new song to the playlist if it doesn't exist yet
+     */
+    public void addSong(Song song) {
+        for(Song s : mSongs)
+            if(s.equalsUninitialized(song) || song == null)
+                return;
+
+        mSongs.add(song);
+    }
+
+    /**
      * Sets the Song to be played to @param song. Does nothing if the Song doesn't exist.
      * Only sets the index in the song list to be played next. A call to create and start will actually
      * start the set song.

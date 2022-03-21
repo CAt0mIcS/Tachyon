@@ -2,14 +2,21 @@ package com.de.mucify.ui;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.MenuItem;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
+import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
 import com.de.mucify.Util;
+import com.de.mucify.ui.trivial.DialogAddToPlaylist;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 public class ActivityPlayer extends MediaControllerActivity {
     private SeekBar mSbProgress;
@@ -66,6 +73,14 @@ public class ActivityPlayer extends MediaControllerActivity {
                 }
                 mHandler.postDelayed(this, UserData.AudioUpdateInterval);
             }
+        });
+
+        ((BottomNavigationView)findViewById(R.id.btmNavPlayer)).setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.btmNavAddToPlaylist) {
+                new DialogAddToPlaylist(MediaLibrary.getPlaybackFromMediaId(getIntent().getStringExtra("MediaId")).getCurrentSong(), ActivityPlayer.this).show();
+            }
+
+            return true;
         });
 
         mSbProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -211,6 +226,11 @@ public class ActivityPlayer extends MediaControllerActivity {
         @Override
         public void onSeekTo(int millis) {
             mSbProgress.setProgress(millis / UserData.AudioUpdateInterval);
+        }
+
+        @Override
+        public void onMediaIdChanged(String mediaId) {
+            getIntent().putExtra("MediaId", mediaId);
         }
     }
 

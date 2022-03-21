@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -20,22 +19,17 @@ import com.de.mucify.AudioType;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
-import com.de.mucify.adapter.AdapterEventListener;
-import com.de.mucify.adapter.PlayableListItemAdapter;
-import com.de.mucify.adapter.ViewHolderLoop;
-import com.de.mucify.adapter.ViewHolderPlaylist;
-import com.de.mucify.adapter.ViewHolderSong;
+import com.de.mucify.ui.adapter.AdapterEventListener;
+import com.de.mucify.ui.adapter.PlaybackListItemAdapter;
+import com.de.mucify.ui.adapter.ViewHolderLoop;
+import com.de.mucify.ui.adapter.ViewHolderPlaylist;
+import com.de.mucify.ui.adapter.ViewHolderSong;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
-import com.de.mucify.service.MediaPlaybackService;
-import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class ActivityLibrary extends MediaControllerActivity implements AdapterEventListener {
     private ArrayList<Playback> mHistory = new ArrayList<>();
@@ -125,7 +119,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         }
 
         UserData.addCallback(mUserDataCallback);
-        PlayableListItemAdapter adapter = new PlayableListItemAdapter(this, mHistory);
+        PlaybackListItemAdapter adapter = new PlaybackListItemAdapter(this, mHistory);
         adapter.setListener(this);
         mRvHistory.setAdapter(adapter);
         mUserDataCallback.onPlaybackInfoChanged(UserData.PlaybackInfos);

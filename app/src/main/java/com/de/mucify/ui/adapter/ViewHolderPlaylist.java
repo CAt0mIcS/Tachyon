@@ -1,6 +1,7 @@
-package com.de.mucify.adapter;
+package com.de.mucify.ui.adapter;
 
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -13,6 +14,7 @@ public class ViewHolderPlaylist extends RecyclerView.ViewHolder {
     public final LinearLayout ParentLayout;
     public final TextView TxtName;
     public final TextView TxtNumSongs;
+    public CheckBox ChkAdded;
 
     public ViewHolderPlaylist(@NonNull View itemView) {
         super(itemView);
@@ -20,6 +22,7 @@ public class ViewHolderPlaylist extends RecyclerView.ViewHolder {
         ParentLayout = itemView.findViewById(R.id.parent_layout);
         TxtName = itemView.findViewById(R.id.txtName);
         TxtNumSongs = itemView.findViewById(R.id.txtNumSongs);
+        ChkAdded = itemView.findViewById(R.id.chkAddedToPlaylist);
     }
 
     public void setListener(AdapterEventListener callback) {

@@ -14,15 +14,14 @@ import com.de.mucify.AudioType;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.Util;
-import com.de.mucify.adapter.AdapterEventListener;
-import com.de.mucify.adapter.PlayableListItemAdapter;
-import com.de.mucify.adapter.ViewHolderLoop;
-import com.de.mucify.adapter.ViewHolderPlaylist;
-import com.de.mucify.adapter.ViewHolderSong;
+import com.de.mucify.ui.adapter.AdapterEventListener;
+import com.de.mucify.ui.adapter.PlaybackListItemAdapter;
+import com.de.mucify.ui.adapter.ViewHolderLoop;
+import com.de.mucify.ui.adapter.ViewHolderPlaylist;
+import com.de.mucify.ui.adapter.ViewHolderSong;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
-import com.de.mucify.service.MediaPlaybackService;
 
 import java.util.ArrayList;
 
@@ -64,7 +63,7 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
                 break;
         }
 
-        PlayableListItemAdapter adapter = new PlayableListItemAdapter(getContext(), mPlaybacks);
+        PlaybackListItemAdapter adapter = new PlaybackListItemAdapter(getContext(), mPlaybacks);
         adapter.setListener(this);
         rvFiles.setAdapter(adapter);
     }
