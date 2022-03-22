@@ -94,20 +94,18 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     mPlayback.setVolume(DUCK_VOLUME, DUCK_VOLUME);
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS:
-                    // MY_TODO: Release media player here
-                    if(mPlayback != null && mPlayback.isCreated()) {
-                        if(!mPlayback.isPaused()) {
-                            synchronized (mPlaybackLock) {
+                    synchronized (mPlaybackLock) {
+                        if(mPlayback != null && mPlayback.isCreated()) {
+                            if(!mPlayback.isPaused()) {
                                 mPlayback.pause();
+                                repostNotification();
+                                savePlaybackToSettings();
+                                Log.d("Mucify", "MediaPlaybackService.AudioFocusChangeListener: Audio focus lost, MediaPlayback paused");
                             }
-                            repostNotification();
-                            savePlaybackToSettings();
-                            Log.d("Mucify", "MediaPlaybackService.AudioFocusChangeListener: Audio focus lost, MediaPlayback paused");
+                            mMediaPosBeforeAudioFocusLoss = mPlayback.getCurrentPosition();
+                            mPlayback.reset();
                         }
-                        mMediaPosBeforeAudioFocusLoss = mPlayback.getCurrentPosition();
-                        mPlayback.reset();
                     }
-
                     break;
             }
         }
