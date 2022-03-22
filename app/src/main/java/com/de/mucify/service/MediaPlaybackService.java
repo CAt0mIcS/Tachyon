@@ -59,6 +59,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private boolean mKeepPausedAfterAudioFocusGain = false;
 
     /**
+     * When onPlay is called we want to seek back to the previous position where the AudioFocus was lost
+     * A value of -1 indicates that we shouldn't seek at all
+     */
+    private int mMediaPosBeforeAudioFocusLoss = -1;
+
+    /**
      * Determines whether the playback update thread should terminate (true --> running, false --> terminate)
      */
     private boolean mPlaybackUpdateThread = true;
@@ -89,8 +95,19 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS:
                     // MY_TODO: Release media player here
-                    if(mPlayback != null && !mPlayback.isPaused())
-                        mMediaSession.getController().getTransportControls().pause();
+                    if(mPlayback != null && mPlayback.isCreated()) {
+                        if(!mPlayback.isPaused()) {
+                            synchronized (mPlaybackLock) {
+                                mPlayback.pause();
+                            }
+                            repostNotification();
+                            savePlaybackToSettings();
+                            Log.d("Mucify", "MediaPlaybackService.AudioFocusChangeListener: Audio focus lost, MediaPlayback paused");
+                        }
+                        mMediaPosBeforeAudioFocusLoss = mPlayback.getCurrentPosition();
+                        mPlayback.reset();
+                    }
+
                     break;
             }
         }
@@ -313,6 +330,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 synchronized (mPlaybackLock) {
                     if(!mPlayback.isCreated())
                         mPlayback.create(MediaPlaybackService.this);
+                    if(mMediaPosBeforeAudioFocusLoss != -1) {
+                        mPlayback.seekTo(mMediaPosBeforeAudioFocusLoss);
+                        mMediaPosBeforeAudioFocusLoss = -1;
+                    }
+
 
                     mPlayback.start(MediaPlaybackService.this);
                     mKeepPausedAfterAudioFocusGain = false;
