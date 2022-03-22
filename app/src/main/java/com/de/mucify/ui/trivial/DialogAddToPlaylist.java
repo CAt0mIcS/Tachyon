@@ -69,7 +69,7 @@ public class DialogAddToPlaylist extends Dialog implements AdapterEventListener 
         });
 
         mBtnCreatePlaylist.setOnClickListener(v -> {
-            
+
         });
     }
 

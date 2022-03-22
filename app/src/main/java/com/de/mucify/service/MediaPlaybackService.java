@@ -81,14 +81,16 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         mMediaSession.getController().getTransportControls().play();
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                    mMediaSession.getController().getTransportControls().pause();
+                    if(mPlayback != null && !mPlayback.isPaused())
+                        mMediaSession.getController().getTransportControls().pause();
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                     mPlayback.setVolume(DUCK_VOLUME, DUCK_VOLUME);
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS:
                     // MY_TODO: Release media player here
-                    mMediaSession.getController().getTransportControls().pause();
+                    if(mPlayback != null && !mPlayback.isPaused())
+                        mMediaSession.getController().getTransportControls().pause();
                     break;
             }
         }
@@ -102,7 +104,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
-                mMediaSession.getController().getTransportControls().pause();
+                if(mPlayback != null && !mPlayback.isPaused())
+                    mMediaSession.getController().getTransportControls().pause();
                 Log.d("Mucify", "Became noisy");
             }
         }
