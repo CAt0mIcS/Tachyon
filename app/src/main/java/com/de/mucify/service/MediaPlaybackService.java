@@ -219,7 +219,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         mMediaSession.setPlaybackState(playbackState);
 
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.pause)
+                .setSmallIcon(R.drawable.music_note)
+                .setLargeIcon(mPlayback.getCurrentSong().getImage())
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0, 1, 2)
                         .setShowCancelButton(true)

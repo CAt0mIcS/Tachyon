@@ -1,6 +1,8 @@
 package com.de.mucify.player;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -21,6 +23,7 @@ import java.io.IOException;
 public class Song extends Playback {
     private String mTitle;
     private String mArtist = null;
+    private Bitmap mSongImage;
 
     private MediaPlayer mMediaPlayer;
 
@@ -69,6 +72,13 @@ public class Song extends Playback {
 
         String artist = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST);
         String title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
+
+        byte[] art = metaRetriever.getEmbeddedPicture();
+        if(art != null) {
+            mSongImage = BitmapFactory.decodeByteArray(art, 0, art.length);
+        }
+
+
         if(title != null)
             mTitle = title;
         else
@@ -127,6 +137,10 @@ public class Song extends Playback {
     @Override
     public int getCurrentPosition() {
         return mMediaPlayer.getCurrentPosition();
+    }
+
+    public Bitmap getImage() {
+        return mSongImage;
     }
 
     @Override
