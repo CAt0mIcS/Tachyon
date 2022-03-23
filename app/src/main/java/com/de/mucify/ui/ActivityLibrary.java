@@ -8,7 +8,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -27,6 +29,7 @@ import com.de.mucify.ui.adapter.ViewHolderSong;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -46,10 +49,12 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         initializeToolbar();
 
         // MY_TODO: Find a good location to load MediaLibrary and UserData
+        // MY_TODO: Sometimes loaded twice
         UserData.load(this);
         MediaLibrary.load(this);
         MediaLibrary.loadSongs(this, mMediaLibraryLoaderLatch::countDown);
         MediaLibrary.loadLoopsAndPlaylists(this, mMediaLibraryLoaderLatch::countDown);
+
 
         mRvHistory = findViewById(R.id.rvHistory);
 
@@ -58,6 +63,13 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
 
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
         btmNav.setSelectedItemId(R.id.btmNavLibrary);
+        btmNav.setOnItemSelectedListener(item -> {
+            if(item.getItemId() == R.id.btmNavSearch) {
+                Intent i = new Intent(ActivityLibrary.this, ActivitySearch.class);
+                startActivity(i);
+            }
+            return true;
+        });
 
         // MY_TEMPORARY
         if(!checkPermission())
