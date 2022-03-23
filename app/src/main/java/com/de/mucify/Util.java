@@ -8,11 +8,6 @@ import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
-import com.de.mucify.player.Playback;
-import com.de.mucify.service.MediaPlaybackService;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -54,7 +49,7 @@ public class Util {
     }
 
     public static int requestAudioFocus(Context context, AudioManager.OnAudioFocusChangeListener onChanged) {
-        if(UserData.IgnoreAudioFocus)
+        if(UserData.getIgnoreAudioFocus())
             return AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
 
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -63,7 +58,7 @@ public class Util {
             AudioFocusRequest audioFocusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                     .setOnAudioFocusChangeListener(onChanged)
                     .setAudioAttributes(new AudioAttributes.Builder()
-                            .setContentType(UserData.IgnoreAudioFocus ? AudioAttributes.CONTENT_TYPE_SPEECH : AudioAttributes.CONTENT_TYPE_MUSIC)  // API 31 doesn't mute when playing with content_type_speech
+                            .setContentType(UserData.getIgnoreAudioFocus() ? AudioAttributes.CONTENT_TYPE_SPEECH : AudioAttributes.CONTENT_TYPE_MUSIC)  // API 31 doesn't mute when playing with content_type_speech
                             .build())
                     .build();
             return audioManager.requestAudioFocus(audioFocusRequest);
@@ -75,7 +70,7 @@ public class Util {
     }
 
     public static int abandonAudioFocus(Context context, AudioManager.OnAudioFocusChangeListener onChanged) {
-        if(UserData.IgnoreAudioFocus)
+        if(UserData.getIgnoreAudioFocus())
             return 0;
 
         return ((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(onChanged);

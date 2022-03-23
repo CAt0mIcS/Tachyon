@@ -116,14 +116,14 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         mHistory.clear();
 
         Playback miniplayerPlayback;
-        if(UserData.PlaybackInfos.size() == 0)
+        if(UserData.getPlaybackInfoSize() == 0)
             return;
-        miniplayerPlayback = MediaLibrary.getSong(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPath);
+        miniplayerPlayback = MediaLibrary.getSong(UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).PlaybackPath);
 
         if(miniplayerPlayback == null) {
-            miniplayerPlayback = MediaLibrary.getPlaylist(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).PlaybackPath);
-            if(miniplayerPlayback != null && UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).LastPlayedPlaybackInPlaylist != null)
-                ((Playlist)miniplayerPlayback).setCurrentSong(MediaLibrary.getSong(UserData.PlaybackInfos.get(UserData.PlaybackInfos.size() - 1).LastPlayedPlaybackInPlaylist));
+            miniplayerPlayback = MediaLibrary.getPlaylist(UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).PlaybackPath);
+            if(miniplayerPlayback != null && UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).LastPlayedPlaybackInPlaylist != null)
+                ((Playlist)miniplayerPlayback).setCurrentSong(MediaLibrary.getSong(UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).LastPlayedPlaybackInPlaylist));
         }
 
         if(miniplayerPlayback != null) {
@@ -134,7 +134,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         PlaybackListItemAdapter adapter = new PlaybackListItemAdapter(this, mHistory);
         adapter.setListener(this);
         mRvHistory.setAdapter(adapter);
-        mUserDataCallback.onPlaybackInfoChanged(UserData.PlaybackInfos);
+        mUserDataCallback.onPlaybackInfoChanged();
     }
 
     @Override
@@ -234,16 +234,16 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
      */
     private class UserDataCallback extends UserData.Callback {
         @Override
-        public void onPlaybackInfoChanged(ArrayList<UserData.PlaybackInfo> playbackInfos) {
+        public void onPlaybackInfoChanged() {
             mHistory.clear();
-            for(int i = UserData.PlaybackInfos.size() - 1; i >= 0; --i) {
-                if(UserData.PlaybackInfos.get(i).isPlaylist()) {
-                    Playback playback = MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).LastPlayedPlaybackInPlaylist);
+            for(int i = UserData.getPlaybackInfoSize() - 1; i >= 0; --i) {
+                if(UserData.getPlaybackInfo(i).isPlaylist()) {
+                    Playback playback = MediaLibrary.getPlaybackFromPath(UserData.getPlaybackInfo(i).LastPlayedPlaybackInPlaylist);
                     if(playback != null)
                         mHistory.add(playback);
                 }
                 else {
-                    Playback playback = MediaLibrary.getPlaybackFromPath(UserData.PlaybackInfos.get(i).PlaybackPath);
+                    Playback playback = MediaLibrary.getPlaybackFromPath(UserData.getPlaybackInfo(i).PlaybackPath);
                     if(playback != null)
                         mHistory.add(playback);
                 }

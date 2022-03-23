@@ -9,8 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.media.MediaMetadata;
-import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -73,7 +71,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
-            if(UserData.IgnoreAudioFocus)
+            if(UserData.getIgnoreAudioFocus())
                 return;
 
             Log.d("Mucify", "Audio focus changed " + focusChange);
@@ -565,7 +563,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 }
 
                 try {
-                    Thread.sleep(UserData.AudioUpdateInterval);
+                    Thread.sleep(UserData.getAudioUpdateInterval());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

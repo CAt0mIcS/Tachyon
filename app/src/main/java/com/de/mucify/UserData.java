@@ -1,8 +1,6 @@
 package com.de.mucify;
 
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.telecom.Call;
 
 
 import androidx.annotation.NonNull;
@@ -28,16 +26,23 @@ public class UserData {
     public static File mSettingsFile;
 
     // Keep playing even if audio focus is lost
-    public static boolean IgnoreAudioFocus = false;
+    private static boolean mIgnoreAudioFocus = false;
+    private static final Object mIgnoreAudioFocusLock = new Object();
 
     // Interval by which the seekbars in the player should increment/decrement the time in milliseconds
-    public static int SongIncDecInterval = 100;
-    // Interval by which the loop/song done check will be run
-    public static int AudioUpdateInterval = 100;
-    // Max number of playbacks stored in the history
-    public static int MaxPlaybacksInHistory = 25;
+    private static int mSongIncDecInterval = 100;
+    private static final Object mSongIncDecIntervalLock = new Object();
 
-    public static final ArrayList<PlaybackInfo> PlaybackInfos = new ArrayList<>();
+    // Interval by which the loop/song done check will be run
+    private static int mAudioUpdateInterval = 100;
+    private static final Object mAudioUpdateIntervalLock = new Object();
+
+    // Max number of playbacks stored in the history
+    private static int mMaxPlaybacksInHistory = 25;
+    private static final Object mMaxPlaybacksInHistoryLock = new Object();
+
+    private static final ArrayList<PlaybackInfo> mPlaybackInfos = new ArrayList<>();
+    private static final Object mPlaybackInfosLock = new Object();
 
     public static class PlaybackInfo {
 
@@ -70,6 +75,59 @@ public class UserData {
         }
     }
 
+    public static boolean getIgnoreAudioFocus() {
+        synchronized (mIgnoreAudioFocusLock) {
+            return mIgnoreAudioFocus;
+        }
+    }
+    public static int getSongIncDecInterval() {
+        synchronized (mSongIncDecIntervalLock) {
+            return mSongIncDecInterval;
+        }
+    }
+    public static int getAudioUpdateInterval() {
+        synchronized (mAudioUpdateIntervalLock) {
+            return mAudioUpdateInterval;
+        }
+    }
+    public static int getMaxPlaybacksInHistory() {
+        synchronized (mMaxPlaybacksInHistoryLock) {
+            return mMaxPlaybacksInHistory;
+        }
+    }
+    public static int getPlaybackInfoSize() {
+        synchronized (mPlaybackInfosLock) {
+            return mPlaybackInfos.size();
+        }
+    }
+    public static PlaybackInfo getPlaybackInfo(int index) {
+        synchronized (mPlaybackInfosLock) {
+            return mPlaybackInfos.get(index);
+        }
+    }
+
+    public static void setIgnoreAudioFocus(boolean ignore) {
+        synchronized (mIgnoreAudioFocusLock) {
+            mIgnoreAudioFocus = ignore;
+        }
+    }
+    public static void setSongIncDecInterval(int interval) {
+        synchronized (mSongIncDecIntervalLock) {
+            mSongIncDecInterval = interval;
+        }
+    }
+    public static void setAudioUpdateInterval(int interval) {
+        synchronized (mAudioUpdateIntervalLock) {
+            mAudioUpdateInterval = interval;
+        }
+    }
+    public static void setMaxPlaybacksInHistory(int max) {
+        synchronized (mMaxPlaybacksInHistoryLock) {
+            mMaxPlaybacksInHistory = max;
+        }
+    }
+
+
     public static void load(Context context) {
         mSettingsFile = new File(context.getFilesDir().getAbsolutePath() + "/Settings.txt");
 
@@ -94,12 +152,15 @@ public class UserData {
         try {
             JSONObject json = new JSONObject(jsonString);
 
-            IgnoreAudioFocus = json.optBoolean("IgnoreAudioFocus", IgnoreAudioFocus);
-            SongIncDecInterval = json.optInt("SongIncDecInterval", SongIncDecInterval);
-            AudioUpdateInterval = json.optInt("AudioUpdateInterval", AudioUpdateInterval);
-            MaxPlaybacksInHistory = json.optInt("MaxPlaybacksInHistory", MaxPlaybacksInHistory);
+            setIgnoreAudioFocus(json.optBoolean("IgnoreAudioFocus", mIgnoreAudioFocus));
+            setSongIncDecInterval(json.optInt("SongIncDecInterval", mSongIncDecInterval));
+            setAudioUpdateInterval(json.optInt("AudioUpdateInterval", mAudioUpdateInterval));
+            setMaxPlaybacksInHistory(json.optInt("MaxPlaybacksInHistory", mMaxPlaybacksInHistory));
 
-            PlaybackInfos.clear();
+            synchronized (mPlaybackInfosLock) {
+                mPlaybackInfos.clear();
+            }
+
             JSONArray playbackInfos = json.getJSONArray("PlaybackInfos");
             for(int i = 0; i < playbackInfos.length(); ++i) {
                 JSONObject obj = playbackInfos.getJSONObject(i);
@@ -110,12 +171,17 @@ public class UserData {
                     info.PlaybackPath = new File(obj.getString("PlaybackPath"));
                 if(obj.has("LastPlayedPlaybackInPlaylist"))
                     info.LastPlayedPlaybackInPlaylist = new File(obj.getString("LastPlayedPlaybackInPlaylist"));
-                PlaybackInfos.add(info);
+
+                addPlaybackInfo(info);
             }
 
             // Remove oldest playbacks if we exceed max playbacks in history
-            if(PlaybackInfos.size() > MaxPlaybacksInHistory)
-                PlaybackInfos.subList(0, PlaybackInfos.size() - MaxPlaybacksInHistory).clear();
+            synchronized (mPlaybackInfosLock) {
+                synchronized (mMaxPlaybacksInHistoryLock) {
+                    if(mPlaybackInfos.size() > mMaxPlaybacksInHistory)
+                        mPlaybackInfos.subList(0, mPlaybackInfos.size() - mMaxPlaybacksInHistory).clear();
+                }
+            }
 
         } catch (JSONException e) {
             save();
@@ -126,28 +192,32 @@ public class UserData {
     public static void save() {
         Map<String, String> map = new HashMap<>();
 
-        map.put("IgnoreAudioFocus", String.valueOf(IgnoreAudioFocus));
-        map.put("SongIncDecInterval", String.valueOf(SongIncDecInterval));
-        map.put("AudioUpdateInterval", String.valueOf(AudioUpdateInterval));
-        map.put("MaxPlaybacksInHistory", String.valueOf(MaxPlaybacksInHistory));
+        map.put("IgnoreAudioFocus", String.valueOf(getIgnoreAudioFocus()));
+        map.put("SongIncDecInterval", String.valueOf(getSongIncDecInterval()));
+        map.put("AudioUpdateInterval", String.valueOf(getAudioUpdateInterval()));
+        map.put("MaxPlaybacksInHistory", String.valueOf(getMaxPlaybacksInHistory()));
 
         JSONObject json = new JSONObject(map);
         JSONArray array = new JSONArray();
-        for(int i = 0; i < PlaybackInfos.size(); ++i) {
-            JSONObject obj = new JSONObject();
-            PlaybackInfo info = PlaybackInfos.get(i);
-            try {
-                // Only store playback position for previously played playback
-                if(i == PlaybackInfos.size() - 1)
-                    obj.put("PlaybackPos", info.PlaybackPos);
-                obj.putOpt("PlaybackPath", info.PlaybackPath);
-                obj.putOpt("LastPlayedPlaybackInPlaylist", info.LastPlayedPlaybackInPlaylist);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
 
-            array.put(obj);
+        synchronized (mPlaybackInfosLock) {
+            for(int i = 0; i < mPlaybackInfos.size(); ++i) {
+                JSONObject obj = new JSONObject();
+                PlaybackInfo info = mPlaybackInfos.get(i);
+                try {
+                    // Only store playback position for previously played playback
+                    if(i == mPlaybackInfos.size() - 1)
+                        obj.put("PlaybackPos", info.PlaybackPos);
+                    obj.putOpt("PlaybackPath", info.PlaybackPath);
+                    obj.putOpt("LastPlayedPlaybackInPlaylist", info.LastPlayedPlaybackInPlaylist);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                array.put(obj);
+            }
         }
+
         try {
             json.put("PlaybackInfos", array);
         } catch (JSONException e) {
@@ -164,27 +234,29 @@ public class UserData {
     }
 
     public static void addPlaybackInfo(@NonNull PlaybackInfo info) {
-        for(int i = 0; i < PlaybackInfos.size(); ++i) {
-            if(info.equals(PlaybackInfos.get(i))) {
-                PlaybackInfos.remove(i);
-                PlaybackInfos.add(info);
-                for(Callback c : mCallbacks)
-                    c.onPlaybackInfoChanged(PlaybackInfos);
+        synchronized (mPlaybackInfosLock) {
+            for(int i = 0; i < mPlaybackInfos.size(); ++i) {
+                if(info.equals(mPlaybackInfos.get(i))) {
+                    mPlaybackInfos.remove(i);
+                    mPlaybackInfos.add(info);
+                    for(Callback c : mCallbacks)
+                        c.onPlaybackInfoChanged();
 
-                return;
+                    return;
+                }
             }
+            mPlaybackInfos.add(info);
         }
-        PlaybackInfos.add(info);
 
         for(Callback c : mCallbacks)
-            c.onPlaybackInfoChanged(PlaybackInfos);
+            c.onPlaybackInfoChanged();
     }
 
     public static void reset() {
-        IgnoreAudioFocus = false;
-        SongIncDecInterval = 100;
-        AudioUpdateInterval = 100;
-        MaxPlaybacksInHistory = 25;
+        setIgnoreAudioFocus(false);
+        setSongIncDecInterval(100);
+        setAudioUpdateInterval(100);
+        setMaxPlaybacksInHistory(25);
         mSettingsFile.delete();
     }
 
@@ -197,6 +269,6 @@ public class UserData {
     }
 
     public static class Callback {
-        public void onPlaybackInfoChanged(ArrayList<PlaybackInfo> playbackInfos) {}
+        public void onPlaybackInfoChanged() {}
     }
 }

@@ -1,6 +1,5 @@
 package com.de.mucify.ui;
 
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -28,7 +27,7 @@ public class ActivitySettings extends AppCompatActivity {
 
         mSwitchAudioFocus = findViewById(R.id.switchAudioFocus);
         mSwitchAudioFocus.setOnClickListener(v -> {
-            UserData.IgnoreAudioFocus = !mSwitchAudioFocus.isChecked();
+            UserData.setIgnoreAudioFocus(!mSwitchAudioFocus.isChecked());
         });
 
         mAudioIncDecInterval = findViewById(R.id.editAudioIncDecInterval);
@@ -48,7 +47,7 @@ public class ActivitySettings extends AppCompatActivity {
                     int interval = Integer.parseInt(s.toString());
                     if(interval == 0)
                         throw new NumberFormatException();
-                    UserData.SongIncDecInterval = interval;
+                    UserData.setSongIncDecInterval(interval);
                     mAudioIncDecInterval.setError(null);
                 } catch (NumberFormatException ignored) {
                     mAudioIncDecInterval.setError(getString(R.string.error_number_invalid));
@@ -68,7 +67,7 @@ public class ActivitySettings extends AppCompatActivity {
                     int interval = Integer.parseInt(s.toString());
                     if(interval == 0)
                         throw new NumberFormatException();
-                    UserData.AudioUpdateInterval = interval;
+                    UserData.setAudioUpdateInterval(interval);
                     mAudioUpdateInterval.setError(null);
                 } catch (NumberFormatException ignored) {
                     mAudioUpdateInterval.setError(getString(R.string.error_number_invalid));
@@ -101,8 +100,8 @@ public class ActivitySettings extends AppCompatActivity {
 
     private void updateUI() {
         // MY_TODO: Figure out if we even need to synchronize reading (other thread might be writing at this exact moment?)
-        mSwitchAudioFocus.setChecked(!UserData.IgnoreAudioFocus);
-        mAudioIncDecInterval.setText(String.valueOf(UserData.SongIncDecInterval));
-        mAudioUpdateInterval.setText(String.valueOf(UserData.AudioUpdateInterval));
+        mSwitchAudioFocus.setChecked(!UserData.getIgnoreAudioFocus());
+        mAudioIncDecInterval.setText(String.valueOf(UserData.getSongIncDecInterval()));
+        mAudioUpdateInterval.setText(String.valueOf(UserData.getAudioUpdateInterval()));
     }
 }
