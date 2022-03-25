@@ -57,7 +57,7 @@ public class CastController implements IMediaController {
     private MenuItem mMediaRouteMenuItem;
     private PlaybackLocation mPlaybackLocation;
     private Playback mPlayback;
-    private static final Handler mPlaybackUpdateHandler = new Handler();
+    private final Handler mPlaybackUpdateHandler = new Handler();
     private final Runnable mPlaybackUpdateRunnable = new Runnable() {
         @Override
         public void run() {
@@ -125,8 +125,7 @@ public class CastController implements IMediaController {
             mCastSession.getRemoteMediaClient().pause();
         }
 
-        for(MediaControllerActivity.Callback c : mCallbacks)
-            c.onPause();
+        onPause();
     }
 
     @Override
@@ -153,17 +152,9 @@ public class CastController implements IMediaController {
         synchronized (mCastSessionLock) {
             loadRemoteMedia(mCastSession.getRemoteMediaClient(), 0, true);
         }
-        mPlaybackLocation = PlaybackLocation.Remote;
 
-        for(MediaControllerActivity.Callback c : mCallbacks)
-            c.onStart();
-
-        mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - 5;
-        Log.d("Mucify.Cast", "Posting cast handler with delay ms" + delay);
-        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
-
-        Util.logGlobal("CastController.play " + mediaId + " ms" + delay);
+        onStart();
+        Util.logGlobal("CastController.play " + mediaId);
     }
 
     @Override
@@ -330,13 +321,12 @@ public class CastController implements IMediaController {
                     mCastSession.getRemoteMediaClient().registerCallback(new RemoteMediaClient.Callback() {
                         @Override
                         public void onStatusUpdated() {
-//                        mCastSession.getRemoteMediaClient().getMediaStatus()
+                            Util.logGlobal("RemoteMediaClient.Callback.onStatusUpdated");
+//                        mCastSession.getRemoteMediaClient().getMediaStatus();
                             if (isPaused()) {
-                                for (MediaControllerActivity.Callback c : mCallbacks)
-                                    c.onPause();
+                                onPause();
                             } else if (isPlaying()) {
-                                for (MediaControllerActivity.Callback c : mCallbacks)
-                                    c.onStart();
+                                onStart();
                             }
                         }
 
@@ -370,6 +360,25 @@ public class CastController implements IMediaController {
 
             }
         };
+    }
+
+    private void onStart() {
+        mPlaybackLocation = PlaybackLocation.Remote;
+
+        for(MediaControllerActivity.Callback c : mCallbacks)
+            c.onStart();
+
+        mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
+        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - 5;
+        Log.d("Mucify.Cast", "Posting cast handler with delay ms" + delay);
+        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
+        Util.logGlobal("CastController.onStart ms" + delay);
+    }
+
+    private void onPause() {
+        mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
+        for(MediaControllerActivity.Callback c : mCallbacks)
+            c.onPause();
     }
 
     /**
