@@ -8,4 +8,5 @@ public class MetadataKey {
     public static final String Artist = MediaMetadataCompat.METADATA_KEY_ARTIST;
     public static final String StartPos = "com.de.mucify.START_POS";
     public static final String EndPos = "com.de.mucify.END_POS";
+    public static final String MediaId = "com.de.mucify.MEDIA_ID";
 }

@@ -1,9 +1,13 @@
 package com.de.mucify.ui;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.telecom.Call;
+import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,7 +35,9 @@ import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
 import com.google.android.gms.cast.framework.SessionManagerListener;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
+import com.google.android.gms.common.images.WebImage;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -57,21 +63,14 @@ public class CastController implements IMediaController {
         public void run() {
             Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
             // MY_TODO: Test with loops and playlists
-//            Util.logGlobal("Runnable was triggered");
-            int currPos = mCastSession.getRemoteMediaClient() != null ? getCurrentPosition() : 0;
-            if(currPos == 0 || currPos >= mPlayback.getCurrentSong().getEndTimeUninitialized()) {
-                if(currPos != 0) {
-                    mCastSession.getRemoteMediaClient().stop();
-                    Util.logGlobal("Current Position is " + currPos + " stopping playback");
+            synchronized (mCastSessionLock) {
+                if(mCastSession == null) {
+                    Util.logGlobal("CastSession is null");
+                    return;
                 }
-//                Util.logGlobal("Restarting casting playback");
+
+                Util.logGlobal("Restarting casting playback ms" + getCurrentPosition());
                 play(mPlayback.getMediaId());
-            }
-            else {
-//                int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - currPos;
-//                Util.logGlobal("Delaying for ms" + delay);
-//                mPlaybackUpdateHandler.postDelayed(this, delay);
-                mPlaybackUpdateHandler.postDelayed(this, 10);
             }
         }
     };
@@ -86,6 +85,7 @@ public class CastController implements IMediaController {
 
     private final CastContext mCastContext;
     private CastSession mCastSession;
+    private final Object mCastSessionLock = new Object();
     private SessionManagerListener<CastSession> mSessionManagerListener;
 
     private final MediaControllerActivity mActivity;
@@ -98,7 +98,9 @@ public class CastController implements IMediaController {
         setupCastListener();
 
         mCastContext = CastContext.getSharedInstance(mActivity);
-        mCastSession = mCastContext.getSessionManager().getCurrentCastSession();
+        synchronized (mCastSessionLock) {
+            mCastSession = mCastContext.getSessionManager().getCurrentCastSession();
+        }
     }
 
     public void onResume() {
@@ -109,7 +111,9 @@ public class CastController implements IMediaController {
 
     @Override
     public void unpause() {
-        mCastSession.getRemoteMediaClient().play();
+        synchronized (mCastSessionLock) {
+            mCastSession.getRemoteMediaClient().play();
+        }
 
         for(MediaControllerActivity.Callback c : mCallbacks)
             c.onStart();
@@ -117,7 +121,9 @@ public class CastController implements IMediaController {
 
     @Override
     public void pause() {
-        mCastSession.getRemoteMediaClient().pause();
+        synchronized (mCastSessionLock) {
+            mCastSession.getRemoteMediaClient().pause();
+        }
 
         for(MediaControllerActivity.Callback c : mCallbacks)
             c.onPause();
@@ -125,9 +131,11 @@ public class CastController implements IMediaController {
 
     @Override
     public void seekTo(int millis) {
-        mCastSession.getRemoteMediaClient().seek(new MediaSeekOptions.Builder()
-                .setPosition(millis)
-                .build());
+        synchronized (mCastSessionLock) {
+            mCastSession.getRemoteMediaClient().seek(new MediaSeekOptions.Builder()
+                    .setPosition(millis)
+                    .build());
+        }
 
         for(MediaControllerActivity.Callback c : mCallbacks)
             c.onSeekTo(millis);
@@ -142,32 +150,41 @@ public class CastController implements IMediaController {
     public void play(String mediaId) {
         mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
 
-        loadRemoteMedia(mCastSession.getRemoteMediaClient(), 0, true);
+        synchronized (mCastSessionLock) {
+            loadRemoteMedia(mCastSession.getRemoteMediaClient(), 0, true);
+        }
         mPlaybackLocation = PlaybackLocation.Remote;
 
         for(MediaControllerActivity.Callback c : mCallbacks)
             c.onStart();
 
-//        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() + 1000;
-//        Util.logGlobal("Posting cast handler with delay ms" + delay);
-//        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
+        mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
+        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - 5;
+        Log.d("Mucify.Cast", "Posting cast handler with delay ms" + delay);
+        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
 
-        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, 10);
+        Util.logGlobal("CastController.play " + mediaId + " ms" + delay);
     }
 
     @Override
     public boolean isPlaying() {
-        return mCastSession.getRemoteMediaClient().isPlaying();
+        synchronized (mCastSessionLock) {
+            return mCastSession.getRemoteMediaClient().isPlaying();
+        }
     }
 
     @Override
     public boolean isCreated() {
-        return mCastSession != null && mCastSession.getRemoteMediaClient() != null;
+        synchronized (mCastSessionLock) {
+            return mCastSession != null && mCastSession.getRemoteMediaClient() != null;
+        }
     }
 
     @Override
     public boolean isPaused() {
-        return mCastSession.getRemoteMediaClient().isPaused();
+        synchronized (mCastSessionLock) {
+            return mCastSession.getRemoteMediaClient().isPaused();
+        }
     }
 
     @Override
@@ -192,12 +209,16 @@ public class CastController implements IMediaController {
 
     @Override
     public int getCurrentPosition() {
-        return (int) mCastSession.getRemoteMediaClient().getApproximateStreamPosition();
+        synchronized (mCastSessionLock) {
+            return (int) mCastSession.getRemoteMediaClient().getApproximateStreamPosition();
+        }
     }
 
     @Override
     public int getDuration() {
-        return (int) mCastSession.getRemoteMediaClient().getStreamDuration();
+        synchronized (mCastSessionLock) {
+            return (int) mCastSession.getRemoteMediaClient().getStreamDuration();
+        }
     }
 
     @Override
@@ -212,11 +233,15 @@ public class CastController implements IMediaController {
 
 
     public MediaMetadata getMetadata() {
-        return mCastSession.getRemoteMediaClient().getMediaInfo().getMetadata();
+        synchronized (mCastSessionLock) {
+            return mCastSession.getRemoteMediaClient().getMediaInfo().getMetadata();
+        }
     }
 
     public boolean isCasting() {
-        return mCastSession != null && mCastSession.isConnected();
+        synchronized (mCastSessionLock) {
+            return mCastSession != null && mCastSession.isConnected();
+        }
     }
 
 
@@ -299,22 +324,29 @@ public class CastController implements IMediaController {
 
             private void onApplicationConnected(CastSession castSession) {
                 startServer();
-                mCastSession = castSession;
+                synchronized (mCastSessionLock) {
+                    mCastSession = castSession;
 
-                mCastSession.getRemoteMediaClient().registerCallback(new RemoteMediaClient.Callback() {
-                    @Override
-                    public void onStatusUpdated() {
+                    mCastSession.getRemoteMediaClient().registerCallback(new RemoteMediaClient.Callback() {
+                        @Override
+                        public void onStatusUpdated() {
 //                        mCastSession.getRemoteMediaClient().getMediaStatus()
-                        if(isPaused()) {
-                            for(MediaControllerActivity.Callback c : mCallbacks)
-                                c.onPause();
+                            if (isPaused()) {
+                                for (MediaControllerActivity.Callback c : mCallbacks)
+                                    c.onPause();
+                            } else if (isPlaying()) {
+                                for (MediaControllerActivity.Callback c : mCallbacks)
+                                    c.onStart();
+                            }
                         }
-                        else if(isPlaying()) {
-                            for(MediaControllerActivity.Callback c : mCallbacks)
-                                c.onStart();
+
+                        @Override
+                        public void onMetadataUpdated() {
+                            MediaInfo mediaInfo = mCastSession.getRemoteMediaClient().getMediaInfo();
+                            Util.logGlobal("RemoteMediaClient.Callback.onMetadataUpdated");
                         }
-                    }
-                });
+                    });
+                }
 
                 mActivity.supportInvalidateOptionsMenu();
                 for(MediaControllerActivity.Callback c : mCallbacks)
@@ -322,6 +354,9 @@ public class CastController implements IMediaController {
             }
 
             private void onApplicationDisconnected() {
+                synchronized (mCastSessionLock) {
+                    mCastSession = null;
+                }
                 mPlaybackLocation = PlaybackLocation.Local;
                 mServer.stop();
                 Log.i("Mucify", "Stopping Cast server");
@@ -342,8 +377,7 @@ public class CastController implements IMediaController {
      */
     private void loadRemoteMedia(RemoteMediaClient remoteClient, int seekPos, boolean autoPlay) {
         if(remoteClient == null) {
-            Log.e("Mucify.Cast", "Remote media client is null");
-            return;
+            throw new UnsupportedOperationException("Remote media client is null");
         }
 
         remoteClient.load(new MediaLoadRequestData.Builder()
@@ -357,17 +391,29 @@ public class CastController implements IMediaController {
      * @return information about the media we're about to play
      */
     private MediaInfo buildMediaInfo() {
-        MediaMetadata metadata = new MediaMetadata(MediaMetadata.MEDIA_TYPE_MUSIC_TRACK);
-        metadata.putString(MediaMetadata.KEY_TITLE, mPlayback.getTitle());
-        metadata.putString(MediaMetadata.KEY_ARTIST, mPlayback.getSubtitle());
+        String title = mPlayback.getTitle();
+        String subtitle = mPlayback.getSubtitle();
+        int duration = mPlayback.getCurrentSong().getDurationUninitialized();
 
-        String url = "http://" + mIP + ":" + WebServer.PORT + "/audio";
-        Log.i("Mucify", "Loading Cast MediaInfo with URL: " + url);
-        return new MediaInfo.Builder(url)
+        String urlBase = "http://" + mIP + ":" + WebServer.PORT;
+        String urlAudio = urlBase + "/audio";
+        String urlImageLow = urlBase + "/image_low";
+        String urlImageHigh = urlBase + "/image_high";
+
+        MediaMetadata metadata = new MediaMetadata(MediaMetadata.MEDIA_TYPE_MUSIC_TRACK);
+        metadata.putString(MediaMetadata.KEY_TITLE, title);
+        metadata.putString(MediaMetadata.KEY_ARTIST, subtitle);
+
+        if(mPlayback.getCurrentSong().getImage() != null)
+            metadata.addImage(new WebImage(Uri.parse(urlImageLow)));
+
+        Util.logGlobal("Building Metadata with " + title + " " + subtitle + " ms" + duration);
+        Util.logGlobal("Loading Cast MediaInfo with URLAudio: " + urlAudio + "\nURLImageLow: " + urlImageLow);
+        return new MediaInfo.Builder(urlAudio)
                 .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
                 .setContentType(mMIMEType)
                 .setMetadata(metadata)
-                .setStreamDuration(mPlayback.getCurrentSong().getDurationUninitialized())
+                .setStreamDuration(duration)
                 .build();
     }
 
@@ -403,11 +449,11 @@ public class CastController implements IMediaController {
 
         @Override
         public Response serve(IHTTPSession session) {
+            Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
             Log.i("Mucify.CastWebServer", "Serve: "+ session.getUri());
             String uri = session.getUri();
 
             if (uri.equals("/audio")) {
-
                 FileInputStream fis = null;
                 try {
                     fis = new FileInputStream(mPlayback.getCurrentSong().getSongPath());
@@ -417,8 +463,27 @@ public class CastController implements IMediaController {
 
                 return newChunkedResponse(Response.Status.OK, mMIMEType, fis);
             }
+            else if(uri.equals("/image_high")) {
+                Bitmap imageData = mPlayback.getCurrentSong().getImage();
+                return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 100));
+            }
+            else if(uri.equals("/image_low")) {
+                Bitmap imageData = mPlayback.getCurrentSong().getImage();
+                return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 25));
+            }
 
             return  null;
+        }
+
+        public String bitmapToString(Bitmap bitmap, int quality) {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, quality, stream);
+            return Base64.encodeToString(stream.toByteArray(), Base64.DEFAULT);
+        }
+
+        public Bitmap StringToBitMap(String encodedString){
+            byte [] encodeByte = Base64.decode(encodedString,Base64.DEFAULT);
+            return BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
         }
     }
 }

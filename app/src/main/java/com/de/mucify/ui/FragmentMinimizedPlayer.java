@@ -121,5 +121,10 @@ public class FragmentMinimizedPlayer extends Fragment {
         public void onCastDisconnected() {
 
         }
+
+        @Override
+        public void onMediaIdChanged(String mediaId) {
+            getArguments().putString("MediaId", mediaId);
+        }
     }
 }

@@ -9,6 +9,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.telecom.Call;
 import android.util.Log;
 
 import com.de.mucify.PermissionManager;
@@ -259,6 +260,7 @@ public class MediaBrowserController implements IMediaController {
 
             String newTitle = metadata.getString(MetadataKey.Title);
             String newArtist = metadata.getString(MetadataKey.Artist);
+            String newMediaId = metadata.getString(MetadataKey.MediaId);
 
             if(mPreviousMetadata == null || (newTitle != null && !newTitle.equals(mPreviousMetadata.getString(MetadataKey.Title))))
                 for(MediaControllerActivity.Callback c : mCallbacks)
@@ -267,6 +269,10 @@ public class MediaBrowserController implements IMediaController {
             if(mPreviousMetadata == null || (newArtist != null && !newArtist.equals(mPreviousMetadata.getString(MetadataKey.Artist))))
                 for(MediaControllerActivity.Callback c : mCallbacks)
                     c.onArtistChanged(newArtist);
+
+            if(mPreviousMetadata == null || (newMediaId != null) && !newMediaId.equals(mPreviousMetadata.getString(MetadataKey.MediaId)))
+                for(MediaControllerActivity.Callback c : mCallbacks)
+                    c.onMediaIdChanged(newMediaId);
 
             mPreviousMetadata = metadata;
         }

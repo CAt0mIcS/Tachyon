@@ -271,6 +271,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             return mMetadataBuilder
                     .putString(MetadataKey.Title, mPlayback.getTitle())
                     .putString(MetadataKey.Artist, mPlayback.getSubtitle())
+                    .putString(MetadataKey.MediaId, mPlayback.getMediaId())
                     .putLong(MetadataKey.Duration, mPlayback.getDuration())
                     .putLong(MetadataKey.StartPos, mPlayback.getCurrentSong().getStartTime())
                     .putLong(MetadataKey.EndPos, mPlayback.getCurrentSong().getEndTime())
