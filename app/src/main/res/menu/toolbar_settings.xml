@@ -4,9 +4,9 @@
 
     <item
         android:id="@+id/action_reset_settings"
+        android:contentDescription="@string/reset_settings"
         android:icon="@drawable/refresh"
         android:title="@string/reset_settings"
-        android:contentDescription="@string/reset_settings"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="ifRoom" />
 
 </menu>

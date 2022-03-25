@@ -18,23 +18,23 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginTop="16dp"
+                android:layout_marginRight="16dp"
                 android:textSize="26sp"
                 android:textStyle="bold"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/txtArtist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="26dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginTop="4dp"
+                android:layout_marginEnd="16dp"
                 android:textSize="18sp"
-                app:layout_constraintTop_toBottomOf="@id/txtTitle"
-                app:layout_constraintLeft_toLeftOf="parent"/>
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/txtTitle" />
 
 
             <TextView
@@ -42,20 +42,20 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@id/txtArtist"
-                app:layout_constraintLeft_toLeftOf="parent"/>
+                android:layout_marginRight="16dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/txtArtist" />
 
             <SeekBar
                 android:id="@+id/sbPos"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@id/txtPos"
-                app:layout_constraintLeft_toLeftOf="parent"/>
+                android:layout_marginRight="16dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/txtPos" />
 
 
             <LinearLayout
@@ -63,18 +63,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@id/sbPos"
+                android:layout_marginRight="16dp"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent">
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/sbPos">
 
                 <ImageButton
                     android:id="@+id/btnStartPosDec"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/arrow_back_ios"
-                    android:contentDescription="@string/dec_start_time" />
+                    android:contentDescription="@string/dec_start_time"
+                    android:src="@drawable/arrow_back_ios" />
 
                 <LinearLayout
                     android:id="@+id/linearLayoutStartPos"
@@ -83,15 +83,15 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:text="@string/start_pos"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center"/>
+                        android:gravity="center"
+                        android:text="@string/start_pos" />
 
                     <TextView
                         android:id="@+id/txtStartPos"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content" />
 
                 </LinearLayout>
 
@@ -99,8 +99,8 @@
                     android:id="@+id/btnStartPosInc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/arrow_forward_ios"
-                    android:contentDescription="@string/inc_start_time" />
+                    android:contentDescription="@string/inc_start_time"
+                    android:src="@drawable/arrow_forward_ios" />
 
             </LinearLayout>
 
@@ -109,10 +109,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@id/linearLayoutStartPosBase"
-                app:layout_constraintLeft_toLeftOf="parent"/>
+                android:layout_marginRight="16dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/linearLayoutStartPosBase" />
 
 
             <LinearLayout
@@ -120,18 +120,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@id/sbStartPos"
+                android:layout_marginRight="16dp"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent">
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/sbStartPos">
 
                 <ImageButton
                     android:id="@+id/btnEndPosDec"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/arrow_back_ios"
-                    android:contentDescription="@string/dec_end_time" />
+                    android:contentDescription="@string/dec_end_time"
+                    android:src="@drawable/arrow_back_ios" />
 
                 <LinearLayout
                     android:id="@+id/linearLayoutEndPos"
@@ -140,15 +140,15 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:text="@string/end_pos"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center"/>
+                        android:gravity="center"
+                        android:text="@string/end_pos" />
 
                     <TextView
                         android:id="@+id/txtEndPos"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"/>
+                        android:layout_height="wrap_content" />
 
                 </LinearLayout>
 
@@ -156,8 +156,8 @@
                     android:id="@+id/btnEndPosInc"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/arrow_forward_ios"
-                    android:contentDescription="@string/inc_end_time" />
+                    android:contentDescription="@string/inc_end_time"
+                    android:src="@drawable/arrow_forward_ios" />
 
             </LinearLayout>
 
@@ -166,23 +166,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginTop="16dp"
-                app:layout_constraintTop_toBottomOf="@id/linearLayoutEndPosBase"
-                app:layout_constraintLeft_toLeftOf="parent"/>
+                android:layout_marginRight="16dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/linearLayoutEndPosBase" />
 
             <ImageButton
                 android:id="@+id/btnPlayPause"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginRight="16dp"
                 android:background="?android:colorBackground"
                 android:contentDescription="@string/play_pause"
-                app:layout_constraintTop_toBottomOf="@id/sbEndPos"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:layout_marginTop="16dp"
                 app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"/>
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/sbEndPos" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -192,10 +192,10 @@
         android:id="@+id/btmNavPlayer"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        app:menu="@menu/bottom_navigation_view_song_loop_player"
+        android:layout_gravity="bottom"
         app:elevation="8dp"
         app:labelVisibilityMode="unlabeled"
-        android:layout_gravity="bottom"
-        app:layout_insetEdge="bottom"/>
+        app:layout_insetEdge="bottom"
+        app:menu="@menu/bottom_navigation_view_song_loop_player" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

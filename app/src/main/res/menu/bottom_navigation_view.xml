@@ -3,16 +3,16 @@
     <item
         android:id="@+id/btmNavLibrary"
         android:icon="@drawable/library"
-        android:title="@string/library"/>
+        android:title="@string/library" />
 
     <item
         android:id="@+id/btmNavSearch"
         android:icon="@drawable/search"
-        android:title="@string/search"/>
+        android:title="@string/search" />
 
     <item
         android:id="@+id/btmNavImport"
         android:icon="@drawable/import_name"
-        android:title="@string/import_name"/>
+        android:title="@string/import_name" />
 
 </menu>

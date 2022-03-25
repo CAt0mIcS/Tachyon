@@ -8,15 +8,14 @@
     tools:context=".ui.ActivityLibrary">
 
     <androidx.appcompat.widget.Toolbar
-        app:layout_insetEdge="top"
+        android:id="@+id/my_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
+        android:elevation="4dp"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
-        android:elevation="4dp"
-        android:id="@+id/my_toolbar">
-    </androidx.appcompat.widget.Toolbar>
+        app:layout_insetEdge="top" />
 
 
     <androidx.core.widget.NestedScrollView
@@ -32,8 +31,8 @@
                 android:id="@+id/relLayoutSongs"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:layout_marginLeft="16dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginRight="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -44,22 +43,22 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
                     android:text="@string/songs"
-                    android:textStyle="bold"
-                    android:textSize="20sp" />
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:src="@drawable/arrow_forward_ios"/>
+                    android:src="@drawable/arrow_forward_ios" />
             </RelativeLayout>
 
             <RelativeLayout
                 android:id="@+id/relLayoutLoops"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:layout_marginLeft="16dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginRight="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="parent"
@@ -70,22 +69,22 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
                     android:text="@string/loops"
-                    android:textStyle="bold"
-                    android:textSize="20sp" />
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:src="@drawable/arrow_forward_ios"/>
+                    android:src="@drawable/arrow_forward_ios" />
             </RelativeLayout>
 
             <RelativeLayout
                 android:id="@+id/relLayoutPlaylists"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:layout_marginLeft="16dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginRight="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="parent"
@@ -96,14 +95,14 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
                     android:text="@string/playlists"
-                    android:textStyle="bold"
-                    android:textSize="20sp" />
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
                 <ImageView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
-                    android:src="@drawable/arrow_forward_ios"/>
+                    android:src="@drawable/arrow_forward_ios" />
             </RelativeLayout>
 
             <TextView
@@ -122,11 +121,11 @@
                 android:id="@+id/rvHistory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:layout_marginLeft="16dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginRight="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
                 android:nestedScrollingEnabled="false"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/txtHistory" />
 
@@ -137,8 +136,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_insetEdge="bottom"
-        android:layout_gravity="bottom">
+        android:layout_gravity="bottom"
+        app:layout_insetEdge="bottom">
 
 
         <androidx.fragment.app.FragmentContainerView
@@ -147,19 +146,19 @@
             android:layout_height="wrap_content"
             app:layout_constraintBottom_toTopOf="@id/btmNav"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"/>
+            app:layout_constraintRight_toRightOf="parent" />
 
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/btmNav"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            app:menu="@menu/bottom_navigation_view"
             app:elevation="8dp"
             app:labelVisibilityMode="labeled"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"/>
+            app:layout_constraintRight_toRightOf="parent"
+            app:menu="@menu/bottom_navigation_view" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

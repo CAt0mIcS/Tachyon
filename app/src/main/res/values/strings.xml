@@ -27,16 +27,16 @@
     <string name="unknown_artist">Unknown Artist</string>
     <string name="refresh">Refresh</string>
     <string name="reset_settings">Reset Settings</string>
-    <string name="setting_developer">Developer Settings</string>
-    <string name="setting_standard">Standard Settings</string>
+    <string name="standard_settings">Standard Settings</string>
     <string name="audio_focus">Audio Focus</string>
-    <string name="setting_developer_songIncDecInterval">Song Inc/Dec Interval</string>
+    <string name="song_inc_dec_interval_setting">Song Inc/Dec Interval</string>
     <string name="song_inc_dec_hint">1 - ∞</string>
-    <string name="setting_developer_audioUpdateInterval">Audio Update Interval</string>
+    <string name="audio_update_interval_setting">Audio Update Interval</string>
     <string name="error_number_invalid">Invalid Number</string>
     <string name="cancel">Cancel</string>
     <string name="dialog_reset_message">Are you sure you want to reset all settings and user data (except for logins)?</string>
     <string name="save_playlist">Add to playlists</string>
     <string name="close_dialogue">Close Dialog</string>
     <string name="create_playlist">Create new playlist</string>
+    <string name="advanced_settings">Advanced Settings</string>
 </resources>
