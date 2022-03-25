@@ -30,6 +30,7 @@ import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaLoadRequestData;
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.MediaSeekOptions;
+import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
@@ -139,9 +140,12 @@ public class CastController implements IMediaController {
         for(MediaControllerActivity.Callback c : mCallbacks)
             c.onSeekTo(millis);
 
+
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-//        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition());
-        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, 10);
+        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - 5;
+        Log.d("Mucify.Cast", "Posting cast handler with delay ms" + delay);
+        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
+        Util.logGlobal("CastController.seekTo (delay)ms" + delay);
     }
 
 
@@ -150,7 +154,7 @@ public class CastController implements IMediaController {
         mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
 
         synchronized (mCastSessionLock) {
-            loadRemoteMedia(mCastSession.getRemoteMediaClient(), 0, true);
+            loadRemoteMedia(mCastSession.getRemoteMediaClient(), mPlayback.isCreated() ? mPlayback.getCurrentPosition() : 0, true);
         }
 
         onStart();
@@ -323,12 +327,32 @@ public class CastController implements IMediaController {
                         public void onStatusUpdated() {
                             Util.logGlobal("RemoteMediaClient.Callback.onStatusUpdated");
 //                        mCastSession.getRemoteMediaClient().getMediaStatus();
+
                             if (isPaused()) {
                                 onPause();
                             } else if (isPlaying()) {
                                 onStart();
                             }
+
+//                            if(mCastSession.getRemoteMediaClient().getMediaStatus() != null) {
+//                                switch(mCastSession.getRemoteMediaClient().getMediaStatus().getCurrentItemId()) {
+//                                    case (int) MediaStatus.COMMAND_SEEK:
+//                                        break;
+//                                }
+//                            }
+
+//                            try {
+//                                mCastSession.setMessageReceivedCallbacks("urn:x-cast:cast.framework.messages", new Cast.MessageReceivedCallback() {
+//                                    @Override
+//                                    public void onMessageReceived(@NonNull CastDevice castDevice, @NonNull String namespace, @NonNull String message) {
+//                                        Util.logGlobal("Received message " + namespace + " " + message);
+//                                    }
+//                                });
+//                            } catch (IOException e) {
+//                                e.printStackTrace();
+//                            }
                         }
+
 
                         @Override
                         public void onMetadataUpdated() {
@@ -389,6 +413,7 @@ public class CastController implements IMediaController {
             throw new UnsupportedOperationException("Remote media client is null");
         }
 
+        Util.logGlobal("Loading remote media with seekPos ms" + seekPos);
         remoteClient.load(new MediaLoadRequestData.Builder()
                 .setMediaInfo(buildMediaInfo())
                 .setAutoplay(autoPlay)

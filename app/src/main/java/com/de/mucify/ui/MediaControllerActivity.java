@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class MediaControllerActivity extends AppCompatActivity implements IMediaController {
     private MediaBrowserController mBrowserController;
-    private CastController mCastController;
+    private static CastController mCastController;
 
     private final ArrayList<Callback> mCallbacks = new ArrayList<>();
 
@@ -30,7 +30,8 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         CastContext.getSharedInstance(this);
 
         mBrowserController = new MediaBrowserController(this, mCallbacks);
-        mCastController = new CastController(this, mCallbacks);
+        if(mCastController == null)
+            mCastController = new CastController(this, mCallbacks);
 
         // Removes our notification because Google Cast has its own
         addCallback(new Callback() {
