@@ -30,7 +30,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         CastContext.getSharedInstance(this);
 
         mBrowserController = new MediaBrowserController(this, mCallbacks);
-        if(mCastController == null)
+        if (mCastController == null)
             mCastController = new CastController(this, mCallbacks);
 
         // Removes our notification because Google Cast has its own
@@ -68,7 +68,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
 
     @Override
     public void unpause() {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             mCastController.unpause();
         else
             mBrowserController.unpause();
@@ -76,7 +76,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
 
     @Override
     public void pause() {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             mCastController.pause();
         else
             mBrowserController.pause();
@@ -84,7 +84,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
 
     @Override
     public void seekTo(int millis) {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             mCastController.seekTo(millis);
         else
             mBrowserController.seekTo(millis);
@@ -93,7 +93,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
     @Override
     public void play(String mediaId) {
         mCastController.setPlayback(mediaId);
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             mCastController.play(mediaId);
         else
             mBrowserController.play(mediaId);
@@ -101,28 +101,28 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
 
     @Override
     public boolean isPlaying() {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             return mCastController.isPlaying();
         return mBrowserController.isPlaying();
     }
 
     @Override
     public boolean isCreated() {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             return mCastController.isCreated();
         return mBrowserController.isCreated();
     }
 
     @Override
     public boolean isPaused() {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             return mCastController.isPaused();
         return mBrowserController.isPaused();
     }
 
     @Override
     public void setStartTime(int millis) {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             mCastController.setStartTime(millis);
         else
             mBrowserController.setStartTime(millis);
@@ -130,7 +130,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
 
     @Override
     public void setEndTime(int millis) {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             mCastController.setEndTime(millis);
         else
             mBrowserController.setEndTime(millis);
@@ -138,42 +138,42 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
 
     @Override
     public int getStartTime() {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             return mCastController.getStartTime();
         return mBrowserController.getStartTime();
     }
 
     @Override
     public int getEndTime() {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             return mCastController.getEndTime();
         return mBrowserController.getEndTime();
     }
 
     @Override
     public int getCurrentPosition() {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             return mCastController.getCurrentPosition();
         return mBrowserController.getCurrentPosition();
     }
 
     @Override
     public int getDuration() {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             return mCastController.getDuration();
         return mBrowserController.getDuration();
     }
 
     @Override
     public String getSongTitle() {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             return mCastController.getSongTitle();
         return mBrowserController.getSongTitle();
     }
 
     @Override
     public String getSongArtist() {
-        if(mCastController.isCasting())
+        if (mCastController.isCasting())
             return mCastController.getSongArtist();
         return mBrowserController.getSongArtist();
     }
@@ -182,21 +182,40 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
     public void addCallback(Callback c) {
         mCallbacks.add(c);
     }
+
     public void removeCallback(Callback c) {
         mCallbacks.remove(c);
     }
 
-    public void onConnected() {}
-    public void onDisconnected() {}
+    public void onConnected() {
+    }
+
+    public void onDisconnected() {
+    }
 
     public abstract static class Callback {
-        public void onStart() {}
-        public void onPause() {}
-        public void onTitleChanged(String title) {}
-        public void onArtistChanged(String artist) {}
-        public void onSeekTo(int millis) {}
-        public void onMediaIdChanged(String mediaId) {}
-        public void onCastConnected() {}
-        public void onCastDisconnected() {}
+        public void onStart() {
+        }
+
+        public void onPause() {
+        }
+
+        public void onTitleChanged(String title) {
+        }
+
+        public void onArtistChanged(String artist) {
+        }
+
+        public void onSeekTo(int millis) {
+        }
+
+        public void onMediaIdChanged(String mediaId) {
+        }
+
+        public void onCastConnected() {
+        }
+
+        public void onCastDisconnected() {
+        }
     }
 }

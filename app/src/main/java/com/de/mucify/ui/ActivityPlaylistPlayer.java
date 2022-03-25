@@ -14,7 +14,7 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
     }
 
     public void onConnected() {
-        if(!getIntent().getBooleanExtra("IsPlaying", false))
+        if (!getIntent().getBooleanExtra("IsPlaying", false))
             play(getIntent().getStringExtra("MediaId"));
     }
 

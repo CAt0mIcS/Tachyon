@@ -49,7 +49,7 @@ public class Util {
     }
 
     public static int requestAudioFocus(Context context, AudioManager.OnAudioFocusChangeListener onChanged) {
-        if(UserData.getIgnoreAudioFocus())
+        if (UserData.getIgnoreAudioFocus())
             return AudioManager.AUDIOFOCUS_REQUEST_GRANTED;
 
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
@@ -70,15 +70,15 @@ public class Util {
     }
 
     public static int abandonAudioFocus(Context context, AudioManager.OnAudioFocusChangeListener onChanged) {
-        if(UserData.getIgnoreAudioFocus())
+        if (UserData.getIgnoreAudioFocus())
             return 0;
 
-        return ((AudioManager)context.getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(onChanged);
+        return ((AudioManager) context.getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(onChanged);
     }
 
     public static String getIPAddress(Context context) {
         WifiManager wifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if(wifiManager.getConnectionInfo() != null) {
+        if (wifiManager.getConnectionInfo() != null) {
             try {
                 return InetAddress.getByAddress(
                         ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)

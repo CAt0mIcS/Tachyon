@@ -37,37 +37,36 @@ public class Song extends Playback {
     /**
      * Creates a Song object which only has basic data (title, artist, path, startTime, endTime) set.
      * Call create() to make this Song playable.
+     *
      * @param path to a song or loop file.
      * @throws LoadingFailedException if the path doesn't exist or if the loading of the loop file fails.
      */
     public Song(Context context, File path) throws LoadingFailedException {
-        if(path == null || !path.exists()) {
+        if (path == null || !path.exists()) {
             throw new LoadingFailedException("Failed to load song: \"" + path + "\" does not exist");
         }
 
-        if(FileManager.isLoopFile(path)) {
+        if (FileManager.isLoopFile(path)) {
             try {
                 parseLoopFile(path);
             } catch (IOException e) {
                 throw new LoadingFailedException("Failed to load loop: \"" + mSongFilePath + "\" is not a valid loop file");
             }
             mLoopFilePath = path;
-        }
-        else if(FileManager.isSongFile(path)) {
+        } else if (FileManager.isSongFile(path)) {
             mSongFilePath = path;
-        }
-        else {
+        } else {
             throw new LoadingFailedException("Failed to load song: \"" + mSongFilePath + "\" is an invalid file type");
         }
 
-        if(!mSongFilePath.exists()) {
+        if (!mSongFilePath.exists()) {
             throw new LoadingFailedException("Failed to load song: \"" + mSongFilePath + "\" does not exist");
         }
 
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
         try {
             metaRetriever.setDataSource(mSongFilePath.getAbsolutePath());
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
 
@@ -75,17 +74,17 @@ public class Song extends Playback {
         String title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE);
 
         byte[] art = metaRetriever.getEmbeddedPicture();
-        if(art != null) {
+        if (art != null) {
             mSongImage = BitmapFactory.decodeByteArray(art, 0, art.length);
         }
 
 
-        if(title != null)
+        if (title != null)
             mTitle = title;
         else
             mTitle = mSongFilePath.getName().replace(FileManager.getFileExtension(mSongFilePath.getName()), "");
 
-        if(artist != null)
+        if (artist != null)
             mArtist = artist;
         else
             mArtist = context.getString(R.string.unknown_artist);
@@ -93,9 +92,10 @@ public class Song extends Playback {
 
     /**
      * Creates a fully created Song object which can be played directly after the constructor
+     *
      * @param songFilePath path to a Song file
-     * @param startTime offset in milliseconds when the song should start playing
-     * @param endTime offset in milliseconds when the song should stop playing
+     * @param startTime    offset in milliseconds when the song should start playing
+     * @param endTime      offset in milliseconds when the song should stop playing
      * @throws LoadingFailedException if the path doesn't exist or if the loading of the loop file fails.
      */
     public Song(Context context, File songFilePath, int startTime, int endTime) throws LoadingFailedException {
@@ -161,7 +161,7 @@ public class Song extends Playback {
     public void create(Context context) {
         mMediaPlayer = MediaPlayer.create(context, Uri.parse(mSongFilePath.getPath()));
 
-        if(mEndTime == 0)
+        if (mEndTime == 0)
             mEndTime = mMediaPlayer.getDuration();
 
         Log.d("Mucify.Song", "Song.create");
@@ -169,7 +169,7 @@ public class Song extends Playback {
 
     @Override
     public String getMediaId() {
-        if(isLoop())
+        if (isLoop())
             return "Loop_" + getLoopPath();
         return "Song_" + getSongPath();
     }
@@ -179,15 +179,14 @@ public class Song extends Playback {
         Log.d("Mucify.Song", "Song.next");
 
         Song s;
-        if(!isLoop()) {
+        if (!isLoop()) {
             int idx = MediaLibrary.getSongIndex(this) + 1;
-            if(idx >= MediaLibrary.AvailableSongs.size())
+            if (idx >= MediaLibrary.AvailableSongs.size())
                 idx = 0;
             s = MediaLibrary.AvailableSongs.get(idx);
-        }
-        else {
+        } else {
             int idx = MediaLibrary.getLoopIndex(this) + 1;
-            if(idx >= MediaLibrary.AvailableLoops.size())
+            if (idx >= MediaLibrary.AvailableLoops.size())
                 idx = 0;
             s = MediaLibrary.AvailableLoops.get(idx);
         }
@@ -200,15 +199,14 @@ public class Song extends Playback {
         Log.d("Mucify.Song", "Song.previous");
 
         Song s;
-        if(!isLoop()) {
+        if (!isLoop()) {
             int idx = MediaLibrary.getSongIndex(this) - 1;
-            if(idx < 0)
+            if (idx < 0)
                 idx = MediaLibrary.AvailableSongs.size() - 1;
             s = MediaLibrary.AvailableSongs.get(idx);
-        }
-        else {
+        } else {
             int idx = MediaLibrary.getLoopIndex(this) - 1;
-            if(idx < 0)
+            if (idx < 0)
                 idx = MediaLibrary.AvailableLoops.size() - 1;
             s = MediaLibrary.AvailableLoops.get(idx);
         }
@@ -225,7 +223,7 @@ public class Song extends Playback {
         MediaMetadataRetriever metaRetriever = new MediaMetadataRetriever();
         try {
             metaRetriever.setDataSource(mSongFilePath.getAbsolutePath());
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         }
 
@@ -234,7 +232,7 @@ public class Song extends Playback {
     }
 
     public int getEndTimeUninitialized() {
-        if(mEndTime == 0)
+        if (mEndTime == 0)
             return getDurationUninitialized();
         return mEndTime;
     }
@@ -250,7 +248,9 @@ public class Song extends Playback {
     }
 
     @Override
-    public boolean isCreated() { return mMediaPlayer != null; }
+    public boolean isCreated() {
+        return mMediaPlayer != null;
+    }
 
     @Override
     public void setVolume(float left, float right) {
@@ -267,34 +267,63 @@ public class Song extends Playback {
      */
     @Override
     public File getPath() {
-        if(isLoop())
+        if (isLoop())
             return getLoopPath();
         return getSongPath();
     }
 
-    public void setStartTime(int startTime) { mStartTime = startTime; }
-    public void setEndTime(int endTime) { mEndTime = endTime; }
-    public String getArtist() { return mArtist; }
-    public File getSongPath() { return mSongFilePath; }
-    public int getStartTime() { return mStartTime; }
-    public int getEndTime() { return mEndTime; }
-    public File getLoopPath() { return mLoopFilePath; }
-    public String getLoopName() { return FileManager.loopNameFromFile(mLoopFilePath); }
-    public boolean isLoop() { return mLoopFilePath != null; }
-    public void setOnMediaPlayerCompletionListener(MediaPlayer.OnCompletionListener listener) { mMediaPlayer.setOnCompletionListener(listener); }
+    public void setStartTime(int startTime) {
+        mStartTime = startTime;
+    }
+
+    public void setEndTime(int endTime) {
+        mEndTime = endTime;
+    }
+
+    public String getArtist() {
+        return mArtist;
+    }
+
+    public File getSongPath() {
+        return mSongFilePath;
+    }
+
+    public int getStartTime() {
+        return mStartTime;
+    }
+
+    public int getEndTime() {
+        return mEndTime;
+    }
+
+    public File getLoopPath() {
+        return mLoopFilePath;
+    }
+
+    public String getLoopName() {
+        return FileManager.loopNameFromFile(mLoopFilePath);
+    }
+
+    public boolean isLoop() {
+        return mLoopFilePath != null;
+    }
+
+    public void setOnMediaPlayerCompletionListener(MediaPlayer.OnCompletionListener listener) {
+        mMediaPlayer.setOnCompletionListener(listener);
+    }
 
     /**
      * Checks if two Song objects are equal in all their uninitialized data. Doesn't require
      * Song to be created.
      */
     public boolean equalsUninitialized(@Nullable Song obj) {
-        if(obj == null)
+        if (obj == null)
             return false;
         boolean equals = mTitle.equals(obj.mTitle) && mArtist.equals(obj.mArtist) && mStartTime == obj.mStartTime && mSongFilePath.equals(obj.mSongFilePath);
-        if(equals && mLoopFilePath != null && obj.mLoopFilePath != null)
+        if (equals && mLoopFilePath != null && obj.mLoopFilePath != null)
             equals = mLoopFilePath.equals(obj.mLoopFilePath);
-        else if(mLoopFilePath == null && obj.mLoopFilePath == null) {}
-        else equals = false;
+        else if (mLoopFilePath == null && obj.mLoopFilePath == null) {
+        } else equals = false;
         return equals;
     }
 
@@ -302,18 +331,19 @@ public class Song extends Playback {
      * Checks if two Song objects are equal. Requires Song to be created.
      */
     public boolean equals(@Nullable Song obj) {
-        if(obj == null)
+        if (obj == null)
             return false;
         boolean equals = mTitle.equals(obj.mTitle) && mArtist.equals(obj.mArtist) && mStartTime == obj.mStartTime && mEndTime == obj.mEndTime && mMediaPlayer == obj.mMediaPlayer && mSongFilePath.equals(obj.mSongFilePath);
-        if(equals && mLoopFilePath != null && obj.mLoopFilePath != null)
+        if (equals && mLoopFilePath != null && obj.mLoopFilePath != null)
             equals = mLoopFilePath.equals(obj.mLoopFilePath);
-        else if(mLoopFilePath == null && obj.mLoopFilePath == null) {}
-        else equals = false;
+        else if (mLoopFilePath == null && obj.mLoopFilePath == null) {
+        } else equals = false;
         return equals;
     }
 
     /**
      * Parses the loop file. Doesn't do any checking if the file is correctly formatted.
+     *
      * @param file path to loop file
      * @throws IOException if reading fails
      */

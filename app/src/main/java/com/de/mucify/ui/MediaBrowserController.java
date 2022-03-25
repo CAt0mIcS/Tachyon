@@ -129,6 +129,7 @@ public class MediaBrowserController implements IMediaController {
      * Uses a custom event to call onCustomEvent in MediaPlaybackService. Only sets the start time
      * if the currently playing Playback is neither Loop nor Playlist, does nothing otherwise.
      * Crashes if the Playback hasn't been started yet.
+     *
      * @param millis offset from audio position zero.
      */
     @Override
@@ -142,6 +143,7 @@ public class MediaBrowserController implements IMediaController {
      * Uses a custom event to call onCustomEvent in MediaPlaybackService. Only sets the end time
      * if the currently playing Playback is neither Loop nor Playlist, does nothing otherwise.
      * Crashes if the Playback hasn't been started yet.
+     *
      * @param millis offset from audio duration.
      */
     @Override
@@ -262,16 +264,16 @@ public class MediaBrowserController implements IMediaController {
             String newArtist = metadata.getString(MetadataKey.Artist);
             String newMediaId = metadata.getString(MetadataKey.MediaId);
 
-            if(mPreviousMetadata == null || (newTitle != null && !newTitle.equals(mPreviousMetadata.getString(MetadataKey.Title))))
-                for(MediaControllerActivity.Callback c : mCallbacks)
+            if (mPreviousMetadata == null || (newTitle != null && !newTitle.equals(mPreviousMetadata.getString(MetadataKey.Title))))
+                for (MediaControllerActivity.Callback c : mCallbacks)
                     c.onTitleChanged(newTitle);
 
-            if(mPreviousMetadata == null || (newArtist != null && !newArtist.equals(mPreviousMetadata.getString(MetadataKey.Artist))))
-                for(MediaControllerActivity.Callback c : mCallbacks)
+            if (mPreviousMetadata == null || (newArtist != null && !newArtist.equals(mPreviousMetadata.getString(MetadataKey.Artist))))
+                for (MediaControllerActivity.Callback c : mCallbacks)
                     c.onArtistChanged(newArtist);
 
-            if(mPreviousMetadata == null || (newMediaId != null) && !newMediaId.equals(mPreviousMetadata.getString(MetadataKey.MediaId)))
-                for(MediaControllerActivity.Callback c : mCallbacks)
+            if (mPreviousMetadata == null || (newMediaId != null) && !newMediaId.equals(mPreviousMetadata.getString(MetadataKey.MediaId)))
+                for (MediaControllerActivity.Callback c : mCallbacks)
                     c.onMediaIdChanged(newMediaId);
 
             mPreviousMetadata = metadata;
@@ -281,19 +283,18 @@ public class MediaBrowserController implements IMediaController {
         public void onPlaybackStateChanged(PlaybackStateCompat state) {
             Log.d("Mucify", "MediaControllerActivity playback state changed" + state);
 
-            if(mPreviousPlaybackState == null || state.getState() != mPreviousPlaybackState.getState()) {
-                if(state.getState() == PlaybackStateCompat.STATE_PAUSED) {
-                    for(MediaControllerActivity.Callback c : mCallbacks)
+            if (mPreviousPlaybackState == null || state.getState() != mPreviousPlaybackState.getState()) {
+                if (state.getState() == PlaybackStateCompat.STATE_PAUSED) {
+                    for (MediaControllerActivity.Callback c : mCallbacks)
                         c.onPause();
-                }
-                else if (mPreviousPlaybackState == null || state.getState() == PlaybackStateCompat.STATE_PLAYING) {
-                    for(MediaControllerActivity.Callback c : mCallbacks)
+                } else if (mPreviousPlaybackState == null || state.getState() == PlaybackStateCompat.STATE_PLAYING) {
+                    for (MediaControllerActivity.Callback c : mCallbacks)
                         c.onStart();
                 }
             }
 
-            if(mPreviousPlaybackState == null || state.getPosition() != mPreviousPlaybackState.getPosition()) {
-                for(MediaControllerActivity.Callback c : mCallbacks)
+            if (mPreviousPlaybackState == null || state.getPosition() != mPreviousPlaybackState.getPosition()) {
+                for (MediaControllerActivity.Callback c : mCallbacks)
                     c.onSeekTo((int) state.getPosition());
             }
 

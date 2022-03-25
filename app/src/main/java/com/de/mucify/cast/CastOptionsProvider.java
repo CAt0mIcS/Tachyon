@@ -45,6 +45,7 @@ public class CastOptionsProvider implements OptionsProvider {
                 .setCastMediaOptions(mediaOptions)
                 .build();
     }
+
     @Override
     public List<SessionProvider> getAdditionalSessionProviders(@NonNull Context context) {
         return null;

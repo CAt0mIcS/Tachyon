@@ -80,26 +80,31 @@ public class UserData {
             return mIgnoreAudioFocus;
         }
     }
+
     public static int getSongIncDecInterval() {
         synchronized (mSongIncDecIntervalLock) {
             return mSongIncDecInterval;
         }
     }
+
     public static int getAudioUpdateInterval() {
         synchronized (mAudioUpdateIntervalLock) {
             return mAudioUpdateInterval;
         }
     }
+
     public static int getMaxPlaybacksInHistory() {
         synchronized (mMaxPlaybacksInHistoryLock) {
             return mMaxPlaybacksInHistory;
         }
     }
+
     public static int getPlaybackInfoSize() {
         synchronized (mPlaybackInfosLock) {
             return mPlaybackInfos.size();
         }
     }
+
     public static PlaybackInfo getPlaybackInfo(int index) {
         synchronized (mPlaybackInfosLock) {
             return mPlaybackInfos.get(index);
@@ -111,16 +116,19 @@ public class UserData {
             mIgnoreAudioFocus = ignore;
         }
     }
+
     public static void setSongIncDecInterval(int interval) {
         synchronized (mSongIncDecIntervalLock) {
             mSongIncDecInterval = interval;
         }
     }
+
     public static void setAudioUpdateInterval(int interval) {
         synchronized (mAudioUpdateIntervalLock) {
             mAudioUpdateInterval = interval;
         }
     }
+
     public static void setMaxPlaybacksInHistory(int max) {
         synchronized (mMaxPlaybacksInHistoryLock) {
             mMaxPlaybacksInHistory = max;
@@ -137,7 +145,7 @@ public class UserData {
             StringBuilder jsonBuilder = new StringBuilder();
 
             BufferedReader reader = new BufferedReader(new FileReader(mSettingsFile));
-            while(reader.ready()) {
+            while (reader.ready()) {
                 jsonBuilder.append(reader.readLine()).append('\n');
             }
             reader.close();
@@ -162,14 +170,14 @@ public class UserData {
             }
 
             JSONArray playbackInfos = json.getJSONArray("PlaybackInfos");
-            for(int i = 0; i < playbackInfos.length(); ++i) {
+            for (int i = 0; i < playbackInfos.length(); ++i) {
                 JSONObject obj = playbackInfos.getJSONObject(i);
                 PlaybackInfo info = new PlaybackInfo();
 
                 info.PlaybackPos = obj.optInt("PlaybackPos");
-                if(obj.has("PlaybackPath"))
+                if (obj.has("PlaybackPath"))
                     info.PlaybackPath = new File(obj.getString("PlaybackPath"));
-                if(obj.has("LastPlayedPlaybackInPlaylist"))
+                if (obj.has("LastPlayedPlaybackInPlaylist"))
                     info.LastPlayedPlaybackInPlaylist = new File(obj.getString("LastPlayedPlaybackInPlaylist"));
 
                 addPlaybackInfo(info);
@@ -178,7 +186,7 @@ public class UserData {
             // Remove oldest playbacks if we exceed max playbacks in history
             synchronized (mPlaybackInfosLock) {
                 synchronized (mMaxPlaybacksInHistoryLock) {
-                    if(mPlaybackInfos.size() > mMaxPlaybacksInHistory)
+                    if (mPlaybackInfos.size() > mMaxPlaybacksInHistory)
                         mPlaybackInfos.subList(0, mPlaybackInfos.size() - mMaxPlaybacksInHistory).clear();
                 }
             }
@@ -201,12 +209,12 @@ public class UserData {
         JSONArray array = new JSONArray();
 
         synchronized (mPlaybackInfosLock) {
-            for(int i = 0; i < mPlaybackInfos.size(); ++i) {
+            for (int i = 0; i < mPlaybackInfos.size(); ++i) {
                 JSONObject obj = new JSONObject();
                 PlaybackInfo info = mPlaybackInfos.get(i);
                 try {
                     // Only store playback position for previously played playback
-                    if(i == mPlaybackInfos.size() - 1)
+                    if (i == mPlaybackInfos.size() - 1)
                         obj.put("PlaybackPos", info.PlaybackPos);
                     obj.putOpt("PlaybackPath", info.PlaybackPath);
                     obj.putOpt("LastPlayedPlaybackInPlaylist", info.LastPlayedPlaybackInPlaylist);
@@ -235,11 +243,11 @@ public class UserData {
 
     public static void addPlaybackInfo(@NonNull PlaybackInfo info) {
         synchronized (mPlaybackInfosLock) {
-            for(int i = 0; i < mPlaybackInfos.size(); ++i) {
-                if(info.equals(mPlaybackInfos.get(i))) {
+            for (int i = 0; i < mPlaybackInfos.size(); ++i) {
+                if (info.equals(mPlaybackInfos.get(i))) {
                     mPlaybackInfos.remove(i);
                     mPlaybackInfos.add(info);
-                    for(Callback c : mCallbacks)
+                    for (Callback c : mCallbacks)
                         c.onPlaybackInfoChanged();
 
                     return;
@@ -248,7 +256,7 @@ public class UserData {
             mPlaybackInfos.add(info);
         }
 
-        for(Callback c : mCallbacks)
+        for (Callback c : mCallbacks)
             c.onPlaybackInfoChanged();
     }
 
@@ -269,6 +277,7 @@ public class UserData {
     }
 
     public static class Callback {
-        public void onPlaybackInfoChanged() {}
+        public void onPlaybackInfoChanged() {
+        }
     }
 }

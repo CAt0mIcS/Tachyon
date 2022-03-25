@@ -64,7 +64,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         BottomNavigationView btmNav = findViewById(R.id.btmNav);
         btmNav.setSelectedItemId(R.id.btmNavLibrary);
         btmNav.setOnItemSelectedListener(item -> {
-            if(item.getItemId() == R.id.btmNavSearch) {
+            if (item.getItemId() == R.id.btmNavSearch) {
                 Intent i = new Intent(ActivityLibrary.this, ActivitySearch.class);
                 startActivity(i);
             }
@@ -72,7 +72,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         });
 
         // MY_TEMPORARY
-        if(!checkPermission())
+        if (!checkPermission())
             requestPermission();
 
         findViewById(R.id.relLayoutSongs).setOnClickListener(v -> {
@@ -116,17 +116,17 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         mHistory.clear();
 
         Playback miniplayerPlayback;
-        if(UserData.getPlaybackInfoSize() == 0)
+        if (UserData.getPlaybackInfoSize() == 0)
             return;
         miniplayerPlayback = MediaLibrary.getSong(UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).PlaybackPath);
 
-        if(miniplayerPlayback == null) {
+        if (miniplayerPlayback == null) {
             miniplayerPlayback = MediaLibrary.getPlaylist(UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).PlaybackPath);
-            if(miniplayerPlayback != null && UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).LastPlayedPlaybackInPlaylist != null)
-                ((Playlist)miniplayerPlayback).setCurrentSong(MediaLibrary.getSong(UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).LastPlayedPlaybackInPlaylist));
+            if (miniplayerPlayback != null && UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).LastPlayedPlaybackInPlaylist != null)
+                ((Playlist) miniplayerPlayback).setCurrentSong(MediaLibrary.getSong(UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).LastPlayedPlaybackInPlaylist));
         }
 
-        if(miniplayerPlayback != null) {
+        if (miniplayerPlayback != null) {
             startMinimizedPlayer(miniplayerPlayback);
         }
 
@@ -214,7 +214,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
             try {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
                 intent.addCategory("android.intent.category.DEFAULT");
-                intent.setData(Uri.parse(String.format("package:%s",getApplicationContext().getPackageName())));
+                intent.setData(Uri.parse(String.format("package:%s", getApplicationContext().getPackageName())));
                 startActivityForResult(intent, 2296);
             } catch (Exception e) {
                 Intent intent = new Intent();
@@ -236,15 +236,14 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         @Override
         public void onPlaybackInfoChanged() {
             mHistory.clear();
-            for(int i = UserData.getPlaybackInfoSize() - 1; i >= 0; --i) {
-                if(UserData.getPlaybackInfo(i).isPlaylist()) {
+            for (int i = UserData.getPlaybackInfoSize() - 1; i >= 0; --i) {
+                if (UserData.getPlaybackInfo(i).isPlaylist()) {
                     Playback playback = MediaLibrary.getPlaybackFromPath(UserData.getPlaybackInfo(i).LastPlayedPlaybackInPlaylist);
-                    if(playback != null)
+                    if (playback != null)
                         mHistory.add(playback);
-                }
-                else {
+                } else {
                     Playback playback = MediaLibrary.getPlaybackFromPath(UserData.getPlaybackInfo(i).PlaybackPath);
-                    if(playback != null)
+                    if (playback != null)
                         mHistory.add(playback);
                 }
             }

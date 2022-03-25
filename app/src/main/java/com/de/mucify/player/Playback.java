@@ -27,10 +27,13 @@ public abstract class Playback {
     /**
      * Checks whether the MediaPlayer is not playing.
      */
-    public boolean isPaused() { return !isPlaying(); }
+    public boolean isPaused() {
+        return !isPlaying();
+    }
 
     /**
      * Seeks to specified time position
+     *
      * @param millis position to seek to in milliseconds
      */
     public abstract void seekTo(int millis);
@@ -67,6 +70,7 @@ public abstract class Playback {
      * Gets the next Song in the list. If called on a Song, the next item will be determined
      * by the order of MediaLibrary.AvailableSongs.
      * If called on a Playlist, the next Song will be created.
+     *
      * @return Fully created playback which can be started immediately.
      */
     public abstract Playback next(Context context);
@@ -75,6 +79,7 @@ public abstract class Playback {
      * Gets the previous Song in the list. If called on a Song, the previous item will be determined
      * by the order of MediaLibrary.AvailableSongs.
      * If called on a Playlist, the previous Song will be created.
+     *
      * @return Fully created playback which can be started immediately.
      */
     public abstract Playback previous(Context context);
@@ -113,6 +118,7 @@ public abstract class Playback {
     /**
      * MediaIds are constructed with the type of Playback (Song_, Loop_, Playlist_) and the path
      * to either the song, loop, or playlist file.
+     *
      * @return The media id of the current playback
      */
     public abstract String getMediaId();

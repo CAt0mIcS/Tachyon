@@ -65,7 +65,7 @@ public class CastController implements IMediaController {
             Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
             // MY_TODO: Test with loops and playlists
             synchronized (mCastSessionLock) {
-                if(mCastSession == null) {
+                if (mCastSession == null) {
                     Util.logGlobal("CastSession is null");
                     return;
                 }
@@ -116,7 +116,7 @@ public class CastController implements IMediaController {
             mCastSession.getRemoteMediaClient().play();
         }
 
-        for(MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mCallbacks)
             c.onStart();
     }
 
@@ -137,7 +137,7 @@ public class CastController implements IMediaController {
                     .build());
         }
 
-        for(MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mCallbacks)
             c.onSeekTo(millis);
 
 
@@ -302,7 +302,8 @@ public class CastController implements IMediaController {
             }
 
             @Override
-            public void onSessionStarting(@NonNull CastSession session) {}
+            public void onSessionStarting(@NonNull CastSession session) {
+            }
 
             @Override
             public void onSessionEnding(@NonNull CastSession session) {
@@ -312,10 +313,12 @@ public class CastController implements IMediaController {
             }
 
             @Override
-            public void onSessionResuming(@NonNull CastSession session, @NonNull String sessionId) {}
+            public void onSessionResuming(@NonNull CastSession session, @NonNull String sessionId) {
+            }
 
             @Override
-            public void onSessionSuspended(@NonNull CastSession session, int reason) {}
+            public void onSessionSuspended(@NonNull CastSession session, int reason) {
+            }
 
             private void onApplicationConnected(CastSession castSession) {
                 startServer();
@@ -363,7 +366,7 @@ public class CastController implements IMediaController {
                 }
 
                 mActivity.supportInvalidateOptionsMenu();
-                for(MediaControllerActivity.Callback c : mCallbacks)
+                for (MediaControllerActivity.Callback c : mCallbacks)
                     c.onCastConnected();
             }
 
@@ -377,7 +380,7 @@ public class CastController implements IMediaController {
                 mActivity.supportInvalidateOptionsMenu();
 
                 // Playback is paused when cast ends
-                for(MediaControllerActivity.Callback c : mCallbacks) {
+                for (MediaControllerActivity.Callback c : mCallbacks) {
                     c.onCastDisconnected();
                     c.onPause();
                 }
@@ -389,7 +392,7 @@ public class CastController implements IMediaController {
     private void onStart() {
         mPlaybackLocation = PlaybackLocation.Remote;
 
-        for(MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mCallbacks)
             c.onStart();
 
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
@@ -401,7 +404,7 @@ public class CastController implements IMediaController {
 
     private void onPause() {
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-        for(MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mCallbacks)
             c.onPause();
     }
 
@@ -409,7 +412,7 @@ public class CastController implements IMediaController {
      * Called when we start casting, sends audio to cast receiver
      */
     private void loadRemoteMedia(RemoteMediaClient remoteClient, int seekPos, boolean autoPlay) {
-        if(remoteClient == null) {
+        if (remoteClient == null) {
             throw new UnsupportedOperationException("Remote media client is null");
         }
 
@@ -438,7 +441,7 @@ public class CastController implements IMediaController {
         metadata.putString(MediaMetadata.KEY_TITLE, title);
         metadata.putString(MediaMetadata.KEY_ARTIST, subtitle);
 
-        if(mPlayback.getCurrentSong().getImage() != null)
+        if (mPlayback.getCurrentSong().getImage() != null)
             metadata.addImage(new WebImage(Uri.parse(urlImageLow)));
 
         Util.logGlobal("Building Metadata with " + title + " " + subtitle + " ms" + duration);
@@ -462,7 +465,7 @@ public class CastController implements IMediaController {
         }
 
         mIP = Util.getIPAddress(mActivity);
-        if(mIP == null) {
+        if (mIP == null) {
             // MY_TODO: Tell user to connect to WIFI
             throw new UnsupportedOperationException("Failed to get IP address");
         }
@@ -484,7 +487,7 @@ public class CastController implements IMediaController {
         @Override
         public Response serve(IHTTPSession session) {
             Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
-            Log.i("Mucify.CastWebServer", "Serve: "+ session.getUri());
+            Log.i("Mucify.CastWebServer", "Serve: " + session.getUri());
             String uri = session.getUri();
 
             if (uri.equals("/audio")) {
@@ -496,17 +499,15 @@ public class CastController implements IMediaController {
                 }
 
                 return newChunkedResponse(Response.Status.OK, mMIMEType, fis);
-            }
-            else if(uri.equals("/image_high")) {
+            } else if (uri.equals("/image_high")) {
                 Bitmap imageData = mPlayback.getCurrentSong().getImage();
                 return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 100));
-            }
-            else if(uri.equals("/image_low")) {
+            } else if (uri.equals("/image_low")) {
                 Bitmap imageData = mPlayback.getCurrentSong().getImage();
                 return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 25));
             }
 
-            return  null;
+            return null;
         }
 
         public String bitmapToString(Bitmap bitmap, int quality) {
@@ -515,8 +516,8 @@ public class CastController implements IMediaController {
             return Base64.encodeToString(stream.toByteArray(), Base64.DEFAULT);
         }
 
-        public Bitmap StringToBitMap(String encodedString){
-            byte [] encodeByte = Base64.decode(encodedString,Base64.DEFAULT);
+        public Bitmap StringToBitMap(String encodedString) {
+            byte[] encodeByte = Base64.decode(encodedString, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
         }
     }

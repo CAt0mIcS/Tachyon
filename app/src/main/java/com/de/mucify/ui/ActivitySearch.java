@@ -23,6 +23,5 @@ public class ActivitySearch extends AppCompatActivity {
         mEditSearchQuery = findViewById(R.id.editSearchQuery);
 
 
-
     }
 }

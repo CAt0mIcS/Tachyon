@@ -25,7 +25,7 @@ public class PermissionManager {
         // MY_TODO: Already load certain things while user still accepts permission
         // MY_TODO: Dialog explaining why we need permission
 
-        if(mRequestPermissionLauncher == null)
+        if (mRequestPermissionLauncher == null)
             mRequestPermissionLauncher = activity.registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
                 mPermissionGranted = result;
                 mPermissionResultHere = true;
@@ -34,11 +34,11 @@ public class PermissionManager {
         mPermissionGranted = false;
         mPermissionResultHere = false;
 
-        switch(permission) {
+        switch (permission) {
             case Manifest.permission.READ_EXTERNAL_STORAGE:
             case Manifest.permission.WRITE_EXTERNAL_STORAGE:
             case Manifest.permission.READ_PHONE_STATE:
-                if(ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_DENIED) {
+                if (ContextCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_DENIED) {
                     mRequestPermissionLauncher.launch(permission);
                     return waitForPermissionResult();
                 }
@@ -53,7 +53,7 @@ public class PermissionManager {
     }
 
     private static boolean waitForPermissionResult() {
-        while(!mPermissionResultHere){
+        while (!mPermissionResultHere) {
             try {
                 Thread.sleep(60);
             } catch (InterruptedException e) {

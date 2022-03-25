@@ -35,7 +35,7 @@ public class MediaLibrary {
         DataDirectory = context.getFilesDir();
         MusicDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Music");
 
-        if(!DataDirectory.exists())
+        if (!DataDirectory.exists())
             DataDirectory.mkdirs();
     }
 
@@ -83,13 +83,13 @@ public class MediaLibrary {
                     return s;
             }
         } else if (isLoopMediaId(mediaId)) {
-            for(Song s : AvailableLoops) {
-                if(s.getPath().equals(getPathFromMediaId(mediaId)))
+            for (Song s : AvailableLoops) {
+                if (s.getPath().equals(getPathFromMediaId(mediaId)))
                     return s;
             }
         } else if (isPlaylistMediaId(mediaId)) {
-            for(Playlist p : AvailablePlaylists) {
-                if(p.getPath().equals(getPathFromMediaId(mediaId)))
+            for (Playlist p : AvailablePlaylists) {
+                if (p.getPath().equals(getPathFromMediaId(mediaId)))
                     return p;
             }
         }
@@ -98,81 +98,81 @@ public class MediaLibrary {
     }
 
     public static Playback getPlaybackFromPath(File playbackPath) {
-        for(Song s : AvailableSongs)
-            if(s.getPath().equals(playbackPath))
+        for (Song s : AvailableSongs)
+            if (s.getPath().equals(playbackPath))
                 return s;
 
-        for(Song s : AvailableLoops)
-            if(s.getPath().equals(playbackPath))
+        for (Song s : AvailableLoops)
+            if (s.getPath().equals(playbackPath))
                 return s;
 
-        for(Playlist s : AvailablePlaylists)
-            if(s.getPath().equals(playbackPath))
+        for (Playlist s : AvailablePlaylists)
+            if (s.getPath().equals(playbackPath))
                 return s;
         return null;
     }
 
 
     public static int getSongIndex(Song song) {
-        for(int i = 0; i < AvailableSongs.size(); ++i) {
-            if(AvailableSongs.get(i).equalsUninitialized(song))
+        for (int i = 0; i < AvailableSongs.size(); ++i) {
+            if (AvailableSongs.get(i).equalsUninitialized(song))
                 return i;
         }
         return -1;
     }
 
     public static int getLoopIndex(Song song) {
-        for(int i = 0; i < AvailableLoops.size(); ++i) {
-            if(AvailableLoops.get(i).equalsUninitialized(song))
+        for (int i = 0; i < AvailableLoops.size(); ++i) {
+            if (AvailableLoops.get(i).equalsUninitialized(song))
                 return i;
         }
         return -1;
     }
 
     public static int getPlaylistIndex(Playlist playlist) {
-        for(int i = 0; i < AvailablePlaylists.size(); ++i) {
-            if(AvailablePlaylists.get(i).equals(playlist))
+        for (int i = 0; i < AvailablePlaylists.size(); ++i) {
+            if (AvailablePlaylists.get(i).equals(playlist))
                 return i;
         }
         return -1;
     }
 
     public static Song getSong(File songLoopPath) {
-        for(Song s : AvailableSongs)
-            if(s.getSongPath().equals(songLoopPath))
+        for (Song s : AvailableSongs)
+            if (s.getSongPath().equals(songLoopPath))
                 return s;
 
-        for(Song s : AvailableLoops)
-            if(s.getLoopPath().equals(songLoopPath))
+        for (Song s : AvailableLoops)
+            if (s.getLoopPath().equals(songLoopPath))
                 return s;
 
         return null;
     }
 
     public static Playlist getPlaylist(File path) {
-        for(Playlist p : AvailablePlaylists)
-            if(p.getPath().equals(path))
+        for (Playlist p : AvailablePlaylists)
+            if (p.getPath().equals(path))
                 return p;
         return null;
     }
 
 
     private static void loadSongs(File path, Context context) {
-        if(path == null || !path.exists())
+        if (path == null || !path.exists())
             return;
 
         File[] files = path.listFiles();
-        if(files == null)
+        if (files == null)
             return;
 
-        for(File file : files) {
-            if(file.isDirectory())
+        for (File file : files) {
+            if (file.isDirectory())
                 loadSongs(file, context);
             else {
-                if(FileManager.isSongFile(file)) {
+                if (FileManager.isSongFile(file)) {
                     try {
                         AvailableSongs.add(new Song(context, file));
-                    } catch(Song.LoadingFailedException e ) {
+                    } catch (Song.LoadingFailedException e) {
                         e.printStackTrace();
                         // MY_TODO: Error handling
                     }
@@ -182,23 +182,22 @@ public class MediaLibrary {
     }
 
     private static void loadLoopsAndPlaylists(Context context) {
-        if(DataDirectory == null || !DataDirectory.exists())
+        if (DataDirectory == null || !DataDirectory.exists())
             return;
 
         File[] files = DataDirectory.listFiles();
-        if(files == null)
+        if (files == null)
             return;
 
-        for(File file : files) {
-            if(FileManager.isLoopFile(file)) {
+        for (File file : files) {
+            if (FileManager.isLoopFile(file)) {
                 try {
                     AvailableLoops.add(new Song(context, file));
                 } catch (Song.LoadingFailedException e) {
                     e.printStackTrace();
                     // MY_TODO: Error handling
                 }
-            }
-            else if(FileManager.isPlaylistFile(file)) {
+            } else if (FileManager.isPlaylistFile(file)) {
                 AvailablePlaylists.add(new Playlist(context, file));
             }
 

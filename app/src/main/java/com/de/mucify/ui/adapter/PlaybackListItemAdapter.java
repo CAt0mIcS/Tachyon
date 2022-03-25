@@ -44,25 +44,23 @@ public class PlaybackListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder baseHolder, int i) {
-        if(baseHolder instanceof ViewHolderSong) {
-            Song song = (Song)mItems.get(i);
+        if (baseHolder instanceof ViewHolderSong) {
+            Song song = (Song) mItems.get(i);
 
             ViewHolderSong viewHolder = (ViewHolderSong) baseHolder;
             viewHolder.TxtTitle.setText(song.getTitle());
             viewHolder.TxtArtist.setText(song.getArtist());
             viewHolder.setListener(mCallback);
-        }
-        else if(baseHolder instanceof ViewHolderLoop) {
-            Song song = (Song)mItems.get(i);
+        } else if (baseHolder instanceof ViewHolderLoop) {
+            Song song = (Song) mItems.get(i);
 
             ViewHolderLoop viewHolder = (ViewHolderLoop) baseHolder;
             viewHolder.TxtName.setText(song.getLoopName());
             viewHolder.TxtTitle.setText(song.getTitle());
             viewHolder.TxtArtist.setText(song.getArtist());
             viewHolder.setListener(mCallback);
-        }
-        else {
-            Playlist playlist = (Playlist)mItems.get(i);
+        } else {
+            Playlist playlist = (Playlist) mItems.get(i);
 
             ViewHolderPlaylist viewHolder = (ViewHolderPlaylist) baseHolder;
             viewHolder.TxtName.setText(playlist.getName());
@@ -79,7 +77,7 @@ public class PlaybackListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public int getItemViewType(int position) {
         if (mItems.get(position) instanceof Song) {
-            if(((Song)mItems.get(position)).isLoop())
+            if (((Song) mItems.get(position)).isLoop())
                 return ITEM_TYPE_LOOP;
             return ITEM_TYPE_SONG;
         }

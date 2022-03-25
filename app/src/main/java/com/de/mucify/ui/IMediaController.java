@@ -41,12 +41,14 @@ public interface IMediaController {
 
     /**
      * Sets the start time of the currently playing playback
+     *
      * @param millis offset from audio position zero.
      */
     void setStartTime(int millis);
 
     /**
      * Sets the end time of the currently playing playback
+     *
      * @param millis offset from audio duration.
      */
     void setEndTime(int millis);

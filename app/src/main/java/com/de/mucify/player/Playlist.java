@@ -27,10 +27,11 @@ public class Playlist extends Playback {
     /**
      * Creates a Playlist. Afterwards you'll need to call create() and start() to play the first song.
      * You also need to set the context using setContext().
+     *
      * @param path path to the playlist file
      */
     public Playlist(Context context, File path) {
-        if(!path.exists()) {
+        if (!path.exists()) {
 //            Utils.startErrorActivity("Failed to load playlist: \"" + path + "\" does not exist.");
             return;
         }
@@ -72,7 +73,7 @@ public class Playlist extends Playback {
 
     @Override
     public void stop() {
-            getCurrentSong().stop();
+        getCurrentSong().stop();
     }
 
     @Override
@@ -103,7 +104,7 @@ public class Playlist extends Playback {
     @Override
     public Playback next(Context context) {
         mCurrentSongIndex++;
-        if(mCurrentSongIndex >= mSongs.size())
+        if (mCurrentSongIndex >= mSongs.size())
             mCurrentSongIndex = 0;
 
         getCurrentSong().create(context);
@@ -113,7 +114,7 @@ public class Playlist extends Playback {
     @Override
     public Playback previous(Context context) {
         mCurrentSongIndex--;
-        if(mCurrentSongIndex < 0)
+        if (mCurrentSongIndex < 0)
             mCurrentSongIndex = mSongs.size() - 1;
 
         getCurrentSong().create(context);
@@ -155,7 +156,7 @@ public class Playlist extends Playback {
      * will be returned. If the current song is a song the song path will be returned.
      */
     public File getCurrentAudioPath() {
-        if(getCurrentSong().isLoop())
+        if (getCurrentSong().isLoop())
             return getCurrentSong().getLoopPath();
         return getCurrentSong().getSongPath();
     }
@@ -163,13 +164,14 @@ public class Playlist extends Playback {
     /**
      * Saves the entire playlist to the path set in the constructor. Overwrites any previously
      * existing file at playlist path
+     *
      * @throws IOException writing failed.
      */
     public void save() throws IOException {
         BufferedWriter writer = new BufferedWriter(new FileWriter(mPlaylistFilePath));
 
-        for(Song song : mSongs) {
-            if(song.isLoop())
+        for (Song song : mSongs) {
+            if (song.isLoop())
                 writer.write(song.getLoopPath() + "\n");
             else
                 writer.write(song.getSongPath() + "\n");
@@ -187,14 +189,16 @@ public class Playlist extends Playback {
     /**
      * @return list of all songs in the playlist
      */
-    public ArrayList<Song> getSongs() { return mSongs; }
+    public ArrayList<Song> getSongs() {
+        return mSongs;
+    }
 
     /**
      * Adds a new song to the playlist if it doesn't exist yet
      */
     public void addSong(Song song) {
-        for(Song s : mSongs)
-            if(s.equalsUninitialized(song) || song == null)
+        for (Song s : mSongs)
+            if (s.equalsUninitialized(song) || song == null)
                 return;
 
         mSongs.add(song);
@@ -206,8 +210,8 @@ public class Playlist extends Playback {
      * start the set song.
      */
     public void setCurrentSong(Song song) {
-        for(int i = 0; i < mSongs.size(); ++i)
-            if(song.equalsUninitialized(mSongs.get(i))) {
+        for (int i = 0; i < mSongs.size(); ++i)
+            if (song.equalsUninitialized(mSongs.get(i))) {
                 mCurrentSongIndex = i;
                 return;
             }
@@ -222,7 +226,7 @@ public class Playlist extends Playback {
      * Checks if two Playlists are equal
      */
     public boolean equals(@Nullable Playlist playlist) {
-        if(playlist == null)
+        if (playlist == null)
             return false;
 
         return playlist.mName.equals(mName) &&
@@ -237,10 +241,10 @@ public class Playlist extends Playback {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(mPlaylistFilePath));
 
-            while(reader.ready()) {
+            while (reader.ready()) {
                 try {
                     mSongs.add(new Song(context, new File(reader.readLine())));
-                } catch(Song.LoadingFailedException e) {
+                } catch (Song.LoadingFailedException e) {
                     // MY_TODO: Remove from playlist and display error message to user
                     e.printStackTrace();
                 }

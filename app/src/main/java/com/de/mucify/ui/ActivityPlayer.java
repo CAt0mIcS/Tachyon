@@ -59,7 +59,7 @@ public class ActivityPlayer extends MediaControllerActivity {
 
     @Override
     public void onConnected() {
-        if(!getIntent().getBooleanExtra("IsPlaying", false) && getIntent().getStringExtra("MediaId") != null)
+        if (!getIntent().getBooleanExtra("IsPlaying", false) && getIntent().getStringExtra("MediaId") != null)
             play(getIntent().getStringExtra("MediaId"));
 
         mPlaybackSeekPos = getIntent().getIntExtra("SeekPos", 0);
@@ -67,7 +67,7 @@ public class ActivityPlayer extends MediaControllerActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(isCreated() && isPlaying() && !mIsSeeking) {
+                if (isCreated() && isPlaying() && !mIsSeeking) {
                     int currentPos = getCurrentPosition() / UserData.getAudioUpdateInterval();
                     mSbProgress.setProgress(currentPos);
                 }
@@ -75,7 +75,7 @@ public class ActivityPlayer extends MediaControllerActivity {
             }
         });
 
-        ((BottomNavigationView)findViewById(R.id.btmNavPlayer)).setOnItemSelectedListener(item -> {
+        ((BottomNavigationView) findViewById(R.id.btmNavPlayer)).setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.btmNavAddToPlaylist) {
                 new DialogAddToPlaylist(MediaLibrary.getPlaybackFromMediaId(getIntent().getStringExtra("MediaId")).getCurrentSong(), ActivityPlayer.this).show();
             }
@@ -85,9 +85,16 @@ public class ActivityPlayer extends MediaControllerActivity {
 
         mSbProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) { mIsSeeking = false; seekTo(seekBar.getProgress() * UserData.getAudioUpdateInterval()); }
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                mIsSeeking = false;
+                seekTo(seekBar.getProgress() * UserData.getAudioUpdateInterval());
+            }
+
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) { mIsSeeking = true; }
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                mIsSeeking = true;
+            }
+
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 mTxtProgress.setText(Util.millisecondsToReadableString(progress * UserData.getAudioUpdateInterval()));
@@ -95,12 +102,15 @@ public class ActivityPlayer extends MediaControllerActivity {
         });
         mSbStartTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) { }
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 int startTime = seekBar.getProgress() * UserData.getAudioUpdateInterval();
                 setStartTime(startTime);
             }
+
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 mTxtStartTime.setText(Util.millisecondsToReadableString(progress * UserData.getAudioUpdateInterval()));
@@ -108,12 +118,15 @@ public class ActivityPlayer extends MediaControllerActivity {
         });
         mSbEndTime.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) { }
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 int endTime = seekBar.getProgress() * UserData.getAudioUpdateInterval();
                 setEndTime(endTime);
             }
+
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 mTxtEndTime.setText(Util.millisecondsToReadableString(progress * UserData.getAudioUpdateInterval()));
@@ -122,7 +135,7 @@ public class ActivityPlayer extends MediaControllerActivity {
 
         findViewById(R.id.btnStartPosDec).setOnClickListener(v -> {
             int time = getStartTime() - UserData.getSongIncDecInterval();
-            if(time < 0)
+            if (time < 0)
                 time = 0;
 
             setStartTime(time);
@@ -130,7 +143,7 @@ public class ActivityPlayer extends MediaControllerActivity {
         });
         findViewById(R.id.btnStartPosInc).setOnClickListener(v -> {
             int time = getStartTime() + UserData.getSongIncDecInterval();
-            if(time > getDuration())
+            if (time > getDuration())
                 time = getDuration();
 
             setStartTime(time);
@@ -138,7 +151,7 @@ public class ActivityPlayer extends MediaControllerActivity {
         });
         findViewById(R.id.btnEndPosDec).setOnClickListener(v -> {
             int time = getEndTime() - UserData.getSongIncDecInterval();
-            if(time < 0)
+            if (time < 0)
                 time = 0;
 
             setEndTime(time);
@@ -146,7 +159,7 @@ public class ActivityPlayer extends MediaControllerActivity {
         });
         findViewById(R.id.btnEndPosInc).setOnClickListener(v -> {
             int time = getEndTime() + UserData.getSongIncDecInterval();
-            if(time > getDuration())
+            if (time > getDuration())
                 time = getDuration();
 
             setEndTime(time);
@@ -163,31 +176,28 @@ public class ActivityPlayer extends MediaControllerActivity {
         });
 
         mBtnPlayPause.setOnClickListener(v -> {
-            if(!isCreated()) {
+            if (!isCreated()) {
                 play(getIntent().getStringExtra("MediaId"));
-                if(mPlaybackSeekPos != 0)
+                if (mPlaybackSeekPos != 0)
                     seekTo(mPlaybackSeekPos);
-            }
-
-            else if(isPaused())
+            } else if (isPaused())
                 unpause();
             else
                 pause();
         });
 
         // Update play/pause button image
-        if(!isCreated() || isPaused())
+        if (!isCreated() || isPaused())
             mPlaybackCallback.onPause();
         else
             mPlaybackCallback.onStart();
         updatePerSongData();
 
         // Call the event handlers once to set all the values to the current song
-        if(isCreated()) {
+        if (isCreated()) {
             mPlaybackCallback.onTitleChanged(getSongTitle());
             mPlaybackCallback.onArtistChanged(getSongArtist());
-        }
-        else {
+        } else {
             mPlaybackCallback.onTitleChanged(getIntent().getStringExtra("Title"));
             mPlaybackCallback.onArtistChanged(getIntent().getStringExtra("Subtitle"));
         }
@@ -202,14 +212,14 @@ public class ActivityPlayer extends MediaControllerActivity {
     private class PlaybackCallback extends Callback {
         @Override
         public void onStart() {
-            if(mBtnPlayPause != null)
+            if (mBtnPlayPause != null)
                 mBtnPlayPause.setImageResource(R.drawable.pause);
             updatePerSongData();
         }
 
         @Override
         public void onPause() {
-            if(mBtnPlayPause != null)
+            if (mBtnPlayPause != null)
                 mBtnPlayPause.setImageResource(R.drawable.play);
         }
 

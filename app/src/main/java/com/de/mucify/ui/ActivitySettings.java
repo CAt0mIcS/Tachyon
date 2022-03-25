@@ -37,15 +37,18 @@ public class ActivitySettings extends AppCompatActivity {
 
         mAudioIncDecInterval.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
                 try {
                     int interval = Integer.parseInt(s.toString());
-                    if(interval == 0)
+                    if (interval == 0)
                         throw new NumberFormatException();
                     UserData.setSongIncDecInterval(interval);
                     mAudioIncDecInterval.setError(null);
@@ -57,15 +60,18 @@ public class ActivitySettings extends AppCompatActivity {
 
         mAudioUpdateInterval.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
                 try {
                     int interval = Integer.parseInt(s.toString());
-                    if(interval == 0)
+                    if (interval == 0)
                         throw new NumberFormatException();
                     UserData.setAudioUpdateInterval(interval);
                     mAudioUpdateInterval.setError(null);
@@ -94,7 +100,8 @@ public class ActivitySettings extends AppCompatActivity {
                     UserData.reset();
                     updateUI();
                 })
-                .setNegativeButton(R.string.cancel, (dialog, id) -> { })
+                .setNegativeButton(R.string.cancel, (dialog, id) -> {
+                })
                 .create().show();
     }
 

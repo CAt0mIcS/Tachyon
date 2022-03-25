@@ -49,11 +49,10 @@ public class DialogAddToPlaylist extends Dialog implements AdapterEventListener 
         mTxtPlaylistName = findViewById(R.id.editPlaylistName);
 
         // Hide some UI elements if no playlists exist
-        if(MediaLibrary.AvailablePlaylists.size() == 0) {
+        if (MediaLibrary.AvailablePlaylists.size() == 0) {
             mRvPlaylists.setVisibility(View.GONE);
             findViewById(R.id.bottom_divider).setVisibility(View.GONE);
-        }
-        else {
+        } else {
             mRvPlaylists.setLayoutManager(new LinearLayoutManager(getContext()));
 
             CreatePlaylistDialogListItemAdapter adapter = new CreatePlaylistDialogListItemAdapter(getContext(), MediaLibrary.AvailablePlaylists);
@@ -74,9 +73,12 @@ public class DialogAddToPlaylist extends Dialog implements AdapterEventListener 
     }
 
     @Override
-    public void onClick(ViewHolderSong holder) {}
+    public void onClick(ViewHolderSong holder) {
+    }
+
     @Override
-    public void onClick(ViewHolderLoop holder) {}
+    public void onClick(ViewHolderLoop holder) {
+    }
 
     @Override
     public void onClick(ViewHolderPlaylist holder) {
