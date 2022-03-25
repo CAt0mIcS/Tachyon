@@ -34,7 +34,7 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
     private final AudioType mAudioType;
 
     public FragmentSelectAudio(AudioType audioType) {
-        super(R.layout.fragment_select_audio_layout);
+        super(R.layout.fragment_select_audio);
         mAudioType = audioType;
     }
 

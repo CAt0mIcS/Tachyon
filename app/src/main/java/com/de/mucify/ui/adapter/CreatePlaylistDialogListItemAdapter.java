@@ -7,11 +7,8 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
-import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
-import com.de.mucify.player.Song;
 
 import java.util.ArrayList;
 
@@ -31,7 +28,7 @@ public class CreatePlaylistDialogListItemAdapter extends RecyclerView.Adapter<Re
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolderPlaylist(LayoutInflater.from(mContext).inflate(R.layout.recycler_playlist_create_playlist_item_layout, parent, false));
+        return new ViewHolderPlaylist(LayoutInflater.from(mContext).inflate(R.layout.recycler_playlist_create_playlist_item, parent, false));
     }
 
     @Override

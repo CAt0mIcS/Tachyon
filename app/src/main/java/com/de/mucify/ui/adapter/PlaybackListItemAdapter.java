@@ -35,11 +35,11 @@ public class PlaybackListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == ITEM_TYPE_SONG)
-            return new ViewHolderSong(LayoutInflater.from(mContext).inflate(R.layout.recycler_song_item_layout, parent, false));
+            return new ViewHolderSong(LayoutInflater.from(mContext).inflate(R.layout.recycler_song_item, parent, false));
         else if (viewType == ITEM_TYPE_LOOP)
-            return new ViewHolderLoop(LayoutInflater.from(mContext).inflate(R.layout.recycler_loop_item_layout, parent, false));
+            return new ViewHolderLoop(LayoutInflater.from(mContext).inflate(R.layout.recycler_loop_item, parent, false));
         else
-            return new ViewHolderPlaylist(LayoutInflater.from(mContext).inflate(R.layout.recycler_playlist_item_layout, parent, false));
+            return new ViewHolderPlaylist(LayoutInflater.from(mContext).inflate(R.layout.recycler_playlist_item, parent, false));
     }
 
     @Override
