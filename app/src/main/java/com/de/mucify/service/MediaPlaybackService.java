@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.service.media.MediaBrowserService;
 import android.support.v4.media.MediaBrowserCompat;
@@ -62,10 +63,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
      */
     private int mMediaPosBeforeAudioFocusLoss = -1;
 
-    /**
-     * Determines whether the playback update thread should terminate (true --> running, false --> terminate)
-     */
-    private boolean mPlaybackUpdateThread = true;
 
     private final IntentFilter mBecomeNoisyIntentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
@@ -92,6 +89,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     mPlayback.setVolume(DUCK_VOLUME, DUCK_VOLUME);
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS:
+                    unregisterPlaybackHandler();
                     synchronized (mPlaybackLock) {
                         if (mPlayback != null && mPlayback.isCreated()) {
                             if (!mPlayback.isPaused()) {
@@ -126,6 +124,28 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
     private MediaSessionCompat mMediaSession;
 
+    private final Handler mPlaybackUpdateHandler = new Handler();
+
+    /**
+     * Called when the song finished playing the song will either be restarted (Song)
+     * or the next song will be played (Playlist)
+     */
+    private final Runnable mPlaybackUpdateRunnable = () -> {
+        Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
+
+        synchronized (mPlaybackLock) {
+            if (mPlayback != null && mPlayback.isCreated()) {
+                if (mPlayback instanceof Playlist) {
+                    mMediaSession.getController().getTransportControls().skipToNext();
+                } else {
+                    mMediaSession.getController().getTransportControls().seekTo(mPlayback.getCurrentSong().getStartTime());
+                    mMediaSession.getController().getTransportControls().play();
+                }
+            }
+        }
+
+    };
+
     private NotificationManager mNotificationManager;
     private final MediaMetadataCompat.Builder mMetadataBuilder = new MediaMetadataCompat.Builder();
     private final PlaybackStateCompat.Builder mPlaybackStateBuilder = new PlaybackStateCompat.Builder();
@@ -146,7 +166,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
 
         createNotificationActions();
-        startPlaybackUpdateThread();
 
         Log.d("Mucify", "Created MediaPlaybackService");
         Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
@@ -317,13 +336,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onPlay() {
             if (Util.requestAudioFocus(MediaPlaybackService.this, mAudioFocusChangedListener) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                mPlaybackUpdateThread = true;
                 // Start the service
                 startService(new Intent(MediaPlaybackService.this, MediaBrowserService.class));
 
                 // Set the session active  (and update metadata and state)
                 mMediaSession.setActive(true);
 
+                unregisterPlaybackHandler();
                 // start the player (custom call)
                 synchronized (mPlaybackLock) {
                     if (!mPlayback.isCreated())
@@ -333,20 +352,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         mMediaPosBeforeAudioFocusLoss = -1;
                     }
 
-
                     mPlayback.start(MediaPlaybackService.this);
+                    registerPlaybackHandler();
                     mKeepPausedAfterAudioFocusGain = false;
-
-                    if (mPlayback instanceof Playlist) {
-                        // Called when the song finished and we need to skip to the next one in the playlist
-                        mPlayback.getCurrentSong().setOnMediaPlayerCompletionListener(mp -> onSkipToNext());
-                    } else {
-                        // Move back to start pos and start playback again
-                        mPlayback.getCurrentSong().setOnMediaPlayerCompletionListener(mp -> {
-                            onSeekTo(mPlayback.getCurrentSong().getStartTime());
-                            onPlay();
-                        });
-                    }
 
                     savePlaybackToSettings();
                 }
@@ -357,8 +365,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
                 // Put the service in the foreground, post notification
                 startForeground(NOTIFY_ID, buildNotification());
-                Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPlay");
             }
+            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPlay");
         }
 
         /**
@@ -368,15 +376,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
          */
         @Override
         public void onPause() {
+            unregisterPlaybackHandler();
             synchronized (mPlaybackLock) {
                 mPlayback.pause();
             }
             mKeepPausedAfterAudioFocusGain = true;
-//            unregisterReceiver(myNoisyAudioStreamReceiver);
-
             repostNotification();
-//            stopForeground(false);
-
             savePlaybackToSettings();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPause");
         }
@@ -387,7 +392,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
          */
         @Override
         public void onStop() {
-            mPlaybackUpdateThread = false;
+            unregisterPlaybackHandler();
             Util.abandonAudioFocus(MediaPlaybackService.this, mAudioFocusChangedListener);
             try {
                 unregisterReceiver(myNoisyAudioStreamReceiver);
@@ -438,9 +443,16 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
          */
         @Override
         public void onSeekTo(long pos) {
+            unregisterPlaybackHandler();
             synchronized (mPlaybackLock) {
+                if (pos < mPlayback.getCurrentSong().getStartTime()) {
+                    registerPlaybackHandler();
+                    return;
+                }
+
                 mPlayback.seekTo((int) pos);
             }
+            registerPlaybackHandler();
             repostNotification();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSeekTo " + pos);
         }
@@ -478,14 +490,26 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
          */
         @Override
         public void onCustomAction(String action, Bundle extras) {
+            // MY_TODO: When setting start/end time, multiple threads might be using mPlayback
+
             switch (action) {
                 case MediaAction.SetStartTime:
-                    if (mPlayback instanceof Song && !((Song) mPlayback).isLoop())
-                        mPlayback.getCurrentSong().setStartTime(extras.getInt(MediaAction.StartTime));
+                    unregisterPlaybackHandler();
+                    mPlayback.getCurrentSong().setStartTime(extras.getInt(MediaAction.StartTime));
+                    if (mPlayback.getCurrentPosition() < mPlayback.getCurrentSong().getStartTime()) {
+                        mPlayback.seekTo(mPlayback.getCurrentSong().getStartTime());
+                        mMediaSession.getController().getTransportControls().play();
+                    } else
+                        registerPlaybackHandler();
                     break;
                 case MediaAction.SetEndTime:
-                    if (mPlayback instanceof Song && !((Song) mPlayback).isLoop())
-                        mPlayback.getCurrentSong().setEndTime(extras.getInt(MediaAction.EndTime));
+                    unregisterPlaybackHandler();
+                    mPlayback.getCurrentSong().setEndTime(extras.getInt(MediaAction.EndTime));
+                    if (mPlayback.getCurrentPosition() >= mPlayback.getCurrentSong().getEndTime()) {
+                        mPlayback.seekTo(mPlayback.getCurrentSong().getStartTime());
+                        mMediaSession.getController().getTransportControls().play();
+                    } else
+                        registerPlaybackHandler();
                     break;
                 case MediaAction.CastStarted:
                     mMediaSession.getController().getTransportControls().stop();
@@ -539,38 +563,21 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     }
 
     /**
-     * Thread checks every User.AudioUpdateInterval if the song has finished playing. If so
-     * the song will either be restarted (Song) or the next song will be played (Playlist)
+     * Registers mPlaybackUpdateRunnable to be called in
+     * mPlayback.getCurrentSong().getEndTime() - mPlayback.getCurrentSong().getCurrentPosition()
      */
-    private void startPlaybackUpdateThread() {
+    private void registerPlaybackHandler() {
+        int delay = mPlayback.getCurrentSong().getEndTime() - mPlayback.getCurrentPosition();
+        Util.logGlobal("Posting MediaPlaybackService playback runnable with delay ms" + delay);
+        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
+    }
 
-        new Thread(() -> {
-            Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
-
-            while (mPlaybackUpdateThread) {
-
-                synchronized (mPlaybackLock) {
-                    if (mPlayback != null && mPlayback.isCreated()) {
-                        int currentPos = mPlayback.getCurrentPosition();
-                        Song currentSong = mPlayback.getCurrentSong();
-
-                        if (currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime()) {
-                            if (mPlayback instanceof Playlist) {
-                                mMediaSession.getController().getTransportControls().skipToNext();
-                            } else {
-                                mMediaSession.getController().getTransportControls().seekTo(currentSong.getStartTime());
-                            }
-                        }
-                    }
-                }
-
-                try {
-                    Thread.sleep(UserData.getAudioUpdateInterval());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+    /**
+     * Unregisters mPlaybackUpdateRunnable from being called
+     */
+    private void unregisterPlaybackHandler() {
+        mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
+        Util.logGlobal("Unregistering MediaPlaybackService playback runnable");
     }
 
     /**
