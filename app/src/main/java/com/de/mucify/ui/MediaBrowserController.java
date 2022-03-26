@@ -126,8 +126,7 @@ public class MediaBrowserController implements IMediaController {
     }
 
     /**
-     * Uses a custom event to call onCustomEvent in MediaPlaybackService. Only sets the start time
-     * if the currently playing Playback is neither Loop nor Playlist, does nothing otherwise.
+     * Uses a custom event to call onCustomEvent in MediaPlaybackService.
      * Crashes if the Playback hasn't been started yet.
      *
      * @param millis offset from audio position zero.
@@ -140,8 +139,7 @@ public class MediaBrowserController implements IMediaController {
     }
 
     /**
-     * Uses a custom event to call onCustomEvent in MediaPlaybackService. Only sets the end time
-     * if the currently playing Playback is neither Loop nor Playlist, does nothing otherwise.
+     * Uses a custom event to call onCustomEvent in MediaPlaybackService.
      * Crashes if the Playback hasn't been started yet.
      *
      * @param millis offset from audio duration.
@@ -151,6 +149,17 @@ public class MediaBrowserController implements IMediaController {
         Bundle bundle = new Bundle();
         bundle.putInt(MediaAction.EndTime, millis);
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().sendCustomAction(MediaAction.SetEndTime, bundle);
+    }
+
+    /**
+     * Uses a custom event to call onCustomEvent in MediaPlaybackService. Saves the current playback
+     * as a loop with loopName as name.
+     */
+    @Override
+    public void saveAsLoop(String loopName) {
+        Bundle bundle = new Bundle();
+        bundle.putString(MediaAction.LoopName, loopName);
+        MediaControllerCompat.getMediaController(mActivity).getTransportControls().sendCustomAction(MediaAction.SaveAsLoop, bundle);
     }
 
     /**

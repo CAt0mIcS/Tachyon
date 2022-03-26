@@ -446,11 +446,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         public void onSeekTo(long pos) {
             unregisterPlaybackHandler();
             synchronized (mPlaybackLock) {
-                if (pos < mPlayback.getCurrentSong().getStartTime()) {
-                    registerPlaybackHandler();
-                    return;
-                }
-
                 mPlayback.seekTo((int) pos);
             }
             registerPlaybackHandler();
@@ -515,6 +510,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 case MediaAction.CastStarted:
                     mMediaSession.getController().getTransportControls().stop();
                     break;
+                case MediaAction.SaveAsLoop:
+                    synchronized (mPlaybackLock) {
+                        mPlayback.getCurrentSong().saveAsLoop(extras.getString(MediaAction.LoopName));
+                    }
+                    break;
             }
         }
     }
@@ -568,7 +568,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
      * mPlayback.getCurrentSong().getEndTime() - mPlayback.getCurrentSong().getCurrentPosition()
      */
     private void registerPlaybackHandler() {
-        int delay = mPlayback.getCurrentSong().getEndTime() - mPlayback.getCurrentPosition();
+        int delay;
+        if (mPlayback.getCurrentPosition() < mPlayback.getCurrentSong().getStartTime())
+            delay = 0;
+        else
+            delay = mPlayback.getCurrentSong().getEndTime() - mPlayback.getCurrentPosition();
         Log.d(TAG, "Posting MediaPlaybackService playback runnable with delay ms" + delay);
         mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
     }

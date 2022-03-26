@@ -193,6 +193,11 @@ public class CastController implements IMediaController {
     }
 
     @Override
+    public void saveAsLoop(String loopName) {
+
+    }
+
+    @Override
     public int getStartTime() {
         return 0;
     }

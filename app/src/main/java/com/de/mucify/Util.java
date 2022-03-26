@@ -27,6 +27,7 @@ public class Util {
     };
 
     public static void logGlobal(String msg) {
+        Log.e("Mucify", msg);
         File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/Documents/mucify.log.txt");
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
@@ -35,7 +36,6 @@ public class Util {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.e("Mucify", msg);
     }
 
 

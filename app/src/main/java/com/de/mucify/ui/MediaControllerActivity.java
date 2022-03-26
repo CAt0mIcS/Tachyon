@@ -137,6 +137,14 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
     }
 
     @Override
+    public void saveAsLoop(String loopName) {
+        if (mCastController.isCasting())
+            mCastController.saveAsLoop(loopName);
+        else
+            mBrowserController.saveAsLoop(loopName);
+    }
+
+    @Override
     public int getStartTime() {
         if (mCastController.isCasting())
             return mCastController.getStartTime();

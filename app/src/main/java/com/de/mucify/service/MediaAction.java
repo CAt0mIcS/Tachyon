@@ -12,4 +12,7 @@ public class MediaAction {
     public static final String EndTime = "EndTime";
 
     public static final String CastStarted = "com.de.mucify.CAST_STARTED";
+
+    public static final String SaveAsLoop = "com.de.mucify.SAVE_AS_LOOP";
+    public static final String LoopName = "LoopName";
 }
