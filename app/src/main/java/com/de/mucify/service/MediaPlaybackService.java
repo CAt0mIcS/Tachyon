@@ -71,21 +71,21 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private final AudioManager.OnAudioFocusChangeListener mAudioFocusChangedListener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
-            if(UserData.getIgnoreAudioFocus())
+            if (UserData.getIgnoreAudioFocus())
                 return;
 
             Log.d("Mucify", "Audio focus changed " + focusChange);
-            switch(focusChange) {
+            switch (focusChange) {
                 case AudioManager.AUDIOFOCUS_GAIN:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK:
                     mPlayback.setVolume(1.f, 1.f);
-                    if(!mKeepPausedAfterAudioFocusGain)
+                    if (!mKeepPausedAfterAudioFocusGain)
                         mMediaSession.getController().getTransportControls().play();
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                    if(mPlayback != null && !mPlayback.isPaused())
+                    if (mPlayback != null && !mPlayback.isPaused())
                         mMediaSession.getController().getTransportControls().pause();
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
@@ -93,8 +93,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     break;
                 case AudioManager.AUDIOFOCUS_LOSS:
                     synchronized (mPlaybackLock) {
-                        if(mPlayback != null && mPlayback.isCreated()) {
-                            if(!mPlayback.isPaused()) {
+                        if (mPlayback != null && mPlayback.isCreated()) {
+                            if (!mPlayback.isPaused()) {
                                 mPlayback.pause();
                                 repostNotification();
                                 savePlaybackToSettings();
@@ -117,7 +117,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
-                if(mPlayback != null && !mPlayback.isPaused())
+                if (mPlayback != null && !mPlayback.isPaused())
                     mMediaSession.getController().getTransportControls().pause();
                 Log.d("Mucify", "Became noisy");
             }
@@ -140,7 +140,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         super.onCreate();
         createMediaSession();
 
-        mNotificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel();
         }
@@ -173,7 +173,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();
 
-        for(Song s : MediaLibrary.AvailableSongs) {
+        for (Song s : MediaLibrary.AvailableSongs) {
             MediaDescriptionCompat mediaDesc = new MediaDescriptionCompat.Builder()
                     .setMediaId(s.getMediaId())
                     .setTitle(s.getTitle())
@@ -182,7 +182,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             mediaItems.add(new MediaBrowserCompat.MediaItem(mediaDesc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE));
         }
-        for(Song s : MediaLibrary.AvailableLoops) {
+        for (Song s : MediaLibrary.AvailableLoops) {
             MediaDescriptionCompat mediaDesc = new MediaDescriptionCompat.Builder()
                     .setMediaId(s.getMediaId())
                     .setTitle(s.getTitle())
@@ -191,7 +191,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
             mediaItems.add(new MediaBrowserCompat.MediaItem(mediaDesc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE));
         }
-        for(Playlist p : MediaLibrary.AvailablePlaylists) {
+        for (Playlist p : MediaLibrary.AvailablePlaylists) {
             MediaDescriptionCompat mediaDesc = new MediaDescriptionCompat.Builder()
                     .setMediaId(p.getMediaId())
                     .setTitle(p.getName())
@@ -326,9 +326,9 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
                 // start the player (custom call)
                 synchronized (mPlaybackLock) {
-                    if(!mPlayback.isCreated())
+                    if (!mPlayback.isCreated())
                         mPlayback.create(MediaPlaybackService.this);
-                    if(mMediaPosBeforeAudioFocusLoss != -1) {
+                    if (mMediaPosBeforeAudioFocusLoss != -1) {
                         mPlayback.seekTo(mMediaPosBeforeAudioFocusLoss);
                         mMediaPosBeforeAudioFocusLoss = -1;
                     }
@@ -337,7 +337,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     mPlayback.start(MediaPlaybackService.this);
                     mKeepPausedAfterAudioFocusGain = false;
 
-                    if(mPlayback instanceof Playlist) {
+                    if (mPlayback instanceof Playlist) {
                         // Called when the song finished and we need to skip to the next one in the playlist
                         mPlayback.getCurrentSong().setOnMediaPlayerCompletionListener(mp -> onSkipToNext());
                     } else {
@@ -391,10 +391,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             Util.abandonAudioFocus(MediaPlaybackService.this, mAudioFocusChangedListener);
             try {
                 unregisterReceiver(myNoisyAudioStreamReceiver);
-            } catch (IllegalArgumentException ignored) {}
+            } catch (IllegalArgumentException ignored) {
+            }
 
             synchronized (mPlaybackLock) {
-                if(mPlayback != null)
+                if (mPlayback != null)
                     mPlayback.reset();
                 mPlayback = null;
             }
@@ -420,7 +421,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
             synchronized (mPlaybackLock) {
-                if(mPlayback != null)
+                if (mPlayback != null && mPlayback.isCreated())
                     mPlayback.reset();
 
                 mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
@@ -432,12 +433,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         /**
          * Seeks Playback to pos.
+         *
          * @param pos position to seek to in milliseconds.
          */
         @Override
         public void onSeekTo(long pos) {
             synchronized (mPlaybackLock) {
-                mPlayback.seekTo((int)pos);
+                mPlayback.seekTo((int) pos);
             }
             repostNotification();
             Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSeekTo " + pos);
@@ -476,13 +478,13 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
          */
         @Override
         public void onCustomAction(String action, Bundle extras) {
-            switch(action) {
+            switch (action) {
                 case MediaAction.SetStartTime:
-                    if(mPlayback instanceof Song && !((Song)mPlayback).isLoop())
+                    if (mPlayback instanceof Song && !((Song) mPlayback).isLoop())
                         mPlayback.getCurrentSong().setStartTime(extras.getInt(MediaAction.StartTime));
                     break;
                 case MediaAction.SetEndTime:
-                    if(mPlayback instanceof Song && !((Song)mPlayback).isLoop())
+                    if (mPlayback instanceof Song && !((Song) mPlayback).isLoop())
                         mPlayback.getCurrentSong().setEndTime(extras.getInt(MediaAction.EndTime));
                     break;
                 case MediaAction.CastStarted:
@@ -545,18 +547,17 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         new Thread(() -> {
             Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
 
-            while(mPlaybackUpdateThread) {
+            while (mPlaybackUpdateThread) {
 
                 synchronized (mPlaybackLock) {
-                    if(mPlayback != null && mPlayback.isCreated()) {
+                    if (mPlayback != null && mPlayback.isCreated()) {
                         int currentPos = mPlayback.getCurrentPosition();
                         Song currentSong = mPlayback.getCurrentSong();
 
-                        if(currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime()) {
-                            if(mPlayback instanceof Playlist) {
+                        if (currentPos >= currentSong.getEndTime() || currentPos < currentSong.getStartTime()) {
+                            if (mPlayback instanceof Playlist) {
                                 mMediaSession.getController().getTransportControls().skipToNext();
-                            }
-                            else {
+                            } else {
                                 mMediaSession.getController().getTransportControls().seekTo(currentSong.getStartTime());
                             }
                         }
@@ -591,7 +592,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         UserData.PlaybackInfo playbackInfo = new UserData.PlaybackInfo();
         playbackInfo.PlaybackPath = mPlayback.getPath();
         playbackInfo.PlaybackPos = mPlayback.getCurrentPosition();
-        if(mPlayback instanceof Playlist) {
+        if (mPlayback instanceof Playlist) {
             playbackInfo.LastPlayedPlaybackInPlaylist = mPlayback.getCurrentSong().getPath();
         }
 

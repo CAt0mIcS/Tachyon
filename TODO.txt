@@ -1,33 +1,29 @@
 Bugs:
 
-// TEMPORARYLY COMMENTED OUT
-Attempt to invoke virtual method 'long com.google.android.gms.cast.framework.media.RemoteMediaClient.getApproximateStreamPosition()' on a null object reference
-[com.de.mucify.ui.CastController.getCurrentPosition(CastController.java:191), 
-com.de.mucify.ui.CastController$2.onSessionEnding(CastController.java:285), 
-com.de.mucify.ui.CastController$2.onSessionEnding(CastController.java:253), 
-com.google.android.gms.cast.framework.zzaw.zzd(com.google.android.gms:play-services-cast-framework@@20.1.0:3), 
-com.google.android.gms.cast.framework.zzam.zza(com.google.android.gms:play-services-cast-framework@@20.1.0:24), 
-com.google.android.gms.internal.cast.zzb.onTransact(com.google.android.gms:play-services-cast@@20.1.0:3), 
-android.os.Binder.transact(Binder.java:1100), 
-ma.P(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):2), 
-ta.g(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):0), 
-tm.w(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):4), 
-to.r(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):1), 
-to.n(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):1), 
-to.o(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):6), 
-sg.g(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):0), 
-tp.handleMessage(:com.google.android.gms.dynamite_dynamitemodulesc@220618099@22.06.18 (190408-0):7), 
-android.os.Handler.dispatchMessage(Handler.java:102), 
-android.os.Looper.loopOnce(Looper.java:226), 
-android.os.Looper.loop(Looper.java:313), 
-android.app.ActivityThread.main(ActivityThread.java:8633), 
-java.lang.reflect.Method.invoke(Native Method), 
-com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:567), 
-com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1135)]
 
 
 
-// Cast not repeating
+
+TODO:
+fragment_select_audio_layout doesn't have minimized player(does it need to?) and is a little outside of the toolbar
+activity library: Bottom elements of history aren't displayed anymore
+CastController gets a lot of unnecessary calls
+Don't store all song images in memory
+inaccurate delay for cast handler
+Check all multithreading
+Saving playback pos when disconnecting from cast
+
+
+
+
+
+
+
+
+
+
+Done:
+// Cast not repeating (Fixed by always restarting playback a little before it's finished)
 Posting cast handler with delay ms167176
 Posting cast handler with delay ms12938
 Runnable was triggered
@@ -61,17 +57,3 @@ android.app.ActivityThread.main(ActivityThread.java:8633),
 java.lang.reflect.Method.invoke(Native Method), 
 com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:567), 
 com.android.internal.os.ZygoteInit.main(ZygoteInit.java:1135)]
-
-
-
-
-
-
-
-TODO:
-fragment_select_audio_layout doesn't have minimized player(does it need to?) and is a little outside of the toolbar
-activity library: Bottom elements of history aren't displayed anymore
-Possible thread problems with UserData
-CastController gets a lot of unnecessary calls
-Don't store all song images in memory
-inaccurate delay for cast handler
