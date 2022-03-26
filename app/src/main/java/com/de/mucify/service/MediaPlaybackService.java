@@ -47,6 +47,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private static final float DUCK_VOLUME = .2f;
     private static final String EMPTY_MEDIA_ID = "com.de.mucify.EMPTY_MEDIA";
     private static final String CHANNEL_ID = "com.de.mucify.MediaPlaybackChannel";
+    private static final String TAG = "Mucify.MediaService";
 
     private Playback mPlayback;
     private final Object mPlaybackLock = new Object();
@@ -71,7 +72,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             if (UserData.getIgnoreAudioFocus())
                 return;
 
-            Log.d("Mucify", "Audio focus changed " + focusChange);
+            Log.d(TAG, "Audio focus changed " + focusChange);
             switch (focusChange) {
                 case AudioManager.AUDIOFOCUS_GAIN:
                 case AudioManager.AUDIOFOCUS_GAIN_TRANSIENT:
@@ -96,7 +97,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                                 mPlayback.pause();
                                 repostNotification();
                                 savePlaybackToSettings();
-                                Log.d("Mucify", "MediaPlaybackService.AudioFocusChangeListener: Audio focus lost, MediaPlayback paused");
+                                Log.d(TAG, "MediaPlaybackService.AudioFocusChangeListener: Audio focus lost, MediaPlayback paused");
                             }
                             mMediaPosBeforeAudioFocusLoss = mPlayback.getCurrentPosition();
                             mPlayback.reset();
@@ -117,7 +118,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
                 if (mPlayback != null && !mPlayback.isPaused())
                     mMediaSession.getController().getTransportControls().pause();
-                Log.d("Mucify", "Became noisy");
+                Log.d(TAG, "Became noisy");
             }
         }
     };
@@ -167,7 +168,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         createNotificationActions();
 
-        Log.d("Mucify", "Created MediaPlaybackService");
+        Log.d(TAG, "Created MediaPlaybackService");
         Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
     }
 
@@ -227,7 +228,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
      * like pause/play, skipToNext/-Previous, ... happens
      */
     public Notification buildNotification() {
-        Log.d("Mucify", "Rebuilding notification");
+        Log.d(TAG, "Rebuilding notification");
 
         PlaybackStateCompat playbackState = getState();
         MediaMetadataCompat metadata = getMetadata();
@@ -279,7 +280,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private void createNotificationChannel() {
         NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Mucify foreground service notification", NotificationManager.IMPORTANCE_LOW);
         mNotificationManager.createNotificationChannel(channel);
-        Log.d("Mucify", "Created notification channel");
+        Log.d(TAG, "Created notification channel");
     }
 
     /**
@@ -322,7 +323,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
      */
     private void repostNotification() {
         mNotificationManager.notify(NOTIFY_ID, buildNotification());
-        Log.d("Mucify", "Reposting notification");
+        Log.d(TAG, "Reposting notification");
     }
 
 
@@ -366,7 +367,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 // Put the service in the foreground, post notification
                 startForeground(NOTIFY_ID, buildNotification());
             }
-            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPlay");
+            Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onPlay");
         }
 
         /**
@@ -383,7 +384,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mKeepPausedAfterAudioFocusGain = true;
             repostNotification();
             savePlaybackToSettings();
-            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPause");
+            Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onPause");
         }
 
         /**
@@ -417,7 +418,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             stopForeground(true);
             mNotificationManager.cancel(NOTIFY_ID);
             stopSelf();
-            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onStop");
+            Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onStop");
         }
 
         /**
@@ -433,7 +434,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 mPlayback.create(MediaPlaybackService.this);
             }
             onPlay();
-            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onPlayFromMediaId " + mediaId);
+            Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onPlayFromMediaId " + mediaId);
         }
 
         /**
@@ -454,7 +455,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             }
             registerPlaybackHandler();
             repostNotification();
-            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSeekTo " + pos);
+            Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onSeekTo " + pos);
         }
 
         /**
@@ -467,7 +468,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 mPlayback = mPlayback.next(MediaPlaybackService.this);
             }
             onPlay();
-            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSkipToNext");
+            Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onSkipToNext");
         }
 
         /**
@@ -480,7 +481,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 mPlayback = mPlayback.previous(MediaPlaybackService.this);
             }
             onPlay();
-            Log.d("Mucify", "MediaPlaybackService.MediaSessionCallback.onSkipToPrevious");
+            Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onSkipToPrevious");
         }
 
         /**
@@ -568,7 +569,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
      */
     private void registerPlaybackHandler() {
         int delay = mPlayback.getCurrentSong().getEndTime() - mPlayback.getCurrentPosition();
-        Util.logGlobal("Posting MediaPlaybackService playback runnable with delay ms" + delay);
+        Log.d(TAG, "Posting MediaPlaybackService playback runnable with delay ms" + delay);
         mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
     }
 
@@ -577,7 +578,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
      */
     private void unregisterPlaybackHandler() {
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-        Util.logGlobal("Unregistering MediaPlaybackService playback runnable");
+        Log.d(TAG, "Unregistering MediaPlaybackService playback runnable");
     }
 
     /**
