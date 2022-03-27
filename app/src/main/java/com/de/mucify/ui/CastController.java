@@ -28,6 +28,7 @@ import com.google.android.gms.cast.framework.SessionManagerListener;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 import com.google.android.gms.common.images.WebImage;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -502,7 +503,15 @@ public class CastController implements IMediaController {
                     e.printStackTrace();
                 }
 
-                return newChunkedResponse(Response.Status.OK, mExtensionMimeType.get(FileManager.getFileExtension(mPlayback.getCurrentSong().getSongPath().getPath())), fis);
+                byte[] bytes = new byte[(int) mPlayback.getCurrentSong().getSongPath().length()];
+                try {
+                    fis.read(bytes);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+                return newChunkedResponse(Response.Status.OK, mExtensionMimeType.get(FileManager.getFileExtension(mPlayback.getCurrentSong().getSongPath().getPath())), new ByteArrayInputStream(bytes));
             } else if (uri.equals("/image_high")) {
                 Bitmap imageData = mPlayback.getCurrentSong().getImage();
                 return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 100));
