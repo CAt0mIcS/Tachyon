@@ -369,12 +369,12 @@ public class CastController implements IMediaController {
 
                 for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onCastConnected();
+
+                if (mPlayback != null)
+                    play(mPlayback.getMediaId());
             }
 
             private void onApplicationDisconnected() {
-                if (mActivity != null && mActivity.isDestroyed())
-                    mActivity = null;
-
                 synchronized (mCastSessionLock) {
                     mCastSession = null;
                 }
@@ -388,6 +388,8 @@ public class CastController implements IMediaController {
                     c.onPause();
                 }
 
+                if (mActivity != null && mActivity.isDestroyed())
+                    mActivity = null;
             }
         };
     }
