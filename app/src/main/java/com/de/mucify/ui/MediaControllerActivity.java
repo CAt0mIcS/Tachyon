@@ -31,7 +31,8 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
 
         mBrowserController = new MediaBrowserController(this, mCallbacks);
         if (mCastController == null)
-            mCastController = new CastController(this, mCallbacks);
+            mCastController = new CastController();
+        mCastController.setActivity(this);
 
         // Removes our notification because Google Cast has its own
         addCallback(new Callback() {
@@ -43,7 +44,11 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
     }
 
     public void initializeToolbar() {
-        mCastController.initializeToolbar();
+        mCastController.initializeToolbar(this);
+    }
+
+    public ArrayList<Callback> getCallbacks() {
+        return mCallbacks;
     }
 
     @Override
@@ -57,6 +62,12 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         super.onResume();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         mCastController.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mCastController.onDestroy();
     }
 
     @Override
@@ -134,6 +145,14 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
             mCastController.setEndTime(millis);
         else
             mBrowserController.setEndTime(millis);
+    }
+
+    @Override
+    public void saveAsLoop(String loopName) {
+        if (mCastController.isCasting())
+            mCastController.saveAsLoop(loopName);
+        else
+            mBrowserController.saveAsLoop(loopName);
     }
 
     @Override

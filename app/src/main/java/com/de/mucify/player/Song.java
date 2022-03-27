@@ -16,8 +16,10 @@ import com.de.mucify.R;
 import com.de.mucify.service.MediaPlaybackService;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -339,6 +341,23 @@ public class Song extends Playback {
         else if (mLoopFilePath == null && obj.mLoopFilePath == null) {
         } else equals = false;
         return equals;
+    }
+
+    /**
+     * Saves the song with start time and end time to a file.
+     */
+    public void saveAsLoop(String loopName) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(FileManager.loopNameToFile(loopName, getTitle(), getArtist())));
+            writer.write(getSongPath().getPath() + '\n');
+            writer.write(String.valueOf(getStartTime()) + '\n');
+            writer.write(String.valueOf(getEndTime()) + '\n');
+            writer.close();
+            Log.d("Mucify.Song", "Saved loop with start: " + getStartTime() + " end: " + getEndTime() + " with name " + loopName);
+        } catch (IOException e) {
+            e.printStackTrace();
+            // MY_TODO: Error handling
+        }
     }
 
     /**

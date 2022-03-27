@@ -10,6 +10,8 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.view.MenuItem;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
@@ -55,7 +57,6 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         MediaLibrary.loadSongs(this, mMediaLibraryLoaderLatch::countDown);
         MediaLibrary.loadLoopsAndPlaylists(this, mMediaLibraryLoaderLatch::countDown);
 
-
         mRvHistory = findViewById(R.id.rvHistory);
 
         // MY_TEMPORARY: Set dark theme just to make it look better in the emulator
@@ -74,6 +75,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         // MY_TEMPORARY
         if (!checkPermission())
             requestPermission();
+        requestPermissions();
 
         findViewById(R.id.relLayoutSongs).setOnClickListener(v -> {
             FragmentSelectAudio fragment = new FragmentSelectAudio(AudioType.Song);
@@ -224,6 +226,33 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         } else {
             //below android 11
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2296);
+        }
+    }
+
+
+    private boolean mPermissionResultHere = false;
+
+    /**
+     * Requests all necessary permissions and returns once they're granted
+     * MY_TODO: Already load certain things while user still accepts permission
+     * MY_TODO: Dialog explaining why we need permission
+     */
+    private void requestPermissions() {
+
+        ActivityResultLauncher<String> mRequestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(), result -> {
+                    mPermissionResultHere = true;
+                });
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
+            mRequestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+            while (!mPermissionResultHere) {
+                try {
+                    Thread.sleep(60);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

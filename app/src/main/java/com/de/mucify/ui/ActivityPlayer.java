@@ -2,10 +2,16 @@ package com.de.mucify.ui;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
@@ -13,6 +19,7 @@ import com.de.mucify.UserData;
 import com.de.mucify.Util;
 import com.de.mucify.ui.trivial.DialogAddToPlaylist;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
 
 public class ActivityPlayer extends MediaControllerActivity {
     private SeekBar mSbProgress;
@@ -67,14 +74,17 @@ public class ActivityPlayer extends MediaControllerActivity {
                     int currentPos = getCurrentPosition() / UserData.getAudioUpdateInterval();
                     mSbProgress.setProgress(currentPos);
                 }
-                mHandler.postDelayed(this, UserData.getAudioUpdateInterval());
+                if (!isDestroyed())
+                    mHandler.postDelayed(this, UserData.getAudioUpdateInterval());
             }
         });
 
         ((BottomNavigationView) findViewById(R.id.btmNavPlayer)).setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.btmNavAddToPlaylist) {
-                new DialogAddToPlaylist(MediaLibrary.getPlaybackFromMediaId(getIntent().getStringExtra("MediaId")).getCurrentSong(), ActivityPlayer.this).show();
-            }
+            if (item.getItemId() == R.id.btmNavAddToPlaylist)
+                new DialogAddToPlaylist(MediaLibrary.getPlaybackFromMediaId(
+                        getIntent().getStringExtra("MediaId")).getCurrentSong(), ActivityPlayer.this).show();
+            else if (item.getItemId() == R.id.btmNavSaveLoop)
+                displaySaveLoopDialog();
 
             return true;
         });
@@ -251,5 +261,28 @@ public class ActivityPlayer extends MediaControllerActivity {
 
         mSbStartTime.setProgress(isCreated() ? getStartTime() / UserData.getAudioUpdateInterval() : 0);
         mSbEndTime.setProgress(isCreated() ? getEndTime() / UserData.getAudioUpdateInterval() : 0);
+    }
+
+    /**
+     * Displays dialog to save loop
+     */
+    private void displaySaveLoopDialog() {
+        final EditText editLoopName = new EditText(this);
+
+        new AlertDialog.Builder(this)
+                .setMessage("Enter loop name")
+                .setView(editLoopName)
+                .setPositiveButton("Save", (dialog, id) -> {
+
+                    String loopName = editLoopName.getText().toString();
+                    if (loopName.isEmpty() || loopName.contains("_")) {
+                        Toast.makeText(this, "Failed to save loop: Name mustn't contain '_' or be empty", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    saveAsLoop(loopName);
+                })
+                .setNegativeButton(R.string.cancel, (dialog, id) -> dialog.dismiss())
+                .create().show();
     }
 }

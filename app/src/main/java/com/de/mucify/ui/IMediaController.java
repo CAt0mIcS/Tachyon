@@ -54,6 +54,11 @@ public interface IMediaController {
     void setEndTime(int millis);
 
     /**
+     * Saves current playback with current start and end time as loop with name loopName
+     */
+    void saveAsLoop(String loopName);
+
+    /**
      * Gets the start time of the currently playing song. Crashes if the Playback hasn't been started yet.
      */
     int getStartTime();

@@ -12,7 +12,6 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.telecom.Call;
 import android.util.Log;
 
-import com.de.mucify.PermissionManager;
 import com.de.mucify.Util;
 import com.de.mucify.service.MediaAction;
 import com.de.mucify.service.MediaPlaybackService;
@@ -35,9 +34,6 @@ public class MediaBrowserController implements IMediaController {
     public MediaBrowserController(MediaControllerActivity activity, ArrayList<MediaControllerActivity.Callback> callbacks) {
         mActivity = activity;
         mCallbacks = callbacks;
-
-        // MY_TODO: Better waiting and figure out what to do if permission not granted
-        PermissionManager.requestPermission(mActivity, Manifest.permission.READ_EXTERNAL_STORAGE);
 
         // Not using startForegroundService because the service only has 5 seconds to call Service.startForeground
         // which doesn't happen until we actually start playing audio
@@ -126,8 +122,7 @@ public class MediaBrowserController implements IMediaController {
     }
 
     /**
-     * Uses a custom event to call onCustomEvent in MediaPlaybackService. Only sets the start time
-     * if the currently playing Playback is neither Loop nor Playlist, does nothing otherwise.
+     * Uses a custom event to call onCustomEvent in MediaPlaybackService.
      * Crashes if the Playback hasn't been started yet.
      *
      * @param millis offset from audio position zero.
@@ -140,8 +135,7 @@ public class MediaBrowserController implements IMediaController {
     }
 
     /**
-     * Uses a custom event to call onCustomEvent in MediaPlaybackService. Only sets the end time
-     * if the currently playing Playback is neither Loop nor Playlist, does nothing otherwise.
+     * Uses a custom event to call onCustomEvent in MediaPlaybackService.
      * Crashes if the Playback hasn't been started yet.
      *
      * @param millis offset from audio duration.
@@ -151,6 +145,17 @@ public class MediaBrowserController implements IMediaController {
         Bundle bundle = new Bundle();
         bundle.putInt(MediaAction.EndTime, millis);
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().sendCustomAction(MediaAction.SetEndTime, bundle);
+    }
+
+    /**
+     * Uses a custom event to call onCustomEvent in MediaPlaybackService. Saves the current playback
+     * as a loop with loopName as name.
+     */
+    @Override
+    public void saveAsLoop(String loopName) {
+        Bundle bundle = new Bundle();
+        bundle.putString(MediaAction.LoopName, loopName);
+        MediaControllerCompat.getMediaController(mActivity).getTransportControls().sendCustomAction(MediaAction.SaveAsLoop, bundle);
     }
 
     /**

@@ -84,20 +84,24 @@ public class CastController implements IMediaController {
      */
     private String mMIMEType;
 
-    private final CastContext mCastContext;
+    private CastContext mCastContext;
     private CastSession mCastSession;
     private final Object mCastSessionLock = new Object();
     private SessionManagerListener<CastSession> mSessionManagerListener;
 
-    private final MediaControllerActivity mActivity;
-    private final ArrayList<MediaControllerActivity.Callback> mCallbacks;
+    private MediaControllerActivity mActivity;
 
 
-    public CastController(MediaControllerActivity activity, ArrayList<MediaControllerActivity.Callback> callbacks) {
-        mActivity = activity;
-        mCallbacks = callbacks;
+    public CastController() {
         setupCastListener();
+    }
 
+    /**
+     * Because this is stored statically we'll need to set the activity to the new one once a new
+     * activity is loaded
+     */
+    public void setActivity(MediaControllerActivity activity) {
+        mActivity = activity;
         mCastContext = CastContext.getSharedInstance(mActivity);
         synchronized (mCastSessionLock) {
             mCastSession = mCastContext.getSessionManager().getCurrentCastSession();
@@ -110,13 +114,17 @@ public class CastController implements IMediaController {
         Log.d("Mucify", "CastController.onResume");
     }
 
+    public void onDestroy() {
+        mActivity = null;
+    }
+
     @Override
     public void unpause() {
         synchronized (mCastSessionLock) {
             mCastSession.getRemoteMediaClient().play();
         }
 
-        for (MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onStart();
     }
 
@@ -137,7 +145,7 @@ public class CastController implements IMediaController {
                     .build());
         }
 
-        for (MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onSeekTo(millis);
 
 
@@ -189,6 +197,11 @@ public class CastController implements IMediaController {
 
     @Override
     public void setEndTime(int millis) {
+
+    }
+
+    @Override
+    public void saveAsLoop(String loopName) {
 
     }
 
@@ -245,14 +258,14 @@ public class CastController implements IMediaController {
      * after calling setContentIntent(@LayoutId int) that should have a cast button. Requires the layout
      * to have a toolbar with id equal to my_toolbar
      */
-    protected void initializeToolbar() {
-        Toolbar toolbar = mActivity.findViewById(R.id.my_toolbar);
+    protected void initializeToolbar(MediaControllerActivity activity) {
+        Toolbar toolbar = activity.findViewById(R.id.my_toolbar);
         toolbar.inflateMenu(R.menu.toolbar_default);
-        toolbar.setTitle(mActivity.getString(R.string.library));
-        mMediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(mActivity.getApplicationContext(), toolbar.getMenu(), R.id.media_route_menu_item);
+        toolbar.setTitle(activity.getString(R.string.library));
+        mMediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(activity.getApplicationContext(), toolbar.getMenu(), R.id.media_route_menu_item);
         toolbar.findViewById(R.id.action_settings).setOnClickListener(v -> {
-            Intent i = new Intent(mActivity, ActivitySettings.class);
-            mActivity.startActivity(i);
+            Intent i = new Intent(activity, ActivitySettings.class);
+            activity.startActivity(i);
         });
     }
 
@@ -366,7 +379,7 @@ public class CastController implements IMediaController {
                 }
 
                 mActivity.supportInvalidateOptionsMenu();
-                for (MediaControllerActivity.Callback c : mCallbacks)
+                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onCastConnected();
             }
 
@@ -380,7 +393,7 @@ public class CastController implements IMediaController {
                 mActivity.supportInvalidateOptionsMenu();
 
                 // Playback is paused when cast ends
-                for (MediaControllerActivity.Callback c : mCallbacks) {
+                for (MediaControllerActivity.Callback c : mActivity.getCallbacks()) {
                     c.onCastDisconnected();
                     c.onPause();
                 }
@@ -392,7 +405,7 @@ public class CastController implements IMediaController {
     private void onStart() {
         mPlaybackLocation = PlaybackLocation.Remote;
 
-        for (MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onStart();
 
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
@@ -404,7 +417,7 @@ public class CastController implements IMediaController {
 
     private void onPause() {
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-        for (MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onPause();
     }
 
