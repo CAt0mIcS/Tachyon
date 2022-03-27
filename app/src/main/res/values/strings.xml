@@ -39,8 +39,11 @@
     <string name="close_dialogue">Close Dialog</string>
     <string name="create_playlist">Create new playlist</string>
     <string name="advanced_settings">Advanced Settings</string>
-    <string name="playlist_song_title">Good music such wow</string>
+    <string name="playlist_title">Good music such wow</string>
     <string name="playlist_song_timePassed">time / songLength</string>
     <string name="playlist_songCount">0 Songs</string>
     <string name="playlist_totalLength">0h 0min</string>
+    <string name="playlist_item_song_artist">artist</string>
+    <string name="playlist_item_song_title">Song Title</string>
+    <string name="playlist_item_song_length">0:00</string>
 </resources>

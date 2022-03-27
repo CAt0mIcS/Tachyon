@@ -5,6 +5,8 @@
       <map>
         <entry key="..\:/Users/David/Documents/Mucify Project Folder/Mucify/app/src/main/res/layout/activity_player.xml" value="0.5541666666666667" />
         <entry key="..\:/Users/David/Documents/Mucify Project Folder/Mucify/app/src/main/res/layout/activity_playlist_player.xml" value="0.5541666666666667" />
+        <entry key="..\:/Users/David/Documents/Mucify Project Folder/Mucify/app/src/main/res/layout/recycler_playlist_item.xml" value="0.5541666666666667" />
+        <entry key="..\:/Users/David/Documents/Mucify Project Folder/Mucify/app/src/main/res/layout/recycler_playlist_player_item.xml" value="0.5541666666666667" />
         <entry key="..\:/Users/David/Documents/Mucify Project Folder/Mucify/app/src/main/res/menu/playlists_bottom_app_bar.xml" value="0.5541666666666667" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/arrow_back.xml" value="0.3015" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/arrow_forward_ios.xml" value="0.207" />
@@ -14,9 +16,7 @@
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/action_bar_default.xml" value="0.19655521783181357" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_library.xml" value="0.25" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_main.xml" value="0.19655521783181357" />
-        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_player.xml" value="0.13855116514690982" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_player_layout.xml" value="0.25" />
-        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_playlist_player.xml" value="0.28489583333333335" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_playlist_player_layout.xml" value="0.228125" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_search.xml" value="0.13880445795339413" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_settings.xml" value="0.28020833333333334" />
