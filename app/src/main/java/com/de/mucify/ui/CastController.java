@@ -250,14 +250,14 @@ public class CastController implements IMediaController {
      * after calling setContentIntent(@LayoutId int) that should have a cast button. Requires the layout
      * to have a toolbar with id equal to my_toolbar
      */
-    protected void initializeToolbar() {
-        Toolbar toolbar = mActivity.findViewById(R.id.my_toolbar);
+    protected void initializeToolbar(MediaControllerActivity activity) {
+        Toolbar toolbar = activity.findViewById(R.id.my_toolbar);
         toolbar.inflateMenu(R.menu.toolbar_default);
-        toolbar.setTitle(mActivity.getString(R.string.library));
-        mMediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(mActivity.getApplicationContext(), toolbar.getMenu(), R.id.media_route_menu_item);
+        toolbar.setTitle(activity.getString(R.string.library));
+        mMediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(activity.getApplicationContext(), toolbar.getMenu(), R.id.media_route_menu_item);
         toolbar.findViewById(R.id.action_settings).setOnClickListener(v -> {
-            Intent i = new Intent(mActivity, ActivitySettings.class);
-            mActivity.startActivity(i);
+            Intent i = new Intent(activity, ActivitySettings.class);
+            activity.startActivity(i);
         });
     }
 

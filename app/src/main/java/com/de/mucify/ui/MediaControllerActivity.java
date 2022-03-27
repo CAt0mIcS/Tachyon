@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class MediaControllerActivity extends AppCompatActivity implements IMediaController {
     private MediaBrowserController mBrowserController;
-    private static CastController mCastController;
+    private CastController mCastController;
 
     private final ArrayList<Callback> mCallbacks = new ArrayList<>();
 
@@ -43,7 +43,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
     }
 
     public void initializeToolbar() {
-        mCastController.initializeToolbar();
+        mCastController.initializeToolbar(this);
     }
 
     @Override
