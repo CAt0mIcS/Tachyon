@@ -84,20 +84,26 @@ public class CastController implements IMediaController {
      */
     private String mMIMEType;
 
-    private final CastContext mCastContext;
+    private CastContext mCastContext;
     private CastSession mCastSession;
     private final Object mCastSessionLock = new Object();
     private SessionManagerListener<CastSession> mSessionManagerListener;
 
-    private final MediaControllerActivity mActivity;
+    private MediaControllerActivity mActivity;
     private final ArrayList<MediaControllerActivity.Callback> mCallbacks;
 
 
-    public CastController(MediaControllerActivity activity, ArrayList<MediaControllerActivity.Callback> callbacks) {
-        mActivity = activity;
+    public CastController(ArrayList<MediaControllerActivity.Callback> callbacks) {
         mCallbacks = callbacks;
         setupCastListener();
+    }
 
+    /**
+     * Because this is stored statically we'll need to set the activity to the new one once a new
+     * activity is loaded
+     */
+    public void setActivity(MediaControllerActivity activity) {
+        mActivity = activity;
         mCastContext = CastContext.getSharedInstance(mActivity);
         synchronized (mCastSessionLock) {
             mCastSession = mCastContext.getSessionManager().getCurrentCastSession();

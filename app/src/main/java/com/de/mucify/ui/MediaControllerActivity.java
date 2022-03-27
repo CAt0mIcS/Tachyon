@@ -31,7 +31,8 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
 
         mBrowserController = new MediaBrowserController(this, mCallbacks);
         if (mCastController == null)
-            mCastController = new CastController(this, mCallbacks);
+            mCastController = new CastController(mCallbacks);
+        mCastController.setActivity(this);
 
         // Removes our notification because Google Cast has its own
         addCallback(new Callback() {
