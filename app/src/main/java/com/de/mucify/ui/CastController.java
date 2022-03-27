@@ -90,11 +90,9 @@ public class CastController implements IMediaController {
     private SessionManagerListener<CastSession> mSessionManagerListener;
 
     private MediaControllerActivity mActivity;
-    private final ArrayList<MediaControllerActivity.Callback> mCallbacks;
 
 
-    public CastController(ArrayList<MediaControllerActivity.Callback> callbacks) {
-        mCallbacks = callbacks;
+    public CastController() {
         setupCastListener();
     }
 
@@ -116,13 +114,17 @@ public class CastController implements IMediaController {
         Log.d("Mucify", "CastController.onResume");
     }
 
+    public void onDestroy() {
+        mActivity = null;
+    }
+
     @Override
     public void unpause() {
         synchronized (mCastSessionLock) {
             mCastSession.getRemoteMediaClient().play();
         }
 
-        for (MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onStart();
     }
 
@@ -143,7 +145,7 @@ public class CastController implements IMediaController {
                     .build());
         }
 
-        for (MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onSeekTo(millis);
 
 
@@ -377,7 +379,7 @@ public class CastController implements IMediaController {
                 }
 
                 mActivity.supportInvalidateOptionsMenu();
-                for (MediaControllerActivity.Callback c : mCallbacks)
+                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onCastConnected();
             }
 
@@ -391,7 +393,7 @@ public class CastController implements IMediaController {
                 mActivity.supportInvalidateOptionsMenu();
 
                 // Playback is paused when cast ends
-                for (MediaControllerActivity.Callback c : mCallbacks) {
+                for (MediaControllerActivity.Callback c : mActivity.getCallbacks()) {
                     c.onCastDisconnected();
                     c.onPause();
                 }
@@ -403,7 +405,7 @@ public class CastController implements IMediaController {
     private void onStart() {
         mPlaybackLocation = PlaybackLocation.Remote;
 
-        for (MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onStart();
 
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
@@ -415,7 +417,7 @@ public class CastController implements IMediaController {
 
     private void onPause() {
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-        for (MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onPause();
     }
 

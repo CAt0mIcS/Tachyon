@@ -12,7 +12,6 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.telecom.Call;
 import android.util.Log;
 
-import com.de.mucify.PermissionManager;
 import com.de.mucify.Util;
 import com.de.mucify.service.MediaAction;
 import com.de.mucify.service.MediaPlaybackService;
@@ -35,9 +34,6 @@ public class MediaBrowserController implements IMediaController {
     public MediaBrowserController(MediaControllerActivity activity, ArrayList<MediaControllerActivity.Callback> callbacks) {
         mActivity = activity;
         mCallbacks = callbacks;
-
-        // MY_TODO: Better waiting and figure out what to do if permission not granted
-        PermissionManager.requestPermission(mActivity, Manifest.permission.READ_EXTERNAL_STORAGE);
 
         // Not using startForegroundService because the service only has 5 seconds to call Service.startForeground
         // which doesn't happen until we actually start playing audio

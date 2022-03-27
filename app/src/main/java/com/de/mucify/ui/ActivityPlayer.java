@@ -74,7 +74,8 @@ public class ActivityPlayer extends MediaControllerActivity {
                     int currentPos = getCurrentPosition() / UserData.getAudioUpdateInterval();
                     mSbProgress.setProgress(currentPos);
                 }
-                mHandler.postDelayed(this, UserData.getAudioUpdateInterval());
+                if (!isDestroyed())
+                    mHandler.postDelayed(this, UserData.getAudioUpdateInterval());
             }
         });
 
