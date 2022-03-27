@@ -22,7 +22,8 @@ public class MediaLibrary {
     public static final String LoopFileExtension = ".loop";
     public static final String PlaylistFileExtension = ".playlist";
 
-    public static final List<String> SupportedAudioExtensions = Arrays.asList(".3gp", ".mp4", ".m4a", ".aac", ".ts", ".amr", ".flac", ".ota", ".imy", ".mp3", ".mkv", ".ogg", ".wav");
+    // MY_TODO: Does MediaPlayer support more audio formats? Does it support all of the listed ones? Do all of them work?
+    public static final List<String> SupportedAudioExtensions = Arrays.asList(".3gp", ".mp4", ".m4a", ".aac", ".ts", ".flac", ".imy", ".mp3", ".mkv", ".ogg", ".wav");
 
     public static final ArrayList<Song> AvailableSongs = new ArrayList<>();
     public static final ArrayList<Song> AvailableLoops = new ArrayList<>();

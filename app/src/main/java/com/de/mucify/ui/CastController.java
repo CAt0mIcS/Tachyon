@@ -5,32 +5,22 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.Looper;
-import android.telecom.Call;
 import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 
 import com.de.mucify.FileManager;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
-import com.de.mucify.UserData;
 import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
-import com.google.android.gms.cast.ApplicationMetadata;
-import com.google.android.gms.cast.Cast;
-import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaLoadRequestData;
 import com.google.android.gms.cast.MediaMetadata;
 import com.google.android.gms.cast.MediaSeekOptions;
-import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.CastButtonFactory;
 import com.google.android.gms.cast.framework.CastContext;
 import com.google.android.gms.cast.framework.CastSession;
@@ -39,13 +29,10 @@ import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 import com.google.android.gms.common.images.WebImage;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Phaser;
+import java.util.HashMap;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -76,13 +63,13 @@ public class CastController implements IMediaController {
         }
     };
 
+    /**
+     * Load all necessary MIME types, using MimeTypeMap.getSingleton().getMimeTypeFromExtension takes too long
+     */
+    private static final HashMap<String, String> mExtensionMimeType = new HashMap<>();
+
     private final WebServer mServer = new WebServer();
     private String mIP;
-
-    /**
-     * Cache MIME type because it takes a while for it to load
-     */
-    private String mMIMEType;
 
     private CastContext mCastContext;
     private CastSession mCastSession;
@@ -276,10 +263,6 @@ public class CastController implements IMediaController {
      */
     public void setPlayback(String mediaId) {
         mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
-
-        // Guess the MIME type of the playback, remove the . in the file extension
-        mMIMEType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileManager.getFileExtension(
-                mPlayback.getCurrentSong().getSongPath().getPath()).substring(1));
     }
 
     /**
@@ -335,6 +318,9 @@ public class CastController implements IMediaController {
 
             private void onApplicationConnected(CastSession castSession) {
                 startServer();
+                if (MediaLibrary.SupportedAudioExtensions.size() != mExtensionMimeType.size())
+                    loadMimeTypes();
+
                 synchronized (mCastSessionLock) {
                     mCastSession = castSession;
 
@@ -461,7 +447,7 @@ public class CastController implements IMediaController {
         Util.logGlobal("Loading Cast MediaInfo with URLAudio: " + urlAudio + "\nURLImageLow: " + urlImageLow);
         return new MediaInfo.Builder(urlAudio)
                 .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
-                .setContentType(mMIMEType)
+                .setContentType(mExtensionMimeType.get(FileManager.getFileExtension(mPlayback.getCurrentSong().getSongPath().getPath())))
                 .setMetadata(metadata)
                 .setStreamDuration(duration)
                 .build();
@@ -511,7 +497,7 @@ public class CastController implements IMediaController {
                     e.printStackTrace();
                 }
 
-                return newChunkedResponse(Response.Status.OK, mMIMEType, fis);
+                return newChunkedResponse(Response.Status.OK, mExtensionMimeType.get(FileManager.getFileExtension(mPlayback.getCurrentSong().getSongPath().getPath())), fis);
             } else if (uri.equals("/image_high")) {
                 Bitmap imageData = mPlayback.getCurrentSong().getImage();
                 return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 100));
@@ -533,5 +519,27 @@ public class CastController implements IMediaController {
             byte[] encodeByte = Base64.decode(encodedString, Base64.DEFAULT);
             return BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length);
         }
+    }
+
+
+    /**
+     * Loads a list of all supported mime types
+     * MY_TODO: Test all supported extensions if they're actually playable
+     */
+    private static void loadMimeTypes() {
+        mExtensionMimeType.put(".3gp", "audio/3gpp");
+        mExtensionMimeType.put(".mp4", "video/mp4");
+        mExtensionMimeType.put(".m4a", "audio/m4a");
+        mExtensionMimeType.put(".aac", "audio/aac");
+        mExtensionMimeType.put(".ts", "audio/mp2t");
+        mExtensionMimeType.put(".flac", "audio/x-flac");
+        mExtensionMimeType.put(".imy", "audio/");
+        mExtensionMimeType.put(".mp3", "audio/mpeg");
+        mExtensionMimeType.put(".mkv", "audio/ogg");
+        mExtensionMimeType.put(".ogg", "audio/ogg");
+        mExtensionMimeType.put(".wav", "audio/wav");
+
+        // Assure that we didn't forget a supported type
+        assert MediaLibrary.SupportedAudioExtensions.size() == mExtensionMimeType.size();
     }
 }
