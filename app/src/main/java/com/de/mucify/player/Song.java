@@ -80,7 +80,6 @@ public class Song extends Playback {
             mSongImage = BitmapFactory.decodeByteArray(art, 0, art.length);
         }
 
-
         if (title != null)
             mTitle = title;
         else

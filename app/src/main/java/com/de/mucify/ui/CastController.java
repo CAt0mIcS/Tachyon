@@ -68,6 +68,11 @@ public class CastController implements IMediaController {
      */
     private static final HashMap<String, String> mExtensionMimeType = new HashMap<>();
 
+    /**
+     * Time in milliseconds when mPlaybackUpdateRunnable is called before the song end time
+     */
+    public static final int SongStopThreshold = 1000;
+
     private final WebServer mServer = new WebServer();
     private String mIP;
 
@@ -79,7 +84,8 @@ public class CastController implements IMediaController {
     private MediaControllerActivity mActivity;
 
 
-    public CastController() {
+    public CastController(MediaControllerActivity activity) {
+        setActivity(activity);
         setupCastListener();
     }
 
@@ -99,10 +105,6 @@ public class CastController implements IMediaController {
         mCastContext.getSessionManager().addSessionManagerListener(
                 mSessionManagerListener, CastSession.class);
         Log.d("Mucify", "CastController.onResume");
-    }
-
-    public void onDestroy() {
-        mActivity = null;
     }
 
     @Override
@@ -137,7 +139,7 @@ public class CastController implements IMediaController {
 
 
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - 5;
+        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - SongStopThreshold;
         Log.d("Mucify.Cast", "Posting cast handler with delay ms" + delay);
         mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
         Util.logGlobal("CastController.seekTo (delay)ms" + delay);
@@ -370,6 +372,9 @@ public class CastController implements IMediaController {
             }
 
             private void onApplicationDisconnected() {
+                if (mActivity != null && mActivity.isDestroyed())
+                    mActivity = null;
+
                 synchronized (mCastSessionLock) {
                     mCastSession = null;
                 }
@@ -395,7 +400,7 @@ public class CastController implements IMediaController {
             c.onStart();
 
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - 5;
+        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - SongStopThreshold;
         Log.d("Mucify.Cast", "Posting cast handler with delay ms" + delay);
         mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
         Util.logGlobal("CastController.onStart ms" + delay);
