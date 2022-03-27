@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="@string/playlist_song_title"
+        android:text="@string/playlist_title"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintLeft_toRightOf="@id/playlist_image"
@@ -85,7 +85,9 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:paddingRight="16dp">
+
 
                 <ImageView
                     android:id="@+id/appBar_play_pause"
