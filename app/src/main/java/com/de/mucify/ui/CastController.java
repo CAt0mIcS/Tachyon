@@ -5,9 +5,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
-import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
@@ -15,6 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 import com.de.mucify.FileManager;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
+import com.de.mucify.UserData;
 import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 import com.google.android.gms.cast.MediaInfo;
@@ -34,35 +35,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import fi.iki.elonen.NanoHTTPD;
 
 public class CastController implements IMediaController {
 
-    public enum PlaybackLocation {
-        Remote, Local
-    }
-
-    private MenuItem mMediaRouteMenuItem;
-    private PlaybackLocation mPlaybackLocation;
     private Playback mPlayback;
-    private final Handler mPlaybackUpdateHandler = new Handler();
-    private final Runnable mPlaybackUpdateRunnable = new Runnable() {
-        @Override
-        public void run() {
-            Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
-            // MY_TODO: Test with loops and playlists
-            synchronized (mCastSessionLock) {
-                if (mCastSession == null) {
-                    Util.logGlobal("CastSession is null");
-                    return;
-                }
-
-                Util.logGlobal("Restarting casting playback ms" + getCurrentPosition());
-                play(mPlayback.getMediaId());
-            }
-        }
-    };
 
     /**
      * Load all necessary MIME types, using MimeTypeMap.getSingleton().getMimeTypeFromExtension takes too long
@@ -116,6 +95,8 @@ public class CastController implements IMediaController {
 
         for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onStart();
+
+        startPlaybackThread();
     }
 
     @Override
@@ -137,13 +118,6 @@ public class CastController implements IMediaController {
 
         for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onSeekTo(millis);
-
-
-        mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - SongStopThreshold;
-        Log.d("Mucify.Cast", "Posting cast handler with delay ms" + delay);
-        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
-        Util.logGlobal("CastController.seekTo (delay)ms" + delay);
     }
 
 
@@ -252,7 +226,7 @@ public class CastController implements IMediaController {
         Toolbar toolbar = activity.findViewById(R.id.my_toolbar);
         toolbar.inflateMenu(R.menu.toolbar_default);
         toolbar.setTitle(activity.getString(R.string.library));
-        mMediaRouteMenuItem = CastButtonFactory.setUpMediaRouteButton(activity.getApplicationContext(), toolbar.getMenu(), R.id.media_route_menu_item);
+        CastButtonFactory.setUpMediaRouteButton(activity.getApplicationContext(), toolbar.getMenu(), R.id.media_route_menu_item);
         toolbar.findViewById(R.id.action_settings).setOnClickListener(v -> {
             Intent i = new Intent(activity, ActivitySettings.class);
             activity.startActivity(i);
@@ -375,10 +349,10 @@ public class CastController implements IMediaController {
             }
 
             private void onApplicationDisconnected() {
+                stopPlaybackThread();
                 synchronized (mCastSessionLock) {
                     mCastSession = null;
                 }
-                mPlaybackLocation = PlaybackLocation.Local;
                 mServer.stop();
                 Log.i("Mucify", "Stopping Cast server");
 
@@ -395,20 +369,14 @@ public class CastController implements IMediaController {
     }
 
     private void onStart() {
-        mPlaybackLocation = PlaybackLocation.Remote;
-
         for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onStart();
 
-        mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - SongStopThreshold;
-        Log.d("Mucify.Cast", "Posting cast handler with delay ms" + delay);
-        mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
-        Util.logGlobal("CastController.onStart ms" + delay);
+        startPlaybackThread();
     }
 
     private void onPause() {
-        mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
+        stopPlaybackThread();
         for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onPause();
     }
@@ -475,6 +443,56 @@ public class CastController implements IMediaController {
             throw new UnsupportedOperationException("Failed to get IP address");
         }
         Log.i("Mucify", "Starting Cast server: " + mIP);
+    }
+
+    private boolean mPlaybackThread = false;
+
+    /**
+     * Thread runs to ensure that the playback gets restarted early enough
+     */
+    private void startPlaybackThread() {
+        if (!mPlaybackThread) {
+            Util.logGlobal("Starting playback thread");
+            new Thread(() -> {
+                mPlaybackThread = true;
+                Handler handler = new Handler(Looper.getMainLooper());
+
+                // Cast code needs to run on the main thread
+                Runnable runnable = () -> {
+                    if (getRemainingPlaybackTime() - SongStopThreshold <= SongStopThreshold) {
+                        Util.logGlobal("Restarting casting playback ms" + getCurrentPosition());
+                        play(mPlayback.getMediaId());
+                    }
+                };
+
+                while (mPlaybackThread) {
+                    handler.post(runnable);
+
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                Util.logGlobal("Cast thread stopped");
+
+            }).start();
+        } else
+            Util.logGlobal("mPlaybackThread is true, not starting thread");
+    }
+
+    /**
+     * Schedules playback thread to stop
+     */
+    private void stopPlaybackThread() {
+        mPlaybackThread = false;
+    }
+
+    /**
+     * @return the time left until playback is finished
+     */
+    public int getRemainingPlaybackTime() {
+        return mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition();
     }
 
 
