@@ -367,7 +367,6 @@ public class CastController implements IMediaController {
                     });
                 }
 
-                mActivity.supportInvalidateOptionsMenu();
                 for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onCastConnected();
             }
@@ -382,7 +381,6 @@ public class CastController implements IMediaController {
                 mPlaybackLocation = PlaybackLocation.Local;
                 mServer.stop();
                 Log.i("Mucify", "Stopping Cast server");
-                mActivity.supportInvalidateOptionsMenu();
 
                 // Playback is paused when cast ends
                 for (MediaControllerActivity.Callback c : mActivity.getCallbacks()) {
@@ -495,29 +493,32 @@ public class CastController implements IMediaController {
             Log.i("Mucify.CastWebServer", "Serve: " + session.getUri());
             String uri = session.getUri();
 
-            if (uri.equals("/audio")) {
-                FileInputStream fis = null;
-                try {
-                    fis = new FileInputStream(mPlayback.getCurrentSong().getSongPath());
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+            // MY_TODO: Option to enable/disable the adding of one second to every playback when casting
+            switch (uri) {
+                case "/audio":
+                    FileInputStream fis = null;
+                    try {
+                        fis = new FileInputStream(mPlayback.getCurrentSong().getSongPath());
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+
+                    byte[] bytes = new byte[(int) mPlayback.getCurrentSong().getSongPath().length()];
+                    try {
+                        fis.read(bytes);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    return newChunkedResponse(Response.Status.OK, mExtensionMimeType.get(FileManager.getFileExtension(mPlayback.getCurrentSong().getSongPath().getPath())), new ByteArrayInputStream(bytes));
+                case "/image_high": {
+                    Bitmap imageData = mPlayback.getCurrentSong().getImage();
+                    return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 100));
                 }
-
-                byte[] bytes = new byte[(int) mPlayback.getCurrentSong().getSongPath().length()];
-                try {
-                    fis.read(bytes);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                case "/image_low": {
+                    Bitmap imageData = mPlayback.getCurrentSong().getImage();
+                    return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 25));
                 }
-
-
-                return newChunkedResponse(Response.Status.OK, mExtensionMimeType.get(FileManager.getFileExtension(mPlayback.getCurrentSong().getSongPath().getPath())), new ByteArrayInputStream(bytes));
-            } else if (uri.equals("/image_high")) {
-                Bitmap imageData = mPlayback.getCurrentSong().getImage();
-                return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 100));
-            } else if (uri.equals("/image_low")) {
-                Bitmap imageData = mPlayback.getCurrentSong().getImage();
-                return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 25));
             }
 
             return null;
