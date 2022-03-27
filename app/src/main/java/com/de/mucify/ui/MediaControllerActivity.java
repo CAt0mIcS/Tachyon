@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class MediaControllerActivity extends AppCompatActivity implements IMediaController {
     private MediaBrowserController mBrowserController;
-    private CastController mCastController;
+    private static CastController mCastController;
 
     private final ArrayList<Callback> mCallbacks = new ArrayList<>();
 
