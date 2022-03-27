@@ -46,4 +46,5 @@
     <string name="playlist_item_song_artist">artist</string>
     <string name="playlist_item_song_title">Song Title</string>
     <string name="playlist_item_song_length">0:00</string>
+    <string name="current_song_title">Song Title</string>
 </resources>

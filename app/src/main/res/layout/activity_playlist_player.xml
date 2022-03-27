@@ -86,7 +86,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingRight="16dp">
+                android:paddingEnd="16dp">
 
 
                 <ImageView
@@ -130,7 +130,22 @@
                     android:textStyle="normal"
                     android:textSize="12sp"
                     android:paddingEnd="16dp"
+                    android:textColor="@color/white"
+
                     />
+
+                <TextView
+                    android:layout_width="130dp"
+                    android:layout_height="20dp"
+                    android:text="@string/current_song_title"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/appBar_play_pause"
+                    app:layout_constraintBottom_toBottomOf="@id/appBar_play_pause"
+                    android:textColor="@color/white"
+
+                    />
+
+
 
 
             </androidx.constraintlayout.widget.ConstraintLayout>
