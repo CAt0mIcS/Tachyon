@@ -31,8 +31,9 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
 
         mBrowserController = new MediaBrowserController(this, mCallbacks);
         if (mCastController == null)
-            mCastController = new CastController();
-        mCastController.setActivity(this);
+            mCastController = new CastController(this);
+        else
+            mCastController.setActivity(this);
 
         // Removes our notification because Google Cast has its own
         addCallback(new Callback() {
@@ -62,12 +63,6 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         super.onResume();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         mCastController.onResume();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mCastController.onDestroy();
     }
 
     @Override

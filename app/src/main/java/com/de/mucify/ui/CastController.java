@@ -28,6 +28,7 @@ import com.google.android.gms.cast.framework.SessionManagerListener;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 import com.google.android.gms.common.images.WebImage;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -68,6 +69,11 @@ public class CastController implements IMediaController {
      */
     private static final HashMap<String, String> mExtensionMimeType = new HashMap<>();
 
+    /**
+     * Time in milliseconds when mPlaybackUpdateRunnable is called before the song end time
+     */
+    public static final int SongStopThreshold = 1000;
+
     private final WebServer mServer = new WebServer();
     private String mIP;
 
@@ -79,7 +85,8 @@ public class CastController implements IMediaController {
     private MediaControllerActivity mActivity;
 
 
-    public CastController() {
+    public CastController(MediaControllerActivity activity) {
+        setActivity(activity);
         setupCastListener();
     }
 
@@ -99,10 +106,6 @@ public class CastController implements IMediaController {
         mCastContext.getSessionManager().addSessionManagerListener(
                 mSessionManagerListener, CastSession.class);
         Log.d("Mucify", "CastController.onResume");
-    }
-
-    public void onDestroy() {
-        mActivity = null;
     }
 
     @Override
@@ -137,7 +140,7 @@ public class CastController implements IMediaController {
 
 
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - 5;
+        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - SongStopThreshold;
         Log.d("Mucify.Cast", "Posting cast handler with delay ms" + delay);
         mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
         Util.logGlobal("CastController.seekTo (delay)ms" + delay);
@@ -364,19 +367,20 @@ public class CastController implements IMediaController {
                     });
                 }
 
-                mActivity.supportInvalidateOptionsMenu();
                 for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onCastConnected();
             }
 
             private void onApplicationDisconnected() {
+                if (mActivity != null && mActivity.isDestroyed())
+                    mActivity = null;
+
                 synchronized (mCastSessionLock) {
                     mCastSession = null;
                 }
                 mPlaybackLocation = PlaybackLocation.Local;
                 mServer.stop();
                 Log.i("Mucify", "Stopping Cast server");
-                mActivity.supportInvalidateOptionsMenu();
 
                 // Playback is paused when cast ends
                 for (MediaControllerActivity.Callback c : mActivity.getCallbacks()) {
@@ -395,7 +399,7 @@ public class CastController implements IMediaController {
             c.onStart();
 
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
-        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - 5;
+        int delay = mPlayback.getCurrentSong().getEndTimeUninitialized() - getCurrentPosition() - SongStopThreshold;
         Log.d("Mucify.Cast", "Posting cast handler with delay ms" + delay);
         mPlaybackUpdateHandler.postDelayed(mPlaybackUpdateRunnable, delay);
         Util.logGlobal("CastController.onStart ms" + delay);
@@ -489,21 +493,32 @@ public class CastController implements IMediaController {
             Log.i("Mucify.CastWebServer", "Serve: " + session.getUri());
             String uri = session.getUri();
 
-            if (uri.equals("/audio")) {
-                FileInputStream fis = null;
-                try {
-                    fis = new FileInputStream(mPlayback.getCurrentSong().getSongPath());
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
+            // MY_TODO: Option to enable/disable the adding of one second to every playback when casting
+            switch (uri) {
+                case "/audio":
+                    FileInputStream fis = null;
+                    try {
+                        fis = new FileInputStream(mPlayback.getCurrentSong().getSongPath());
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
 
-                return newChunkedResponse(Response.Status.OK, mExtensionMimeType.get(FileManager.getFileExtension(mPlayback.getCurrentSong().getSongPath().getPath())), fis);
-            } else if (uri.equals("/image_high")) {
-                Bitmap imageData = mPlayback.getCurrentSong().getImage();
-                return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 100));
-            } else if (uri.equals("/image_low")) {
-                Bitmap imageData = mPlayback.getCurrentSong().getImage();
-                return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 25));
+                    byte[] bytes = new byte[(int) mPlayback.getCurrentSong().getSongPath().length()];
+                    try {
+                        fis.read(bytes);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    return newChunkedResponse(Response.Status.OK, mExtensionMimeType.get(FileManager.getFileExtension(mPlayback.getCurrentSong().getSongPath().getPath())), new ByteArrayInputStream(bytes));
+                case "/image_high": {
+                    Bitmap imageData = mPlayback.getCurrentSong().getImage();
+                    return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 100));
+                }
+                case "/image_low": {
+                    Bitmap imageData = mPlayback.getCurrentSong().getImage();
+                    return newFixedLengthResponse(Response.Status.OK, "image/png", bitmapToString(imageData, 25));
+                }
             }
 
             return null;
