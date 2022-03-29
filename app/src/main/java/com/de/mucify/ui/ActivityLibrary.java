@@ -40,7 +40,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
-public class ActivityLibrary extends MediaControllerActivity implements AdapterEventListener {
+public class ActivityLibrary extends MediaControllerActivity {
     private ArrayList<Playback> mHistory = new ArrayList<>();
     private UserDataCallback mUserDataCallback = new UserDataCallback();
     private RecyclerView mRvHistory;
@@ -138,7 +138,7 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
 
         UserData.addCallback(mUserDataCallback);
         PlaybackListItemAdapter adapter = new PlaybackListItemAdapter(this, mHistory);
-        adapter.setListener(this);
+        adapter.setListener(new AdapterEventListener());
         mRvHistory.setAdapter(adapter);
         mUserDataCallback.onPlaybackInfoChanged();
     }
@@ -148,29 +148,33 @@ public class ActivityLibrary extends MediaControllerActivity implements AdapterE
         UserData.removeCallback(mUserDataCallback);
     }
 
-    /**
-     * Called whenever we click on a RecyclerView Song item. Starts playing the clicked audio
-     */
-    @Override
-    public void onClick(ViewHolderSong holder) {
-        startAudio(mHistory.get(holder.getAdapterPosition()));
+
+    private class AdapterEventListener extends com.de.mucify.ui.adapter.AdapterEventListener {
+        /**
+         * Called whenever we click on a RecyclerView Song item. Starts playing the clicked audio
+         */
+        @Override
+        public void onClick(ViewHolderSong holder) {
+            startAudio(mHistory.get(holder.getAdapterPosition()));
+        }
+
+        /**
+         * Called whenever we click on a RecyclerView Loop item. Starts playing the clicked audio
+         */
+        @Override
+        public void onClick(ViewHolderLoop holder) {
+            startAudio(mHistory.get(holder.getAdapterPosition()));
+        }
+
+        /**
+         * Called whenever we click on a RecyclerView Playlist item. Starts playing the clicked audio
+         */
+        @Override
+        public void onClick(ViewHolderPlaylist holder) {
+            startAudio(mHistory.get(holder.getAdapterPosition()));
+        }
     }
 
-    /**
-     * Called whenever we click on a RecyclerView Loop item. Starts playing the clicked audio
-     */
-    @Override
-    public void onClick(ViewHolderLoop holder) {
-        startAudio(mHistory.get(holder.getAdapterPosition()));
-    }
-
-    /**
-     * Called whenever we click on a RecyclerView Playlist item. Starts playing the clicked audio
-     */
-    @Override
-    public void onClick(ViewHolderPlaylist holder) {
-        startAudio(mHistory.get(holder.getAdapterPosition()));
-    }
 
     /**
      * Starts the audio and calls startMinimizedPlayer to start the FragmentMinimizedPlayer.

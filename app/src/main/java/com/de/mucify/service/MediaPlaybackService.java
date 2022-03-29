@@ -432,6 +432,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     mPlayback.reset();
 
                 Util.logGlobal("Loading media with id " + mediaId);
+                // MY_TODO: Error, mPlayback null after next line
                 mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
                 mPlayback.create(MediaPlaybackService.this);
             }

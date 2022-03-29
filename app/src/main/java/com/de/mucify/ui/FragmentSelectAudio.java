@@ -3,6 +3,7 @@ package com.de.mucify.ui;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
 /**
  * Fragment for displaying a list of all available songs, loops, or playlists.
  */
-public class FragmentSelectAudio extends Fragment implements AdapterEventListener {
+public class FragmentSelectAudio extends Fragment {
 
     ArrayList<Playback> mPlaybacks = new ArrayList<>();
     private final AudioType mAudioType;
@@ -64,27 +65,35 @@ public class FragmentSelectAudio extends Fragment implements AdapterEventListene
         }
 
         PlaybackListItemAdapter adapter = new PlaybackListItemAdapter(getContext(), mPlaybacks);
-        adapter.setListener(this);
+        adapter.setListener(new AdapterEventListener());
         rvFiles.setAdapter(adapter);
     }
 
-    @Override
-    public void onClick(ViewHolderSong holder) {
-        Song s = (Song) mPlaybacks.get(holder.getAdapterPosition());
-        startPlayingActivity(s.getMediaId());
+
+    private class AdapterEventListener extends com.de.mucify.ui.adapter.AdapterEventListener {
+        @Override
+        public void onClick(ViewHolderSong holder) {
+            Song s = (Song) mPlaybacks.get(holder.getAdapterPosition());
+            startPlayingActivity(s.getMediaId());
+        }
+
+        @Override
+        public void onClick(ViewHolderLoop holder) {
+            Song s = (Song) mPlaybacks.get(holder.getAdapterPosition());
+            startPlayingActivity(s.getMediaId());
+        }
+
+        @Override
+        public void onClick(ViewHolderPlaylist holder) {
+            Playlist s = (Playlist) mPlaybacks.get(holder.getAdapterPosition());
+            if (s.getSongs().size() > 0)
+                startPlayingPlaylistActivity(s.getMediaId());
+            else
+                // MY_TODO: Better error message
+                Toast.makeText(getActivity(), "Playlist doesn't contain any songs", Toast.LENGTH_LONG).show();
+        }
     }
 
-    @Override
-    public void onClick(ViewHolderLoop holder) {
-        Song s = (Song) mPlaybacks.get(holder.getAdapterPosition());
-        startPlayingActivity(s.getMediaId());
-    }
-
-    @Override
-    public void onClick(ViewHolderPlaylist holder) {
-        Playlist s = (Playlist) mPlaybacks.get(holder.getAdapterPosition());
-        startPlayingPlaylistActivity(s.getMediaId());
-    }
 
     /**
      * Starts the ActivityPlayer with the specified MediaId

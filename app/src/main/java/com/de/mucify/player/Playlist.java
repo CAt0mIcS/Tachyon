@@ -179,6 +179,10 @@ public class Playlist extends Playback {
         writer.close();
     }
 
+    public static void save(File path) throws IOException {
+        path.createNewFile();
+    }
+
     /**
      * Deletes the playlist file at the path specified in the constructor
      */
@@ -202,6 +206,18 @@ public class Playlist extends Playback {
                 return;
 
         mSongs.add(song);
+    }
+
+    /**
+     * Removes a existing song from the playlist.
+     */
+    public void removeSong(Song song) {
+        for (Song s : mSongs) {
+            if (s.equalsUninitialized(song)) {
+                mSongs.remove(s);
+                return;
+            }
+        }
     }
 
     /**

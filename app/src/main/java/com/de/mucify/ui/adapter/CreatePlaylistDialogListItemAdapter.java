@@ -3,6 +3,7 @@ package com.de.mucify.ui.adapter;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,6 +38,7 @@ public class CreatePlaylistDialogListItemAdapter extends RecyclerView.Adapter<Re
 
         ViewHolderPlaylist viewHolder = (ViewHolderPlaylist) baseHolder;
         viewHolder.TxtName.setText(playlist.getName());
+        viewHolder.ChkAdded.setOnCheckedChangeListener((buttonView, isChecked) -> mCallback.onCheckedChanged(viewHolder, isChecked));
         viewHolder.setListener(mCallback);
     }
 

@@ -12,9 +12,11 @@ import android.widget.EditText;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.de.mucify.FileManager;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
+import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
@@ -26,8 +28,9 @@ import com.de.mucify.ui.adapter.ViewHolderPlaylist;
 import com.de.mucify.ui.adapter.ViewHolderSong;
 
 import java.io.IOException;
+import java.util.Arrays;
 
-public class DialogAddToPlaylist extends Dialog implements AdapterEventListener {
+public class DialogAddToPlaylist extends Dialog {
     private RecyclerView mRvPlaylists;
     private EditText mTxtPlaylistName;
     private Button mBtnCreatePlaylist;
@@ -56,7 +59,7 @@ public class DialogAddToPlaylist extends Dialog implements AdapterEventListener 
             mRvPlaylists.setLayoutManager(new LinearLayoutManager(getContext()));
 
             CreatePlaylistDialogListItemAdapter adapter = new CreatePlaylistDialogListItemAdapter(getContext(), MediaLibrary.AvailablePlaylists);
-            adapter.setListener(this);
+            adapter.setListener(new AdapterEventListener());
             mRvPlaylists.setAdapter(adapter);
         }
 
@@ -68,27 +71,41 @@ public class DialogAddToPlaylist extends Dialog implements AdapterEventListener 
         });
 
         mBtnCreatePlaylist.setOnClickListener(v -> {
-
+            String name = mTxtPlaylistName.getText().toString();
+            try {
+                Playlist.save(FileManager.playlistNameToFile(name));
+            } catch (IOException e) {
+                // MY_TODO: Error handling
+                e.printStackTrace();
+                Util.logGlobal(Arrays.toString(e.getStackTrace()));
+            }
+            MediaLibrary.loadLoopsAndPlaylists(getContext(), () -> {
+            });
+            dismiss();
         });
     }
 
-    @Override
-    public void onClick(ViewHolderSong holder) {
-    }
 
-    @Override
-    public void onClick(ViewHolderLoop holder) {
-    }
+    private class AdapterEventListener extends com.de.mucify.ui.adapter.AdapterEventListener {
+        @Override
+        public void onClick(ViewHolderPlaylist holder) {
 
-    @Override
-    public void onClick(ViewHolderPlaylist holder) {
-        Playlist playlist = MediaLibrary.AvailablePlaylists.get(holder.getAdapterPosition());
-        playlist.addSong(mSongToAdd);
-        try {
-            playlist.save();
-        } catch (IOException e) {
-            e.printStackTrace();
-            // MY_TODO: Error handling
+        }
+
+        @Override
+        public void onCheckedChanged(ViewHolderPlaylist holder, boolean checked) {
+            Playlist playlist = MediaLibrary.AvailablePlaylists.get(holder.getAdapterPosition());
+            if (checked)
+                playlist.addSong(mSongToAdd);
+            else
+                playlist.removeSong(mSongToAdd);
+            try {
+                playlist.save();
+            } catch (IOException e) {
+                e.printStackTrace();
+                // MY_TODO: Error handling
+                Util.logGlobal(Arrays.toString(e.getStackTrace()));
+            }
         }
     }
 }

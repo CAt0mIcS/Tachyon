@@ -40,6 +40,7 @@ public class MediaLibrary {
             DataDirectory.mkdirs();
     }
 
+    // MY_TODO: Sometimes playlists (maybe loops too) loaded twice
     public static void loadLoopsAndPlaylists(Context context, ThreadFinishedCallback onFinished) {
         new Thread(() -> {
             AvailablePlaylists.clear();
