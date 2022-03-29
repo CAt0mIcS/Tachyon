@@ -292,6 +292,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     .putString(MetadataKey.Title, mPlayback.getTitle())
                     .putString(MetadataKey.Artist, mPlayback.getSubtitle())
                     .putString(MetadataKey.MediaId, mPlayback.getMediaId())
+                    .putString(MetadataKey.SongInPlaylistMediaId, mPlayback.getCurrentSong().getMediaId())
                     .putLong(MetadataKey.Duration, mPlayback.getDuration())
                     .putLong(MetadataKey.StartPos, mPlayback.getCurrentSong().getStartTime())
                     .putLong(MetadataKey.EndPos, mPlayback.getCurrentSong().getEndTime())
@@ -430,6 +431,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 if (mPlayback != null && mPlayback.isCreated())
                     mPlayback.reset();
 
+                Util.logGlobal("Loading media with id " + mediaId);
                 mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
                 mPlayback.create(MediaPlaybackService.this);
             }

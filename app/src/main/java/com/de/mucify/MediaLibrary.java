@@ -56,6 +56,7 @@ public class MediaLibrary {
         new Thread(() -> {
             AvailableSongs.clear();
             loadSongs(MusicDirectory, context);
+            // MY_TODO: ConcurrentModificationException thrown here
             Collections.sort(AvailableSongs, mSongComparator);
             onFinished.onFinished();
         }).start();

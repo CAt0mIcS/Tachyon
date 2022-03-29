@@ -11,6 +11,7 @@
         <entry key="..\:/Users/David/Documents/Mucify Project Folder/Mucify/app/src/main/res/menu/playlists_bottom_app_bar.xml" value="0.5541666666666667" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/arrow_back.xml" value="0.3015" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/arrow_forward_ios.xml" value="0.207" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/ic_baseline_skip_previous_appbar_playlist.xml" value="0.1675" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/playlist_add.xml" value="0.2835" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/refresh.xml" value="0.3015" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/drawable/settings.xml" value="0.2125" />
@@ -18,6 +19,7 @@
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_library.xml" value="0.25" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_main.xml" value="0.19655521783181357" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_player_layout.xml" value="0.25" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_playlist_player.xml" value="0.1" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_playlist_player_layout.xml" value="0.228125" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_search.xml" value="0.13880445795339413" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/activity_settings.xml" value="0.28020833333333334" />
@@ -28,6 +30,7 @@
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_loop_item_layout.xml" value="0.23645833333333333" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_playlist_create_playlist_item_layout.xml" value="0.4041666666666667" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_playlist_item_layout.xml" value="0.23645833333333333" />
+        <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_playlist_player_item.xml" value="0.3496376811594203" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_save_create_playlist_dialog_item.xml" value="0.2791666666666667" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/layout/recycler_song_item_layout.xml" value="0.23645833333333333" />
         <entry key="..\:/dev/Java/Projects/Mucify/app/src/main/res/menu/bottom_navigation_view.xml" value="0.23645833333333333" />

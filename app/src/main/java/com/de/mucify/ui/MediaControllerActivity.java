@@ -106,6 +106,22 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
     }
 
     @Override
+    public void next() {
+        if (mCastController.isCasting())
+            mCastController.next();
+        else
+            mBrowserController.next();
+    }
+
+    @Override
+    public void previous() {
+        if (mCastController.isCasting())
+            mCastController.previous();
+        else
+            mBrowserController.previous();
+    }
+
+    @Override
     public boolean isPlaying() {
         if (mCastController.isCasting())
             return mCastController.isPlaying();
@@ -230,6 +246,9 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         }
 
         public void onCastDisconnected() {
+        }
+
+        public void onPlaylistSongChanged(String mediaId) {
         }
     }
 }

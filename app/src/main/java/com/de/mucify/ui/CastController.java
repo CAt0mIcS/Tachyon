@@ -134,6 +134,16 @@ public class CastController implements IMediaController {
     }
 
     @Override
+    public void next() {
+
+    }
+
+    @Override
+    public void previous() {
+
+    }
+
+    @Override
     public boolean isPlaying() {
         synchronized (mCastSessionLock) {
             return mCastSession.getRemoteMediaClient().isPlaying();

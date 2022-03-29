@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
 import com.de.mucify.Util;
@@ -66,8 +67,13 @@ public class FragmentMinimizedPlayer extends Fragment {
 
         // Clicking on minimized player should open the large player
         view.setOnClickListener(v -> {
-            Intent i = new Intent(getActivity(), ActivityPlayer.class);
-            i.putExtra("MediaId", getArguments().getString("MediaId"));
+            Intent i;
+            String mediaId = getArguments().getString("MediaId");
+            if (MediaLibrary.isPlaylistMediaId(mediaId))
+                i = new Intent(getActivity(), ActivityPlaylistPlayer.class);
+            else
+                i = new Intent(getActivity(), ActivityPlayer.class);
+            i.putExtra("MediaId", mediaId);
 
             // Player only needs title and artist if the Playback hasn't been started yet
             if (!mMediaController.isCreated()) {

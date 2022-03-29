@@ -1,74 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    >
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <ImageView
-        android:id="@+id/playlist_image"
+        android:id="@+id/album_art"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         android:layout_marginStart="20dp"
         android:layout_marginTop="20dp"
+        android:contentDescription="@string/album_art"
         android:paddingStart="16dp"
         android:paddingTop="16dp"
-        />
+        android:paddingEnd="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/playlist_title"
+        android:id="@+id/txtPlaylistTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="@string/playlist_title"
+        android:layout_marginTop="16dp"
+        android:text="Playlist title here"
         android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintLeft_toRightOf="@id/playlist_image"
-        app:layout_constraintTop_toTopOf="@id/playlist_image"
-        android:layout_marginTop="16dp"/>
+        app:layout_constraintLeft_toRightOf="@id/album_art"
+        app:layout_constraintTop_toTopOf="@id/album_art" />
 
     <TextView
-        android:id="@+id/song_count"
+        android:id="@+id/txtSongCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintLeft_toLeftOf="@id/playlist_title"
-        app:layout_constraintTop_toBottomOf="@id/playlist_title"
-        app:layout_constraintBottom_toBottomOf="@id/playlist_image"
-        android:text="@string/playlist_songCount"
-        android:textStyle="bold"/>
+        android:text="0 Songs"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/album_art"
+        app:layout_constraintLeft_toLeftOf="@id/txtPlaylistTitle"
+        app:layout_constraintTop_toBottomOf="@id/txtPlaylistTitle" />
 
     <TextView
+        android:id="@+id/txtTotalPlaylistLength"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintLeft_toRightOf="@id/song_count"
-        app:layout_constraintTop_toTopOf="@id/song_count"
-        app:layout_constraintBottom_toBottomOf="@id/song_count"
-        android:text="@string/playlist_totalLength"
-        android:layout_marginStart="16dp"/>
+        android:layout_marginStart="16dp"
+        android:text="playlist total length"
+        app:layout_constraintBottom_toBottomOf="@id/txtSongCount"
+        app:layout_constraintLeft_toRightOf="@id/txtSongCount"
+        app:layout_constraintTop_toTopOf="@id/txtSongCount" />
 
     <com.google.android.material.divider.MaterialDivider
-        android:id="@+id/playlist_divider"
+        android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/playlist_image"
         android:layout_marginTop="16dp"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
         app:dividerThickness="2dp"
-        />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/album_art" />
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvPlaylistItems"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/playlist_divider"
+        android:layout_marginTop="16dp"
+        android:nestedScrollingEnabled="false"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        android:nestedScrollingEnabled="false"
-        android:layout_marginTop="16dp"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"/>
+        app:layout_constraintTop_toBottomOf="@id/divider" />
 
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -76,76 +77,76 @@
         android:layout_height="match_parent">
 
         <com.google.android.material.bottomappbar.BottomAppBar
-            android:id="@+id/playlist_bottomAppBar"
+            android:id="@+id/btmAppBar"
+            style="@style/Widget.MaterialComponents.BottomAppBar.Colored"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            style="@style/Widget.MaterialComponents.BottomAppBar.Colored"
-            >
+            android:layout_gravity="bottom">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingEnd="16dp">
+                android:layout_height="match_parent">
 
 
                 <ImageView
-                    android:id="@+id/appBar_play_pause"
+                    android:id="@+id/btnPlayPause"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:contentDescription="@string/play_pause"
                     android:src="@drawable/play"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
+                    app:layout_constraintTop_toTopOf="parent" />
+
                 <SeekBar
+                    android:id="@+id/sbPos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:layout_constraintTop_toBottomOf="@id/appBar_play_pause"/>
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_baseline_skip_previous_appbar_playlist"
-                    app:layout_constraintRight_toLeftOf="@id/appBar_play_pause"
-                    app:layout_constraintTop_toTopOf="@id/appBar_play_pause"
-                    app:layout_constraintBottom_toBottomOf="@id/appBar_play_pause"
-                    android:layout_marginEnd="8dp"/>
+                    app:layout_constraintTop_toBottomOf="@id/btnPlayPause" />
 
                 <ImageView
+                    android:id="@+id/btnPrevious"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/ic_baseline_skip_next_appbar_playlist"
-                    app:layout_constraintLeft_toRightOf="@id/appBar_play_pause"
-                    app:layout_constraintTop_toTopOf="@id/appBar_play_pause"
-                    app:layout_constraintBottom_toBottomOf="@id/appBar_play_pause"
-                    android:layout_marginStart="8dp"/>
+                    android:layout_marginEnd="8dp"
+                    android:contentDescription="@string/previous"
+                    android:src="@drawable/previous"
+                    app:layout_constraintBottom_toBottomOf="@id/btnPlayPause"
+                    app:layout_constraintRight_toLeftOf="@id/btnPlayPause"
+                    app:layout_constraintTop_toTopOf="@id/btnPlayPause" />
+
+                <ImageView
+                    android:id="@+id/btnNext"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="@string/next"
+                    android:src="@drawable/next"
+                    app:layout_constraintBottom_toBottomOf="@id/btnPlayPause"
+                    app:layout_constraintLeft_toRightOf="@id/btnPlayPause"
+                    app:layout_constraintTop_toTopOf="@id/btnPlayPause" />
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="@id/appBar_play_pause"
-                    android:text="@string/playlist_song_timePassed"
                     style="@style/Theme.Mucify"
-                    android:textStyle="normal"
-                    android:textSize="12sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="16dp"
                     android:paddingEnd="16dp"
-                    android:textColor="@color/white"
-
-                    />
+                    android:text="time / songLength"
+                    android:textSize="12sp"
+                    android:textStyle="normal"
+                    app:layout_constraintBottom_toBottomOf="@id/btnPlayPause"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
+                    android:id="@+id/txtSongTitle"
                     android:layout_width="130dp"
                     android:layout_height="20dp"
-                    android:text="@string/current_song_title"
+                    android:text="song title"
+                    app:layout_constraintBottom_toBottomOf="@id/btnPlayPause"
                     app:layout_constraintLeft_toLeftOf="parent"
-                    app:layout_constraintTop_toTopOf="@id/appBar_play_pause"
-                    app:layout_constraintBottom_toBottomOf="@id/appBar_play_pause"
-                    android:textColor="@color/white"
-
-                    />
-
-
+                    app:layout_constraintTop_toTopOf="@id/btnPlayPause" />
 
 
             </androidx.constraintlayout.widget.ConstraintLayout>

@@ -24,6 +24,18 @@ public interface IMediaController {
     void play(String mediaId);
 
     /**
+     * Starts the next song in either the playlist or the next one in the alphabet after the current one.
+     * Loops back to the start if we're at the end
+     */
+    void next();
+
+    /**
+     * Starts the previous song in either the playlist or the previous one in the alphabet before the current one.
+     * Loops back to the end if we're at the start
+     */
+    void previous();
+
+    /**
      * Checks if the playback is playing. Crashes if the Playback hasn't been started yet.
      */
     boolean isPlaying();

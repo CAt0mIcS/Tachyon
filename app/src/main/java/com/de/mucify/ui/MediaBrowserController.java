@@ -94,6 +94,28 @@ public class MediaBrowserController implements IMediaController {
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromMediaId(mediaId, null);
     }
 
+    /**
+     * Starts the next song in either the playlist or the next one in the alphabet after the current one.
+     * Loops back to the start if we're at the end
+     */
+    @Override
+    public void next() {
+        MediaControllerCompat.getMediaController(mActivity).getTransportControls().skipToNext();
+        for (MediaControllerActivity.Callback c : mCallbacks)
+            c.onStart();
+    }
+
+    /**
+     * Starts the previous song in either the playlist or the previous one in the alphabet before the current one.
+     * Loops back to the end if we're at the start
+     */
+    @Override
+    public void previous() {
+        MediaControllerCompat.getMediaController(mActivity).getTransportControls().skipToPrevious();
+        for (MediaControllerActivity.Callback c : mCallbacks)
+            c.onStart();
+    }
+
 
     /**
      * Checks if the playback state is equal to playing. Crashes if the Playback hasn't been started yet.
@@ -268,6 +290,7 @@ public class MediaBrowserController implements IMediaController {
             String newTitle = metadata.getString(MetadataKey.Title);
             String newArtist = metadata.getString(MetadataKey.Artist);
             String newMediaId = metadata.getString(MetadataKey.MediaId);
+            String newSongInPlaylistMediaId = metadata.getString(MetadataKey.SongInPlaylistMediaId);
 
             if (mPreviousMetadata == null || (newTitle != null && !newTitle.equals(mPreviousMetadata.getString(MetadataKey.Title))))
                 for (MediaControllerActivity.Callback c : mCallbacks)
@@ -280,6 +303,10 @@ public class MediaBrowserController implements IMediaController {
             if (mPreviousMetadata == null || (newMediaId != null) && !newMediaId.equals(mPreviousMetadata.getString(MetadataKey.MediaId)))
                 for (MediaControllerActivity.Callback c : mCallbacks)
                     c.onMediaIdChanged(newMediaId);
+
+            if (mPreviousMetadata == null || (newSongInPlaylistMediaId != null) && !newSongInPlaylistMediaId.equals(mPreviousMetadata.getString(MetadataKey.SongInPlaylistMediaId)))
+                for (MediaControllerActivity.Callback c : mCallbacks)
+                    c.onPlaylistSongChanged(newMediaId);
 
             mPreviousMetadata = metadata;
         }
