@@ -1,13 +1,12 @@
 package com.de.mucify.ui.adapter;
 
+import androidx.recyclerview.widget.RecyclerView;
+
 public abstract class AdapterEventListener {
-    public void onClick(ViewHolderSong holder) {
+    public void onClick(RecyclerView.ViewHolder holder, int viewType) {
     }
 
-    public void onClick(ViewHolderLoop holder) {
-    }
-
-    public void onClick(ViewHolderPlaylist holder) {
+    public void onLongClick(RecyclerView.ViewHolder holder, int viewType) {
     }
 
     public void onCheckedChanged(ViewHolderPlaylist holder, boolean checked) {

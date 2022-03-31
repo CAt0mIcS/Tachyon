@@ -29,6 +29,10 @@ public class ViewHolderSong extends RecyclerView.ViewHolder {
     }
 
     public void setListener(AdapterEventListener callback) {
-        ParentLayout.setOnClickListener(v -> callback.onClick(ViewHolderSong.this));
+        ParentLayout.setOnClickListener(v -> callback.onClick(ViewHolderSong.this, PlaybackListItemAdapter.ITEM_TYPE_SONG));
+        ParentLayout.setOnLongClickListener(v -> {
+            callback.onLongClick(ViewHolderSong.this, PlaybackListItemAdapter.ITEM_TYPE_SONG);
+            return true;
+        });
     }
 }

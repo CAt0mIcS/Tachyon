@@ -88,11 +88,6 @@ public class DialogAddToPlaylist extends Dialog {
 
     private class AdapterEventListener extends com.de.mucify.ui.adapter.AdapterEventListener {
         @Override
-        public void onClick(ViewHolderPlaylist holder) {
-
-        }
-
-        @Override
         public void onCheckedChanged(ViewHolderPlaylist holder, boolean checked) {
             Playlist playlist = MediaLibrary.AvailablePlaylists.get(holder.getAdapterPosition());
             if (checked)

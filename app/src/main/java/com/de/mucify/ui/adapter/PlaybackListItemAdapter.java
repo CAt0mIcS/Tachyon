@@ -16,9 +16,9 @@ import java.util.ArrayList;
 
 public class PlaybackListItemAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    public final int ITEM_TYPE_LOOP = 1;
-    public final int ITEM_TYPE_SONG = 2;
-    public final int ITEM_TYPE_PLAYLIST = 3;
+    public static final int ITEM_TYPE_LOOP = 1;
+    public static final int ITEM_TYPE_SONG = 2;
+    public static final int ITEM_TYPE_PLAYLIST = 3;
 
     private final Context mContext;
     private final ArrayList<Playback> mItems;

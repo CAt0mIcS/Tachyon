@@ -273,6 +273,13 @@ public class Song extends Playback {
         return getSongPath();
     }
 
+    /**
+     * Deletes this loop. Throws if the loop path is null
+     */
+    public void deleteLoop() {
+        mLoopFilePath.delete();
+    }
+
     public void setStartTime(int startTime) {
         mStartTime = startTime;
     }

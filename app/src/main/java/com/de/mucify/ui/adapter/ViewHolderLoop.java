@@ -25,6 +25,10 @@ public class ViewHolderLoop extends RecyclerView.ViewHolder {
     }
 
     public void setListener(AdapterEventListener callback) {
-        ParentLayout.setOnClickListener(v -> callback.onClick(ViewHolderLoop.this));
+        ParentLayout.setOnClickListener(v -> callback.onClick(ViewHolderLoop.this, PlaybackListItemAdapter.ITEM_TYPE_LOOP));
+        ParentLayout.setOnLongClickListener(v -> {
+            callback.onLongClick(ViewHolderLoop.this, PlaybackListItemAdapter.ITEM_TYPE_LOOP);
+            return true;
+        });
     }
 }

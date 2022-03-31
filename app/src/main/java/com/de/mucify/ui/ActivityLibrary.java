@@ -151,26 +151,10 @@ public class ActivityLibrary extends MediaControllerActivity {
 
     private class AdapterEventListener extends com.de.mucify.ui.adapter.AdapterEventListener {
         /**
-         * Called whenever we click on a RecyclerView Song item. Starts playing the clicked audio
+         * Called whenever we click on a RecyclerView item. Starts playing the clicked audio
          */
         @Override
-        public void onClick(ViewHolderSong holder) {
-            startAudio(mHistory.get(holder.getAdapterPosition()));
-        }
-
-        /**
-         * Called whenever we click on a RecyclerView Loop item. Starts playing the clicked audio
-         */
-        @Override
-        public void onClick(ViewHolderLoop holder) {
-            startAudio(mHistory.get(holder.getAdapterPosition()));
-        }
-
-        /**
-         * Called whenever we click on a RecyclerView Playlist item. Starts playing the clicked audio
-         */
-        @Override
-        public void onClick(ViewHolderPlaylist holder) {
+        public void onClick(RecyclerView.ViewHolder holder, int viewType) {
             startAudio(mHistory.get(holder.getAdapterPosition()));
         }
     }

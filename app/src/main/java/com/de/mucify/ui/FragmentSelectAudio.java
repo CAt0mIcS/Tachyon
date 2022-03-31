@@ -34,6 +34,7 @@ public class FragmentSelectAudio extends Fragment {
 
     ArrayList<Playback> mPlaybacks = new ArrayList<>();
     private AudioType mAudioType;
+    private RecyclerView mRvFiles;
 
     public FragmentSelectAudio() {
     }
@@ -53,8 +54,8 @@ public class FragmentSelectAudio extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        RecyclerView rvFiles = view.findViewById(R.id.rvFiles);
-        rvFiles.setLayoutManager(new LinearLayoutManager(getContext()));
+        mRvFiles = view.findViewById(R.id.rvFiles);
+        mRvFiles.setLayoutManager(new LinearLayoutManager(getContext()));
 
         switch (mAudioType) {
             case Song:
@@ -72,31 +73,34 @@ public class FragmentSelectAudio extends Fragment {
 
         PlaybackListItemAdapter adapter = new PlaybackListItemAdapter(getContext(), mPlaybacks);
         adapter.setListener(new AdapterEventListener());
-        rvFiles.setAdapter(adapter);
+        mRvFiles.setAdapter(adapter);
     }
 
 
     private class AdapterEventListener extends com.de.mucify.ui.adapter.AdapterEventListener {
         @Override
-        public void onClick(ViewHolderSong holder) {
-            Song s = (Song) mPlaybacks.get(holder.getAdapterPosition());
-            startPlayingActivity(s.getMediaId());
+        public void onClick(RecyclerView.ViewHolder holder, int viewType) {
+            switch (viewType) {
+                case PlaybackListItemAdapter.ITEM_TYPE_SONG:
+                case PlaybackListItemAdapter.ITEM_TYPE_LOOP:
+                    startPlayingActivity(mPlaybacks.get(holder.getAdapterPosition()).getMediaId());
+                    break;
+                case PlaybackListItemAdapter.ITEM_TYPE_PLAYLIST:
+                    Playlist s = (Playlist) mPlaybacks.get(holder.getAdapterPosition());
+                    if (s.getSongs().size() > 0)
+                        startPlayingPlaylistActivity(s.getMediaId());
+                    else
+                        // MY_TODO: Better error message
+                        Toast.makeText(getActivity(), "Playlist doesn't contain any songs", Toast.LENGTH_LONG).show();
+            }
         }
 
         @Override
-        public void onClick(ViewHolderLoop holder) {
-            Song s = (Song) mPlaybacks.get(holder.getAdapterPosition());
-            startPlayingActivity(s.getMediaId());
-        }
-
-        @Override
-        public void onClick(ViewHolderPlaylist holder) {
-            Playlist s = (Playlist) mPlaybacks.get(holder.getAdapterPosition());
-            if (s.getSongs().size() > 0)
-                startPlayingPlaylistActivity(s.getMediaId());
-            else
-                // MY_TODO: Better error message
-                Toast.makeText(getActivity(), "Playlist doesn't contain any songs", Toast.LENGTH_LONG).show();
+        public void onLongClick(RecyclerView.ViewHolder holder, int viewType) {
+            if (viewType == PlaybackListItemAdapter.ITEM_TYPE_LOOP)
+                ((Song) mPlaybacks.get(holder.getAdapterPosition())).deleteLoop();
+            else if (viewType == PlaybackListItemAdapter.ITEM_TYPE_PLAYLIST)
+                ((Playlist) mPlaybacks.get(holder.getAdapterPosition())).delete();
         }
     }
 

@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
+import com.de.mucify.player.Playback;
 
 public class ViewHolderPlaylist extends RecyclerView.ViewHolder {
     public final LinearLayout ParentLayout;
@@ -26,6 +27,10 @@ public class ViewHolderPlaylist extends RecyclerView.ViewHolder {
     }
 
     public void setListener(AdapterEventListener callback) {
-        ParentLayout.setOnClickListener(v -> callback.onClick(ViewHolderPlaylist.this));
+        ParentLayout.setOnClickListener(v -> callback.onClick(ViewHolderPlaylist.this, PlaybackListItemAdapter.ITEM_TYPE_PLAYLIST));
+        ParentLayout.setOnLongClickListener(v -> {
+            callback.onLongClick(ViewHolderPlaylist.this, PlaybackListItemAdapter.ITEM_TYPE_PLAYLIST);
+            return true;
+        });
     }
 }
