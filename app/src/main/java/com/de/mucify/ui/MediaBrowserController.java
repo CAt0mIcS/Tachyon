@@ -1,15 +1,14 @@
 package com.de.mucify.ui;
 
-import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.telecom.Call;
 import android.util.Log;
 
 import com.de.mucify.Util;
@@ -66,7 +65,7 @@ public class MediaBrowserController implements IMediaController {
      */
     @Override
     public void unpause() {
-        MediaControllerCompat.getMediaController(mActivity).getTransportControls().play();
+        play();
     }
 
     /**
@@ -86,12 +85,19 @@ public class MediaBrowserController implements IMediaController {
     }
 
     /**
-     * Plays new audio with specified MediaId. Afterwards all operations like seekTo, pause, isPlaying, ...
-     * are safe to be called.
+     * Sets the current playback to the media id specified. Doesn't start playback
      */
     @Override
-    public void play(String mediaId) {
+    public void setMediaId(String mediaId) {
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().playFromMediaId(mediaId, null);
+    }
+
+    /**
+     * Starts playback, requires that media id was already set
+     */
+    @Override
+    public void play() {
+        MediaControllerCompat.getMediaController(mActivity).getTransportControls().play();
     }
 
     /**
@@ -194,6 +200,47 @@ public class MediaBrowserController implements IMediaController {
     @Override
     public int getEndTime() {
         return (int) getMetadata().getLong(MetadataKey.EndPos);
+    }
+
+    /**
+     * @return the image associated with the album of the current playing playback
+     */
+    @Override
+    public Bitmap getImage() {
+        return getMetadata().getBitmap(MetadataKey.AlbumArt);
+    }
+
+    /**
+     * @return the name of the currently playing playlist, or null if no playlist is playing
+     */
+    @Override
+    public String getPlaylistName() {
+        return getMetadata().getString(MetadataKey.PlaylistName);
+    }
+
+    /**
+     * @return the media id of the currently playing song in the current playlist, or null if no playlist is playing
+     */
+    @Override
+    public String getCurrentSongMediaId() {
+        return getMetadata().getString(MetadataKey.SongInPlaylistMediaId);
+    }
+
+    /**
+     * @return the number of songs in the playlist, or null if no playlist is playing
+     */
+    @Override
+    public int getSongCountInPlaylist() {
+        return (int) getMetadata().getLong(MetadataKey.SongCountInPlaylist);
+    }
+
+    /**
+     * @return the total duration of all songs in the playlist in milliseconds, or null if no
+     * playlist is playing
+     */
+    @Override
+    public int getTotalPlaylistLength() {
+        return (int) getMetadata().getLong(MetadataKey.TotalPlaylistLength);
     }
 
     /**

@@ -1,8 +1,8 @@
 package com.de.mucify.ui;
 
+import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.view.KeyEvent;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -97,12 +97,17 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
     }
 
     @Override
-    public void play(String mediaId) {
-        mCastController.setPlayback(mediaId);
+    public void setMediaId(String mediaId) {
+        mCastController.setMediaId(mediaId);
+        mBrowserController.setMediaId(mediaId);
+    }
+
+    @Override
+    public void play() {
         if (mCastController.isCasting())
-            mCastController.play(mediaId);
+            mCastController.play();
         else
-            mBrowserController.play(mediaId);
+            mBrowserController.play();
     }
 
     @Override
@@ -178,6 +183,41 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         if (mCastController.isCasting())
             return mCastController.getEndTime();
         return mBrowserController.getEndTime();
+    }
+
+    @Override
+    public Bitmap getImage() {
+        if (mCastController.isCasting())
+            return mCastController.getImage();
+        return mBrowserController.getImage();
+    }
+
+    @Override
+    public String getPlaylistName() {
+        if (mCastController.isCasting())
+            return mCastController.getPlaylistName();
+        return mBrowserController.getPlaylistName();
+    }
+
+    @Override
+    public String getCurrentSongMediaId() {
+        if (mCastController.isCasting())
+            return mCastController.getCurrentSongMediaId();
+        return mBrowserController.getCurrentSongMediaId();
+    }
+
+    @Override
+    public int getSongCountInPlaylist() {
+        if (mCastController.isCasting())
+            return mCastController.getSongCountInPlaylist();
+        return mBrowserController.getSongCountInPlaylist();
+    }
+
+    @Override
+    public int getTotalPlaylistLength() {
+        if (mCastController.isCasting())
+            return mCastController.getTotalPlaylistLength();
+        return mBrowserController.getTotalPlaylistLength();
     }
 
     @Override

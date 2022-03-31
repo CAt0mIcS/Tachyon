@@ -15,7 +15,6 @@ import androidx.appcompat.widget.Toolbar;
 import com.de.mucify.FileManager;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
-import com.de.mucify.UserData;
 import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 import com.google.android.gms.cast.MediaInfo;
@@ -35,7 +34,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import fi.iki.elonen.NanoHTTPD;
 
@@ -120,17 +118,24 @@ public class CastController implements IMediaController {
             c.onSeekTo(millis);
     }
 
+    /**
+     * Takes the playback and stores it. If the user then wants to cast to a device, we'll need to
+     * upload the local device file to a local server and have the receiver download it from there.
+     * (https://stackoverflow.com/questions/32049851/it-is-posible-to-cast-or-stream-android-chromecast-a-local-file)
+     */
+    @Override
+    public void setMediaId(String mediaId) {
+        mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
+    }
 
     @Override
-    public void play(String mediaId) {
-        mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
-
+    public void play() {
         synchronized (mCastSessionLock) {
             loadRemoteMedia(mCastSession.getRemoteMediaClient(), mPlayback.isCreated() ? mPlayback.getCurrentPosition() : 0, true);
         }
 
         onStart();
-        Util.logGlobal("CastController.play " + mediaId);
+        Util.logGlobal("CastController.play " + mPlayback.getMediaId());
     }
 
     @Override
@@ -190,6 +195,31 @@ public class CastController implements IMediaController {
     }
 
     @Override
+    public Bitmap getImage() {
+        return null;
+    }
+
+    @Override
+    public String getPlaylistName() {
+        return null;
+    }
+
+    @Override
+    public String getCurrentSongMediaId() {
+        return null;
+    }
+
+    @Override
+    public int getSongCountInPlaylist() {
+        return 0;
+    }
+
+    @Override
+    public int getTotalPlaylistLength() {
+        return 0;
+    }
+
+    @Override
     public int getCurrentPosition() {
         synchronized (mCastSessionLock) {
             return (int) mCastSession.getRemoteMediaClient().getApproximateStreamPosition();
@@ -241,15 +271,6 @@ public class CastController implements IMediaController {
             Intent i = new Intent(activity, ActivitySettings.class);
             activity.startActivity(i);
         });
-    }
-
-    /**
-     * Takes the playback and stores it. If the user then wants to cast to a device, we'll need to
-     * upload the local device file to a local server and have the receiver download it from there.
-     * (https://stackoverflow.com/questions/32049851/it-is-posible-to-cast-or-stream-android-chromecast-a-local-file)
-     */
-    public void setPlayback(String mediaId) {
-        mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
     }
 
     /**
@@ -355,7 +376,7 @@ public class CastController implements IMediaController {
                     c.onCastConnected();
 
                 if (mPlayback != null)
-                    play(mPlayback.getMediaId());
+                    play();
             }
 
             private void onApplicationDisconnected() {
@@ -471,7 +492,7 @@ public class CastController implements IMediaController {
                 Runnable runnable = () -> {
                     if (getRemainingPlaybackTime() - SongStopThreshold <= SongStopThreshold) {
                         Util.logGlobal("Restarting casting playback ms" + getCurrentPosition());
-                        play(mPlayback.getMediaId());
+                        play();
                     }
                 };
 

@@ -2,7 +2,6 @@ package com.de.mucify.ui;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -10,16 +9,15 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
 import com.de.mucify.Util;
+import com.de.mucify.player.Song;
 import com.de.mucify.ui.trivial.DialogAddToPlaylist;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView;
 
 public class ActivityPlayer extends MediaControllerActivity {
     private SeekBar mSbProgress;
@@ -62,9 +60,8 @@ public class ActivityPlayer extends MediaControllerActivity {
 
     @Override
     public void onConnected() {
-        if (!getIntent().getBooleanExtra("IsPlaying", false) &&
-                getIntent().getStringExtra("MediaId") != null)
-            play(getIntent().getStringExtra("MediaId"));
+        if (getIntent().getBooleanExtra("StartPlaying", false))
+            play();
 
         mPlaybackSeekPos = getIntent().getIntExtra("SeekPos", 0);
 
@@ -82,8 +79,8 @@ public class ActivityPlayer extends MediaControllerActivity {
 
         ((BottomNavigationView) findViewById(R.id.btmNavPlayer)).setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.btmNavAddToPlaylist)
-                new DialogAddToPlaylist(MediaLibrary.getPlaybackFromMediaId(
-                        getIntent().getStringExtra("MediaId")).getCurrentSong(), ActivityPlayer.this).show();
+                new DialogAddToPlaylist((Song) MediaLibrary.getPlaybackFromMediaId(
+                        getCurrentSongMediaId()), ActivityPlayer.this).show();
             else if (item.getItemId() == R.id.btmNavSaveLoop)
                 displaySaveLoopDialog();
 
@@ -183,11 +180,7 @@ public class ActivityPlayer extends MediaControllerActivity {
         });
 
         mBtnPlayPause.setOnClickListener(v -> {
-            if (!isCreated()) {
-                play(getIntent().getStringExtra("MediaId"));
-                if (mPlaybackSeekPos != 0)
-                    seekTo(mPlaybackSeekPos);
-            } else if (isPaused())
+            if (isPaused())
                 unpause();
             else
                 pause();

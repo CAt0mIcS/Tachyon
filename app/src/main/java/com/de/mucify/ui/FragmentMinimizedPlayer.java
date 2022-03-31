@@ -34,32 +34,26 @@ public class FragmentMinimizedPlayer extends Fragment {
         super.onCreate(savedInstanceState);
         Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
         mMediaController = (MediaControllerActivity) getActivity();
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
 
         if (getArguments() == null)
             throw new UnsupportedOperationException("Argument for FragmentMinimizedPlayer must be set");
         if (mMediaController == null)
             throw new UnsupportedOperationException("FragmentMinimizedPlayer must've been started with a MediaBrowserController");
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
         mMediaController.addCallback(mPlaybackCallback);
 
         mTxtTitle = view.findViewById(R.id.txtTitle);
         mTxtArtist = view.findViewById(R.id.txtArtist);
-        mTxtTitle.setText(getArguments().getString("Title"));
-        mTxtArtist.setText(getArguments().getString("Subtitle"));
+        mTxtTitle.setText(mMediaController.getSongTitle());
+        mTxtArtist.setText(mMediaController.getSongArtist());
 
         mPlayPause = view.findViewById(R.id.btnPlayPause);
         mPlayPause.setOnClickListener(v -> {
-            if (!mMediaController.isCreated()) {
-                mMediaController.play(getArguments().getString("MediaId"));
-                if (UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).PlaybackPos != 0) {
-                    mMediaController.seekTo(UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).PlaybackPos);
-                }
-
-            } else if (mMediaController.isPaused())
+            if (mMediaController.isPaused())
                 mMediaController.unpause();
             else
                 mMediaController.pause();
@@ -68,26 +62,20 @@ public class FragmentMinimizedPlayer extends Fragment {
         // Clicking on minimized player should open the large player
         view.setOnClickListener(v -> {
             Intent i;
-            String mediaId = getArguments().getString("MediaId");
-            if (MediaLibrary.isPlaylistMediaId(mediaId))
+            if (MediaLibrary.isPlaylistMediaId(getArguments().getString("MediaId")))
                 i = new Intent(getActivity(), ActivityPlaylistPlayer.class);
             else
                 i = new Intent(getActivity(), ActivityPlayer.class);
-            i.putExtra("MediaId", mediaId);
 
-            // Player only needs title and artist if the Playback hasn't been started yet
-            if (!mMediaController.isCreated()) {
-                i.putExtra("Title", mTxtTitle.getText().toString());
-                i.putExtra("Subtitle", mTxtArtist.getText().toString());
-            }
+            // Don't automatically start playing if the minimized player was clicked
+            i.putExtra("StartPlaying", false);
 
-            i.putExtra("IsPlaying", true);
             if (UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).PlaybackPos != 0)
                 i.putExtra("SeekPos", UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).PlaybackPos);
             startActivity(i);
         });
 
-        if (!mMediaController.isCreated() || mMediaController.isPaused())
+        if (mMediaController.isPaused())
             mPlaybackCallback.onPause();
         else
             mPlaybackCallback.onStart();
@@ -119,7 +107,7 @@ public class FragmentMinimizedPlayer extends Fragment {
 
         @Override
         public void onCastConnected() {
-            mMediaController.play(getArguments().getString("MediaId"));
+            mMediaController.play();
         }
 
         @Override

@@ -180,7 +180,8 @@ public class ActivityLibrary extends MediaControllerActivity {
      * Starts the audio and calls startMinimizedPlayer to start the FragmentMinimizedPlayer.
      */
     private void startAudio(Playback playback) {
-        play(playback.getMediaId());
+        setMediaId(playback.getMediaId());
+        play();
         startMinimizedPlayer(playback);
     }
 
@@ -188,10 +189,11 @@ public class ActivityLibrary extends MediaControllerActivity {
      * Sets the data that the FragmentMinimizedPlayer needs and adds it to the fragment manager
      */
     private void startMinimizedPlayer(Playback playback) {
+        if (!isCreated())
+            setMediaId(playback.getMediaId());
+
         Bundle bundle = new Bundle();
         bundle.putString("MediaId", playback.getMediaId());
-        bundle.putString("Title", playback.getTitle());
-        bundle.putString("Subtitle", playback.getSubtitle());
 
         FragmentMinimizedPlayer fragmentMinimizedPlayer = new FragmentMinimizedPlayer();
         fragmentMinimizedPlayer.setArguments(bundle);

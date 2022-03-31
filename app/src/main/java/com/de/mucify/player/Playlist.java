@@ -198,6 +198,16 @@ public class Playlist extends Playback {
     }
 
     /**
+     * @return the total length in milliseconds of all songs combined
+     */
+    public int getLength() {
+        int length = 0;
+        for (Song s : mSongs)
+            length += s.isCreated() ? s.getDuration() : s.getDurationUninitialized();
+        return length;
+    }
+
+    /**
      * Adds a new song to the playlist if it doesn't exist yet
      */
     public void addSong(Song song) {

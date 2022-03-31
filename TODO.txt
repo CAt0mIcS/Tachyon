@@ -1,5 +1,6 @@
 Bugs:
 Same playlist appearing twice in FragmentSelectAudio
+Volume 0 --> louder (not very loud) song makes weird noises
 
 
 

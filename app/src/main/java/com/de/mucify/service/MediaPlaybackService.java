@@ -284,21 +284,32 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     }
 
     /**
-     * Rebuilds the metadata for the current Playback.
+     * Rebuilds the metadata for the current Playback. This will be used in the MediaBrowserController
+     * to access the data in the Playback.
      */
     private MediaMetadataCompat getMetadata() {
         synchronized (mPlaybackLock) {
-            return mMetadataBuilder
+            mMetadataBuilder
                     .putString(MetadataKey.Title, mPlayback.getTitle())
                     .putString(MetadataKey.Artist, mPlayback.getSubtitle())
                     .putString(MetadataKey.MediaId, mPlayback.getMediaId())
-                    .putString(MetadataKey.SongInPlaylistMediaId, mPlayback.getCurrentSong().getMediaId())
-                    .putLong(MetadataKey.Duration, mPlayback.getDuration())
+                    .putLong(MetadataKey.Duration, mPlayback.isCreated() ? mPlayback.getDuration() : mPlayback.getCurrentSong().getDurationUninitialized())
                     .putLong(MetadataKey.StartPos, mPlayback.getCurrentSong().getStartTime())
                     .putLong(MetadataKey.EndPos, mPlayback.getCurrentSong().getEndTime())
-                    .putBitmap(MetadataKey.AlbumArt, mPlayback.getCurrentSong().getImage())
-                    .build();
+                    .putBitmap(MetadataKey.AlbumArt, mPlayback.getCurrentSong().getImage());
+
+            if (mPlayback instanceof Playlist) {
+                Playlist playlist = (Playlist) mPlayback;
+                mMetadataBuilder
+                        .putString(MetadataKey.PlaylistName, playlist.getName())
+                        .putLong(MetadataKey.SongCountInPlaylist, playlist.getSongs().size())
+                        .putLong(MetadataKey.TotalPlaylistLength, playlist.getLength())
+                        .putString(MetadataKey.SongInPlaylistMediaId, mPlayback.getCurrentSong().getMediaId());
+
+            }
         }
+
+        return mMetadataBuilder.build();
     }
 
     /**
@@ -306,14 +317,14 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
      */
     private PlaybackStateCompat getState() {
         synchronized (mPlaybackLock) {
-            long actions = (mPlayback.isPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY) |
+            long actions = (mPlayback.isCreated() && mPlayback.isPlaying() ? PlaybackStateCompat.ACTION_PAUSE : PlaybackStateCompat.ACTION_PLAY) |
                     PlaybackStateCompat.ACTION_SEEK_TO | PlaybackStateCompat.ACTION_SKIP_TO_NEXT | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS;
-            int state = mPlayback.isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
+            int state = mPlayback.isCreated() && mPlayback.isPlaying() ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
 
             return mPlaybackStateBuilder
                     .setActions(actions)
                     .setState(state,
-                            mPlayback.getCurrentPosition(),
+                            mPlayback.isCreated() ? mPlayback.getCurrentPosition() : mPlayback.getCurrentSong().getStartTime(),
                             1.0f,
                             SystemClock.elapsedRealtime())
                     .build();
@@ -424,7 +435,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
 
         /**
-         * Resets the old Playback if there was one and starts the new one.
+         * Resets the old Playback if there was one and sets a new one, doesn't create or start the playback
          */
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
@@ -435,9 +446,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 Util.logGlobal("Loading media with id " + mediaId);
                 // MY_TODO: Error, mPlayback null after next line
                 mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
-                mPlayback.create(MediaPlaybackService.this);
             }
-            onPlay();
+
+            // Call listeners on UI side that we have a new playback
+            mMediaSession.setPlaybackState(getState());
+            mMediaSession.setMetadata(getMetadata());
+
             Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onPlayFromMediaId " + mediaId);
         }
 

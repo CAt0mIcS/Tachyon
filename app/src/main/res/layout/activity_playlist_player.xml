@@ -33,7 +33,6 @@
         android:id="@+id/txtSongCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0 Songs"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/album_art"
         app:layout_constraintLeft_toLeftOf="@id/txtPlaylistTitle"
@@ -44,7 +43,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:text="playlist total length"
         app:layout_constraintBottom_toBottomOf="@id/txtSongCount"
         app:layout_constraintLeft_toRightOf="@id/txtSongCount"
         app:layout_constraintTop_toTopOf="@id/txtSongCount" />
@@ -127,12 +125,12 @@
                     app:layout_constraintTop_toTopOf="@id/btnPlayPause" />
 
                 <TextView
+                    android:id="@+id/txtPos"
                     style="@style/Theme.Mucify"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingStart="16dp"
                     android:paddingEnd="16dp"
-                    android:text="time / songLength"
                     android:textSize="12sp"
                     android:textStyle="normal"
                     app:layout_constraintBottom_toBottomOf="@id/btnPlayPause"
@@ -143,7 +141,6 @@
                     android:id="@+id/txtSongTitle"
                     android:layout_width="130dp"
                     android:layout_height="20dp"
-                    android:text="song title"
                     app:layout_constraintBottom_toBottomOf="@id/btnPlayPause"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="@id/btnPlayPause" />

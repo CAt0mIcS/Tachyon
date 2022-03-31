@@ -1,6 +1,8 @@
 package com.de.mucify.ui;
 
 
+import android.graphics.Bitmap;
+
 public interface IMediaController {
     /**
      * Unpauses the paused audio. Expects that the Playback has already been started using start(String)
@@ -18,10 +20,14 @@ public interface IMediaController {
     void seekTo(int millis);
 
     /**
-     * Plays new audio with specified MediaId. Afterwards all operations like seekTo, pause, isPlaying, ...
-     * are safe to be called.
+     * Sets the current playback to the new MediaId. Doesn't start playback jet
      */
-    void play(String mediaId);
+    void setMediaId(String mediaId);
+
+    /**
+     * Starts playing the set playback. setMediaId(String mediaId) must've been called before
+     */
+    void play();
 
     /**
      * Starts the next song in either the playlist or the next one in the alphabet after the current one.
@@ -79,6 +85,32 @@ public interface IMediaController {
      * Gets the end time of the currently playing song. Crashes if the Playback hasn't been started yet.
      */
     int getEndTime();
+
+    /**
+     * @return the image associated with the album of the current playing playback
+     */
+    Bitmap getImage();
+
+    /**
+     * @return the name of the currently playing playlist, or null if no playlist is playing
+     */
+    String getPlaylistName();
+
+    /**
+     * @return media id of the currently playing song in a playlist, or null if no playlist is playing
+     */
+    String getCurrentSongMediaId();
+
+    /**
+     * @return the number of songs in the playlist, or null if no playlist is playing
+     */
+    int getSongCountInPlaylist();
+
+    /**
+     * @return the total duration of all songs in the playlist in milliseconds, or null if no
+     * playlist is playing
+     */
+    int getTotalPlaylistLength();
 
     /**
      * Gets the current position of the currently playing song. Crashes if the Playback hasn't been started yet.

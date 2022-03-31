@@ -1,5 +1,6 @@
 package com.de.mucify.ui;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.ImageView;
@@ -28,6 +29,7 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
     private ImageView mBtnNext;
     private TextView mTxtSongTitle;
     private SeekBar mSbProgress;
+    private TextView mTxtProgress;
 
     private int mPlaybackSeekPos = 0;
     private boolean mIsSeeking = false;
@@ -52,24 +54,15 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         mBtnPrevious = findViewById(R.id.btnPrevious);
         mTxtSongTitle = findViewById(R.id.txtSongTitle);
         mSbProgress = findViewById(R.id.sbPos);
+        mTxtProgress = findViewById(R.id.txtPos);
     }
 
     @Override
     public void onConnected() {
-        if (!getIntent().getBooleanExtra("IsPlaying", false) &&
-                getIntent().getStringExtra("MediaId") != null)
-            play(getIntent().getStringExtra("MediaId"));
+        if (getIntent().getBooleanExtra("StartPlaying", false))
+            play();
 
         mPlaybackSeekPos = getIntent().getIntExtra("SeekPos", 0);
-
-        // MY_TODO: Shouldn't access media library here
-        {
-            Playlist playlist = (Playlist) MediaLibrary.getPlaybackFromMediaId(
-                    getIntent().getStringExtra("MediaId"));
-            mTxtPlaylistTitle.setText(playlist.getName());
-            mTxtSongCount.setText(playlist.getSongs().size() + " " + getString(R.string.songs));
-            mTxtTotalPlaylistLength.setText(calculateTotalPlaylistLength(playlist));
-        }
 
         runOnUiThread(new Runnable() {
             @Override
@@ -97,15 +90,12 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
 
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mTxtProgress.setText(Util.millisecondsToReadableString(progress * UserData.getAudioUpdateInterval()));
             }
         });
 
         mBtnPlayPause.setOnClickListener(v -> {
-            if (!isCreated()) {
-                play(getIntent().getStringExtra("MediaId"));
-                if (mPlaybackSeekPos != 0)
-                    seekTo(mPlaybackSeekPos);
-            } else if (isPaused())
+            if (isPaused())
                 unpause();
             else
                 pause();
@@ -120,7 +110,6 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
             mPlaybackCallback.onPause();
         else
             mPlaybackCallback.onStart();
-        updatePerSongData();
 
         // Call the event handlers once to set all the values to the current song
         if (isCreated()) {
@@ -143,6 +132,12 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         public void onStart() {
             if (mBtnPlayPause != null)
                 mBtnPlayPause.setImageResource(R.drawable.pause);
+
+            updatePerSongData();
+            // Set playlist data here to ensure that MediaPlaybackService.onPlayFromMediaId is called
+            mTxtPlaylistTitle.setText(getPlaylistName());
+            mTxtSongCount.setText(getSongCountInPlaylist() + " " + getString(R.string.songs));
+            mTxtTotalPlaylistLength.setText(Util.millisecondsToReadableString(getTotalPlaylistLength()));
         }
 
         @Override
@@ -179,20 +174,6 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         int duration = isCreated() ? getDuration() / UserData.getAudioUpdateInterval() : 0;
         mSbProgress.setMax(duration);
 
-        // MY_TODO: Shouldn't access media library here
-        mAlbumArt.setImageBitmap(MediaLibrary.getPlaybackFromMediaId(
-                getIntent().getStringExtra("MediaId")).getCurrentSong().getImage());
-    }
-
-    /**
-     * Calculates the total length of the playlist. This means the length of all songs added up.
-     * Formats it into a readable string
-     */
-    private String calculateTotalPlaylistLength(Playlist playlist) {
-        int duration = 0;
-        for (Song s : playlist.getSongs())
-            duration += s.isCreated() ? s.getDuration() : s.getEndTimeUninitialized() - s.getStartTime();
-
-        return Util.millisecondsToReadableString(duration);
+        mAlbumArt.setImageBitmap(getImage());
     }
 }

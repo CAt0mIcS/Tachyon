@@ -25,6 +25,7 @@ import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Fragment for displaying a list of all available songs, loops, or playlists.
@@ -32,7 +33,10 @@ import java.util.ArrayList;
 public class FragmentSelectAudio extends Fragment {
 
     ArrayList<Playback> mPlaybacks = new ArrayList<>();
-    private final AudioType mAudioType;
+    private AudioType mAudioType;
+
+    public FragmentSelectAudio() {
+    }
 
     public FragmentSelectAudio(AudioType audioType) {
         super(R.layout.fragment_select_audio);
@@ -62,6 +66,8 @@ public class FragmentSelectAudio extends Fragment {
             case Playlist:
                 mPlaybacks.addAll(MediaLibrary.AvailablePlaylists);
                 break;
+            default:
+                throw new UnsupportedOperationException("Unknown audio type " + mAudioType);
         }
 
         PlaybackListItemAdapter adapter = new PlaybackListItemAdapter(getContext(), mPlaybacks);
@@ -99,8 +105,12 @@ public class FragmentSelectAudio extends Fragment {
      * Starts the ActivityPlayer with the specified MediaId
      */
     private void startPlayingActivity(String mediaId) {
+        Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
+        ((MediaControllerActivity) requireActivity()).setMediaId(mediaId);
+
         Intent i = new Intent(getActivity(), ActivityPlayer.class);
-        i.putExtra("MediaId", mediaId);
+        // Automatically start playing audio
+        i.putExtra("StartPlaying", true);
         startActivity(i);
     }
 
@@ -108,8 +118,12 @@ public class FragmentSelectAudio extends Fragment {
      * Starts the ActivityPlaylistPlayer with the specified MediaId
      */
     private void startPlayingPlaylistActivity(String mediaId) {
+        Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
+        ((MediaControllerActivity) requireActivity()).setMediaId(mediaId);
+
         Intent i = new Intent(getActivity(), ActivityPlaylistPlayer.class);
-        i.putExtra("MediaId", mediaId);
+        // Automatically start playing audio
+        i.putExtra("StartPlaying", true);
         startActivity(i);
     }
 }
