@@ -50,6 +50,8 @@ public class PlaybackListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
             ViewHolderSong viewHolder = (ViewHolderSong) baseHolder;
             viewHolder.TxtTitle.setText(song.getTitle());
             viewHolder.TxtArtist.setText(song.getArtist());
+            viewHolder.TxtDuration.setText(String.valueOf(song.isCreated() ? song.getDuration() : song.getDurationUninitialized()));
+            viewHolder.ImgAlbumArt.setImageBitmap(song.getImage());
             viewHolder.setListener(mCallback);
         } else if (baseHolder instanceof ViewHolderLoop) {
             Song song = (Song) mItems.get(i);

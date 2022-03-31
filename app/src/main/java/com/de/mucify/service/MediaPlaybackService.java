@@ -296,6 +296,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     .putLong(MetadataKey.Duration, mPlayback.getDuration())
                     .putLong(MetadataKey.StartPos, mPlayback.getCurrentSong().getStartTime())
                     .putLong(MetadataKey.EndPos, mPlayback.getCurrentSong().getEndTime())
+                    .putBitmap(MetadataKey.AlbumArt, mPlayback.getCurrentSong().getImage())
                     .build();
         }
     }
