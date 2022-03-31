@@ -112,13 +112,14 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
             mPlaybackCallback.onStart();
 
         // Call the event handlers once to set all the values to the current song
-        if (isCreated()) {
-            mPlaybackCallback.onTitleChanged(getSongTitle());
-            mPlaybackCallback.onArtistChanged(getSongArtist());
-        } else {
-            mPlaybackCallback.onTitleChanged(getIntent().getStringExtra("Title"));
-            mPlaybackCallback.onArtistChanged(getIntent().getStringExtra("Subtitle"));
-        }
+        mPlaybackCallback.onTitleChanged(getSongTitle());
+        mPlaybackCallback.onArtistChanged(getSongArtist());
+
+        // Update data with current playlist and song
+        updatePerSongData();
+        mTxtPlaylistTitle.setText(getPlaylistName());
+        mTxtSongCount.setText(getSongCountInPlaylist() + " " + getString(R.string.songs));
+        mTxtTotalPlaylistLength.setText(Util.millisecondsToReadableString(getTotalPlaylistLength()));
     }
 
     @Override
@@ -132,12 +133,6 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         public void onStart() {
             if (mBtnPlayPause != null)
                 mBtnPlayPause.setImageResource(R.drawable.pause);
-
-            updatePerSongData();
-            // Set playlist data here to ensure that MediaPlaybackService.onPlayFromMediaId is called
-            mTxtPlaylistTitle.setText(getPlaylistName());
-            mTxtSongCount.setText(getSongCountInPlaylist() + " " + getString(R.string.songs));
-            mTxtTotalPlaylistLength.setText(Util.millisecondsToReadableString(getTotalPlaylistLength()));
         }
 
         @Override
