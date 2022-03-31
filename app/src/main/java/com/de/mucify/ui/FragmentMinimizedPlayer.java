@@ -81,7 +81,7 @@ public class FragmentMinimizedPlayer extends Fragment {
             mPlaybackCallback.onStart();
     }
 
-
+    // MY_TODO: For some reason onStart and onPause take ages to be called
     private class PlaybackCallback extends MediaControllerActivity.Callback {
         @Override
         public void onStart() {
