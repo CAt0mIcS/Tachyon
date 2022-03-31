@@ -296,6 +296,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     .putLong(MetadataKey.Duration, mPlayback.isCreated() ? mPlayback.getDuration() : mPlayback.getCurrentSong().getDurationUninitialized())
                     .putLong(MetadataKey.StartPos, mPlayback.getCurrentSong().getStartTime())
                     .putLong(MetadataKey.EndPos, mPlayback.getCurrentSong().getEndTime())
+                    .putString(MetadataKey.CurrentSongMediaId, mPlayback.getCurrentSong().getMediaId())
                     .putBitmap(MetadataKey.AlbumArt, mPlayback.getCurrentSong().getImage());
 
             if (mPlayback instanceof Playlist) {
@@ -303,8 +304,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 mMetadataBuilder
                         .putString(MetadataKey.PlaylistName, playlist.getName())
                         .putLong(MetadataKey.SongCountInPlaylist, playlist.getSongs().size())
-                        .putLong(MetadataKey.TotalPlaylistLength, playlist.getLength())
-                        .putString(MetadataKey.SongInPlaylistMediaId, mPlayback.getCurrentSong().getMediaId());
+                        .putLong(MetadataKey.TotalPlaylistLength, playlist.getLength());
 
             }
         }

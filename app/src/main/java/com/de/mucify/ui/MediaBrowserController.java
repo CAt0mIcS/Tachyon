@@ -16,8 +16,6 @@ import com.de.mucify.service.MediaAction;
 import com.de.mucify.service.MediaPlaybackService;
 import com.de.mucify.service.MetadataKey;
 
-import java.util.ArrayList;
-
 
 public class MediaBrowserController implements IMediaController {
     private final MediaBrowserCompat mMediaBrowser;
@@ -221,7 +219,7 @@ public class MediaBrowserController implements IMediaController {
      */
     @Override
     public String getCurrentSongMediaId() {
-        return getMetadata().getString(MetadataKey.SongInPlaylistMediaId);
+        return getMetadata().getString(MetadataKey.CurrentSongMediaId);
     }
 
     /**
@@ -335,7 +333,7 @@ public class MediaBrowserController implements IMediaController {
             String newTitle = metadata.getString(MetadataKey.Title);
             String newArtist = metadata.getString(MetadataKey.Artist);
             String newMediaId = metadata.getString(MetadataKey.MediaId);
-            String newSongInPlaylistMediaId = metadata.getString(MetadataKey.SongInPlaylistMediaId);
+            String newSongInPlaylistMediaId = metadata.getString(MetadataKey.CurrentSongMediaId);
 
             if (mPreviousMetadata == null || (newTitle != null && !newTitle.equals(mPreviousMetadata.getString(MetadataKey.Title))))
                 for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
@@ -349,7 +347,7 @@ public class MediaBrowserController implements IMediaController {
                 for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onMediaIdChanged(newMediaId);
 
-            if (mPreviousMetadata == null || (newSongInPlaylistMediaId != null) && !newSongInPlaylistMediaId.equals(mPreviousMetadata.getString(MetadataKey.SongInPlaylistMediaId)))
+            if (mPreviousMetadata == null || (newSongInPlaylistMediaId != null) && !newSongInPlaylistMediaId.equals(mPreviousMetadata.getString(MetadataKey.CurrentSongMediaId)))
                 for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onPlaylistSongChanged(newMediaId);
 

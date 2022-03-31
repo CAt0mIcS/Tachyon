@@ -71,7 +71,7 @@ public class UserData {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             PlaybackInfo that = (PlaybackInfo) o;
-            return PlaybackPath.equals(that.PlaybackPath) && Objects.equals(LastPlayedPlaybackInPlaylist, that.LastPlayedPlaybackInPlaylist);
+            return PlaybackPath.equals(that.PlaybackPath);
         }
     }
 
