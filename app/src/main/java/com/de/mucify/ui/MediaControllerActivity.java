@@ -29,7 +29,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         // Lazily initialize cast context
         CastContext.getSharedInstance(this);
 
-        mBrowserController = new MediaBrowserController(this, mCallbacks);
+        mBrowserController = new MediaBrowserController(this);
         if (mCastController == null)
             mCastController = new CastController(this);
         else

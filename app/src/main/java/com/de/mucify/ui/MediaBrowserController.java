@@ -20,19 +20,17 @@ import java.util.ArrayList;
 
 
 public class MediaBrowserController implements IMediaController {
-    private MediaBrowserCompat mMediaBrowser;
+    private final MediaBrowserCompat mMediaBrowser;
     private final MediaControllerCallback mControllerCallback = new MediaControllerCallback();
 
-    private MediaMetadataCompat mPreviousMetadata;
-    private PlaybackStateCompat mPreviousPlaybackState;
+    private static MediaMetadataCompat mPreviousMetadata;
+    private static PlaybackStateCompat mPreviousPlaybackState;
 
-    private MediaControllerActivity mActivity;
-    private ArrayList<MediaControllerActivity.Callback> mCallbacks;
+    private final MediaControllerActivity mActivity;
 
 
-    public MediaBrowserController(MediaControllerActivity activity, ArrayList<MediaControllerActivity.Callback> callbacks) {
+    public MediaBrowserController(MediaControllerActivity activity) {
         mActivity = activity;
-        mCallbacks = callbacks;
 
         // Not using startForegroundService because the service only has 5 seconds to call Service.startForeground
         // which doesn't happen until we actually start playing audio
@@ -107,7 +105,7 @@ public class MediaBrowserController implements IMediaController {
     @Override
     public void next() {
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().skipToNext();
-        for (MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onStart();
     }
 
@@ -118,7 +116,7 @@ public class MediaBrowserController implements IMediaController {
     @Override
     public void previous() {
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().skipToPrevious();
-        for (MediaControllerActivity.Callback c : mCallbacks)
+        for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
             c.onStart();
     }
 
@@ -340,19 +338,19 @@ public class MediaBrowserController implements IMediaController {
             String newSongInPlaylistMediaId = metadata.getString(MetadataKey.SongInPlaylistMediaId);
 
             if (mPreviousMetadata == null || (newTitle != null && !newTitle.equals(mPreviousMetadata.getString(MetadataKey.Title))))
-                for (MediaControllerActivity.Callback c : mCallbacks)
+                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onTitleChanged(newTitle);
 
             if (mPreviousMetadata == null || (newArtist != null && !newArtist.equals(mPreviousMetadata.getString(MetadataKey.Artist))))
-                for (MediaControllerActivity.Callback c : mCallbacks)
+                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onArtistChanged(newArtist);
 
             if (mPreviousMetadata == null || (newMediaId != null) && !newMediaId.equals(mPreviousMetadata.getString(MetadataKey.MediaId)))
-                for (MediaControllerActivity.Callback c : mCallbacks)
+                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onMediaIdChanged(newMediaId);
 
             if (mPreviousMetadata == null || (newSongInPlaylistMediaId != null) && !newSongInPlaylistMediaId.equals(mPreviousMetadata.getString(MetadataKey.SongInPlaylistMediaId)))
-                for (MediaControllerActivity.Callback c : mCallbacks)
+                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onPlaylistSongChanged(newMediaId);
 
             mPreviousMetadata = metadata;
@@ -364,16 +362,16 @@ public class MediaBrowserController implements IMediaController {
 
             if (mPreviousPlaybackState == null || state.getState() != mPreviousPlaybackState.getState()) {
                 if (state.getState() == PlaybackStateCompat.STATE_PAUSED) {
-                    for (MediaControllerActivity.Callback c : mCallbacks)
+                    for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                         c.onPause();
                 } else if (mPreviousPlaybackState == null || state.getState() == PlaybackStateCompat.STATE_PLAYING) {
-                    for (MediaControllerActivity.Callback c : mCallbacks)
+                    for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                         c.onStart();
                 }
             }
 
             if (mPreviousPlaybackState == null || state.getPosition() != mPreviousPlaybackState.getPosition()) {
-                for (MediaControllerActivity.Callback c : mCallbacks)
+                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                     c.onSeekTo((int) state.getPosition());
             }
 
