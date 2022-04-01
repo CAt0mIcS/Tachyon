@@ -89,6 +89,14 @@ public class MediaBrowserController implements IMediaController {
     }
 
     /**
+     * @return media id of current playback (song/loop/playlist)
+     */
+    @Override
+    public String getMediaId() {
+        return getMetadata().getString(MetadataKey.MediaId);
+    }
+
+    /**
      * Starts playback, requires that media id was already set
      */
     @Override
@@ -155,7 +163,7 @@ public class MediaBrowserController implements IMediaController {
     public void setStartTime(int millis) {
         Bundle bundle = new Bundle();
         bundle.putInt(MediaAction.StartTime, millis);
-        MediaControllerCompat.getMediaController(mActivity).getTransportControls().sendCustomAction(MediaAction.SetStartTime, bundle);
+        sendCustomAction(MediaAction.SetStartTime, bundle);
     }
 
     /**
@@ -168,7 +176,7 @@ public class MediaBrowserController implements IMediaController {
     public void setEndTime(int millis) {
         Bundle bundle = new Bundle();
         bundle.putInt(MediaAction.EndTime, millis);
-        MediaControllerCompat.getMediaController(mActivity).getTransportControls().sendCustomAction(MediaAction.SetEndTime, bundle);
+        sendCustomAction(MediaAction.SetEndTime, bundle);
     }
 
     /**
@@ -179,7 +187,7 @@ public class MediaBrowserController implements IMediaController {
     public void saveAsLoop(String loopName) {
         Bundle bundle = new Bundle();
         bundle.putString(MediaAction.LoopName, loopName);
-        MediaControllerCompat.getMediaController(mActivity).getTransportControls().sendCustomAction(MediaAction.SaveAsLoop, bundle);
+        sendCustomAction(MediaAction.SaveAsLoop, bundle);
     }
 
     /**
@@ -240,6 +248,17 @@ public class MediaBrowserController implements IMediaController {
     }
 
     /**
+     * If we're currently playing a playlist. We'll skip to the audio specified by the mediaId.
+     * If we're not playing a playlist, nothing will happen
+     */
+    @Override
+    public void skipToPlaylistSong(String mediaId) {
+        Bundle bundle = new Bundle();
+        bundle.putString(MediaAction.MediaId, mediaId);
+        sendCustomAction(MediaAction.SkipToSongInPlaylist, bundle);
+    }
+
+    /**
      * Gets the current position of the currently playing song. Crashes if the Playback hasn't been started yet.
      */
     @Override
@@ -287,8 +306,8 @@ public class MediaBrowserController implements IMediaController {
         return MediaControllerCompat.getMediaController(mActivity).getMetadata();
     }
 
-    public void sendCustomAction(String action) {
-        MediaControllerCompat.getMediaController(mActivity).getTransportControls().sendCustomAction(action, null);
+    public void sendCustomAction(String action, Bundle bundle) {
+        MediaControllerCompat.getMediaController(mActivity).getTransportControls().sendCustomAction(action, bundle);
     }
 
 

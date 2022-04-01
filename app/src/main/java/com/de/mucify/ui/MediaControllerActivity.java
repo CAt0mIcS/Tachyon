@@ -39,7 +39,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         addCallback(new Callback() {
             @Override
             public void onCastConnected() {
-                mBrowserController.sendCustomAction(MediaAction.CastStarted);
+                mBrowserController.sendCustomAction(MediaAction.CastStarted, null);
             }
         });
     }
@@ -100,6 +100,13 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
     public void setMediaId(String mediaId) {
         mCastController.setMediaId(mediaId);
         mBrowserController.setMediaId(mediaId);
+    }
+
+    @Override
+    public String getMediaId() {
+        if (mCastController.isCasting())
+            return mCastController.getMediaId();
+        return mBrowserController.getMediaId();
     }
 
     @Override
@@ -218,6 +225,14 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         if (mCastController.isCasting())
             return mCastController.getTotalPlaylistLength();
         return mBrowserController.getTotalPlaylistLength();
+    }
+
+    @Override
+    public void skipToPlaylistSong(String mediaId) {
+        if (mCastController.isCasting())
+            mCastController.skipToPlaylistSong(mediaId);
+        else
+            mBrowserController.skipToPlaylistSong(mediaId);
     }
 
     @Override

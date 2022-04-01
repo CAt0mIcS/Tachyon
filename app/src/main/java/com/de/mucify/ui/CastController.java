@@ -129,6 +129,11 @@ public class CastController implements IMediaController {
     }
 
     @Override
+    public String getMediaId() {
+        return null;
+    }
+
+    @Override
     public void play() {
         synchronized (mCastSessionLock) {
             loadRemoteMedia(mCastSession.getRemoteMediaClient(), mPlayback.isCreated() ? mPlayback.getCurrentPosition() : 0, true);
@@ -217,6 +222,11 @@ public class CastController implements IMediaController {
     @Override
     public int getTotalPlaylistLength() {
         return 0;
+    }
+
+    @Override
+    public void skipToPlaylistSong(String mediaId) {
+
     }
 
     @Override

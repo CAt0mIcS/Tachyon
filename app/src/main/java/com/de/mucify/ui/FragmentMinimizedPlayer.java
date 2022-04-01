@@ -48,6 +48,8 @@ public class FragmentMinimizedPlayer extends Fragment {
 
         mTxtTitle = view.findViewById(R.id.txtTitle);
         mTxtArtist = view.findViewById(R.id.txtArtist);
+
+        // MY_TODO: Sometimes getSongTitle() throws null
         mTxtTitle.setText(mMediaController.getSongTitle());
         mTxtArtist.setText(mMediaController.getSongArtist());
 

@@ -236,6 +236,9 @@ public class Playlist extends Playback {
      * start the set song.
      */
     public void setCurrentSong(Song song) {
+        if (song == null)
+            return;
+
         for (int i = 0; i < mSongs.size(); ++i)
             if (song.equalsUninitialized(mSongs.get(i))) {
                 mCurrentSongIndex = i;

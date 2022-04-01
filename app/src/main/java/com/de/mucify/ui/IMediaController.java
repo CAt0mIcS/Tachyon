@@ -25,6 +25,11 @@ public interface IMediaController {
     void setMediaId(String mediaId);
 
     /**
+     * @return media id of current playback (song/loop/playlist)
+     */
+    String getMediaId();
+
+    /**
      * Starts playing the set playback. setMediaId(String mediaId) must've been called before
      */
     void play();
@@ -111,6 +116,12 @@ public interface IMediaController {
      * playlist is playing
      */
     int getTotalPlaylistLength();
+
+    /**
+     * If we're currently playing a playlist. We'll skip to the audio specified by the mediaId.
+     * If we're not playing a playlist, nothing will happen
+     */
+    void skipToPlaylistSong(String mediaId);
 
     /**
      * Gets the current position of the currently playing song. Crashes if the Playback hasn't been started yet.

@@ -7,14 +7,21 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.UserData;
 import com.de.mucify.Util;
+import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
+import com.de.mucify.ui.adapter.AdapterEventListener;
+import com.de.mucify.ui.adapter.PlaybackListItemAdapter;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 
 public class ActivityPlaylistPlayer extends MediaControllerActivity {
     private final PlaybackCallback mPlaybackCallback = new PlaybackCallback();
@@ -35,6 +42,8 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
     private boolean mIsSeeking = false;
 
     private final Handler mHandler = new Handler();
+
+    private final ArrayList<Playback> mPlaybacks = new ArrayList<>();
 
 
     @Override
@@ -104,6 +113,17 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         mBtnPrevious.setOnClickListener(v -> previous());
         mBtnNext.setOnClickListener(v -> next());
 
+        // RecyclerView items
+        {
+            mRvPlaylistItems.setLayoutManager(new LinearLayoutManager(this));
+
+            ArrayList<Song> songs = ((Playlist) MediaLibrary.getPlaybackFromMediaId(getMediaId())).getSongs();
+            mPlaybacks.clear();
+            mPlaybacks.addAll(songs);
+            PlaybackListItemAdapter adapter = new PlaybackListItemAdapter(this, mPlaybacks);
+            adapter.setListener(new AdapterEventListener());
+            mRvPlaylistItems.setAdapter(adapter);
+        }
 
         // Update play/pause button image
         if (!isCreated() || isPaused())
@@ -170,5 +190,13 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         mSbProgress.setMax(duration);
 
         mAlbumArt.setImageBitmap(getImage());
+    }
+
+    private class AdapterEventListener extends com.de.mucify.ui.adapter.AdapterEventListener {
+        @Override
+        public void onClick(RecyclerView.ViewHolder holder, int viewType) {
+            skipToPlaylistSong(mPlaybacks.get(holder.getAdapterPosition()).getMediaId());
+            play();
+        }
     }
 }

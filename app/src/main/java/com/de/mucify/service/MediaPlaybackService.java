@@ -439,18 +439,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
          */
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
-            synchronized (mPlaybackLock) {
-                if (mPlayback != null && mPlayback.isCreated())
-                    mPlayback.reset();
-
-                Util.logGlobal("Loading media with id " + mediaId);
-                // MY_TODO: Error, mPlayback null after next line
-                mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
-            }
-
-            // Call listeners on UI side that we have a new playback
-            mMediaSession.setPlaybackState(getState());
-            mMediaSession.setMetadata(getMetadata());
+            startNewPlayback(mediaId, false);
 
             Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onPlayFromMediaId " + mediaId);
         }
@@ -533,6 +522,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         mPlayback.getCurrentSong().saveAsLoop(extras.getString(MediaAction.LoopName));
                     }
                     break;
+                case MediaAction.SkipToSongInPlaylist:
+                    // Reset current playlist song
+                    mPlayback.reset();
+                    startNewPlayback(extras.getString(MediaAction.MediaId), true);
+                    break;
             }
         }
     }
@@ -601,6 +595,31 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
     private void unregisterPlaybackHandler() {
         mPlaybackUpdateHandler.removeCallbacks(mPlaybackUpdateRunnable);
         Log.d(TAG, "Unregistering MediaPlaybackService playback runnable");
+    }
+
+    /**
+     * Starts a new playback. Updates state and metadata
+     *
+     * @param mediaId    MediaId either pointing to the new playback or to a new song in a playlist
+     * @param inPlaylist True if the MediaId specifies a song in the current playlist
+     */
+    private void startNewPlayback(String mediaId, boolean inPlaylist) {
+        synchronized (mPlaybackLock) {
+            if (!inPlaylist && mPlayback != null && mPlayback.isCreated())
+                mPlayback.reset();
+
+            Util.logGlobal("Loading media with id " + mediaId);
+            // MY_TODO: Error, mPlayback null after next line
+            if (inPlaylist) {
+                assert mPlayback instanceof Playlist;
+                ((Playlist) mPlayback).setCurrentSong((Song) MediaLibrary.getPlaybackFromMediaId(mediaId));
+            } else
+                mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
+        }
+
+        // Call listeners on UI side that we have a new playback
+        mMediaSession.setPlaybackState(getState());
+        mMediaSession.setMetadata(getMetadata());
     }
 
     /**

@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
+import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
@@ -50,7 +51,7 @@ public class PlaybackListItemAdapter extends RecyclerView.Adapter<RecyclerView.V
             ViewHolderSong viewHolder = (ViewHolderSong) baseHolder;
             viewHolder.TxtTitle.setText(song.getTitle());
             viewHolder.TxtArtist.setText(song.getArtist());
-            viewHolder.TxtDuration.setText(String.valueOf(song.isCreated() ? song.getDuration() : song.getDurationUninitialized()));
+            viewHolder.TxtDuration.setText(Util.millisecondsToReadableString(song.isCreated() ? song.getDuration() : song.getDurationUninitialized()));
             viewHolder.ImgAlbumArt.setImageBitmap(song.getImage());
             viewHolder.setListener(mCallback);
         } else if (baseHolder instanceof ViewHolderLoop) {

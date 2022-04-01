@@ -15,4 +15,7 @@ public class MediaAction {
 
     public static final String SaveAsLoop = "com.de.mucify.SAVE_AS_LOOP";
     public static final String LoopName = "LoopName";
+
+    public static final String SkipToSongInPlaylist = "com.de.mucify.SKIP_TO_SONG_IN_PLAYLIST";
+    public static final String MediaId = "com.de.mucify.MEDIA_ID";
 }
