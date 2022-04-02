@@ -95,7 +95,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         if (mPlayback != null && mPlayback.isCreated()) {
                             if (!mPlayback.isPaused()) {
                                 mPlayback.pause();
-                                repostNotification();
+                                startForeground(NOTIFY_ID, buildNotification());
                                 savePlaybackToSettings();
                                 Log.d(TAG, "MediaPlaybackService.AudioFocusChangeListener: Audio focus lost, MediaPlayback paused");
                             }
@@ -259,16 +259,16 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 .addAction(mNextAction)
 
                 // Add the metadata for the currently playing track
-                .setContentTitle(metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE))
-                .setContentText(metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST))
+                .setContentTitle(metadata.getString(MetadataKey.Title))
+                .setContentText(metadata.getString(MetadataKey.Artist))
 
                 // Make the transport controls visible on the lockscreen
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
                 // When notification is deleted (when playback is paused and notification can be
-                // deleted) fire MediaButtonPendingIntent with ACTION_PAUSE.
-                .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(
-                        this, PlaybackStateCompat.ACTION_PAUSE))
+                // deleted) fire MediaButtonPendingIntent with ACTION_STOP.
+                .setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(this,
+                        PlaybackStateCompat.ACTION_STOP))
 
                 .build();
     }
@@ -331,15 +331,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         }
     }
 
-    /**
-     * Reposts the notification without requiring a foreground service to be started
-     */
-    private void repostNotification() {
-        mNotificationManager.notify(NOTIFY_ID, buildNotification());
-        Log.d(TAG, "Reposting notification");
-    }
-
-
     public class MediaSessionCallback extends MediaSessionCompat.Callback {
 
         /**
@@ -387,7 +378,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
         /**
          * Pauses the current Playback, reposts the notification without foreground service
-         * (MY_TODO: Do we need to repost notification without startForeground or can we just use it?)
          * and sets UserData.LastPlayedPlaybackPos to the current Playback position.
          */
         @Override
@@ -397,7 +387,15 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 mPlayback.pause();
             }
             mKeepPausedAfterAudioFocusGain = true;
-            repostNotification();
+
+            try {
+                unregisterReceiver(myNoisyAudioStreamReceiver);
+            } catch (IllegalArgumentException ignored) {
+            }
+            // Set new notification and stop the service
+            startForeground(NOTIFY_ID, buildNotification());
+            stopForeground(false);
+
             savePlaybackToSettings();
             Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onPause");
 
@@ -465,7 +463,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 mPlayback.seekTo((int) pos);
             }
             registerPlaybackHandler();
-            repostNotification();
+            startForeground(NOTIFY_ID, buildNotification());
             Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onSeekTo " + pos);
 
             Bundle bundle = new Bundle();

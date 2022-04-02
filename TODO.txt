@@ -1,7 +1,7 @@
 Bugs:
 Same playlist appearing twice in FragmentSelectAudio
 Volume 0 --> louder (not very loud) song makes weird noises
-
+When pausing and closing the app, the notification dissapears, then appears again but it's not clickable anymore ever since we call stopForegreound(false) in MediaPlaybackService.onPause. This however fixed the notification not being swipeable on some devices. When pressing any button on the new notification. It does call the right method (e.g. onPlay) but mPlayback is null
 
 
 
