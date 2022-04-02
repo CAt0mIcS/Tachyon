@@ -540,10 +540,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     }
                     break;
                 case MediaAction.ChangePlaybackInPlaylist:
-                    // Reset current playlist song
-                    mPlayback.reset();
                     startNewPlayback(extras.getString(MediaAction.MediaId), true);
-
+                    onPlay();
                     mMediaSession.sendSessionEvent(MediaAction.OnPlaybackInPlaylistChanged, extras);
                     break;
             }
@@ -624,21 +622,23 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
      */
     private void startNewPlayback(String mediaId, boolean inPlaylist) {
         synchronized (mPlaybackLock) {
-            if (!inPlaylist && mPlayback != null && mPlayback.isCreated())
+            if (mPlayback != null && mPlayback.isCreated())
                 mPlayback.reset();
 
             Util.logGlobal("Loading media with id " + mediaId);
-            // MY_TODO: Error, mPlayback null after next line
             if (inPlaylist) {
-                assert mPlayback instanceof Playlist;
+                assert mPlayback != null && mPlayback instanceof Playlist;
                 ((Playlist) mPlayback).setCurrentSong((Song) MediaLibrary.getPlaybackFromMediaId(mediaId));
             } else
                 mPlayback = MediaLibrary.getPlaybackFromMediaId(mediaId);
         }
 
-        // Call listeners on UI side that we have a new playback
-        mMediaSession.setPlaybackState(getState());
-        mMediaSession.setMetadata(getMetadata());
+        // Call listeners on UI side that we have a new playback. As the next playback in playlist isn't
+        // started until the client calls play in the MediaBrowserController, we don't update it here.
+        if (!inPlaylist) {
+            mMediaSession.setPlaybackState(getState());
+            mMediaSession.setMetadata(getMetadata());
+        }
     }
 
     /**

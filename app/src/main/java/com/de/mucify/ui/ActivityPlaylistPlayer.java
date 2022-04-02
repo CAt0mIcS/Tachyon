@@ -186,7 +186,6 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         @Override
         public void onClick(RecyclerView.ViewHolder holder, int viewType) {
             skipToPlaylistSong(mPlaybacks.get(holder.getAdapterPosition()).getMediaId());
-            play();
         }
     }
 }
