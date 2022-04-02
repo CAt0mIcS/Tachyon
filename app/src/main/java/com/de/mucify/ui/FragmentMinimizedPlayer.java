@@ -22,6 +22,7 @@ public class FragmentMinimizedPlayer extends Fragment {
     private TextView mTxtArtist;
 
     private MediaControllerActivity mMediaController;
+    private int mPlaybackSeekPos = 0;
 
     private final PlaybackCallback mPlaybackCallback = new PlaybackCallback();
 
@@ -34,6 +35,7 @@ public class FragmentMinimizedPlayer extends Fragment {
         super.onCreate(savedInstanceState);
         Thread.setDefaultUncaughtExceptionHandler(Util.UncaughtExceptionLogger);
         mMediaController = (MediaControllerActivity) getActivity();
+        mPlaybackSeekPos = UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).PlaybackPos;
 
         if (getArguments() == null)
             throw new UnsupportedOperationException("Argument for FragmentMinimizedPlayer must be set");
@@ -68,8 +70,8 @@ public class FragmentMinimizedPlayer extends Fragment {
             // Don't automatically start playing if the minimized player was clicked
             i.putExtra("StartPlaying", false);
 
-            if (UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).PlaybackPos != 0)
-                i.putExtra("SeekPos", UserData.getPlaybackInfo(UserData.getPlaybackInfoSize() - 1).PlaybackPos);
+            if (mPlaybackSeekPos != 0)
+                i.putExtra("SeekPos", mPlaybackSeekPos);
             startActivity(i);
         });
 
@@ -80,12 +82,16 @@ public class FragmentMinimizedPlayer extends Fragment {
         mPlaybackCallback.onMediaIdChanged(getArguments().getString("MediaId"));
     }
 
-    // MY_TODO: For some reason onStart and onPause take ages to be called
     private class PlaybackCallback extends MediaControllerActivity.Callback {
         @Override
         public void onPlay() {
             if (mPlayPause != null)
                 mPlayPause.setImageResource(R.drawable.pause);
+
+            if (mPlaybackSeekPos != 0) {
+                mMediaController.seekTo(mPlaybackSeekPos);
+                mPlaybackSeekPos = 0;
+            }
         }
 
         @Override

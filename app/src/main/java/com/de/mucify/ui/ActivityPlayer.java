@@ -205,6 +205,11 @@ public class ActivityPlayer extends MediaControllerActivity {
         public void onPlay() {
             if (mBtnPlayPause != null)
                 mBtnPlayPause.setImageResource(R.drawable.pause);
+
+            if (mPlaybackSeekPos != 0) {
+                seekTo(mPlaybackSeekPos);
+                mPlaybackSeekPos = 0;
+            }
         }
 
         @Override
