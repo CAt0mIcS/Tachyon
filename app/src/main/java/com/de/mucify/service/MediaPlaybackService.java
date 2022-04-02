@@ -381,6 +381,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 startForeground(NOTIFY_ID, buildNotification());
             }
             Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onPlay");
+
+            mMediaSession.sendSessionEvent(MediaAction.OnPlay, null);
         }
 
         /**
@@ -398,6 +400,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             repostNotification();
             savePlaybackToSettings();
             Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onPause");
+
+            mMediaSession.sendSessionEvent(MediaAction.OnPause, null);
         }
 
         /**
@@ -432,6 +436,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             mNotificationManager.cancel(NOTIFY_ID);
             stopSelf();
             Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onStop");
+
+            mMediaSession.sendSessionEvent(MediaAction.OnStop, null);
         }
 
         /**
@@ -440,8 +446,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         @Override
         public void onPlayFromMediaId(String mediaId, Bundle extras) {
             startNewPlayback(mediaId, false);
-
             Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onPlayFromMediaId " + mediaId);
+
+            Bundle bundle = new Bundle();
+            bundle.putString(MediaAction.MediaId, mediaId);
+            mMediaSession.sendSessionEvent(MediaAction.OnMediaIdChanged, bundle);
         }
 
         /**
@@ -458,6 +467,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             registerPlaybackHandler();
             repostNotification();
             Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onSeekTo " + pos);
+
+            Bundle bundle = new Bundle();
+            bundle.putInt(MediaAction.SeekPos, (int) pos);
+            mMediaSession.sendSessionEvent(MediaAction.OnSeekTo, bundle);
         }
 
         /**
@@ -471,6 +484,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             }
             onPlay();
             Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onSkipToNext");
+
+            sendNewSongInPlaylistOrNewSongMediaIdEvent();
         }
 
         /**
@@ -484,6 +499,8 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             }
             onPlay();
             Log.d(TAG, "MediaPlaybackService.MediaSessionCallback.onSkipToPrevious");
+
+            sendNewSongInPlaylistOrNewSongMediaIdEvent();
         }
 
         /**
@@ -522,10 +539,12 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                         mPlayback.getCurrentSong().saveAsLoop(extras.getString(MediaAction.LoopName));
                     }
                     break;
-                case MediaAction.SkipToSongInPlaylist:
+                case MediaAction.ChangePlaybackInPlaylist:
                     // Reset current playlist song
                     mPlayback.reset();
                     startNewPlayback(extras.getString(MediaAction.MediaId), true);
+
+                    mMediaSession.sendSessionEvent(MediaAction.OnPlaybackInPlaylistChanged, extras);
                     break;
             }
         }
@@ -620,6 +639,22 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
         // Call listeners on UI side that we have a new playback
         mMediaSession.setPlaybackState(getState());
         mMediaSession.setMetadata(getMetadata());
+    }
+
+    /**
+     * Call this whenever media id may have changed. If the current playback is a playlist then we
+     * assume that the song currently played in the playlist changed, otherwise we assume that mPlayback
+     * changed to a new song
+     */
+    private void sendNewSongInPlaylistOrNewSongMediaIdEvent() {
+        Bundle bundle = new Bundle();
+        if (mPlayback instanceof Playlist) {
+            bundle.putString(MediaAction.MediaId, mPlayback.getCurrentSong().getMediaId());
+            mMediaSession.sendSessionEvent(MediaAction.OnPlaybackInPlaylistChanged, bundle);
+        } else {
+            bundle.putString(MediaAction.MediaId, mPlayback.getMediaId());
+            mMediaSession.sendSessionEvent(MediaAction.OnMediaIdChanged, bundle);
+        }
     }
 
     /**

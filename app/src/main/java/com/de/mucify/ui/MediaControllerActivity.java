@@ -279,16 +279,10 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
     }
 
     public abstract static class Callback {
-        public void onStart() {
+        public void onPlay() {
         }
 
         public void onPause() {
-        }
-
-        public void onTitleChanged(String title) {
-        }
-
-        public void onArtistChanged(String artist) {
         }
 
         public void onSeekTo(int millis) {
@@ -303,7 +297,7 @@ public class MediaControllerActivity extends AppCompatActivity implements IMedia
         public void onCastDisconnected() {
         }
 
-        public void onPlaylistSongChanged(String mediaId) {
+        public void onPlaybackInPlaylistChanged(String mediaId) {
         }
     }
 }

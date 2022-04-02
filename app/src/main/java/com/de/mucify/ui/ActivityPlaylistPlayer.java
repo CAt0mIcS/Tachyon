@@ -1,6 +1,5 @@
 package com.de.mucify.ui;
 
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.ImageView;
@@ -17,10 +16,8 @@ import com.de.mucify.Util;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
-import com.de.mucify.ui.adapter.AdapterEventListener;
 import com.de.mucify.ui.adapter.PlaybackListItemAdapter;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class ActivityPlaylistPlayer extends MediaControllerActivity {
@@ -129,11 +126,8 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         if (!isCreated() || isPaused())
             mPlaybackCallback.onPause();
         else
-            mPlaybackCallback.onStart();
-
-        // Call the event handlers once to set all the values to the current song
-        mPlaybackCallback.onTitleChanged(getSongTitle());
-        mPlaybackCallback.onArtistChanged(getSongArtist());
+            mPlaybackCallback.onPlay();
+        updatePerSongData();
 
         // Update data with current playlist and song
         updatePerSongData();
@@ -150,7 +144,7 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
 
     private class PlaybackCallback extends Callback {
         @Override
-        public void onStart() {
+        public void onPlay() {
             if (mBtnPlayPause != null)
                 mBtnPlayPause.setImageResource(R.drawable.pause);
         }
@@ -159,11 +153,6 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         public void onPause() {
             if (mBtnPlayPause != null)
                 mBtnPlayPause.setImageResource(R.drawable.play);
-        }
-
-        @Override
-        public void onTitleChanged(String title) {
-            mTxtSongTitle.setText(title);
         }
 
         @Override
@@ -177,7 +166,7 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         }
 
         @Override
-        public void onPlaylistSongChanged(String mediaId) {
+        public void onPlaybackInPlaylistChanged(String mediaId) {
             updatePerSongData();
         }
     }
@@ -190,6 +179,7 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         mSbProgress.setMax(duration);
 
         mAlbumArt.setImageBitmap(getImage());
+        mTxtSongTitle.setText(getSongTitle());
     }
 
     private class AdapterEventListener extends com.de.mucify.ui.adapter.AdapterEventListener {

@@ -190,17 +190,8 @@ public class ActivityPlayer extends MediaControllerActivity {
         if (!isCreated() || isPaused())
             mPlaybackCallback.onPause();
         else
-            mPlaybackCallback.onStart();
+            mPlaybackCallback.onPlay();
         updatePerSongData();
-
-        // Call the event handlers once to set all the values to the current song
-        if (isCreated()) {
-            mPlaybackCallback.onTitleChanged(getSongTitle());
-            mPlaybackCallback.onArtistChanged(getSongArtist());
-        } else {
-            mPlaybackCallback.onTitleChanged(getIntent().getStringExtra("Title"));
-            mPlaybackCallback.onArtistChanged(getIntent().getStringExtra("Subtitle"));
-        }
     }
 
     @Override
@@ -211,26 +202,15 @@ public class ActivityPlayer extends MediaControllerActivity {
 
     private class PlaybackCallback extends Callback {
         @Override
-        public void onStart() {
+        public void onPlay() {
             if (mBtnPlayPause != null)
                 mBtnPlayPause.setImageResource(R.drawable.pause);
-            updatePerSongData();
         }
 
         @Override
         public void onPause() {
             if (mBtnPlayPause != null)
                 mBtnPlayPause.setImageResource(R.drawable.play);
-        }
-
-        @Override
-        public void onTitleChanged(String title) {
-            mTxtTitle.setText(title);
-        }
-
-        @Override
-        public void onArtistChanged(String artist) {
-            mTxtSubtitle.setText(artist);
         }
 
         @Override
@@ -241,6 +221,7 @@ public class ActivityPlayer extends MediaControllerActivity {
         @Override
         public void onMediaIdChanged(String mediaId) {
             getIntent().putExtra("MediaId", mediaId);
+            updatePerSongData();
         }
     }
 
@@ -248,13 +229,16 @@ public class ActivityPlayer extends MediaControllerActivity {
      * Should be called whenever a new song is started
      */
     private void updatePerSongData() {
-        int duration = isCreated() ? getDuration() / UserData.getAudioUpdateInterval() : 0;
+        int duration = getDuration() / UserData.getAudioUpdateInterval();
         mSbProgress.setMax(duration);
         mSbStartTime.setMax(duration);
         mSbEndTime.setMax(duration);
 
-        mSbStartTime.setProgress(isCreated() ? getStartTime() / UserData.getAudioUpdateInterval() : 0);
-        mSbEndTime.setProgress(isCreated() ? getEndTime() / UserData.getAudioUpdateInterval() : 0);
+        mSbStartTime.setProgress(getStartTime() / UserData.getAudioUpdateInterval());
+        mSbEndTime.setProgress(getEndTime() / UserData.getAudioUpdateInterval());
+
+        mTxtTitle.setText(getSongTitle());
+        mTxtSubtitle.setText(getSongArtist());
     }
 
     /**

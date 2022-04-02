@@ -21,9 +21,6 @@ public class MediaBrowserController implements IMediaController {
     private final MediaBrowserCompat mMediaBrowser;
     private final MediaControllerCallback mControllerCallback = new MediaControllerCallback();
 
-    private static MediaMetadataCompat mPreviousMetadata;
-    private static PlaybackStateCompat mPreviousPlaybackState;
-
     private final MediaControllerActivity mActivity;
 
 
@@ -112,7 +109,7 @@ public class MediaBrowserController implements IMediaController {
     public void next() {
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().skipToNext();
         for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
-            c.onStart();
+            c.onPlay();
     }
 
     /**
@@ -123,7 +120,7 @@ public class MediaBrowserController implements IMediaController {
     public void previous() {
         MediaControllerCompat.getMediaController(mActivity).getTransportControls().skipToPrevious();
         for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
-            c.onStart();
+            c.onPlay();
     }
 
 
@@ -255,7 +252,7 @@ public class MediaBrowserController implements IMediaController {
     public void skipToPlaylistSong(String mediaId) {
         Bundle bundle = new Bundle();
         bundle.putString(MediaAction.MediaId, mediaId);
-        sendCustomAction(MediaAction.SkipToSongInPlaylist, bundle);
+        sendCustomAction(MediaAction.ChangePlaybackInPlaylist, bundle);
     }
 
     /**
@@ -346,53 +343,31 @@ public class MediaBrowserController implements IMediaController {
 
     private class MediaControllerCallback extends MediaControllerCompat.Callback {
         @Override
-        public void onMetadataChanged(MediaMetadataCompat metadata) {
-            Log.d("Mucify", "MediaControllerActivity metadata changed");
-
-            String newTitle = metadata.getString(MetadataKey.Title);
-            String newArtist = metadata.getString(MetadataKey.Artist);
-            String newMediaId = metadata.getString(MetadataKey.MediaId);
-            String newSongInPlaylistMediaId = metadata.getString(MetadataKey.CurrentSongMediaId);
-
-            if (mPreviousMetadata == null || (newTitle != null && !newTitle.equals(mPreviousMetadata.getString(MetadataKey.Title))))
-                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
-                    c.onTitleChanged(newTitle);
-
-            if (mPreviousMetadata == null || (newArtist != null && !newArtist.equals(mPreviousMetadata.getString(MetadataKey.Artist))))
-                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
-                    c.onArtistChanged(newArtist);
-
-            if (mPreviousMetadata == null || (newMediaId != null) && !newMediaId.equals(mPreviousMetadata.getString(MetadataKey.MediaId)))
-                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
-                    c.onMediaIdChanged(newMediaId);
-
-            if (mPreviousMetadata == null || (newSongInPlaylistMediaId != null) && !newSongInPlaylistMediaId.equals(mPreviousMetadata.getString(MetadataKey.CurrentSongMediaId)))
-                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
-                    c.onPlaylistSongChanged(newMediaId);
-
-            mPreviousMetadata = metadata;
-        }
-
-        @Override
-        public void onPlaybackStateChanged(PlaybackStateCompat state) {
-            Log.d("Mucify", "MediaControllerActivity playback state changed" + state);
-
-            if (mPreviousPlaybackState == null || state.getState() != mPreviousPlaybackState.getState()) {
-                if (state.getState() == PlaybackStateCompat.STATE_PAUSED) {
+        public void onSessionEvent(String event, Bundle extras) {
+            switch (event) {
+                case MediaAction.OnPlay:
+                    for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
+                        c.onPlay();
+                    break;
+                case MediaAction.OnPause:
                     for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
                         c.onPause();
-                } else if (mPreviousPlaybackState == null || state.getState() == PlaybackStateCompat.STATE_PLAYING) {
+                    break;
+                case MediaAction.OnSeekTo:
                     for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
-                        c.onStart();
-                }
+                        c.onSeekTo(extras.getInt(MediaAction.SeekPos));
+                    break;
+                case MediaAction.OnMediaIdChanged:
+                    for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
+                        c.onMediaIdChanged(extras.getString(MediaAction.MediaId));
+                    break;
+                case MediaAction.OnPlaybackInPlaylistChanged:
+                    for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
+                        c.onPlaybackInPlaylistChanged(extras.getString(MediaAction.MediaId));
+                    break;
+                default:
+                    Util.logGlobal("Unsupported session event " + event);
             }
-
-            if (mPreviousPlaybackState == null || state.getPosition() != mPreviousPlaybackState.getPosition()) {
-                for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
-                    c.onSeekTo((int) state.getPosition());
-            }
-
-            mPreviousPlaybackState = state;
         }
 
         @Override

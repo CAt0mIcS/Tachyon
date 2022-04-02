@@ -92,7 +92,7 @@ public class CastController implements IMediaController {
         }
 
         for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
-            c.onStart();
+            c.onPlay();
 
         startPlaybackThread();
     }
@@ -411,7 +411,7 @@ public class CastController implements IMediaController {
 
     private void onStart() {
         for (MediaControllerActivity.Callback c : mActivity.getCallbacks())
-            c.onStart();
+            c.onPlay();
 
         startPlaybackThread();
     }

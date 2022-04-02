@@ -49,10 +49,6 @@ public class FragmentMinimizedPlayer extends Fragment {
         mTxtTitle = view.findViewById(R.id.txtTitle);
         mTxtArtist = view.findViewById(R.id.txtArtist);
 
-        // MY_TODO: Sometimes getSongTitle() throws null
-        mTxtTitle.setText(mMediaController.getSongTitle());
-        mTxtArtist.setText(mMediaController.getSongArtist());
-
         mPlayPause = view.findViewById(R.id.btnPlayPause);
         mPlayPause.setOnClickListener(v -> {
             if (mMediaController.isPaused())
@@ -80,13 +76,14 @@ public class FragmentMinimizedPlayer extends Fragment {
         if (mMediaController.isPaused())
             mPlaybackCallback.onPause();
         else
-            mPlaybackCallback.onStart();
+            mPlaybackCallback.onPlay();
+        mPlaybackCallback.onMediaIdChanged(getArguments().getString("MediaId"));
     }
 
     // MY_TODO: For some reason onStart and onPause take ages to be called
     private class PlaybackCallback extends MediaControllerActivity.Callback {
         @Override
-        public void onStart() {
+        public void onPlay() {
             if (mPlayPause != null)
                 mPlayPause.setImageResource(R.drawable.pause);
         }
@@ -95,16 +92,6 @@ public class FragmentMinimizedPlayer extends Fragment {
         public void onPause() {
             if (mPlayPause != null)
                 mPlayPause.setImageResource(R.drawable.play);
-        }
-
-        @Override
-        public void onTitleChanged(String title) {
-            mTxtTitle.setText(title);
-        }
-
-        @Override
-        public void onArtistChanged(String artist) {
-            mTxtArtist.setText(artist);
         }
 
         @Override
@@ -120,6 +107,8 @@ public class FragmentMinimizedPlayer extends Fragment {
         @Override
         public void onMediaIdChanged(String mediaId) {
             getArguments().putString("MediaId", mediaId);
+            mTxtTitle.setText(mMediaController.getSongTitle());
+            mTxtArtist.setText(mMediaController.getSongArtist());
         }
     }
 }
