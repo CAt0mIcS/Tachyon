@@ -39,6 +39,7 @@ import com.de.mucify.player.Song;
 import com.de.mucify.ui.ActivityPlayer;
 import com.de.mucify.ui.ActivityPlaylistPlayer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -94,9 +95,7 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                     synchronized (mPlaybackLock) {
                         if (mPlayback != null && mPlayback.isCreated()) {
                             if (!mPlayback.isPaused()) {
-                                mPlayback.pause();
-                                startForeground(NOTIFY_ID, buildNotification());
-                                savePlaybackToSettings();
+                                mMediaSession.getController().getTransportControls().pause();
                                 Log.d(TAG, "MediaPlaybackService.AudioFocusChangeListener: Audio focus lost, MediaPlayback paused");
                             }
                             mMediaPosBeforeAudioFocusLoss = mPlayback.getCurrentPosition();
@@ -344,11 +343,11 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
                 // Start the service
                 startService(new Intent(MediaPlaybackService.this, MediaBrowserService.class));
 
-                // Set the session active  (and update metadata and state)
+                // Set the session active
                 mMediaSession.setActive(true);
 
                 unregisterPlaybackHandler();
-                // start the player (custom call)
+                // start the player, create it if not created, and seek to pos where audio focus was lost
                 synchronized (mPlaybackLock) {
                     if (!mPlayback.isCreated())
                         mPlayback.create(MediaPlaybackService.this);
@@ -363,7 +362,6 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
 
                     savePlaybackToSettings();
                 }
-
 
                 // Register BECOME_NOISY BroadcastReceiver
                 registerReceiver(myNoisyAudioStreamReceiver, mBecomeNoisyIntentFilter);
@@ -416,9 +414,10 @@ public class MediaPlaybackService extends MediaBrowserServiceCompat {
             }
 
             synchronized (mPlaybackLock) {
-                if (mPlayback != null)
+                if (mPlayback != null) {
                     mPlayback.reset();
-                mPlayback = null;
+                    mPlayback = null;
+                }
             }
 
             mMediaSession.setPlaybackState(mPlaybackStateBuilder
