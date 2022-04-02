@@ -132,7 +132,7 @@ public class ActivityPlaylistPlayer extends MediaControllerActivity {
         // Update data with current playlist and song
         updatePerSongData();
         mTxtPlaylistTitle.setText(getPlaylistName());
-        mTxtSongCount.setText(getSongCountInPlaylist() + " " + getString(R.string.songs));
+        mTxtSongCount.setText(getString(R.string.playlist_song_count_text, getSongCountInPlaylist()));
         mTxtTotalPlaylistLength.setText(Util.millisecondsToReadableString(getTotalPlaylistLength()));
     }
 

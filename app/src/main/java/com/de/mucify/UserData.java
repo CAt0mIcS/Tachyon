@@ -2,7 +2,6 @@ package com.de.mucify;
 
 import android.content.Context;
 
-
 import androidx.annotation.NonNull;
 
 import org.json.JSONArray;
@@ -18,7 +17,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class UserData {
     private static final ArrayList<Callback> mCallbacks = new ArrayList<>();

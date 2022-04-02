@@ -2,7 +2,6 @@ package com.de.mucify.ui.trivial;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.opengl.Visibility;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -15,17 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.de.mucify.FileManager;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
-import com.de.mucify.UserData;
 import com.de.mucify.Util;
-import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
-import com.de.mucify.ui.adapter.AdapterEventListener;
 import com.de.mucify.ui.adapter.CreatePlaylistDialogListItemAdapter;
-import com.de.mucify.ui.adapter.PlaybackListItemAdapter;
-import com.de.mucify.ui.adapter.ViewHolderLoop;
 import com.de.mucify.ui.adapter.ViewHolderPlaylist;
-import com.de.mucify.ui.adapter.ViewHolderSong;
 
 import java.io.IOException;
 import java.util.Arrays;

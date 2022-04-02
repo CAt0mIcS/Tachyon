@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
-import com.de.mucify.player.Playback;
 
 public class ViewHolderPlaylist extends RecyclerView.ViewHolder {
     public final LinearLayout ParentLayout;

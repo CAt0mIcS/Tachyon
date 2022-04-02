@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 import com.de.mucify.FileManager;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
-import com.de.mucify.service.MediaPlaybackService;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,7 +20,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class Song extends Playback {
     private String mTitle;

@@ -15,17 +15,12 @@ import com.de.mucify.AudioType;
 import com.de.mucify.MediaLibrary;
 import com.de.mucify.R;
 import com.de.mucify.Util;
-import com.de.mucify.ui.adapter.AdapterEventListener;
-import com.de.mucify.ui.adapter.PlaybackListItemAdapter;
-import com.de.mucify.ui.adapter.ViewHolderLoop;
-import com.de.mucify.ui.adapter.ViewHolderPlaylist;
-import com.de.mucify.ui.adapter.ViewHolderSong;
 import com.de.mucify.player.Playback;
 import com.de.mucify.player.Playlist;
 import com.de.mucify.player.Song;
+import com.de.mucify.ui.adapter.PlaybackListItemAdapter;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * Fragment for displaying a list of all available songs, loops, or playlists.
