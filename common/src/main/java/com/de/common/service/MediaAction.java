@@ -1,4 +1,4 @@
-package com.de.mucify.service;
+package com.de.common.service;
 
 /**
  * Defines custom actions sent to the MediaPlaybackService. The first item is the event name the ones

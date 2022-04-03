@@ -38,7 +38,7 @@ inline var MediaMetadataCompat.Builder.artist: String
     }
 
 
-inline val MediaMetadataCompat.albumArt: Bitmap
+inline val MediaMetadataCompat.albumArt: Bitmap?
     get() = getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART)
 
 inline var MediaMetadataCompat.Builder.albumArt: Bitmap
@@ -116,4 +116,3 @@ inline var MediaMetadataCompat.Builder.totalPlaylistLength: Int
     set(value: Int) {
         putLong("com.de.mucify.TOTAL_PLAYLIST_LENGTH", value.toLong())
     }
-

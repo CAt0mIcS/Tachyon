@@ -1,10 +1,10 @@
-package com.de.mucify.player;
+package com.de.common.player;
 
 import android.content.Context;
 
 import androidx.annotation.Nullable;
 
-import com.de.mucify.FileManager;
+import com.de.common.FileManager;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

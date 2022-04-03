@@ -11,12 +11,12 @@ import android.widget.EditText;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.de.mucify.FileManager;
-import com.de.mucify.MediaLibrary;
+import com.de.common.FileManager;
+import com.de.common.MediaLibrary;
 import com.de.mucify.R;
-import com.de.mucify.Util;
-import com.de.mucify.player.Playlist;
-import com.de.mucify.player.Song;
+import com.de.common.Util;
+import com.de.common.player.Playlist;
+import com.de.common.player.Song;
 import com.de.mucify.ui.adapter.CreatePlaylistDialogListItemAdapter;
 import com.de.mucify.ui.adapter.ViewHolderPlaylist;
 

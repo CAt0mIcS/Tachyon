@@ -1,12 +1,12 @@
-package com.de.mucify;
+package com.de.common;
 
 import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
-import com.de.mucify.player.Playback;
-import com.de.mucify.player.Playlist;
-import com.de.mucify.player.Song;
+import com.de.common.player.Playback;
+import com.de.common.player.Playlist;
+import com.de.common.player.Song;
 
 import java.io.File;
 import java.util.ArrayList;

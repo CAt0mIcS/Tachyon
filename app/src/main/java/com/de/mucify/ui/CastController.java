@@ -12,11 +12,11 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 
-import com.de.mucify.FileManager;
-import com.de.mucify.MediaLibrary;
+import com.de.common.FileManager;
+import com.de.common.MediaLibrary;
 import com.de.mucify.R;
-import com.de.mucify.Util;
-import com.de.mucify.player.Playback;
+import com.de.common.Util;
+import com.de.common.player.Playback;
 import com.google.android.gms.cast.MediaInfo;
 import com.google.android.gms.cast.MediaLoadRequestData;
 import com.google.android.gms.cast.MediaMetadata;

@@ -17,12 +17,12 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.de.mucify.AudioType;
-import com.de.mucify.MediaLibrary;
+import com.de.common.AudioType;
+import com.de.common.MediaLibrary;
 import com.de.mucify.R;
-import com.de.mucify.UserData;
-import com.de.mucify.player.Playback;
-import com.de.mucify.player.Playlist;
+import com.de.common.UserData;
+import com.de.common.player.Playback;
+import com.de.common.player.Playlist;
 import com.de.mucify.ui.adapter.PlaybackListItemAdapter;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 

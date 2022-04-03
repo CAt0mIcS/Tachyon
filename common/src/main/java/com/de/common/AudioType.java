@@ -1,4 +1,4 @@
-package com.de.mucify;
+package com.de.common;
 
 public enum AudioType {
     Song, Loop, Playlist

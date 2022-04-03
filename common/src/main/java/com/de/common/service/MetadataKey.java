@@ -1,4 +1,4 @@
-package com.de.mucify.service;
+package com.de.common.service;
 
 import android.support.v4.media.MediaMetadataCompat;
 

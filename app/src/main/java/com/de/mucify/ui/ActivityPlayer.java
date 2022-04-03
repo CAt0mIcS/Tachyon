@@ -11,11 +11,11 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 
-import com.de.mucify.MediaLibrary;
+import com.de.common.MediaLibrary;
 import com.de.mucify.R;
-import com.de.mucify.UserData;
-import com.de.mucify.Util;
-import com.de.mucify.player.Song;
+import com.de.common.UserData;
+import com.de.common.Util;
+import com.de.common.player.Song;
 import com.de.mucify.ui.trivial.DialogAddToPlaylist;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 

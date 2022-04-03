@@ -1,4 +1,4 @@
-package com.de.mucify.player;
+package com.de.common.player;
 
 
 import android.content.Context;

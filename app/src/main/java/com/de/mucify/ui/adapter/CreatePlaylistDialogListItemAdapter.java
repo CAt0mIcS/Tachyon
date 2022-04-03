@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.de.mucify.R;
-import com.de.mucify.player.Playlist;
+import com.de.common.player.Playlist;
 
 import java.util.ArrayList;
 

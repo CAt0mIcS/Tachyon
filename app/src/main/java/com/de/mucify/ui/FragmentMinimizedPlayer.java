@@ -10,10 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.de.mucify.MediaLibrary;
+import com.de.common.MediaLibrary;
 import com.de.mucify.R;
-import com.de.mucify.UserData;
-import com.de.mucify.Util;
+import com.de.common.UserData;
+import com.de.common.Util;
 
 public class FragmentMinimizedPlayer extends Fragment {
 

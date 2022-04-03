@@ -60,7 +60,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".service.MediaPlaybackService"
+        <service android:name="com.de.common.service.MediaPlaybackService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />

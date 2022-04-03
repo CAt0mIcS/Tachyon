@@ -11,10 +11,10 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
-import com.de.mucify.Util;
-import com.de.mucify.service.MediaAction;
-import com.de.mucify.service.MediaPlaybackService;
-import com.de.mucify.service.MetadataKey;
+import com.de.common.Util;
+import com.de.common.service.MediaAction;
+import com.de.common.service.MediaPlaybackService;
+import com.de.common.service.MetadataKey;
 
 
 public class MediaBrowserController implements IMediaController {

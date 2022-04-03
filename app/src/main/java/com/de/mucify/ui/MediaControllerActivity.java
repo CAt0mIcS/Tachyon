@@ -7,7 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.de.mucify.service.MediaAction;
+import com.de.common.service.MediaAction;
 import com.google.android.gms.cast.framework.CastContext;
 
 import java.util.ArrayList;

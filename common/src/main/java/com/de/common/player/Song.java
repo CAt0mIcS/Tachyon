@@ -1,4 +1,4 @@
-package com.de.mucify.player;
+package com.de.common.player;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,9 +10,9 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.de.mucify.FileManager;
-import com.de.mucify.MediaLibrary;
-import com.de.mucify.R;
+import com.de.common.FileManager;
+import com.de.common.MediaLibrary;
+import com.de.common.R;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -86,7 +86,7 @@ public class Song extends Playback {
         if (artist != null)
             mArtist = artist;
         else
-            mArtist = context.getString(R.string.unknown_artist);
+            mArtist = "Unknown Artist";
     }
 
     /**
