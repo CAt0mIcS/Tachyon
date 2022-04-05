@@ -22,7 +22,7 @@ import android.provider.MediaStore
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import androidx.annotation.IntDef
-import com.de.common.extensions.*
+import com.de.common.ext.*
 import com.de.common.service.MediaPlaybackService
 
 /**

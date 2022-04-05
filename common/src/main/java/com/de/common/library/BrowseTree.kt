@@ -21,7 +21,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaMetadataCompat
 import com.de.common.R
-import com.de.common.extensions.*
+import com.de.common.ext.*
 import com.de.common.service.MediaPlaybackService
 
 /**

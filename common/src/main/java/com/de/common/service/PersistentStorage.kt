@@ -24,7 +24,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
 import android.support.v4.media.MediaDescriptionCompat
 import com.bumptech.glide.Glide
-import com.de.common.extensions.asAlbumArtContentUri
+import com.de.common.ext.asAlbumArtContentUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.de.common.extensions
+package com.de.common.ext
 
 import android.net.Uri
 import java.net.URLEncoder
