@@ -9,6 +9,7 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import com.de.common.library.BrowseTree
 import com.de.common.service.MediaPlaybackService
 import com.de.mucify.R
 
@@ -50,6 +51,22 @@ class ActivityPlayer : AppCompatActivity() {
 
     fun onConnected() {
         Log.d("Mucify", "Connected to media browser service")
+
+        mediaBrowser.subscribe(
+            BrowseTree.BROWSABLE_ROOT,
+            object : MediaBrowserCompat.SubscriptionCallback() {
+                override fun onChildrenLoaded(
+                    parentId: String,
+                    children: MutableList<MediaBrowserCompat.MediaItem>
+                ) {
+                    MediaControllerCompat.getMediaController(this@ActivityPlayer).transportControls
+                        .playFromMediaId(
+                            children[0].mediaId, null
+                        )
+                }
+            })
+
+
     }
 
 
