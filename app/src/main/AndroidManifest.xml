@@ -22,7 +22,7 @@
             android:value="com.de.mucify.cast.CastOptionsProvider" />
 
         <activity
-            android:name=".ui.ActivityLibrary"
+            android:name=".ui.ActivityPlayer"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

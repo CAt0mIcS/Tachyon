@@ -13,7 +13,7 @@ import com.de.common.service.MediaPlaybackService
 import com.de.mucify.R
 
 
-class ActivityLibrary : AppCompatActivity() {
+class ActivityPlayer : AppCompatActivity() {
 
     private val mediaBrowser: MediaBrowserCompat by lazy {
         MediaBrowserCompat(
@@ -58,16 +58,16 @@ class ActivityLibrary : AppCompatActivity() {
             val token: MediaSessionCompat.Token = mediaBrowser.sessionToken
 
             // Create a MediaControllerCompat
-            val mediaController = MediaControllerCompat(this@ActivityLibrary, token)
+            val mediaController = MediaControllerCompat(this@ActivityPlayer, token)
 
             // Save the controller
-            MediaControllerCompat.setMediaController(this@ActivityLibrary, mediaController)
+            MediaControllerCompat.setMediaController(this@ActivityPlayer, mediaController)
 
             // Finish building the UI
-            this@ActivityLibrary.onConnected()
+            this@ActivityPlayer.onConnected()
 
             // Register a Callback to stay in sync
-            MediaControllerCompat.getMediaController(this@ActivityLibrary)
+            MediaControllerCompat.getMediaController(this@ActivityPlayer)
                 .registerCallback(controllerCallback)
             Log.d("Mucify", "MediaBrowserController connection established")
         }

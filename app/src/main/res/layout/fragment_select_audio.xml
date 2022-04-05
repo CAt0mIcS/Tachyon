@@ -9,7 +9,7 @@
     android:background="?android:colorBackground"
     android:clickable="true"
     android:focusable="true"
-    tools:context=".ui.ActivityLibrary">
+    tools:context=".ui.ActivityPlayer">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvFiles"

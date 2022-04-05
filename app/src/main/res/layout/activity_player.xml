@@ -5,7 +5,7 @@
     android:id="@+id/fragment_container_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.ActivityLibrary">
+    tools:context=".ui.ActivityPlayer">
 
     <ScrollView
         android:layout_width="match_parent"
