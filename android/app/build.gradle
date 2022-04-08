@@ -44,7 +44,9 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.example.mucify"
-        minSdkVersion flutter.minSdkVersion
+
+        // TODO: Should use [minSdkVersion flutter.minSdkVersion]
+        minSdkVersion 21
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -65,4 +67,11 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    implementation "androidx.media:media:1.5.0"
+
+    implementation "com.google.android.exoplayer:exoplayer-core:2.17.1"
+    implementation "com.google.android.exoplayer:exoplayer-ui:2.17.1"
+    implementation "com.google.android.exoplayer:extension-mediasession:2.17.1"
+    implementation "com.google.android.exoplayer:extension-cast:2.17.1"
 }
