@@ -74,6 +74,18 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_web_plugins:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
+  js:
+    dependency: transitive
+    description:
+      name: js
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.6.3"
   lints:
     dependency: transitive
     description:
@@ -102,6 +114,15 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.7.0"
+  mucify_media_player:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: "00ec38ba81d7fed813db513a4be1e3a1ceeb1c49"
+      url: "https://github.com/CAt0mIcS/MucifyMediaPlayerPlugin.git"
+    source: git
+    version: "0.0.1"
   path:
     dependency: transitive
     description:
@@ -172,3 +193,4 @@ packages:
     version: "2.1.1"
 sdks:
   dart: ">=2.16.2 <3.0.0"
+  flutter: ">=2.5.0"

@@ -29,6 +29,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  mucify_media_player:
+    git:
+      url: https://github.com/CAt0mIcS/MucifyMediaPlayerPlugin.git
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mucify_media_player/mucify_media_player.dart';
 
 class TestHomePage extends StatefulWidget {
   const TestHomePage({Key? key, required this.title}) : super(key: key);
@@ -66,8 +67,8 @@ class TestHomePageState extends State<TestHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            Text(
+              '${MucifyMediaPlayerPlugin.getString()}:',
             ),
             Text(
               '$_counter',
