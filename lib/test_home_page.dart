@@ -67,8 +67,8 @@ class TestHomePageState extends State<TestHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              '${MucifyMediaPlayerPlugin.getString()}:',
+            const Text(
+              'Clicked:',
             ),
             Text(
               '$_counter',
