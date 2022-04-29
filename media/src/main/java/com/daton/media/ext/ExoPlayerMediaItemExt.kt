@@ -1,0 +1,38 @@
+package com.daton.media.ext
+
+import com.daton.media.MetadataKeys
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.MediaMetadata
+
+inline val MediaItem.isSong: Boolean
+    get() = mediaId.contains("Song_")
+
+inline val MediaItem.isLoop: Boolean
+    get() = mediaId.contains("Loop_")
+
+inline val MediaItem.isPlaylist: Boolean
+    get() = mediaId.contains("Playlist_")
+
+
+// Returns 0 as default
+inline var MediaMetadata.startTime: Int
+    get() = extras?.getInt(MetadataKeys.StartTime) ?: 0
+    set(value) {
+        // Bundle needs to always exist, which is the case as it stores duration
+        extras!!.putInt(MetadataKeys.StartTime, value)
+    }
+
+inline var MediaMetadata.endTime: Int
+    get() {
+        val endTime = extras?.getInt(MetadataKeys.EndTime)
+        return if (endTime == null || endTime == 0) duration else endTime
+    }
+    set(value) {
+        // Bundle needs to always exist, which is the case as it stores duration
+        extras!!.putInt(MetadataKeys.EndTime, value)
+    }
+
+inline val MediaMetadata.duration: Int
+    get() = extras!!.getInt(MetadataKeys.Duration)
+
+
