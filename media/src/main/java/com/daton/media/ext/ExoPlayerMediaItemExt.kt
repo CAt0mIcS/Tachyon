@@ -15,24 +15,24 @@ inline val MediaItem.isPlaylist: Boolean
 
 
 // Returns 0 as default
-inline var MediaMetadata.startTime: Int
-    get() = extras?.getInt(MetadataKeys.StartTime) ?: 0
+inline var MediaMetadata.startTime: Long
+    get() = extras?.getLong(MetadataKeys.StartTime) ?: 0
     set(value) {
         // Bundle needs to always exist, which is the case as it stores duration
-        extras!!.putInt(MetadataKeys.StartTime, value)
+        extras!!.putLong(MetadataKeys.StartTime, value)
     }
 
-inline var MediaMetadata.endTime: Int
+inline var MediaMetadata.endTime: Long
     get() {
-        val endTime = extras?.getInt(MetadataKeys.EndTime)
-        return if (endTime == null || endTime == 0) duration else endTime
+        val endTime = extras?.getLong(MetadataKeys.EndTime)
+        return if (endTime == null || endTime == 0L) duration else endTime
     }
     set(value) {
         // Bundle needs to always exist, which is the case as it stores duration
-        extras!!.putInt(MetadataKeys.EndTime, value)
+        extras!!.putLong(MetadataKeys.EndTime, value)
     }
 
-inline val MediaMetadata.duration: Int
-    get() = extras!!.getInt(MetadataKeys.Duration)
+inline val MediaMetadata.duration: Long
+    get() = extras!!.getLong(MetadataKeys.Duration)
 
 

@@ -17,10 +17,10 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
     open fun onSetMediaId(mediaId: String?) {
     }
 
-    open fun onSetStartTime(startTime: Int) {
+    open fun onSetStartTime(startTime: Long) {
     }
 
-    open fun onSetEndTime(endTime: Int) {
+    open fun onSetEndTime(endTime: Long) {
     }
 
     fun getCustomActions(): Array<out MediaSessionConnector.CustomActionProvider> {
@@ -54,7 +54,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 TAG,
                 "CustomActionSetStartTime.onCustomAction with action $action"
             )
-            onSetStartTime(extras!!.getInt(MediaAction.StartTime))
+            onSetStartTime(extras!!.getLong(MediaAction.StartTime))
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
@@ -71,7 +71,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 TAG,
                 "CustomActionSetEndTime.onCustomAction with action $action"
             )
-            onSetEndTime(extras!!.getInt(MediaAction.EndTime))
+            onSetEndTime(extras!!.getLong(MediaAction.EndTime))
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =

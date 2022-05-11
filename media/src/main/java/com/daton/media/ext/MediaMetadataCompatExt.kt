@@ -65,44 +65,44 @@ inline val MediaMetadataCompat.isPlaylist: Boolean
     get() = getString(MetadataKeys.MediaId).contains("Playlist_")
 
 
-inline val MediaMetadataCompat.duration: Int
-    get() = getLong(MetadataKeys.Duration).toInt()
+inline val MediaMetadataCompat.duration: Long
+    get() = getLong(MetadataKeys.Duration)
 
-inline var MediaMetadataCompat.Builder.duration: Int
+inline var MediaMetadataCompat.Builder.duration: Long
     get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
     set(value) {
-        putLong(MetadataKeys.Duration, value.toLong())
+        putLong(MetadataKeys.Duration, value)
     }
 
 
-inline val MediaMetadataCompat.startTime: Int?
+inline val MediaMetadataCompat.startTime: Long
     get() {
         val res = getLong(MetadataKeys.StartTime)
-        return if (res == 0L) null else res.toInt()
+        return if (res == 0L) 0 else res
     }
 
-inline var MediaMetadataCompat.Builder.startTime: Int
+inline var MediaMetadataCompat.Builder.startTime: Long
     get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
     set(value) {
-        putLong(MetadataKeys.StartTime, value.toLong())
+        putLong(MetadataKeys.StartTime, value)
     }
 
 
-inline val MediaMetadataCompat.endTime: Int?
+inline val MediaMetadataCompat.endTime: Long
     get() {
         val res = getLong(MetadataKeys.EndTime)
-        return if (res == 0L) null else res.toInt()
+        return if (res == 0L) duration else res
     }
 
-inline var MediaMetadataCompat.Builder.endTime: Int
+inline var MediaMetadataCompat.Builder.endTime: Long
     get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
     set(value) {
-        putLong(MetadataKeys.EndTime, value.toLong())
+        putLong(MetadataKeys.EndTime, value)
     }
 
 
 inline val MediaMetadataCompat.path: File
-    get() = File(getString(MetadataKeys.MediaUri).toString())
+    get() = File(getString(MetadataKeys.MediaUri))
 
 inline var MediaMetadataCompat.Builder.path: File
     get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
@@ -127,10 +127,10 @@ fun MediaMetadataCompat.toMediaItemMetadata(): com.google.android.exoplayer2.Med
         setArtist(artist)
 
         val bundle = Bundle()
-        bundle.putInt(MetadataKeys.Duration, duration)
+        bundle.putLong(MetadataKeys.Duration, duration)
         if (isLoop) {
-            bundle.putInt(MetadataKeys.StartTime, startTime!!)
-            bundle.putInt(MetadataKeys.EndTime, endTime!!)
+            bundle.putLong(MetadataKeys.StartTime, startTime)
+            bundle.putLong(MetadataKeys.EndTime, endTime)
         }
         setExtras(bundle)
     }.build()

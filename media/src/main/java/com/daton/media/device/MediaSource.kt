@@ -88,7 +88,7 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
 
                 duration =
                     metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!!
-                        .toInt()
+                        .toLong()
 
             }.build()
         }
@@ -101,8 +101,8 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
                 val reader = BufferedReader(FileReader(file))
                 val songPath = File(reader.readLine())
                 path = songPath
-                startTime = reader.readLine().toInt()
-                endTime = reader.readLine().toInt()
+                startTime = reader.readLine().toLong()
+                endTime = reader.readLine().toLong()
 
                 val songMetadata = loadSong(songPath)
                 title = songMetadata.title
@@ -158,7 +158,7 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
                     }
                 }
             } else {
-                field = value;
+                field = value
             }
         }
 
@@ -177,7 +177,7 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
          */
         // TODO: What if music is stored somewhere else?
         val musicDir =
-            File(Environment.getExternalStorageDirectory().absolutePath + "/Music");
+            File(Environment.getExternalStorageDirectory().absolutePath + "/Music")
         if (musicDir.exists()) {
             musicDirectory = musicDir
             Log.d(TAG, "Settings music directory to ${musicDirectory.absolutePath}")

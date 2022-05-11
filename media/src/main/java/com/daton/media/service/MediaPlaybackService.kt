@@ -18,7 +18,6 @@ import com.daton.media.device.MediaSource
 import com.daton.media.ext.*
 import com.daton.media.CustomPlayer
 import com.daton.media.Playlist
-import com.daton.media.ext.*
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -336,48 +335,52 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                      * the internal playlist
                      * TODO: Maybe introduce setting to combine songs and loops as playlist items when playing either song or loop
                      */
-                    if (mediaId!!.isSongMediaId) {
-                        playlist.play(mediaSource.filter { it.mediaId.isSongMediaId }, itemToPlay)
-                        currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
-                    } else if (mediaId.isLoopMediaId) {
-                        playlist.play(mediaSource.filter { it.mediaId.isLoopMediaId }, itemToPlay)
-                        currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
-                    } else if (mediaId.isPlaylistMediaId) {
-                        playlist.play(browserTree[mediaId.basePlayback]!!, itemToPlay)
-                        currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
+                    when {
+                        mediaId!!.isSongMediaId -> {
+                            playlist.play(mediaSource.filter { it.mediaId.isSongMediaId }, itemToPlay)
+                            currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
+                        }
+                        mediaId.isLoopMediaId -> {
+                            playlist.play(mediaSource.filter { it.mediaId.isLoopMediaId }, itemToPlay)
+                            currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
+                        }
+                        mediaId.isPlaylistMediaId -> {
+                            playlist.play(browserTree[mediaId.basePlayback]!!, itemToPlay)
+                            currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
+                        }
                     }
                 }
             }
         }
 
-        override fun onSetStartTime(startTime: Int) {
-            val endTime = currentPlayer.mediaMetadata.endTime.toLong()
+        override fun onSetStartTime(startTime: Long) {
+            val endTime = currentPlayer.mediaMetadata.endTime
 
             // Start time and end time are back to default: Delete message
-            if (startTime == 0 && endTime == currentPlayer.duration) {
-                playerMessage?.cancel()
-                return
-            }
-
-            if (currentPlayer.currentPosition < startTime || currentPlayer.currentPosition > endTime)
-                currentPlayer.seekTo(startTime.toLong())
-            postLoopMessage(startTime.toLong(), endTime)
-
-            currentPlayer.mediaMetadata.startTime = startTime
-        }
-
-        override fun onSetEndTime(endTime: Int) {
-            val startTime = currentPlayer.mediaMetadata.startTime.toLong()
-
-            // Start time and end time are back to default: Delete message
-            if (startTime == 0L && endTime.toLong() == currentPlayer.duration) {
+            if (startTime == 0L && endTime == currentPlayer.duration) {
                 playerMessage?.cancel()
                 return
             }
 
             if (currentPlayer.currentPosition < startTime || currentPlayer.currentPosition > endTime)
                 currentPlayer.seekTo(startTime)
-            postLoopMessage(startTime, endTime.toLong())
+            postLoopMessage(startTime, endTime)
+
+            currentPlayer.mediaMetadata.startTime = startTime
+        }
+
+        override fun onSetEndTime(endTime: Long) {
+            val startTime = currentPlayer.mediaMetadata.startTime
+
+            // Start time and end time are back to default: Delete message
+            if (startTime == 0L && endTime == currentPlayer.duration) {
+                playerMessage?.cancel()
+                return
+            }
+
+            if (currentPlayer.currentPosition < startTime || currentPlayer.currentPosition > endTime)
+                currentPlayer.seekTo(startTime)
+            postLoopMessage(startTime, endTime)
 
             currentPlayer.mediaMetadata.endTime = endTime
         }
@@ -447,28 +450,20 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            val bundle = Bundle()
-            bundle.putBoolean("isPlaying", isPlaying)
-            mediaSession.sendSessionEvent("onIsPlayingChanged", bundle)
+
         }
 
         override fun onMediaItemTransition(
             mediaItem: com.google.android.exoplayer2.MediaItem?,
             reason: Int
         ) {
-            val bundle = Bundle()
-            bundle.putString("Title", mediaItem?.mediaMetadata?.title.toString())
-            bundle.putString("Artist", mediaItem?.mediaMetadata?.artist.toString())
-            bundle.putInt("Duration", mediaItem?.mediaMetadata?.duration!!)
-            mediaSession.sendSessionEvent("onUnderlyingPlaybackChanged", bundle)
-
             // TODO: Loops for [CastPlayer]
-            if (mediaItem.isLoop) {
-                currentPlayer.seekTo(mediaItem.mediaMetadata.startTime.toLong())
+            if (mediaItem != null && mediaItem.isLoop) {
+                currentPlayer.seekTo(mediaItem.mediaMetadata.startTime)
 
                 postLoopMessage(
-                    mediaItem.mediaMetadata.startTime.toLong(),
-                    mediaItem.mediaMetadata.endTime.toLong()
+                    mediaItem.mediaMetadata.startTime,
+                    mediaItem.mediaMetadata.endTime
                 )
             }
         }
@@ -491,12 +486,12 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
         override fun onPlayerError(error: PlaybackException) {
-            var message = "Unknown error";
-            Log.e(TAG, "Player error: " + error.errorCodeName + " (" + error.errorCode + ")");
+            var message = "Unknown error"
+            Log.e(TAG, "Player error: " + error.errorCodeName + " (" + error.errorCode + ")")
             if (error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
                 || error.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
             ) {
-                message = "Media not found";
+                message = "Media not found"
             }
             Toast.makeText(
                 applicationContext,
