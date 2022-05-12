@@ -171,7 +171,11 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
     private var onReadyListeners = mutableListOf<(Boolean) -> Unit>()
 
 
-    init {
+    /**
+     * Should be called after storage permission is granted to load music that is stored in the phone's
+     * external storage
+     */
+    fun loadDeviceFiles() {
         /**
          * Music directory may not be available, if so we'll set the state to STATE_ERROR
          */

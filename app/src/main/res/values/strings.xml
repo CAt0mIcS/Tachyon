@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Mucify</string>
+    <string name="dialog_permission_title">Permission required</string>
+    <string name="dialog_permission_default_message">Permission is required to run requested operation</string>
+    <string name="dialog_permission_button_positive">OK</string>
+    <string name="storage_permission_rationale">We need to access your external storage to play your local device files. Denying this permission will disable local audio playback</string>
 </resources>

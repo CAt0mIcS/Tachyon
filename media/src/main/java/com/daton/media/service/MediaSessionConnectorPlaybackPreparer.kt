@@ -14,20 +14,20 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         const val TAG: String = "PlaybackPreparerBase"
     }
 
-    open fun onSetMediaId(mediaId: String?) {
-    }
+    open fun onSetMediaId(mediaId: String) {}
 
-    open fun onSetStartTime(startTime: Long) {
-    }
+    open fun onSetStartTime(startTime: Long) {}
 
-    open fun onSetEndTime(endTime: Long) {
-    }
+    open fun onSetEndTime(endTime: Long) {}
+
+    open fun onStoragePermissionChanged(permissionGranted: Boolean) {}
 
     fun getCustomActions(): Array<out MediaSessionConnector.CustomActionProvider> {
         return arrayOf(
             CustomActionSetMediaId(),
             CustomActionSetStartTime(),
-            CustomActionSetEndTime()
+            CustomActionSetEndTime(),
+            CustomActionStoragePermissionChanged()
         )
     }
 
@@ -37,7 +37,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 TAG,
                 "CustomActionSetMediaId.onCustomAction with action $action"
             )
-            onSetMediaId(extras!!.getString(MediaAction.MediaId))
+            onSetMediaId(extras!!.getString(MediaAction.MediaId)!!)
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
@@ -78,6 +78,23 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
             PlaybackStateCompat.CustomAction.Builder(
                 MediaAction.SetEndTime,
                 MediaAction.EndTime,
+                R.drawable.music_note
+            ).build()
+    }
+
+    inner class CustomActionStoragePermissionChanged : MediaSessionConnector.CustomActionProvider {
+        override fun onCustomAction(player: Player, action: String, extras: Bundle?) {
+            Log.d(
+                TAG,
+                "CustomActionSetEndTime.onCustomAction with action $action"
+            )
+            onStoragePermissionChanged(extras!!.getBoolean(MediaAction.StoragePermissionGranted))
+        }
+
+        override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
+            PlaybackStateCompat.CustomAction.Builder(
+                MediaAction.StoragePermissionChanged,
+                MediaAction.StoragePermissionGranted,
                 R.drawable.music_note
             ).build()
     }

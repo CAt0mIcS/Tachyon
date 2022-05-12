@@ -1,14 +1,85 @@
 package com.daton.mucify.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
-import android.widget.MediaController
-import androidx.appcompat.app.AppCompatActivity
+import android.support.v4.media.MediaBrowserCompat
+import android.util.Log
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import com.daton.media.MediaAction
+import com.daton.media.device.BrowserTree
 import com.daton.mucify.R
+import com.daton.mucify.permission.Permission
+import com.daton.mucify.permission.PermissionManager
+import java.util.concurrent.CountDownLatch
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class ActivityMain : MediaControllerActivity() {
+    companion object {
+        const val TAG = "ActivityMain"
+    }
+
+    private val serviceJob = SupervisorJob()
+    private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
+
+    private var hasStoragePermission: Boolean = false
+
+    /**
+     * Counts down when the storage permission was either accepted or denied
+     */
+    private var permissionResultAvailable = CountDownLatch(1)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // TODO: When going into app info and setting files and media permission to "Media files only"
+        // TODO: we need to use MediaStore to load files?
+        PermissionManager.from(this).apply {
+            request(Permission.ReadStorage)
+            rationale(getString(R.string.storage_permission_rationale))
+            checkPermission { result: Boolean ->
+                if (result) {
+                    hasStoragePermission = true
+                    Log.i(TAG, "Storage permission granted")
+                } else
+                    Log.i(TAG, "Storage permission NOT granted")
+                permissionResultAvailable.countDown()
+            }
+        }
     }
 
+
+    override fun onConnected() {
+        mediaBrowser.subscribe(
+            BrowserTree.ROOT,
+            object : MediaBrowserCompat.SubscriptionCallback() {
+                override fun onChildrenLoaded(
+                    parentId: String,
+                    children: MutableList<MediaBrowserCompat.MediaItem>
+                ) {
+                    // Play only if not currently playing
+                    if (!isCreated) {
+                        mediaId = children[0].mediaId.toString()
+                        play()
+                    }
+                }
+            })
+
+        serviceScope.launch {
+            // Wait for permission dialog to be accepted or denied
+            permissionResultAvailable.await()
+
+            // Notify service to load local device files
+            if (hasStoragePermission) {
+                val bundle = Bundle()
+                bundle.putBoolean(MediaAction.StoragePermissionGranted, true)
+                sendCustomAction(MediaAction.StoragePermissionChanged, bundle)
+            }
+        }
+    }
 }

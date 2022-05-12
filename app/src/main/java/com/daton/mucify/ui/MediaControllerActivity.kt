@@ -16,13 +16,14 @@ import com.daton.media.service.MediaPlaybackService
 
 
 open class MediaControllerActivity : AppCompatActivity() {
-    private lateinit var mMediaBrowser: MediaBrowserCompat
-    private val mControllerCallback: MediaControllerCallback = MediaControllerCallback()
+    protected lateinit var mediaBrowser: MediaBrowserCompat
+    private val controllerCallback: MediaControllerCallback = MediaControllerCallback()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        mMediaBrowser = MediaBrowserCompat(
+        mediaBrowser = MediaBrowserCompat(
             this,
             ComponentName(this, MediaPlaybackService::class.java),
             ConnectionCallback(),
@@ -34,7 +35,7 @@ open class MediaControllerActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        mMediaBrowser.connect()
+        mediaBrowser.connect()
         Log.d("Mucify", "Started connecting to MediaPlaybackService")
     }
 
@@ -42,10 +43,19 @@ open class MediaControllerActivity : AppCompatActivity() {
         super.onStop()
         if (MediaControllerCompat.getMediaController(this) != null) {
             MediaControllerCompat.getMediaController(this)
-                .unregisterCallback(mControllerCallback)
+                .unregisterCallback(controllerCallback)
         }
-        mMediaBrowser.disconnect()
+        mediaBrowser.disconnect()
         Log.d("Mucify", "Started disconnecting from MediaPlaybackService")
+    }
+
+    /**
+     * Passes the new media id to the service, after this, all media operations are supported
+     */
+    fun setPlayback(mediaId: String) {
+        val bundle = Bundle()
+        bundle.putString(MediaAction.MediaId, mediaId)
+        sendCustomAction(MediaAction.SetMediaId, bundle)
     }
 
     /**
@@ -65,7 +75,11 @@ open class MediaControllerActivity : AppCompatActivity() {
     /**
      * @return media id of current playback (song/loop/playlist)
      */
-    fun getMediaId(): String = getMetadata().mediaId
+    var mediaId: String
+        get() = metadata.mediaId
+        set(value) {
+            setPlayback(value)
+        }
 
     /**
      * Starts playback, requires that media id was already set
@@ -91,97 +105,97 @@ open class MediaControllerActivity : AppCompatActivity() {
     }
 
     /**
+     * Checks if the service already has a media id to play. If true all media operations will be supported
+     */
+    val isCreated: Boolean
+        get() = playbackState.state != PlaybackStateCompat.STATE_NONE
+
+    /**
      * Checks if the playback state is equal to playing. Crashes if the Playback hasn't been started yet.
      */
-    fun isPlaying(): Boolean {
-        return MediaControllerCompat.getMediaController(this).playbackState.state == PlaybackStateCompat.STATE_PLAYING
-    }
+    var isPlaying: Boolean
+        get() = playbackState.state == PlaybackStateCompat.STATE_PLAYING
+        set(value) {
+            if (value) play() else pause()
+        }
 
     /**
      * Checks if the playback state is equal to paused. Crashes if the Playback hasn't been started yet.
      */
-    fun isPaused(): Boolean {
-        return MediaControllerCompat.getMediaController(this).playbackState.state == PlaybackStateCompat.STATE_PAUSED
-    }
+    var isPaused: Boolean
+        get() = playbackState.state == PlaybackStateCompat.STATE_PAUSED
+        set(value) {
+            if (value) pause() else play()
+        }
 
     /**
-     * Uses a custom event to call onCustomEvent in MediaPlaybackService.
-     * Crashes if the Playback hasn't been started yet.
-     *
-     * @param millis offset from audio position zero.
+     * Start time of the currently playing song. Crashes if the Playback hasn't been started yet.
      */
-    fun setStartTime(millis: Long) {
-        val bundle = Bundle()
-        bundle.putLong(MediaAction.StartTime, millis)
-        sendCustomAction(MediaAction.SetStartTime, bundle)
-    }
+    var startTime: Long
+        get() = metadata.startTime
+        set(value) {
+            val bundle = Bundle()
+            bundle.putLong(MediaAction.StartTime, value)
+            sendCustomAction(MediaAction.SetStartTime, bundle)
+        }
 
     /**
-     * Uses a custom event to call onCustomEvent in MediaPlaybackService.
-     * Crashes if the Playback hasn't been started yet.
-     *
-     * @param millis offset from audio duration.
+     * End time of the currently playing song. Crashes if the Playback hasn't been started yet.
      */
-    fun setEndTime(millis: Long) {
-        val bundle = Bundle()
-        bundle.putLong(MediaAction.EndTime, millis)
-        sendCustomAction(MediaAction.SetEndTime, bundle)
-    }
-
-    /**
-     * Gets the start time of the currently playing song. Crashes if the Playback hasn't been started yet.
-     */
-    fun getStartTime(): Long = getMetadata().startTime
-
-    /**
-     * Gets the end time of the currently playing song. Crashes if the Playback hasn't been started yet.
-     */
-    fun getEndTime(): Long = getMetadata().endTime
+    var endTime: Long
+        get() = metadata.endTime
+        set(value) {
+            val bundle = Bundle()
+            bundle.putLong(MediaAction.EndTime, value)
+            sendCustomAction(MediaAction.SetEndTime, bundle)
+        }
 
     /**
      * @return the image associated with the album of the current playing playback
      */
-    fun getImage(): Bitmap? {
-        return getMetadata().albumArt
-    }
+    val albumArt: Bitmap?
+        get() = metadata.albumArt
 
     /**
-     * Gets the current position of the currently playing song. Crashes if the Playback hasn't been started yet.
+     * Current position of the currently playing song. Crashes if the Playback hasn't been started yet.
      */
-    fun getCurrentPosition(): Int {
-        return getPlaybackState().position.toInt()
-    }
+    var currentPosition: Long
+        get() = playbackState.position
+        set(value) {
+            seekTo(value)
+        }
 
     /**
-     * Gets the duration of the currently playing song. Crashes if the Playback hasn't been started yet.
+     * Duration of the currently playing song. Crashes if the Playback hasn't been started yet.
      */
-    fun getDuration(): Long = getMetadata().duration
+    val duration: Long
+        get() = metadata.duration
 
     /**
-     * Gets the title of the currently playing song. Metadata must've been set, otherwise the
+     * Title of the currently playing song. Metadata must've been set, otherwise the
      * function will crash.
      */
-    fun getSongTitle(): String = getMetadata().title
+    val title: String
+        get() = metadata.title
 
     /**
-     * Gets the artist of the currently playing song. Metadata must've been set, otherwise the
+     * Artist of the currently playing song. Metadata must've been set, otherwise the
      * function will crash.
      */
-    fun getSongArtist(): String = getMetadata().artist
+    val artist: String
+        get() = metadata.artist
 
     /**
      * @return playback state which was set in MediaPlaybackService
      */
-    private fun getPlaybackState(): PlaybackStateCompat {
-        return MediaControllerCompat.getMediaController(this).playbackState
-    }
+    val playbackState: PlaybackStateCompat
+        get() = MediaControllerCompat.getMediaController(this).playbackState
 
     /**
      * @return metadata which was set in the MediaPlaybackService
      */
-    private fun getMetadata(): MediaMetadataCompat {
-        return MediaControllerCompat.getMediaController(this).metadata
-    }
+    val metadata: MediaMetadataCompat
+        get() = MediaControllerCompat.getMediaController(this).metadata
 
     fun sendCustomAction(action: String?, bundle: Bundle?) {
         MediaControllerCompat.getMediaController(this).transportControls.sendCustomAction(
@@ -195,7 +209,7 @@ open class MediaControllerActivity : AppCompatActivity() {
 
     private inner class ConnectionCallback : MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
-            val token: MediaSessionCompat.Token = mMediaBrowser.sessionToken
+            val token: MediaSessionCompat.Token = mediaBrowser.sessionToken
 
             // Create a MediaControllerCompat
             val mediaController = MediaControllerCompat(this@MediaControllerActivity, token)
@@ -208,7 +222,7 @@ open class MediaControllerActivity : AppCompatActivity() {
 
             // Register a Callback to stay in sync
             MediaControllerCompat.getMediaController(this@MediaControllerActivity)
-                .registerCallback(mControllerCallback)
+                .registerCallback(controllerCallback)
             Log.d("Mucify", "MediaBrowserController connection established")
         }
 
@@ -230,7 +244,7 @@ open class MediaControllerActivity : AppCompatActivity() {
 
         override fun onSessionDestroyed() {
             Log.d("Mucify", "MediaControllerActivity session destroyed")
-            mMediaBrowser.disconnect()
+            mediaBrowser.disconnect()
             // maybe schedule a reconnection using a new MediaBrowser instance
             this@MediaControllerActivity.onDisconnected()
         }

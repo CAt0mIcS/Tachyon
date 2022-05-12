@@ -91,13 +91,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
         Log.d(TAG, "Creating MediaPlaybackService")
 
-        /**
-         * Starts asynchronously loading all possible media playbacks
-         */
-        Log.d(TAG, "Loading MediaSource")
-        serviceScope.launch {
-            mediaSource = MediaSource(this@MediaPlaybackService)
-        }
+        // Doesn't start loading files yet as we need to wait on storage permission to be granted
+        mediaSource = MediaSource(this)
 
         // Build a PendingIntent that can be used to launch the UI.
         val sessionActivityPendingIntent =
@@ -314,12 +309,12 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
 
-        override fun onSetMediaId(mediaId: String?) {
+        override fun onSetMediaId(mediaId: String) {
             mediaSource.whenReady {
                 // Find either the underlying playback or the top-level playback to play
                 val itemToPlay =
                     mediaSource.find { item ->
-                        if (mediaId?.hasUnderlyingPlayback == true)
+                        if (mediaId.hasUnderlyingPlayback == true)
                             mediaId.underlyingPlayback == item.mediaId
                         else
                             item.mediaId == mediaId
@@ -336,12 +331,18 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                      * TODO: Maybe introduce setting to combine songs and loops as playlist items when playing either song or loop
                      */
                     when {
-                        mediaId!!.isSongMediaId -> {
-                            playlist.play(mediaSource.filter { it.mediaId.isSongMediaId }, itemToPlay)
+                        mediaId.isSongMediaId -> {
+                            playlist.play(
+                                mediaSource.filter { it.mediaId.isSongMediaId },
+                                itemToPlay
+                            )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
                         mediaId.isLoopMediaId -> {
-                            playlist.play(mediaSource.filter { it.mediaId.isLoopMediaId }, itemToPlay)
+                            playlist.play(
+                                mediaSource.filter { it.mediaId.isLoopMediaId },
+                                itemToPlay
+                            )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
                         mediaId.isPlaylistMediaId -> {
@@ -383,6 +384,19 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             postLoopMessage(startTime, endTime)
 
             currentPlayer.mediaMetadata.endTime = endTime
+        }
+
+        override fun onStoragePermissionChanged(permissionGranted: Boolean) {
+            if (permissionGranted) {
+                /**
+                 * Starts asynchronously loading all possible media playbacks
+                 */
+                Log.d(MediaPlaybackService.TAG, "Loading MediaSource")
+                serviceScope.launch {
+                    mediaSource.loadDeviceFiles()
+                }
+            }
+
         }
     }
 
