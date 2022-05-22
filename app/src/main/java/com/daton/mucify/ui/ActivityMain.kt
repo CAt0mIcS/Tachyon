@@ -6,7 +6,6 @@ import android.util.Log
 import com.daton.media.MediaAction
 import com.daton.media.device.BrowserTree
 import com.daton.mucify.R
-import com.daton.mucify.user.UserSettings
 import com.daton.mucify.permission.Permission
 import com.daton.mucify.permission.PermissionManager
 import com.daton.mucify.user.User
@@ -50,8 +49,7 @@ class ActivityMain : MediaControllerActivity() {
             }
         }
 
-        User.create(applicationContext)
-        UserSettings.loadFromLocal(this)
+        User.create(this)
     }
 
 
