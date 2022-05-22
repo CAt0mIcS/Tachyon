@@ -1,4 +1,4 @@
-package com.daton.mucify
+package com.daton.mucify.user
 
 import android.content.Context
 import org.json.JSONArray
@@ -68,7 +68,11 @@ object UserSettings {
         }
     }
 
-    fun load(context: Context) {
+    /**
+     * Loads the settings from the local predefined settings file. If the file doesn't exist
+     * it's created and default settings will be saved in it
+     */
+    fun loadFromLocal(context: Context) {
         settingsFile = File(context.filesDir.absolutePath.toString() + "/Settings.txt")
 
         // If reading fails, save default settings
@@ -81,42 +85,67 @@ object UserSettings {
             reader.close()
             jsonBuilder.toString()
         } catch (e: IOException) {
-            save()
+            saveToLocal()
             return
         }
 
         // If reading fails, save default settings
         try {
-            val json = JSONObject(jsonString)
-            ignoreAudioFocus = json.optBoolean("IgnoreAudioFocus", ignoreAudioFocus)
-            songIncDecInterval = json.optInt("SongIncDecInterval", songIncDecInterval)
-            audioUpdateInterval = json.optInt("AudioUpdateInterval", audioUpdateInterval)
-            maxPlaybacksInHistory = json.optInt("MaxPlaybacksInHistory", maxPlaybacksInHistory)
-
-            playbackInfos.clear()
-            val jsonPlaybackInfos = json.getJSONArray("PlaybackInfos")
-            for (i in 0 until jsonPlaybackInfos.length()) {
-                val obj = jsonPlaybackInfos.getJSONObject(i)
-                val info = PlaybackInfo()
-                info.playbackPos = obj.optInt("PlaybackPos")
-                if (obj.has("PlaybackPath")) info.playbackPath = File(obj.getString("PlaybackPath"))
-                if (obj.has("LastPlayedPlaybackInPlaylist")) info.lastPlayedPlaybackInPlaylist =
-                    File(obj.getString("LastPlayedPlaybackInPlaylist"))
-                addPlaybackInfo(info)
-            }
-
-            // Remove oldest playbacks if we exceed max playbacks in history
-            if (playbackInfos.size > maxPlaybacksInHistory) playbackInfos.subList(
-                0,
-                playbackInfos.size - maxPlaybacksInHistory
-            ).clear()
+            loadFromString(jsonString)
         } catch (e: JSONException) {
-            save()
+            saveToLocal()
             return
         }
     }
 
-    fun save() {
+    /**
+     * Saves the current settings to the predefined local settings file. Saves nothing in case of failure
+     */
+    fun saveToLocal() {
+        try {
+            val writer = BufferedWriter(FileWriter(settingsFile))
+            writer.write(toJsonString())
+            writer.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: JSONException) {
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * Loads settings from a json-readable string
+     */
+    fun loadFromString(jsonString: String) {
+        val json = JSONObject(jsonString)
+        ignoreAudioFocus = json.optBoolean("IgnoreAudioFocus", ignoreAudioFocus)
+        songIncDecInterval = json.optInt("SongIncDecInterval", songIncDecInterval)
+        audioUpdateInterval = json.optInt("AudioUpdateInterval", audioUpdateInterval)
+        maxPlaybacksInHistory = json.optInt("MaxPlaybacksInHistory", maxPlaybacksInHistory)
+
+        playbackInfos.clear()
+        val jsonPlaybackInfos = json.getJSONArray("PlaybackInfos")
+        for (i in 0 until jsonPlaybackInfos.length()) {
+            val obj = jsonPlaybackInfos.getJSONObject(i)
+            val info = PlaybackInfo()
+            info.playbackPos = obj.optInt("PlaybackPos")
+            if (obj.has("PlaybackPath")) info.playbackPath = File(obj.getString("PlaybackPath"))
+            if (obj.has("LastPlayedPlaybackInPlaylist")) info.lastPlayedPlaybackInPlaylist =
+                File(obj.getString("LastPlayedPlaybackInPlaylist"))
+            addPlaybackInfo(info)
+        }
+
+        // Remove oldest playbacks if we exceed max playbacks in history (TODO: Shouldn't be here)
+        if (playbackInfos.size > maxPlaybacksInHistory) playbackInfos.subList(
+            0,
+            playbackInfos.size - maxPlaybacksInHistory
+        ).clear()
+    }
+
+    /**
+     * @return settings encoded into json string
+     */
+    fun toJsonString(): String {
         val map: MutableMap<String?, String?> = HashMap()
         map["IgnoreAudioFocus"] = ignoreAudioFocus.toString()
         map["SongIncDecInterval"] = songIncDecInterval.toString()
@@ -144,15 +173,8 @@ object UserSettings {
         } catch (e: JSONException) {
             e.printStackTrace()
         }
-        try {
-            val writer = BufferedWriter(FileWriter(settingsFile))
-            writer.write(json!!.toString(4))
-            writer.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
+
+        return json!!.toString(4)
     }
 
     fun addPlaybackInfo(info: PlaybackInfo) {
