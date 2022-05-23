@@ -45,7 +45,7 @@ object User {
         metadata = UserMetadata(
             File(context.filesDir.absolutePath.toString() + "/Settings.txt")
         )
-        metadata.loadFromLocal()
+        metadata = metadata.loadFromLocal()
     }
 
     fun login(context: Context) {

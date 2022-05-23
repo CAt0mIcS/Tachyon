@@ -41,8 +41,10 @@ data class UserMetadata(
     /**
      * Loads the settings from the local predefined settings file. If the file doesn't exist
      * it's created and default settings will be saved in it
+     *
+     * @return New metadata
      */
-    fun loadFromLocal() {
+    fun loadFromLocal(): UserMetadata {
         // If reading fails, save default settings
         try {
             val jsonBuilder = StringBuilder()
@@ -52,12 +54,13 @@ data class UserMetadata(
             }
             reader.close()
 
-            loadFromString(jsonBuilder.toString())
+            return loadFromString(jsonBuilder.toString())
         } catch (e: IOException) {
             saveToLocal()
         } catch (e: JSONException) {
             saveToLocal()
         }
+        return this
     }
 
     /**
