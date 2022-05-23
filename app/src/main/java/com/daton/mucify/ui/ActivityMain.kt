@@ -3,6 +3,7 @@ package com.daton.mucify.ui
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.util.Log
+import android.widget.SeekBar
 import com.daton.media.MediaAction
 import com.daton.media.device.BrowserTree
 import com.daton.mucify.R
@@ -50,6 +51,32 @@ class ActivityMain : MediaControllerActivity() {
         }
 
         User.create(this)
+
+        findViewById<SeekBar>(R.id.sbPos).setOnSeekBarChangeListener(object :
+            SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
+            }
+
+            override fun onStartTrackingTouch(p0: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(p0: SeekBar?) {
+                User.login(this@ActivityMain)
+            }
+        })
+
+        findViewById<SeekBar>(R.id.sbStartPos).setOnSeekBarChangeListener(object :
+            SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
+            }
+
+            override fun onStartTrackingTouch(p0: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(p0: SeekBar?) {
+                User.logout(this@ActivityMain)
+            }
+        })
     }
 
 
@@ -62,10 +89,10 @@ class ActivityMain : MediaControllerActivity() {
                     children: MutableList<MediaBrowserCompat.MediaItem>
                 ) {
                     // Play only if not currently playing
-                    if (!isCreated) {
-                        mediaId = children[0].mediaId.toString()
+//                    if (!isCreated) {
+//                        mediaId = children[0].mediaId.toString()
 //                        play()
-                    }
+//                    }
                 }
             })
 

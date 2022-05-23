@@ -10,7 +10,7 @@ import java.io.*
 @Serializable
 data class UserMetadata(
     @Transient
-    private val settingsFile: File = File("data/Settings.txt"),
+    var settingsFile: File = File("files/Settings.txt"),
 
     /**
      * Start time since epoch when settings were last saved. Used to control which settings are new/old
