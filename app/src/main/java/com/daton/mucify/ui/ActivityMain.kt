@@ -89,10 +89,10 @@ class ActivityMain : MediaControllerActivity() {
                     children: MutableList<MediaBrowserCompat.MediaItem>
                 ) {
                     // Play only if not currently playing
-//                    if (!isCreated) {
-//                        mediaId = children[0].mediaId.toString()
-//                        play()
-//                    }
+                    if (!isCreated) {
+                        mediaId = children[0].mediaId.toString()
+                        play()
+                    }
                 }
             })
 

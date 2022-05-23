@@ -175,26 +175,25 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         parentId: String,
         result: Result<List<MediaItem>>
     ) {
-//        Log.d(TAG, "MediaPlaybackService.onLoadChildren with parentId: $parentId")
-//        val resultsSent = mediaSource.whenReady { successfullyInitialized ->
-//            if (successfullyInitialized) {
-//                val children = browserTree[parentId]?.map { item ->
-//                    MediaItem(item.description, 0)
-//                }
-//                result.sendResult(children)
-//            } else {
-//                TODO("Handle error that MediaSource wasn't initialized properly")
-//            }
-//        }
-//
-//        // If the results are not ready, the service must "detach" the results before
-//        // the method returns. After the source is ready, the lambda above will run,
-//        // and the caller will be notified that the results are ready.
-//        if (!resultsSent) {
-//            Log.d(TAG, "MediaPlaybackService.onLoadChildren: results not sent")
-//            result.detach()
-//        }
-        result.sendResult(null)
+        Log.d(TAG, "MediaPlaybackService.onLoadChildren with parentId: $parentId")
+        val resultsSent = mediaSource.whenReady { successfullyInitialized ->
+            if (successfullyInitialized) {
+                val children = browserTree[parentId]?.map { item ->
+                    MediaItem(item.description, 0)
+                }
+                result.sendResult(children)
+            } else {
+                TODO("Handle error that MediaSource wasn't initialized properly")
+            }
+        }
+
+        // If the results are not ready, the service must "detach" the results before
+        // the method returns. After the source is ready, the lambda above will run,
+        // and the caller will be notified that the results are ready.
+        if (!resultsSent) {
+            Log.d(TAG, "MediaPlaybackService.onLoadChildren: results not sent")
+            result.detach()
+        }
     }
 
     /**
