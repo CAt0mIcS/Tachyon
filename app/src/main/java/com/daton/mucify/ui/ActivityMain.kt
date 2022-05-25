@@ -2,19 +2,21 @@ package com.daton.mucify.ui
 
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
-import android.widget.SeekBar
 import com.daton.media.MediaAction
 import com.daton.media.device.BrowserTree
 import com.daton.mucify.R
+import com.daton.mucify.databinding.ActivityMainBinding
 import com.daton.mucify.permission.Permission
 import com.daton.mucify.permission.PermissionManager
 import com.daton.mucify.user.User
-import java.util.concurrent.CountDownLatch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import java.util.concurrent.CountDownLatch
+
 
 class ActivityMain : MediaControllerActivity() {
     companion object {
@@ -26,6 +28,8 @@ class ActivityMain : MediaControllerActivity() {
 
     private var hasStoragePermission: Boolean = false
 
+    private lateinit var binding: ActivityMainBinding
+
     /**
      * Counts down when the storage permission was either accepted or denied
      */
@@ -33,7 +37,8 @@ class ActivityMain : MediaControllerActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // TODO: When going into app info and setting files and media permission to "Media files only"
         // TODO: we need to use MediaStore to load files?
@@ -52,31 +57,7 @@ class ActivityMain : MediaControllerActivity() {
 
         User.create(this)
 
-        findViewById<SeekBar>(R.id.sbPos).setOnSeekBarChangeListener(object :
-            SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-            }
-
-            override fun onStartTrackingTouch(p0: SeekBar?) {
-            }
-
-            override fun onStopTrackingTouch(p0: SeekBar?) {
-                User.login(this@ActivityMain)
-            }
-        })
-
-        findViewById<SeekBar>(R.id.sbStartPos).setOnSeekBarChangeListener(object :
-            SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-            }
-
-            override fun onStartTrackingTouch(p0: SeekBar?) {
-            }
-
-            override fun onStopTrackingTouch(p0: SeekBar?) {
-                User.logout(this@ActivityMain)
-            }
-        })
+        Log.d(TAG, "onCreate finished")
     }
 
 
@@ -88,11 +69,7 @@ class ActivityMain : MediaControllerActivity() {
                     parentId: String,
                     children: MutableList<MediaBrowserCompat.MediaItem>
                 ) {
-                    // Play only if not currently playing
-                    if (!isCreated) {
-                        mediaId = children[0].mediaId.toString()
-                        play()
-                    }
+                    setupUI(children)
                 }
             })
 
@@ -105,6 +82,26 @@ class ActivityMain : MediaControllerActivity() {
                 val bundle = Bundle()
                 bundle.putBoolean(MediaAction.StoragePermissionGranted, true)
                 sendCustomAction(MediaAction.StoragePermissionChanged, bundle)
+            }
+        }
+    }
+
+    private fun setupUI(playbacks: List<MediaBrowserCompat.MediaItem>) {
+        Log.d(TAG, "Setting up ui")
+
+        binding.btnLogin.setOnClickListener { User.login(this) }
+        binding.btnLogout.setOnClickListener { User.logout(this) }
+
+        binding.relLayoutSongs.setOnClickListener {
+            val fragment = FragmentSelectAudio(playbacks)
+            supportFragmentManager.beginTransaction()
+                .addToBackStack(null)
+                .add(R.id.fragment_container_view, fragment)
+                .commit()
+
+            fragment.onItemClicked = { mediaId ->
+                this.mediaId = mediaId
+                play()
             }
         }
     }
