@@ -9,9 +9,6 @@ import java.io.*
 
 @Serializable
 data class UserMetadata(
-    @Transient
-    var settingsFile: File = File("files/Settings.txt"),
-
     /**
      * Start time since epoch when settings were last saved. Used to control which settings are new/old
      */
@@ -35,8 +32,49 @@ data class UserMetadata(
     /**
      * Max number of playbacks stored in the history
      */
-    var maxPlaybacksInHistory: Int = 25
+    private var _maxPlaybacksInHistory: Int = 25,
+
+    /**
+     * History items with media id
+     */
+    private var _history: MutableList<String> = mutableListOf()
 ) {
+
+    @Transient
+    var onHistoryChanged: (() -> Unit)? = null
+
+    val history: List<String>
+        get() = _history
+
+    var maxPlaybacksInHistory: Int
+        get() = _maxPlaybacksInHistory
+        set(value) {
+            _maxPlaybacksInHistory = value
+            if (history.size > _maxPlaybacksInHistory) {
+                shrinkHistory()
+                onHistoryChanged?.invoke()
+            }
+
+        }
+
+    fun addHistory(mediaId: String) {
+        if (history.contains(mediaId)) {
+            _history.remove(mediaId)
+            _history.add(0, mediaId)
+        } else {
+            _history.add(0, mediaId)
+            if (history.size > maxPlaybacksInHistory)
+                shrinkHistory()
+        }
+        onHistoryChanged?.invoke()
+    }
+
+    fun clearHistory() {
+        if (history.isNotEmpty()) {
+            _history.clear()
+            onHistoryChanged?.invoke()
+        }
+    }
 
     /**
      * Loads the settings from the local predefined settings file. If the file doesn't exist
@@ -48,7 +86,7 @@ data class UserMetadata(
         // If reading fails, save default settings
         try {
             val jsonBuilder = StringBuilder()
-            val reader = BufferedReader(FileReader(settingsFile))
+            val reader = BufferedReader(FileReader(User.settingsFile))
             while (reader.ready()) {
                 jsonBuilder.append(reader.readLine()).append('\n')
             }
@@ -68,7 +106,7 @@ data class UserMetadata(
      */
     fun saveToLocal() {
         try {
-            val writer = BufferedWriter(FileWriter(settingsFile))
+            val writer = BufferedWriter(FileWriter(User.settingsFile))
             writer.write(toJsonString(this))
             writer.close()
         } catch (e: IOException) {
@@ -92,6 +130,13 @@ data class UserMetadata(
         fun toJsonString(userMetadata: UserMetadata): String {
             return Json.encodeToString(userMetadata)
         }
+    }
+
+    /**
+     * Shrinks length of [history] to [maxPlaybacksInHistory]
+     */
+    private fun shrinkHistory() {
+        _history.subList(0, history.size - maxPlaybacksInHistory).clear()
     }
 
 }

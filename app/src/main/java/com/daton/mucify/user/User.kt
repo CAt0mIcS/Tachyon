@@ -22,6 +22,8 @@ import java.io.File
 
 object User {
     const val TAG = "User"
+    lateinit var settingsFile: File
+        private set
 
     /**
      * Auth0
@@ -30,21 +32,20 @@ object User {
     private var cachedCredentials: Credentials? = null
     private var cachedUserProfile: UserProfile? = null
 
-    lateinit var metadata: UserMetadata
+    var metadata = UserMetadata()
         private set
 
     /**
      * Should be called in the first activity to initialize the user
      */
     fun create(context: Context) {
+        settingsFile = File(context.filesDir.absolutePath.toString() + "/Settings.txt")
+
         account = Auth0(
             context.getString(R.string.auth0_client_id),
             context.getString(R.string.com_auth0_domain)
         )
 
-        metadata = UserMetadata(
-            File(context.filesDir.absolutePath.toString() + "/Settings.txt")
-        )
         metadata = metadata.loadFromLocal()
     }
 
@@ -107,13 +108,11 @@ object User {
                 override fun onSuccess(result: UserProfile) {
                     cachedUserProfile = result
                     // TODO: Is this fast?
-                    val userMetadata: UserMetadata = Json.decodeFromString(
-                        JSONObject(result.getUserMetadata()).toString()
+                    onReady(
+                        Json.decodeFromString(
+                            JSONObject(result.getUserMetadata()).toString()
+                        )
                     )
-                    userMetadata.settingsFile =
-                        File(context.filesDir.absolutePath.toString() + "/Settings.txt")
-
-                    onReady(userMetadata)
                 }
             })
     }

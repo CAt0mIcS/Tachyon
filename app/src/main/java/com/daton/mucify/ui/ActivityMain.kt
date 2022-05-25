@@ -2,8 +2,8 @@ package com.daton.mucify.ui
 
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
+import android.widget.ArrayAdapter
 import com.daton.media.MediaAction
 import com.daton.media.device.BrowserTree
 import com.daton.mucify.R
@@ -92,6 +92,28 @@ class ActivityMain : MediaControllerActivity() {
         binding.btnLogin.setOnClickListener { User.login(this) }
         binding.btnLogout.setOnClickListener { User.logout(this) }
 
+        binding.rvHistory.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_list_item_1,
+            User.metadata.history
+        )
+
+        val playMedia = { mediaId: String ->
+            this.mediaId = mediaId
+            play()
+
+            User.metadata.addHistory(mediaId)
+            User.metadata.saveToLocal()
+        }
+
+        binding.rvHistory.setOnItemClickListener { adapterView, view, i, l ->
+            playMedia(adapterView.getItemAtPosition(i).toString())
+        }
+
+        User.metadata.onHistoryChanged = {
+            (binding.rvHistory.adapter as ArrayAdapter<*>).notifyDataSetChanged()
+        }
+
         binding.relLayoutSongs.setOnClickListener {
             val fragment = FragmentSelectAudio(playbacks)
             supportFragmentManager.beginTransaction()
@@ -99,10 +121,7 @@ class ActivityMain : MediaControllerActivity() {
                 .add(R.id.fragment_container_view, fragment)
                 .commit()
 
-            fragment.onItemClicked = { mediaId ->
-                this.mediaId = mediaId
-                play()
-            }
+            fragment.onItemClicked = playMedia
         }
     }
 }
