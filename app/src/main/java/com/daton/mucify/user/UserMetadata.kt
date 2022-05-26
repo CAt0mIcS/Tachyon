@@ -35,10 +35,46 @@ data class UserMetadata(
     private var _maxPlaybacksInHistory: Int = 25,
 
     /**
+     * Remotely stored loops.
+     */
+    val loops: MutableList<Loop> = mutableListOf(),
+
+    /**
+     * Remotely stored playlists. The string specifies the local file content
+     */
+    val playlists: MutableList<Playlist> = mutableListOf(),
+
+    /**
      * History items with media id
      */
     private var _history: MutableList<String> = mutableListOf()
 ) {
+
+    @Serializable
+    data class Loop(
+
+        /**
+         * Loop's media id
+         */
+        var mediaId: String,
+        var songMediaId: String,
+
+        var startTime: Long,
+        var endTime: Long
+    )
+
+    @Serializable
+    data class Playlist(
+        /**
+         * Playlist's media id
+         */
+        var mediaId: String,
+
+        /**
+         * Specifies a list of all the media ids in the playlist
+         */
+        var mediaIds: MutableList<String>
+    )
 
     @Transient
     var onHistoryChanged: (() -> Unit)? = null
@@ -102,9 +138,11 @@ data class UserMetadata(
     }
 
     /**
-     * Saves the current settings to the predefined local settings file. Saves nothing in case of failure
+     * Saves the current settings to the predefined local settings file. Saves nothing in case of failure.
+     * Updates the timestamp to the current system time
      */
     fun saveToLocal() {
+        timestamp = System.currentTimeMillis()
         try {
             val writer = BufferedWriter(FileWriter(User.settingsFile))
             writer.write(toJsonString(this))

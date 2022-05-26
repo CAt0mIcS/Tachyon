@@ -19,4 +19,13 @@ object MediaAction {
 
     const val StoragePermissionChanged = "com.daton.mucify.STORAGE_PERMISSION_CHANGED"
     const val StoragePermissionGranted = "StoragePermissionGranted"
+
+    const val SendLoop = "com.daton.mucify.SEND_LOOP"
+    const val SongMediaId = "SongMediaId"
+    //    MediaId
+    //    StartTime
+    //    EndTime
+
+    const val SendPlaylist = "com.daton.mucify.SEND_PLAYLIST"
+    const val MediaIds = "MediaIds"
 }

@@ -114,6 +114,15 @@ class ActivityMain : MediaControllerActivity() {
             (binding.rvHistory.adapter as ArrayAdapter<*>).notifyDataSetChanged()
         }
 
+        // Send remotely stored loops and playlists to service
+        User.onLogin {
+            for (loop in User.metadata.loops)
+                sendLoop(loop.mediaId, loop.songMediaId, loop.startTime, loop.endTime)
+
+            for (playlist in User.metadata.playlists)
+                sendPlaylist(playlist.mediaId, playlist.mediaIds.toTypedArray())
+        }
+
         binding.relLayoutSongs.setOnClickListener {
             val fragment = FragmentSelectAudio(playbacks)
             supportFragmentManager.beginTransaction()

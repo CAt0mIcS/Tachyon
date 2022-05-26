@@ -166,7 +166,7 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
      * List of all available media items
      * TODO Should have separate classes for Song, Playlist, ...
      */
-    private var catalog = emptyList<MediaMetadataCompat>()
+    private var catalog = mutableListOf<MediaMetadataCompat>()
 
     private var onReadyListeners = mutableListOf<(Boolean) -> Unit>()
 
@@ -219,7 +219,7 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
         for (file in files) {
             if (file.isDirectory) loadSongs(file) else {
                 if (file.isSongFile) {
-                    catalog = catalog + loadSong(file)
+                    catalog += loadSong(file)
                 }
             }
         }
@@ -230,14 +230,46 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
         val files = dataDirectory.listFiles() ?: return
         for (file in files) {
             if (file.isLoopFile) {
-                catalog = catalog + loadLoop(file)
+                catalog += loadLoop(file)
             } else if (file.isPlaylistFile) {
-                catalog = catalog + MediaMetadataCompat.Builder().apply {
+                catalog += MediaMetadataCompat.Builder().apply {
                     mediaId = "Playlist_" + file.absolutePath
                     path = file
                 }.build()
             }
         }
+    }
+
+    fun setOrAddLoop(mediaId: String, songMediaId: String, startTime: Long, endTime: Long) {
+        val mediaMetadata = MediaMetadataCompat.Builder().apply {
+            this.mediaId = mediaId
+            path = songMediaId.path
+            this.startTime = startTime
+            this.endTime = endTime
+
+            // TODO: Optimize
+            val songMetadata = loadSong(songMediaId.path)
+            title = songMetadata.title
+            artist = songMetadata.artist
+        }.build()
+
+        // Replace if already contained in catalog
+        // TODO: Offline loop might be newer than online loop
+        for (item in catalog) {
+            if (item.mediaId == mediaId) {
+                val index = catalog.indexOf(item)
+                catalog.removeAt(index)
+                catalog.add(index, mediaMetadata)
+                return
+            }
+        }
+
+        // Not contained in catalog
+        catalog.add(mediaMetadata)
+    }
+
+    fun setOrAddPlaylist(mediaId: String, mediaIds: Array<String>) {
+
     }
 
 }

@@ -32,6 +32,8 @@ object User {
     private var cachedCredentials: Credentials? = null
     private var cachedUserProfile: UserProfile? = null
 
+    private var onLogin: (() -> Unit)? = null
+
     var metadata = UserMetadata()
         private set
 
@@ -47,6 +49,14 @@ object User {
         )
 
         metadata = metadata.loadFromLocal()
+    }
+
+    fun onLogin(onLogin: () -> Unit) {
+        // User already logged in
+        if (cachedCredentials != null)
+            onLogin()
+        else
+            this.onLogin = onLogin
     }
 
     fun login(context: Context) {
@@ -69,7 +79,8 @@ object User {
                     cachedCredentials = result
 
                     updateUserProfile {
-                        syncUserSettings(context)
+                        syncUserSettings()
+                        onLogin?.invoke()
                     }
 
                     // TODO: When changing user settings local and remote metadata needs to be updated
@@ -95,7 +106,7 @@ object User {
             })
     }
 
-    fun requestMetadata(context: Context, onReady: (UserMetadata) -> Unit) {
+    fun requestMetadata(onReady: (UserMetadata) -> Unit) {
         val usersClient = UsersAPIClient(account, cachedCredentials!!.accessToken)
         usersClient
             .getProfile(cachedUserProfile!!.getId()!!)
@@ -117,7 +128,7 @@ object User {
             })
     }
 
-    fun updateMetadata(newMetadata: UserMetadata = metadata) {
+    fun uploadMetadata(newMetadata: UserMetadata = metadata) {
         val usersClient = UsersAPIClient(account, cachedCredentials!!.accessToken)
         val metadata = JSONObject(Json.encodeToString(newMetadata)).toMap()
 
@@ -141,17 +152,17 @@ object User {
      * If the online settings are older than the offline ones, upload offline to online
      * If the offline settings are older than the online ones, download online to offline
      */
-    private fun syncUserSettings(context: Context) {
+    private fun syncUserSettings() {
         // TODO: Conflicting settings
         //      Changing settings on Windows
         //      Changing settings on Android without synchronizing
         //      Going back online and trying to synchronize
         //  Which settings to use?
 
-        requestMetadata(context) { remoteMetadata ->
+        requestMetadata { remoteMetadata ->
             // Offline is newer than online --> Upload offline
             if (remoteMetadata.timestamp < metadata.timestamp) {
-                updateMetadata(metadata)
+                uploadMetadata(metadata)
             }
             // Online is newer than offline --> Download online
             else if (remoteMetadata.timestamp > metadata.timestamp) {

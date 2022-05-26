@@ -1,5 +1,6 @@
-
 package com.daton.media.ext
+
+import java.io.File
 
 /**
  * Does the top-level media id point to a song
@@ -18,6 +19,12 @@ inline val String.isLoopMediaId: Boolean
  */
 inline val String.isPlaylistMediaId: Boolean
     get() = contains("Playlist_")
+
+/**
+ * Extracts the path from the media id
+ */
+inline val String.path: File
+    get() = File(substring(indexOf('_')))
 
 
 /**

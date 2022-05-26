@@ -22,12 +22,18 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
     open fun onStoragePermissionChanged(permissionGranted: Boolean) {}
 
+    open fun onLoopReceived(mediaId: String, songMediaId: String, startTime: Long, endTime: Long) {}
+
+    open fun onPlaylistReceived(mediaId: String, mediaIds: Array<String>) {}
+
     fun getCustomActions(): Array<out MediaSessionConnector.CustomActionProvider> {
         return arrayOf(
             CustomActionSetMediaId(),
             CustomActionSetStartTime(),
             CustomActionSetEndTime(),
-            CustomActionStoragePermissionChanged()
+            CustomActionStoragePermissionChanged(),
+            CustomActionSendLoop(),
+            CustomActionSendPlaylist()
         )
     }
 
@@ -95,6 +101,48 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
             PlaybackStateCompat.CustomAction.Builder(
                 MediaAction.StoragePermissionChanged,
                 MediaAction.StoragePermissionGranted,
+                R.drawable.music_note
+            ).build()
+    }
+
+    inner class CustomActionSendLoop : MediaSessionConnector.CustomActionProvider {
+        override fun onCustomAction(player: Player, action: String, extras: Bundle?) {
+            Log.d(
+                TAG,
+                "CustomActionSetEndTime.onCustomAction with action $action"
+            )
+            onLoopReceived(
+                extras!!.getString(MediaAction.MediaId)!!,
+                extras.getString(MediaAction.SongMediaId)!!,
+                extras.getLong(MediaAction.StartTime),
+                extras.getLong(MediaAction.EndTime)
+            )
+        }
+
+        override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
+            PlaybackStateCompat.CustomAction.Builder(
+                MediaAction.SendLoop,
+                MediaAction.SendLoop,
+                R.drawable.music_note
+            ).build()
+    }
+
+    inner class CustomActionSendPlaylist : MediaSessionConnector.CustomActionProvider {
+        override fun onCustomAction(player: Player, action: String, extras: Bundle?) {
+            Log.d(
+                TAG,
+                "CustomActionSetEndTime.onCustomAction with action $action"
+            )
+            onPlaylistReceived(
+                extras!!.getString(MediaAction.MediaId)!!,
+                extras.getStringArray(MediaAction.MediaIds)!!
+            )
+        }
+
+        override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
+            PlaybackStateCompat.CustomAction.Builder(
+                MediaAction.SendPlaylist,
+                MediaAction.SendPlaylist,
                 R.drawable.music_note
             ).build()
     }

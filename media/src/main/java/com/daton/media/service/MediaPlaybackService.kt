@@ -396,7 +396,29 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                     mediaSource.loadDeviceFiles()
                 }
             }
+        }
 
+        override fun onLoopReceived(
+            mediaId: String,
+            songMediaId: String,
+            startTime: Long,
+            endTime: Long
+        ) {
+            mediaSource.whenReady { successfullyInitialized ->
+                if (successfullyInitialized) {
+                    mediaSource.setOrAddLoop(mediaId, songMediaId, startTime, endTime)
+                } else
+                    TODO("Media source initialization not successful")
+            }
+        }
+
+        override fun onPlaylistReceived(mediaId: String, mediaIds: Array<String>) {
+            mediaSource.whenReady { successfullyInitialized ->
+                if (successfullyInitialized) {
+                    mediaSource.setOrAddPlaylist(mediaId, mediaIds)
+                } else
+                    TODO("Media source initialization not successful")
+            }
         }
     }
 
