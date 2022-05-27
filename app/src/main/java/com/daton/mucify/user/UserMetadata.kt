@@ -61,6 +61,11 @@ class UserMetadata {
         }
 
     /**
+     * Specifies syncing information
+     */
+    var syncType: Int = SyncProvider.LOCAL_ONLY
+
+    /**
      * Remotely stored loops.
      */
     val loops: MutableList<Loop> = mutableListOf()

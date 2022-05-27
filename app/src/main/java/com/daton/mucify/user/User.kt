@@ -34,6 +34,8 @@ object User {
 
     private var onLoginCallbacks = mutableListOf<() -> Unit>()
 
+    val syncProvider = SyncProvider()
+
     var metadata = UserMetadata()
         private set
 
@@ -166,13 +168,13 @@ object User {
         //  Which settings to use?
 
         requestMetadata { remoteMetadata ->
-            // Offline is newer than online --> Upload offline
-            if (remoteMetadata.timestamp < metadata.timestamp) {
-                uploadMetadata(metadata)
-            }
-            // Online is newer than offline --> Download online
-            else if (remoteMetadata.timestamp > metadata.timestamp) {
-                metadata = remoteMetadata
+            val newMetadata = syncProvider.sync(remoteMetadata, metadata)
+            if (newMetadata != null) {
+                val historyChanged = newMetadata.history != metadata.history
+
+                metadata = newMetadata
+                if (historyChanged)
+                    metadata.onHistoryChanged?.invoke()
                 metadata.saveToLocal()
             }
         }
