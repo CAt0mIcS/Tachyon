@@ -166,7 +166,7 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
      * List of all available media items
      * TODO Should have separate classes for Song, Playlist, ...
      */
-    private var catalog = mutableListOf<MediaMetadataCompat>()
+    val catalog = mutableListOf<MediaMetadataCompat>()
 
     private var onReadyListeners = mutableListOf<(Boolean) -> Unit>()
 
@@ -238,38 +238,6 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
                 }.build()
             }
         }
-    }
-
-    fun setOrAddLoop(mediaId: String, songMediaId: String, startTime: Long, endTime: Long) {
-        val mediaMetadata = MediaMetadataCompat.Builder().apply {
-            this.mediaId = mediaId
-            path = songMediaId.path
-            this.startTime = startTime
-            this.endTime = endTime
-
-            // TODO: Optimize
-            val songMetadata = loadSong(songMediaId.path)
-            title = songMetadata.title
-            artist = songMetadata.artist
-        }.build()
-
-        // Replace if already contained in catalog
-        // TODO: Offline loop might be newer than online loop
-        for (item in catalog) {
-            if (item.mediaId == mediaId) {
-                val index = catalog.indexOf(item)
-                catalog.removeAt(index)
-                catalog.add(index, mediaMetadata)
-                return
-            }
-        }
-
-        // Not contained in catalog
-        catalog.add(mediaMetadata)
-    }
-
-    fun setOrAddPlaylist(mediaId: String, mediaIds: Array<String>) {
-
     }
 
 }

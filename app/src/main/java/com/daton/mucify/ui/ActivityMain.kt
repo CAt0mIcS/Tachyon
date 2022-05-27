@@ -104,6 +104,7 @@ class ActivityMain : MediaControllerActivity() {
 
             User.metadata.addHistory(mediaId)
             User.metadata.saveToLocal()
+            User.uploadMetadata()
         }
 
         binding.rvHistory.setOnItemClickListener { adapterView, view, i, l ->
@@ -112,15 +113,6 @@ class ActivityMain : MediaControllerActivity() {
 
         User.metadata.onHistoryChanged = {
             (binding.rvHistory.adapter as ArrayAdapter<*>).notifyDataSetChanged()
-        }
-
-        // Send remotely stored loops and playlists to service
-        User.onLogin {
-            for (loop in User.metadata.loops)
-                sendLoop(loop.mediaId, loop.songMediaId, loop.startTime, loop.endTime)
-
-            for (playlist in User.metadata.playlists)
-                sendPlaylist(playlist.mediaId, playlist.mediaIds.toTypedArray())
         }
 
         binding.relLayoutSongs.setOnClickListener {

@@ -73,6 +73,8 @@ inline val String.basePlayback: String
 
 
 object MediaId {
+    const val Empty = ""
+
     /**
      * Builds a string describing the song to play in the playlist
      * @param rawPlaylistMediaId The media id of the playlist without any underlying playback attached

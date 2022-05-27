@@ -3,6 +3,9 @@ package com.daton.media.ext
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import com.daton.media.MetadataKeys
 import com.google.android.exoplayer2.MediaItem
@@ -111,17 +114,38 @@ inline var MediaMetadataCompat.Builder.path: File
     }
 
 
-fun MediaMetadataCompat.toMediaItem(): com.google.android.exoplayer2.MediaItem {
+fun MediaMetadataCompat.toMediaBrowserMediaItem(): MediaBrowserCompat.MediaItem {
+    return MediaBrowserCompat.MediaItem(toMediaDescriptionCompat(), 0)
+}
+
+fun MediaMetadataCompat.toMediaDescriptionCompat(): MediaDescriptionCompat {
+    return MediaDescriptionCompat.Builder().let { desc ->
+        desc.setMediaId(mediaId)
+        desc.title = title
+        desc.artist = artist
+        desc.iconBitmap = albumArt
+        desc.setExtras(
+            path,
+            duration,
+            startTime,
+            endTime
+        )
+
+        return@let desc.build()
+    }
+}
+
+fun MediaMetadataCompat.toExoMediaItem(): com.google.android.exoplayer2.MediaItem {
     return MediaItem.Builder().apply {
         setMediaId(mediaId)
         setUri(Uri.parse(path.absolutePath))
 
-        setMediaMetadata(toMediaItemMetadata())
+        setMediaMetadata(toExoMediaItemMetadata())
     }.build()
 }
 
 
-fun MediaMetadataCompat.toMediaItemMetadata(): com.google.android.exoplayer2.MediaMetadata {
+fun MediaMetadataCompat.toExoMediaItemMetadata(): com.google.android.exoplayer2.MediaMetadata {
     return com.google.android.exoplayer2.MediaMetadata.Builder().apply {
         setTitle(title)
         setArtist(artist)

@@ -32,7 +32,7 @@ object User {
     private var cachedCredentials: Credentials? = null
     private var cachedUserProfile: UserProfile? = null
 
-    private var onLogin: (() -> Unit)? = null
+    private var onLoginCallbacks = mutableListOf<() -> Unit>()
 
     var metadata = UserMetadata()
         private set
@@ -56,7 +56,7 @@ object User {
         if (cachedCredentials != null)
             onLogin()
         else
-            this.onLogin = onLogin
+            onLoginCallbacks += onLogin
     }
 
     fun login(context: Context) {
@@ -80,7 +80,7 @@ object User {
 
                     updateUserProfile {
                         syncUserSettings()
-                        onLogin?.invoke()
+                        onLoginCallbacks.forEach { it.invoke() }
                     }
 
                     // TODO: When changing user settings local and remote metadata needs to be updated
@@ -107,6 +107,9 @@ object User {
     }
 
     fun requestMetadata(onReady: (UserMetadata) -> Unit) {
+        if (cachedCredentials == null || cachedUserProfile == null)
+            return
+
         val usersClient = UsersAPIClient(account, cachedCredentials!!.accessToken)
         usersClient
             .getProfile(cachedUserProfile!!.getId()!!)
@@ -129,6 +132,9 @@ object User {
     }
 
     fun uploadMetadata(newMetadata: UserMetadata = metadata) {
+        if (cachedCredentials == null)
+            return
+
         val usersClient = UsersAPIClient(account, cachedCredentials!!.accessToken)
         val metadata = JSONObject(Json.encodeToString(newMetadata)).toMap()
 

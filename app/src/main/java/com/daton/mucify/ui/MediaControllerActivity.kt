@@ -197,25 +197,6 @@ open class MediaControllerActivity : AppCompatActivity() {
     val metadata: MediaMetadataCompat
         get() = MediaControllerCompat.getMediaController(this).metadata
 
-    /**
-     * Sends a new loop to the media session which stores it in [MediaSource]
-     */
-    fun sendLoop(mediaId: String, songMediaId: String, startTime: Long, endTime: Long) {
-        val bundle = Bundle()
-        bundle.putString(MediaAction.MediaId, mediaId)
-        bundle.putString(MediaAction.SongMediaId, songMediaId)
-        bundle.putLong(MediaAction.StartTime, startTime)
-        bundle.putLong(MediaAction.EndTime, endTime)
-        sendCustomAction(MediaAction.SendLoop, bundle)
-    }
-
-    fun sendPlaylist(mediaId: String, mediaIds: Array<String>) {
-        val bundle = Bundle()
-        bundle.putString(MediaAction.MediaId, mediaId)
-        bundle.putStringArray(MediaAction.MediaIds, mediaIds)
-        sendCustomAction(MediaAction.SendPlaylist, bundle)
-    }
-
     fun sendCustomAction(action: String?, bundle: Bundle?) {
         MediaControllerCompat.getMediaController(this).transportControls.sendCustomAction(
             action,

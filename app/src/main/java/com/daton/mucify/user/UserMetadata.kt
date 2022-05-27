@@ -1,6 +1,11 @@
 package com.daton.mucify.user
 
-import android.content.Context
+import android.support.v4.media.MediaBrowserCompat
+import com.daton.media.device.Loop
+import com.daton.media.device.Playlist
+import com.daton.media.ext.endTime
+import com.daton.media.ext.path
+import com.daton.media.ext.startTime
 import kotlinx.serialization.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -8,107 +13,105 @@ import org.json.JSONException
 import java.io.*
 
 @Serializable
-data class UserMetadata(
+class UserMetadata {
     /**
      * Start time since epoch when settings were last saved. Used to control which settings are new/old
      */
-    var timestamp: Long = 0L,
+    var timestamp: Long = System.currentTimeMillis()
+        private set
 
     /**
      * Keep playing even if audio focus is lost
      */
-    var ignoreAudioFocus: Boolean = false,
+    var ignoreAudioFocus: Boolean = false
+        set(value) {
+            field = value
+            timestamp = System.currentTimeMillis()
+        }
 
     /**
      * Interval by which the seekbars in the player should increment/decrement the time in milliseconds
      */
-    var songIncDecInterval: Int = 100,
+    var songIncDecInterval: Int = 100
+        set(value) {
+            field = value
+            timestamp = System.currentTimeMillis()
+        }
 
     /**
      * Interval by which the loop/song done check will be run
      */
-    var audioUpdateInterval: Int = 100,
+    var audioUpdateInterval: Int = 100
+        set(value) {
+            field = value
+            timestamp = System.currentTimeMillis()
+        }
 
     /**
      * Max number of playbacks stored in the history
      */
-    private var _maxPlaybacksInHistory: Int = 25,
+    var maxPlaybacksInHistory: Int = 25
+        set(value) {
+            field = value
+            if (history.size > field) {
+                shrinkHistory()
+                onHistoryChanged?.invoke()
+            }
+            timestamp = System.currentTimeMillis()
+        }
 
     /**
      * Remotely stored loops.
      */
-    val loops: MutableList<Loop> = mutableListOf(),
+    val loops: MutableList<Loop> = mutableListOf()
 
     /**
      * Remotely stored playlists. The string specifies the local file content
      */
-    val playlists: MutableList<Playlist> = mutableListOf(),
+    val playlists: MutableList<Playlist> = mutableListOf()
 
     /**
      * History items with media id
      */
-    private var _history: MutableList<String> = mutableListOf()
-) {
+    val history: MutableList<String> = mutableListOf()
 
-    @Serializable
-    data class Loop(
-
-        /**
-         * Loop's media id
-         */
-        var mediaId: String,
-        var songMediaId: String,
-
-        var startTime: Long,
-        var endTime: Long
-    )
-
-    @Serializable
-    data class Playlist(
-        /**
-         * Playlist's media id
-         */
-        var mediaId: String,
-
-        /**
-         * Specifies a list of all the media ids in the playlist
-         */
-        var mediaIds: MutableList<String>
-    )
 
     @Transient
     var onHistoryChanged: (() -> Unit)? = null
 
-    val history: List<String>
-        get() = _history
+    operator fun plus(loop: Loop) {
+        loops.add(loop)
+        timestamp = System.currentTimeMillis()
+    }
 
-    var maxPlaybacksInHistory: Int
-        get() = _maxPlaybacksInHistory
-        set(value) {
-            _maxPlaybacksInHistory = value
-            if (history.size > _maxPlaybacksInHistory) {
-                shrinkHistory()
-                onHistoryChanged?.invoke()
-            }
+    operator fun plus(playlist: Playlist) {
+        playlists.add(playlist)
+        timestamp = System.currentTimeMillis()
+    }
 
-        }
+    operator fun plus(history: String) {
+        addHistory(history)
+    }
+
 
     fun addHistory(mediaId: String) {
         if (history.contains(mediaId)) {
-            _history.remove(mediaId)
-            _history.add(0, mediaId)
+            history.remove(mediaId)
+            history.add(0, mediaId)
         } else {
-            _history.add(0, mediaId)
+            history.add(0, mediaId)
             if (history.size > maxPlaybacksInHistory)
                 shrinkHistory()
         }
         onHistoryChanged?.invoke()
+        timestamp = System.currentTimeMillis()
     }
 
     fun clearHistory() {
         if (history.isNotEmpty()) {
-            _history.clear()
+            history.clear()
             onHistoryChanged?.invoke()
+            timestamp = System.currentTimeMillis()
         }
     }
 
@@ -138,11 +141,10 @@ data class UserMetadata(
     }
 
     /**
-     * Saves the current settings to the predefined local settings file. Saves nothing in case of failure.
+     * Saves the current metadata to the predefined local settings file. Saves nothing in case of failure.
      * Updates the timestamp to the current system time
      */
     fun saveToLocal() {
-        timestamp = System.currentTimeMillis()
         try {
             val writer = BufferedWriter(FileWriter(User.settingsFile))
             writer.write(toJsonString(this))
@@ -174,7 +176,6 @@ data class UserMetadata(
      * Shrinks length of [history] to [maxPlaybacksInHistory]
      */
     private fun shrinkHistory() {
-        _history.subList(0, history.size - maxPlaybacksInHistory).clear()
+        history.subList(0, history.size - maxPlaybacksInHistory).clear()
     }
-
 }

@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.*
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
+import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
@@ -17,7 +18,6 @@ import com.daton.media.device.BrowserTree
 import com.daton.media.device.MediaSource
 import com.daton.media.ext.*
 import com.daton.media.CustomPlayer
-import com.daton.media.Playlist
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -52,7 +52,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
     private lateinit var notificationManager: MucifyNotificationManager
 
-    private lateinit var playlist: Playlist
+    private var currentMediaItems = listOf<MediaMetadataCompat>()
+    private var currentPlaybackIndex: Int = 0
 
     private var isForegroundService = false
 
@@ -76,8 +77,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             // TODO: Debug only
             addAnalyticsListener(EventLogger(null))
             repeatMode = Player.REPEAT_MODE_ONE
-
-            playlist = Playlist(this)
         })
     }
 
@@ -179,9 +178,16 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         val resultsSent = mediaSource.whenReady { successfullyInitialized ->
             if (successfullyInitialized) {
                 val children = browserTree[parentId]?.map { item ->
-                    MediaItem(item.description, 0)
+                    item.toMediaBrowserMediaItem()
                 }
-                result.sendResult(children)
+                try {
+                    result.sendResult(children)
+                } catch (_: IllegalStateException) {
+                    Log.e(
+                        TAG,
+                        "java.lang.IllegalStateException: sendResult() called when either sendResult() or sendError() had already been called for: /"
+                    )
+                }
             } else {
                 TODO("Handle error that MediaSource wasn't initialized properly")
             }
@@ -237,16 +243,24 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
     }
 
+    fun preparePlayer(
+        items: List<MediaMetadataCompat>,
+        itemToPlay: MediaMetadataCompat? = null
+    ) {
+        currentMediaItems = items
+        currentPlayer.setMediaItems(items.map { it.toExoMediaItem() })
+
+        val initialWindowIndex = if (itemToPlay == null) 0 else items.indexOf(itemToPlay)
+        // TODO: [itemToPlay] not in [playlist]
+        currentPlayer.seekTo(initialWindowIndex, C.TIME_UNSET)
+    }
+
     private inner class QueueNavigator(
         mediaSession: MediaSessionCompat
     ) : TimelineQueueNavigator(mediaSession) {
         override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
-            if (windowIndex < playlist.size) {
-                return MediaDescriptionCompat.Builder().apply {
-                    title = playlist[windowIndex].title
-                    artist = playlist[windowIndex].artist
-                    iconBitmap = playlist[windowIndex].albumArt
-                }.build()
+            if (windowIndex < currentMediaItems.size) {
+                return currentMediaItems[windowIndex].toMediaDescriptionCompat()
             }
             return MediaDescriptionCompat.Builder().build()
         }
@@ -277,6 +291,10 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             mediaSource.whenReady {
                 currentPlayer.playWhenReady
                 currentPlayer.prepare()
+
+                if (currentPlayer.currentMediaItem!!.isLoop) {
+                    currentPlayer.seekTo(currentPlayer.currentMediaItem!!.mediaMetadata.startTime)
+                }
             }
         }
 
@@ -314,7 +332,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 // Find either the underlying playback or the top-level playback to play
                 val itemToPlay =
                     mediaSource.find { item ->
-                        if (mediaId.hasUnderlyingPlayback == true)
+                        if (mediaId.hasUnderlyingPlayback)
                             mediaId.underlyingPlayback == item.mediaId
                         else
                             item.mediaId == mediaId
@@ -332,21 +350,21 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                      */
                     when {
                         mediaId.isSongMediaId -> {
-                            playlist.play(
+                            preparePlayer(
                                 mediaSource.filter { it.mediaId.isSongMediaId },
                                 itemToPlay
                             )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
                         mediaId.isLoopMediaId -> {
-                            playlist.play(
+                            preparePlayer(
                                 mediaSource.filter { it.mediaId.isLoopMediaId },
                                 itemToPlay
                             )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
                         mediaId.isPlaylistMediaId -> {
-                            playlist.play(browserTree[mediaId.basePlayback]!!, itemToPlay)
+                            preparePlayer(browserTree[mediaId.basePlayback]!!, itemToPlay)
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
                         }
                     }
@@ -395,29 +413,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 serviceScope.launch {
                     mediaSource.loadDeviceFiles()
                 }
-            }
-        }
-
-        override fun onLoopReceived(
-            mediaId: String,
-            songMediaId: String,
-            startTime: Long,
-            endTime: Long
-        ) {
-            mediaSource.whenReady { successfullyInitialized ->
-                if (successfullyInitialized) {
-                    mediaSource.setOrAddLoop(mediaId, songMediaId, startTime, endTime)
-                } else
-                    TODO("Media source initialization not successful")
-            }
-        }
-
-        override fun onPlaylistReceived(mediaId: String, mediaIds: Array<String>) {
-            mediaSource.whenReady { successfullyInitialized ->
-                if (successfullyInitialized) {
-                    mediaSource.setOrAddPlaylist(mediaId, mediaIds)
-                } else
-                    TODO("Media source initialization not successful")
             }
         }
     }
@@ -511,11 +506,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 || events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)
                 || events.contains(Player.EVENT_PLAY_WHEN_READY_CHANGED)
             ) {
-                playlist.currentPlaybackIndex = if (playlist.isNotEmpty()) {
+                currentPlaybackIndex = if (currentMediaItems.isNotEmpty()) {
                     constrainValue(
                         player.currentMediaItemIndex,
                         0,
-                        playlist.size - 1
+                        currentMediaItems.size - 1
                     )
                 } else 0
             }
