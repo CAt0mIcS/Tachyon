@@ -1,5 +1,6 @@
 package com.daton.mucify.ui
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.util.Log
@@ -123,6 +124,11 @@ class ActivityMain : MediaControllerActivity() {
                 .commit()
 
             fragment.onItemClicked = playMedia
+        }
+
+        binding.btnSettings.setOnClickListener {
+            val intent = Intent(this@ActivityMain, ActivitySettings::class.java)
+            startActivity(intent)
         }
     }
 }
