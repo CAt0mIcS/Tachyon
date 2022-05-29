@@ -57,15 +57,15 @@ inline var MediaMetadataCompat.Builder.albumArt: Bitmap?
     }
 
 inline val MediaMetadataCompat.isSong: Boolean
-    get() = getString(MetadataKeys.MediaId).contains("Song_")
+    get() = getString(MetadataKeys.MediaId).isSongMediaId
 
 
 inline val MediaMetadataCompat.isLoop: Boolean
-    get() = getString(MetadataKeys.MediaId).contains("Loop_")
+    get() = getString(MetadataKeys.MediaId).isLoopMediaId
 
 
 inline val MediaMetadataCompat.isPlaylist: Boolean
-    get() = getString(MetadataKeys.MediaId).contains("Playlist_")
+    get() = getString(MetadataKeys.MediaId).isPlaylistMediaId
 
 
 inline val MediaMetadataCompat.duration: Long

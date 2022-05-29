@@ -14,8 +14,8 @@ class Loop {
         this.endTime = endTime
     }
 
-    var timestamp: Long = System.currentTimeMillis()
-        private set
+//    var timestamp: Long = System.currentTimeMillis()
+//        private set
 
     var mediaId: String = MediaId.Empty
         private set
@@ -23,27 +23,34 @@ class Loop {
     var songPath: String = ""
         set(value) {
             field = value
-            timestamp = System.currentTimeMillis()
+//            timestamp = System.currentTimeMillis()
         }
 
     var startTime: Long = 0L
         set(value) {
             field = value
-            timestamp = System.currentTimeMillis()
+//            timestamp = System.currentTimeMillis()
         }
 
     var endTime: Long = 0L
         set(value) {
             field = value
-            timestamp = System.currentTimeMillis()
+//            timestamp = System.currentTimeMillis()
         }
+
+    override operator fun equals(other: Any?): Boolean {
+        if (other == null || other !is Loop)
+            return false
+
+        return mediaId == other.mediaId && songPath == other.songPath && startTime == other.startTime && endTime == other.endTime
+    }
 }
 
 
 @Serializable
 class Playlist : ArrayList<String>() {
-    var timestamp: Long = System.currentTimeMillis()
-        private set
+//    var timestamp: Long = System.currentTimeMillis()
+//        private set
 
     var mediaId: String = MediaId.Empty
         private set
@@ -51,16 +58,16 @@ class Playlist : ArrayList<String>() {
     var currentPlaybackIndex: Int = 0
         set(value) {
             field = value
-            timestamp = System.currentTimeMillis()
+//            timestamp = System.currentTimeMillis()
         }
 
     operator fun plus(mediaId: String) {
         add(mediaId)
-        timestamp = System.currentTimeMillis()
+//        timestamp = System.currentTimeMillis()
     }
 
     operator fun minus(mediaId: String) {
         remove(mediaId)
-        timestamp = System.currentTimeMillis()
+//        timestamp = System.currentTimeMillis()
     }
 }

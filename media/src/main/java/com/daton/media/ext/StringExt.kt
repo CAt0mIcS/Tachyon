@@ -5,20 +5,20 @@ import java.io.File
 /**
  * Does the top-level media id point to a song
  */
-inline val String.isSongMediaId: Boolean
-    get() = contains("Song_")
+inline val String?.isSongMediaId: Boolean
+    get() = this?.contains("Song_") ?: false
 
 /**
  * Does the top-level media id point to a loop
  */
-inline val String.isLoopMediaId: Boolean
-    get() = contains("Loop_")
+inline val String?.isLoopMediaId: Boolean
+    get() = this?.contains("Loop_") ?: false
 
 /**
  * Does the top-level media id point to a playlist
  */
-inline val String.isPlaylistMediaId: Boolean
-    get() = contains("Playlist_")
+inline val String?.isPlaylistMediaId: Boolean
+    get() = this?.contains("Playlist_") ?: false
 
 /**
  * Extracts the path from the media id

@@ -22,6 +22,15 @@ inline val MediaDescriptionCompat.startTime: Long
 inline val MediaDescriptionCompat.endTime: Long
     get() = extras!!.getLong(MetadataKeys.EndTime)
 
+inline val MediaDescriptionCompat.isSong: Boolean
+    get() = mediaId.isSongMediaId
+
+inline val MediaDescriptionCompat.isLoop: Boolean
+    get() = mediaId.isLoopMediaId
+
+inline val MediaDescriptionCompat.isPlaylist: Boolean
+    get() = mediaId.isPlaylistMediaId
+
 
 inline var MediaDescriptionCompat.Builder.title: String
     get() = throw IllegalAccessException("Cannot get from MediaDescriptionCompat.Builder")

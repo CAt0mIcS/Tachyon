@@ -7,6 +7,11 @@ import android.util.Log
 import android.widget.ArrayAdapter
 import com.daton.media.MediaAction
 import com.daton.media.device.BrowserTree
+import com.daton.media.device.Loop
+import com.daton.media.ext.endTime
+import com.daton.media.ext.isLoop
+import com.daton.media.ext.path
+import com.daton.media.ext.startTime
 import com.daton.mucify.R
 import com.daton.mucify.databinding.ActivityMainBinding
 import com.daton.mucify.permission.Permission
@@ -70,6 +75,71 @@ class ActivityMain : MediaControllerActivity() {
                     parentId: String,
                     children: MutableList<MediaBrowserCompat.MediaItem>
                 ) {
+                    User.onLogin {
+                        // TODO: Subscribe to [BrowserTree.LOOP_ROOT] so that the filter is not necessary
+                        for (child in children.filter { it.isLoop }) {
+                            val localLoop =
+                                Loop(
+                                    child.mediaId!!,
+                                    child.path.absolutePath,
+                                    child.startTime,
+                                    child.endTime
+                                )
+
+                            // Check if media id of local loop is in User.metadata.loops (remote)
+                            for (loop in User.metadata.loops) {
+
+                                // Exact loop already saved on device, no action necessary
+                                if (loop == localLoop)
+                                    continue
+
+                                // Some part of the loop is not the same, decide which to keep
+                                if (loop.mediaId == localLoop.mediaId) {
+                                    TODO("Merge loops and decide which to keep")
+                                }
+
+                                // Loop is only stored offline
+                            }
+
+                            // Media id of local loop NOT contained in User.metadata.loops (remote)
+                            // Add loop to metadata
+                            User.metadata += localLoop
+                        }
+
+
+                        val loopsToSend = mutableListOf<Loop>()
+                        for (remoteLoop in User.metadata.loops) {
+                            // Check if media id of local loop is in User.metadata.loops (remote)
+                            for (child in children.filter { it.isLoop }) {
+                                val localLoop =
+                                    Loop(
+                                        child.mediaId!!,
+                                        child.path.absolutePath,
+                                        child.startTime,
+                                        child.endTime
+                                    )
+
+                                // Exact loop already saved on device, no action necessary
+                                if (remoteLoop == localLoop)
+                                    continue
+
+                                // Some part of the loop is not the same, decide which to keep
+                                if (remoteLoop.mediaId == localLoop.mediaId) {
+                                    TODO("Merge loops and decide which to keep")
+                                }
+
+                                // Loop is only stored online
+                            }
+
+                            // Media id of local loop NOT contained in User.metadata.loops (remote)
+                            // Add loop to metadata
+                            loopsToSend += remoteLoop
+                        }
+                    }
+
+                    // TODO: Decide when to upload (in onPause? | every time we change sth? | ...)
+                    User.uploadMetadata()
+
                     setupUI(children)
                 }
             })

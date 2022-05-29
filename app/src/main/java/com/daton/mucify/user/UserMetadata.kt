@@ -84,17 +84,17 @@ class UserMetadata {
     @Transient
     var onHistoryChanged: (() -> Unit)? = null
 
-    operator fun plus(loop: Loop) {
+    operator fun plusAssign(loop: Loop) {
         loops.add(loop)
         timestamp = System.currentTimeMillis()
     }
 
-    operator fun plus(playlist: Playlist) {
+    operator fun plusAssign(playlist: Playlist) {
         playlists.add(playlist)
         timestamp = System.currentTimeMillis()
     }
 
-    operator fun plus(history: String) {
+    operator fun plusAssign(history: String) {
         addHistory(history)
     }
 

@@ -5,13 +5,13 @@ import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.MediaMetadata
 
 inline val MediaItem.isSong: Boolean
-    get() = mediaId.contains("Song_")
+    get() = mediaId.isSongMediaId
 
 inline val MediaItem.isLoop: Boolean
-    get() = mediaId.contains("Loop_")
+    get() = mediaId.isLoopMediaId
 
 inline val MediaItem.isPlaylist: Boolean
-    get() = mediaId.contains("Playlist_")
+    get() = mediaId.isPlaylistMediaId
 
 
 // Returns 0 as default
