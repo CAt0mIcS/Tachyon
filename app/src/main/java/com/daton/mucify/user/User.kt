@@ -175,6 +175,9 @@ object User {
                 metadata = newMetadata
                 if (historyChanged)
                     metadata.onHistoryChanged?.invoke()
+
+                // TODO: Might not be necessary
+                uploadMetadata()
                 metadata.saveToLocal()
             }
         }

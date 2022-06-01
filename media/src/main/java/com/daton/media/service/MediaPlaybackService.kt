@@ -347,26 +347,30 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                      * When playing an actual playlist, all songs/loops in the playlist will be set as
                      * the internal playlist
                      * TODO: Maybe introduce setting to combine songs and loops as playlist items when playing either song or loop
+                     *
+                     * TODO: Fix this to work with new [MediaSource] as it won't load loops and playlists anymore
                      */
                     when {
                         mediaId.isSongMediaId -> {
                             preparePlayer(
-                                mediaSource.filter { it.mediaId.isSongMediaId },
+//                                mediaSource.filter { it.mediaId.isSongMediaId },
+                                mediaSource.catalog,
                                 itemToPlay
                             )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
                         mediaId.isLoopMediaId -> {
                             preparePlayer(
-                                mediaSource.filter { it.mediaId.isLoopMediaId },
+//                                mediaSource.filter { it.mediaId.isLoopMediaId },
+                                listOf(itemToPlay),
                                 itemToPlay
                             )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
-                        mediaId.isPlaylistMediaId -> {
-                            preparePlayer(browserTree[mediaId.basePlayback]!!, itemToPlay)
-                            currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
-                        }
+//                        mediaId.isPlaylistMediaId -> {
+//                            preparePlayer(browserTree[mediaId.basePlayback]!!, itemToPlay)
+//                            currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
+//                        }
                     }
                 }
             }

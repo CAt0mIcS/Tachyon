@@ -42,6 +42,7 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
          */
         const val STATE_ERROR = 4
 
+        // TODO: Move somewhere else as MediaStore is no longer loading loops and playlists
         const val LoopFileExtension = "loop"
         const val PlaylistFileExtension = "playlist"
 
@@ -92,53 +93,7 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
 
             }.build()
         }
-
-        fun loadLoop(file: File): MediaMetadataCompat {
-            return MediaMetadataCompat.Builder().apply {
-                mediaId = "Loop_" + file.absolutePath
-
-                // TODO: Temporary
-                val reader = BufferedReader(FileReader(file))
-                val songPath = File(reader.readLine())
-                path = songPath
-                startTime = reader.readLine().toLong()
-                endTime = reader.readLine().toLong()
-
-                val songMetadata = loadSong(songPath)
-                title = songMetadata.title
-                artist = songMetadata.artist
-
-                reader.close()
-
-            }.build()
-        }
-
-        fun loadPlaylist(path: File): MutableList<MediaMetadataCompat> {
-            val list = mutableListOf<MediaMetadataCompat>()
-            val reader = BufferedReader(FileReader(path))
-
-            while (reader.ready()) {
-
-                val songOrLoopPath = File(reader.readLine())
-                list.add(
-                    if (songOrLoopPath.isSongFile)
-                        loadSong(songOrLoopPath)
-                    else if (songOrLoopPath.isLoopFile)
-                        loadLoop(songOrLoopPath)
-                    else
-                        throw IllegalStateException("Invalid path: $songOrLoopPath")
-                )
-            }
-            reader.close()
-
-            return list
-        }
     }
-
-    /**
-     * Path to the directory where loops and playlists are stored
-     */
-    val dataDirectory: File = context.filesDir
 
     /**
      * Path to the external storage music directory
@@ -192,7 +147,6 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
 
 
         loadSongs(musicDirectory)
-        loadLoopsAndPlaylists()
         state = STATE_INITIALIZED
     }
 
@@ -224,20 +178,4 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
             }
         }
     }
-
-    private fun loadLoopsAndPlaylists() {
-        if (!dataDirectory.exists()) return
-        val files = dataDirectory.listFiles() ?: return
-        for (file in files) {
-            if (file.isLoopFile) {
-                catalog += loadLoop(file)
-            } else if (file.isPlaylistFile) {
-                catalog += MediaMetadataCompat.Builder().apply {
-                    mediaId = "Playlist_" + file.absolutePath
-                    path = file
-                }.build()
-            }
-        }
-    }
-
 }
