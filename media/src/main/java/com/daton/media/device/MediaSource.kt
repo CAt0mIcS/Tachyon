@@ -6,6 +6,7 @@ import android.media.MediaMetadataRetriever
 import android.os.Environment
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
+import com.daton.media.SongMetadata
 import com.daton.media.ext.*
 import java.io.BufferedReader
 import java.io.File
@@ -66,30 +67,13 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
                 mediaId = "Song_" + file.absolutePath
                 this.path = file
 
-                val metaRetriever = MediaMetadataRetriever()
-                try {
-                    metaRetriever.setDataSource(file.absolutePath)
-                } catch (e: IllegalArgumentException) {
-                    e.printStackTrace()
-                    TODO("Implement error handling")
+                SongMetadata(file).let { songMetadata ->
+                    title = songMetadata.title
+                    artist = songMetadata.artist
+                    albumArt = songMetadata.albumArt
+                    duration = songMetadata.duration
                 }
 
-                title =
-                    metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
-                        ?: file.nameWithoutExtension
-
-                artist =
-                    metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
-                        ?: "Unknown Artist"
-
-                val art: ByteArray? = metaRetriever.embeddedPicture
-                if (art != null) {
-                    albumArt = BitmapFactory.decodeByteArray(art, 0, art.size)
-                }
-
-                duration =
-                    metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!!
-                        .toLong()
 
             }.build()
         }

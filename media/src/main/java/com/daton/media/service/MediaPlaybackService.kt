@@ -338,7 +338,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                             item.mediaId == mediaId
                     }
                 if (itemToPlay == null)
-                    Log.e(TAG, "Invalid media id $mediaId")
+                    TODO("Invalid media id $mediaId")
                 else {
                     currentPlayer.stop()
 

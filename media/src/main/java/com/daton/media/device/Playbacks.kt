@@ -1,7 +1,11 @@
 package com.daton.media.device
 
-import com.daton.media.ext.MediaId
+import android.provider.MediaStore
+import android.support.v4.media.MediaMetadataCompat
+import com.daton.media.SongMetadata
+import com.daton.media.ext.*
 import kotlinx.serialization.Serializable
+import java.io.File
 
 
 @Serializable
@@ -37,6 +41,21 @@ class Loop {
             field = value
 //            timestamp = System.currentTimeMillis()
         }
+
+    fun toMediaMetadata(): MediaMetadataCompat {
+        return MediaMetadataCompat.Builder().apply {
+            mediaId = this@Loop.mediaId
+            path = File(this@Loop.songPath)
+            startTime = this@Loop.startTime
+            endTime = this@Loop.endTime
+
+            SongMetadata(File(this@Loop.songPath)).let { songMetadata ->
+                title = songMetadata.title
+                artist = songMetadata.artist
+            }
+
+        }.build()
+    }
 
     override operator fun equals(other: Any?): Boolean {
         if (other == null || other !is Loop)

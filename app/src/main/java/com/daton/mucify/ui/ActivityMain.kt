@@ -5,13 +5,10 @@ import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.util.Log
 import android.widget.ArrayAdapter
+import androidx.appcompat.app.AppCompatActivity
 import com.daton.media.MediaAction
+import com.daton.media.MediaController
 import com.daton.media.device.BrowserTree
-import com.daton.media.device.Loop
-import com.daton.media.ext.endTime
-import com.daton.media.ext.isLoop
-import com.daton.media.ext.path
-import com.daton.media.ext.startTime
 import com.daton.mucify.R
 import com.daton.mucify.databinding.ActivityMainBinding
 import com.daton.mucify.permission.Permission
@@ -24,7 +21,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.CountDownLatch
 
 
-class ActivityMain : MediaControllerActivity() {
+class ActivityMain : AppCompatActivity() {
     companion object {
         const val TAG = "ActivityMain"
     }
@@ -35,6 +32,7 @@ class ActivityMain : MediaControllerActivity() {
     private var hasStoragePermission: Boolean = false
 
     private lateinit var binding: ActivityMainBinding
+    private val mediaController = MediaController()
 
     /**
      * Counts down when the storage permission was either accepted or denied
@@ -61,14 +59,35 @@ class ActivityMain : MediaControllerActivity() {
             }
         }
 
+        mediaController.create(this)
+        mediaController.onConnected = { onConnected() }
+
         User.create(this)
+
+        /**
+         * Send loops and playlists to service
+         */
+        User.onLogin {
+            mediaController.sendLoops(User.metadata.loops)
+//            sendPlaylists(User.metadata.playlists.map { it.toMediaMetadata() })
+        }
 
         Log.d(TAG, "onCreate finished")
     }
 
+    override fun onStart() {
+        super.onStart()
+        mediaController.connect(this)
+    }
 
-    override fun onConnected() {
-        mediaBrowser.subscribe(
+    override fun onStop() {
+        super.onStop()
+        mediaController.disconnect()
+    }
+
+
+    fun onConnected() {
+        mediaController.browser.subscribe(
             BrowserTree.ROOT,
             object : MediaBrowserCompat.SubscriptionCallback() {
                 override fun onChildrenLoaded(
@@ -87,7 +106,7 @@ class ActivityMain : MediaControllerActivity() {
             if (hasStoragePermission) {
                 val bundle = Bundle()
                 bundle.putBoolean(MediaAction.StoragePermissionGranted, true)
-                sendCustomAction(MediaAction.StoragePermissionChanged, bundle)
+                mediaController.sendCustomAction(MediaAction.StoragePermissionChanged, bundle)
             }
         }
     }
@@ -105,8 +124,8 @@ class ActivityMain : MediaControllerActivity() {
         )
 
         val playMedia = { mediaId: String ->
-            this.mediaId = mediaId
-            play()
+            mediaController.mediaId = mediaId
+            mediaController.play()
 
             User.metadata.addHistory(mediaId)
             User.metadata.saveToLocal()

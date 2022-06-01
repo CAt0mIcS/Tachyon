@@ -1,5 +1,6 @@
-package com.daton.mucify.ui
+package com.daton.media
 
+import android.app.Activity
 import android.content.ComponentName
 import android.graphics.Bitmap
 import android.os.Bundle
@@ -9,23 +10,28 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import com.daton.media.MediaAction
+import com.daton.media.device.Loop
 import com.daton.media.ext.*
 import com.daton.media.service.MediaPlaybackService
 
 
-open class MediaControllerActivity : AppCompatActivity() {
-    protected lateinit var mediaBrowser: MediaBrowserCompat
+class MediaController {
+    lateinit var browser: MediaBrowserCompat
+        private set
+
     private val controllerCallback: MediaControllerCallback = MediaControllerCallback()
 
+    var onConnected: (() -> Unit)? = null
+    var onDisconnected: (() -> Unit)? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    private var activity: Activity? = null
 
-        mediaBrowser = MediaBrowserCompat(
-            this,
-            ComponentName(this, MediaPlaybackService::class.java),
+    fun create(activity: Activity) {
+        this.activity = activity
+
+        browser = MediaBrowserCompat(
+            activity,
+            ComponentName(activity, MediaPlaybackService::class.java),
             ConnectionCallback(),
             null
         )
@@ -33,19 +39,19 @@ open class MediaControllerActivity : AppCompatActivity() {
         Log.d("Mucify", "MediaBrowserController created")
     }
 
-    override fun onStart() {
-        super.onStart()
-        mediaBrowser.connect()
+    fun connect(activity: Activity) {
+        this.activity = activity
+        browser.connect()
         Log.d("Mucify", "Started connecting to MediaPlaybackService")
     }
 
-    override fun onStop() {
-        super.onStop()
-        if (MediaControllerCompat.getMediaController(this) != null) {
-            MediaControllerCompat.getMediaController(this)
+    fun disconnect() {
+        if (activity != null && MediaControllerCompat.getMediaController(activity!!) != null) {
+            MediaControllerCompat.getMediaController(activity!!)
                 .unregisterCallback(controllerCallback)
         }
-        mediaBrowser.disconnect()
+        browser.disconnect()
+        activity = null
         Log.d("Mucify", "Started disconnecting from MediaPlaybackService")
     }
 
@@ -62,14 +68,14 @@ open class MediaControllerActivity : AppCompatActivity() {
      * Pauses the currently playing audio. Crashes if the Playback hasn't been started yet.
      */
     fun pause() {
-        MediaControllerCompat.getMediaController(this).transportControls.pause()
+        MediaControllerCompat.getMediaController(activity!!).transportControls.pause()
     }
 
     /**
      * Seeks the currently playing audio to the specified offset. Crashes if the Playback hasn't been started yet.
      */
     fun seekTo(millis: Long) {
-        MediaControllerCompat.getMediaController(this).transportControls.seekTo(millis)
+        MediaControllerCompat.getMediaController(activity!!).transportControls.seekTo(millis)
     }
 
     /**
@@ -85,7 +91,7 @@ open class MediaControllerActivity : AppCompatActivity() {
      * Starts playback, requires that media id was already set
      */
     fun play() {
-        MediaControllerCompat.getMediaController(this).transportControls.play()
+        MediaControllerCompat.getMediaController(activity!!).transportControls.play()
     }
 
     /**
@@ -93,7 +99,7 @@ open class MediaControllerActivity : AppCompatActivity() {
      * Loops back to the start if we're at the end
      */
     operator fun next() {
-        MediaControllerCompat.getMediaController(this).transportControls.skipToNext()
+        MediaControllerCompat.getMediaController(activity!!).transportControls.skipToNext()
     }
 
     /**
@@ -101,7 +107,7 @@ open class MediaControllerActivity : AppCompatActivity() {
      * Loops back to the end if we're at the start
      */
     fun previous() {
-        MediaControllerCompat.getMediaController(this).transportControls.skipToPrevious()
+        MediaControllerCompat.getMediaController(activity!!).transportControls.skipToPrevious()
     }
 
     /**
@@ -186,42 +192,64 @@ open class MediaControllerActivity : AppCompatActivity() {
         get() = metadata.artist
 
     /**
+     * Updates the [MediaSource] with [loops]. Do not add already added loops again
+     */
+    fun sendLoops(loops: List<Loop>) {
+        val bundle = Bundle()
+        val mediaIds = Array(loops.size) { i -> loops[i].mediaId }
+        val songPaths = Array(loops.size) { i -> loops[i].songPath }
+        val startTimes = LongArray(loops.size)
+        val endTimes = LongArray(loops.size)
+
+        for (i in loops.indices) {
+            loops[i].apply {
+                startTimes[i] = startTime
+                endTimes[i] = endTime
+            }
+        }
+
+        bundle.putStringArray(MediaAction.MediaIds, mediaIds)
+        bundle.putStringArray(MediaAction.SongPaths, songPaths)
+        bundle.putLongArray(MediaAction.StartTimes, startTimes)
+        bundle.putLongArray(MediaAction.EndTimes, endTimes)
+
+        sendCustomAction(MediaAction.SendLoops, bundle)
+    }
+
+    /**
      * @return playback state which was set in MediaPlaybackService
      */
     val playbackState: PlaybackStateCompat
-        get() = MediaControllerCompat.getMediaController(this).playbackState
+        get() = MediaControllerCompat.getMediaController(activity!!).playbackState
 
     /**
      * @return metadata which was set in the MediaPlaybackService
      */
     val metadata: MediaMetadataCompat
-        get() = MediaControllerCompat.getMediaController(this).metadata
+        get() = MediaControllerCompat.getMediaController(activity!!).metadata
 
     fun sendCustomAction(action: String?, bundle: Bundle?) {
-        MediaControllerCompat.getMediaController(this).transportControls.sendCustomAction(
+        MediaControllerCompat.getMediaController(activity!!).transportControls.sendCustomAction(
             action,
             bundle
         )
     }
 
-    open fun onConnected() {}
-    open fun onDisconnected() {}
-
     private inner class ConnectionCallback : MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
-            val token: MediaSessionCompat.Token = mediaBrowser.sessionToken
+            val token: MediaSessionCompat.Token = browser.sessionToken
 
             // Create a MediaControllerCompat
-            val mediaController = MediaControllerCompat(this@MediaControllerActivity, token)
+            val mediaController = MediaControllerCompat(activity!!, token)
 
             // Save the controller
-            MediaControllerCompat.setMediaController(this@MediaControllerActivity, mediaController)
+            MediaControllerCompat.setMediaController(activity!!, mediaController)
 
             // Finish building the UI
-            this@MediaControllerActivity.onConnected()
+            onConnected?.invoke()
 
             // Register a Callback to stay in sync
-            MediaControllerCompat.getMediaController(this@MediaControllerActivity)
+            MediaControllerCompat.getMediaController(activity!!)
                 .registerCallback(controllerCallback)
             Log.d("Mucify", "MediaBrowserController connection established")
         }
@@ -244,9 +272,9 @@ open class MediaControllerActivity : AppCompatActivity() {
 
         override fun onSessionDestroyed() {
             Log.d("Mucify", "MediaControllerActivity session destroyed")
-            mediaBrowser.disconnect()
+            browser.disconnect()
             // maybe schedule a reconnection using a new MediaBrowser instance
-            this@MediaControllerActivity.onDisconnected()
+            onDisconnected?.invoke()
         }
     }
 }

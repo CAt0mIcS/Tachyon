@@ -46,9 +46,6 @@ class SyncProvider {
     private fun mergePlaybacks(newMetadata: UserMetadata, oldMetadata: UserMetadata): UserMetadata =
         mergeLoops(mergePlaylists(newMetadata, oldMetadata), oldMetadata)
 
-    /**
-     *
-     */
     private fun mergeLoops(newMetadata: UserMetadata, oldMetadata: UserMetadata): UserMetadata {
         // Cannot have any conflicts if one of the metadata doesn't have a loop
         // and we already know that the newMetadata is newer and has the most recent loop version
