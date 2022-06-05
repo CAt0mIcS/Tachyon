@@ -108,6 +108,12 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
     val catalog = mutableListOf<MediaMetadataCompat>()
 
     private var onReadyListeners = mutableListOf<(Boolean) -> Unit>()
+    private var onChangedListeners = mutableListOf<() -> Unit>()
+
+    operator fun plusAssign(items: List<MediaMetadataCompat>) {
+        catalog += items
+        invokeOnChanged()
+    }
 
 
     /**
@@ -132,6 +138,7 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
 
         loadSongs(musicDirectory)
         state = STATE_INITIALIZED
+        invokeOnChanged()
     }
 
 
@@ -145,6 +152,18 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
                 performAction(state != STATE_ERROR)
                 true
             }
+        }
+    }
+
+    fun onChanged(performAction: () -> Unit) {
+        synchronized(onChangedListeners) {
+            onChangedListeners += performAction
+        }
+    }
+
+    private fun invokeOnChanged() {
+        synchronized(onChangedListeners) {
+            onChangedListeners.forEach { listener -> listener() }
         }
     }
 

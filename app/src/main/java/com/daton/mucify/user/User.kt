@@ -81,8 +81,9 @@ object User {
                     cachedCredentials = result
 
                     updateUserProfile {
-                        syncUserSettings()
-                        onLoginCallbacks.forEach { it.invoke() }
+                        syncUserSettings {
+                            onLoginCallbacks.forEach { it.invoke() }
+                        }
                     }
 
                     // TODO: When changing user settings local and remote metadata needs to be updated
@@ -160,7 +161,7 @@ object User {
      * If the online settings are older than the offline ones, upload offline to online
      * If the offline settings are older than the online ones, download online to offline
      */
-    private fun syncUserSettings() {
+    private fun syncUserSettings(onSynced: () -> Unit) {
         // TODO: Conflicting settings
         //      Changing settings on Windows
         //      Changing settings on Android without synchronizing
@@ -179,6 +180,7 @@ object User {
                 // TODO: Might not be necessary
                 uploadMetadata()
                 metadata.saveToLocal()
+                onSynced()
             }
         }
     }

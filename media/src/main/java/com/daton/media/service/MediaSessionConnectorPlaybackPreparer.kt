@@ -1,7 +1,6 @@
 package com.daton.media.service
 
 import android.os.Bundle
-import android.provider.MediaStore
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
@@ -29,7 +28,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
     open fun onStoragePermissionChanged(permissionGranted: Boolean) {}
 
-    open fun onSendLoops(loops: List<MediaMetadataCompat>) {}
+    open fun onLoopsReceived(loops: List<MediaMetadataCompat>) {}
 
     fun getCustomActions(): Array<out MediaSessionConnector.CustomActionProvider> {
         return arrayOf(
@@ -53,7 +52,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
                 MediaAction.SetMediaId,
-                "",
+                javaClass.name,
                 R.drawable.music_note // TODO: WHY????
             ).build()
     }
@@ -70,7 +69,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
                 MediaAction.SetStartTime,
-                "",
+                javaClass.name,
                 R.drawable.music_note
             ).build()
     }
@@ -87,7 +86,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
                 MediaAction.SetEndTime,
-                "",
+                javaClass.name,
                 R.drawable.music_note
             ).build()
     }
@@ -104,7 +103,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
                 MediaAction.StoragePermissionChanged,
-                "",
+                javaClass.name,
                 R.drawable.music_note
             ).build()
     }
@@ -121,7 +120,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
             val startTimes = extras.getLongArray(MediaAction.StartTimes)!!
             val endTimes = extras.getLongArray(MediaAction.EndTimes)!!
 
-            onSendLoops(List(mediaIds.size) { i ->
+            onLoopsReceived(List(mediaIds.size) { i ->
                 MediaMetadataCompat.Builder().apply {
                     mediaId = mediaIds[i]
                     path = File(songPaths[i])
@@ -134,7 +133,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
                 MediaAction.SendLoops,
-                "",
+                javaClass.name,
                 R.drawable.music_note
             ).build()
     }

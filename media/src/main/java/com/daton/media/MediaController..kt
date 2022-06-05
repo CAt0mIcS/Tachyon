@@ -195,6 +195,9 @@ class MediaController {
      * Updates the [MediaSource] with [loops]. Do not add already added loops again
      */
     fun sendLoops(loops: List<Loop>) {
+        if (loops.isEmpty())
+            return
+
         val bundle = Bundle()
         val mediaIds = Array(loops.size) { i -> loops[i].mediaId }
         val songPaths = Array(loops.size) { i -> loops[i].songPath }

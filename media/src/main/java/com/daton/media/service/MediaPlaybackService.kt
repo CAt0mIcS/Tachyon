@@ -188,6 +188,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                         "java.lang.IllegalStateException: sendResult() called when either sendResult() or sendError() had already been called for: /"
                     )
                 }
+
             } else {
                 TODO("Handle error that MediaSource wasn't initialized properly")
             }
@@ -417,6 +418,15 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 serviceScope.launch {
                     mediaSource.loadDeviceFiles()
                 }
+            }
+        }
+
+        override fun onLoopsReceived(loops: List<MediaMetadataCompat>) {
+            mediaSource.whenReady { successfullyInitialized ->
+                if (successfullyInitialized)
+                    mediaSource += loops
+                else
+                    TODO("Media Source not initialized properly")
             }
         }
     }
