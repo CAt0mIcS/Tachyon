@@ -18,15 +18,23 @@ class BrowserTree(
     operator fun get(parentId: String): MutableList<MediaMetadataCompat>? =
         mediaIdToChildren[parentId]
 
-
-    init {
+    /**
+     * Resets the entire [BrowserTree] and reloads from the media source
+     */
+    fun reload(mediaSource: MediaSource) {
         mediaIdToChildren[ROOT] = mutableListOf()
         mediaSource.whenReady { successfullyInitialized ->
             if (successfullyInitialized) {
                 mediaSource.forEach { metadata ->
                     mediaIdToChildren[ROOT]!!.add(metadata)
                 }
-            }
+            } else
+                TODO("MediaSource initialization unsuccessful")
         }
+    }
+
+
+    init {
+        reload(mediaSource)
     }
 }

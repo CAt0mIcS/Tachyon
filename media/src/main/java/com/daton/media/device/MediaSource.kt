@@ -18,7 +18,7 @@ import java.lang.IllegalStateException
  * Class which manages and holds access to the entire media library. Once loaded, all songs, loops
  * and playlists available on the device as device files will be accessible through this class.
  */
-class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
+class MediaSource : Iterable<MediaMetadataCompat> {
 
     companion object {
         const val TAG = "MediaSource"
@@ -160,6 +160,8 @@ class MediaSource(context: Context) : Iterable<MediaMetadataCompat> {
             onChangedListeners += performAction
         }
     }
+
+    operator fun get(mediaId: String) = catalog.find { it.mediaId == mediaId }
 
     private fun invokeOnChanged() {
         synchronized(onChangedListeners) {

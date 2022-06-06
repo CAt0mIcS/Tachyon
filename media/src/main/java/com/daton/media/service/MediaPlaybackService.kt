@@ -18,6 +18,7 @@ import com.daton.media.device.BrowserTree
 import com.daton.media.device.MediaSource
 import com.daton.media.ext.*
 import com.daton.media.CustomPlayer
+import com.daton.media.device.Loop
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -45,7 +46,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
     private lateinit var currentPlayer: CustomPlayer
     private var playerMessage: PlayerMessage? = null
 
-    private lateinit var mediaSource: MediaSource
+    // Doesn't start loading files yet as we need to wait on storage permission to be granted
+    private val mediaSource = MediaSource()
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mediaSessionConnector: MediaSessionConnector
@@ -90,8 +92,10 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
         Log.d(TAG, "Creating MediaPlaybackService")
 
-        // Doesn't start loading files yet as we need to wait on storage permission to be granted
-        mediaSource = MediaSource(this)
+        mediaSource.onChanged {
+            browserTree.reload(mediaSource)
+            mediaSession.sendSessionEvent("MediaSourceChanged", null)
+        }
 
         // Build a PendingIntent that can be used to launch the UI.
         val sessionActivityPendingIntent =
@@ -421,11 +425,13 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             }
         }
 
-        override fun onLoopsReceived(loops: List<MediaMetadataCompat>) {
+        override fun onLoopsReceived(loops: List<Loop>) {
             mediaSource.whenReady { successfullyInitialized ->
-                if (successfullyInitialized)
-                    mediaSource += loops
-                else
+                if (successfullyInitialized) {
+                    mediaSource += loops.map { loop ->
+                        loop.toMediaMetadata(mediaSource)
+                    }
+                } else
                     TODO("Media Source not initialized properly")
             }
         }

@@ -180,8 +180,8 @@ object User {
                 // TODO: Might not be necessary
                 uploadMetadata()
                 metadata.saveToLocal()
-                onSynced()
             }
+            onSynced()
         }
     }
 

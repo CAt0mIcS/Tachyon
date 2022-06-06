@@ -6,12 +6,15 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import com.daton.media.R
 import com.daton.media.MediaAction
+import com.daton.media.device.Loop
 import com.daton.media.ext.endTime
 import com.daton.media.ext.mediaId
 import com.daton.media.ext.path
 import com.daton.media.ext.startTime
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import java.io.File
 
 abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.PlaybackPreparer {
@@ -28,7 +31,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
     open fun onStoragePermissionChanged(permissionGranted: Boolean) {}
 
-    open fun onLoopsReceived(loops: List<MediaMetadataCompat>) {}
+    open fun onLoopsReceived(loops: List<Loop>) {}
 
     fun getCustomActions(): Array<out MediaSessionConnector.CustomActionProvider> {
         return arrayOf(
@@ -115,19 +118,8 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 "CustomActionSetEndTime.onCustomAction with action $action"
             )
 
-            val mediaIds = extras!!.getStringArray(MediaAction.MediaIds)!!
-            val songPaths = extras.getStringArray(MediaAction.SongPaths)!!
-            val startTimes = extras.getLongArray(MediaAction.StartTimes)!!
-            val endTimes = extras.getLongArray(MediaAction.EndTimes)!!
-
-            onLoopsReceived(List(mediaIds.size) { i ->
-                MediaMetadataCompat.Builder().apply {
-                    mediaId = mediaIds[i]
-                    path = File(songPaths[i])
-                    startTime = startTimes[i]
-                    endTime = endTimes[i]
-                }.build()
-            })
+            onLoopsReceived(extras!!.getStringArray(MediaAction.Loops)!!
+                .map { loop: String -> Json.decodeFromString<Loop>(loop) })
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =

@@ -87,16 +87,18 @@ class ActivityMain : AppCompatActivity() {
 
 
     fun onConnected() {
-        mediaController.browser.subscribe(
-            BrowserTree.ROOT,
-            object : MediaBrowserCompat.SubscriptionCallback() {
-                override fun onChildrenLoaded(
-                    parentId: String,
-                    children: MutableList<MediaBrowserCompat.MediaItem>
-                ) {
-                    setupUI(children)
-                }
-            })
+        mediaController.onMediaSourceChanged = {
+            mediaController.browser.subscribe(
+                BrowserTree.ROOT,
+                object : MediaBrowserCompat.SubscriptionCallback() {
+                    override fun onChildrenLoaded(
+                        parentId: String,
+                        children: MutableList<MediaBrowserCompat.MediaItem>
+                    ) {
+                        setupUI(children)
+                    }
+                })
+        }
 
         serviceScope.launch {
             // Wait for permission dialog to be accepted or denied

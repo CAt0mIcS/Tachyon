@@ -26,6 +26,10 @@ inline val String?.isPlaylistMediaId: Boolean
 inline val String.path: File
     get() = File(substring(indexOf('_')))
 
+fun String.toSongMediaId(): String = "Song_${toString()}"
+fun String.toLoopMediaId(): String = "Loop_${toString()}"
+fun String.toPlaylistMediaId(): String = "Playlist_${toString()}"
+
 
 /**
  * If we want to pass the starting media item of e.g. a playlist, we'll add it to the end of the playlist

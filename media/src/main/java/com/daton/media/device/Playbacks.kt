@@ -42,17 +42,24 @@ class Loop {
 //            timestamp = System.currentTimeMillis()
         }
 
-    fun toMediaMetadata(): MediaMetadataCompat {
+    fun toMediaMetadata(mediaSource: MediaSource? = null): MediaMetadataCompat {
         return MediaMetadataCompat.Builder().apply {
             mediaId = this@Loop.mediaId
             path = File(this@Loop.songPath)
             startTime = this@Loop.startTime
             endTime = this@Loop.endTime
 
-            SongMetadata(File(this@Loop.songPath)).let { songMetadata ->
+            val songMetadata = mediaSource?.get(this@Loop.songPath.toSongMediaId())
+            if (mediaSource != null && songMetadata != null) {
                 title = songMetadata.title
                 artist = songMetadata.artist
+            } else {
+                SongMetadata(File(this@Loop.songPath)).let { songMetadata ->
+                    title = songMetadata.title
+                    artist = songMetadata.artist
+                }
             }
+
 
         }.build()
     }

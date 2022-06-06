@@ -13,6 +13,8 @@ import android.util.Log
 import com.daton.media.device.Loop
 import com.daton.media.ext.*
 import com.daton.media.service.MediaPlaybackService
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 
 class MediaController {
@@ -23,6 +25,7 @@ class MediaController {
 
     var onConnected: (() -> Unit)? = null
     var onDisconnected: (() -> Unit)? = null
+    var onMediaSourceChanged: (() -> Unit)? = null
 
     private var activity: Activity? = null
 
@@ -199,22 +202,9 @@ class MediaController {
             return
 
         val bundle = Bundle()
-        val mediaIds = Array(loops.size) { i -> loops[i].mediaId }
-        val songPaths = Array(loops.size) { i -> loops[i].songPath }
-        val startTimes = LongArray(loops.size)
-        val endTimes = LongArray(loops.size)
-
-        for (i in loops.indices) {
-            loops[i].apply {
-                startTimes[i] = startTime
-                endTimes[i] = endTime
-            }
-        }
-
-        bundle.putStringArray(MediaAction.MediaIds, mediaIds)
-        bundle.putStringArray(MediaAction.SongPaths, songPaths)
-        bundle.putLongArray(MediaAction.StartTimes, startTimes)
-        bundle.putLongArray(MediaAction.EndTimes, endTimes)
+        bundle.putStringArray(
+            MediaAction.Loops,
+            Array(loops.size) { i -> Json.encodeToString(loops[i]) })
 
         sendCustomAction(MediaAction.SendLoops, bundle)
     }
@@ -270,7 +260,11 @@ class MediaController {
 
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
         override fun onSessionEvent(event: String, extras: Bundle) {
-
+            when (event) {
+                "MediaSourceChanged" -> {
+                    onMediaSourceChanged?.invoke()
+                }
+            }
         }
 
         override fun onSessionDestroyed() {
