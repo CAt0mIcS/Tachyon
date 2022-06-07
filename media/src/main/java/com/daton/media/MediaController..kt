@@ -10,6 +10,8 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
+import com.daton.media.data.MediaAction
+import com.daton.media.data.MediaId
 import com.daton.media.device.Loop
 import com.daton.media.ext.*
 import com.daton.media.service.MediaPlaybackService
@@ -61,9 +63,9 @@ class MediaController {
     /**
      * Passes the new media id to the service, after this, all media operations are supported
      */
-    fun setPlayback(mediaId: String) {
+    fun setPlayback(mediaId: MediaId) {
         val bundle = Bundle()
-        bundle.putString(MediaAction.MediaId, mediaId)
+        bundle.putString(MediaAction.MediaId, mediaId.serialize())
         sendCustomAction(MediaAction.SetMediaId, bundle)
     }
 
@@ -84,7 +86,7 @@ class MediaController {
     /**
      * @return media id of current playback (song/loop/playlist)
      */
-    var mediaId: String
+    var mediaId: MediaId
         get() = metadata.mediaId
         set(value) {
             setPlayback(value)

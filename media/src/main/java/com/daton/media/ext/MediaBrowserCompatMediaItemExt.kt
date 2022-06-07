@@ -1,7 +1,6 @@
 package com.daton.media.ext
 
 import android.support.v4.media.MediaBrowserCompat
-import com.daton.media.MetadataKeys
 import java.io.File
 
 inline val MediaBrowserCompat.MediaItem.artist: String

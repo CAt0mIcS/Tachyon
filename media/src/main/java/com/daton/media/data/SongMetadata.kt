@@ -1,4 +1,4 @@
-package com.daton.media
+package com.daton.media.data
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

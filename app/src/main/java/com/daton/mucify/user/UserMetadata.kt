@@ -1,6 +1,7 @@
 package com.daton.mucify.user
 
 import android.support.v4.media.MediaBrowserCompat
+import com.daton.media.data.MediaId
 import com.daton.media.device.Loop
 import com.daton.media.device.Playlist
 import com.daton.media.ext.endTime
@@ -78,7 +79,7 @@ class UserMetadata {
     /**
      * History items with media id
      */
-    val history: MutableList<String> = mutableListOf()
+    val history: MutableList<MediaId> = mutableListOf()
 
 
     @Transient
@@ -94,12 +95,12 @@ class UserMetadata {
         timestamp = System.currentTimeMillis()
     }
 
-    operator fun plusAssign(history: String) {
+    operator fun plusAssign(history: MediaId) {
         addHistory(history)
     }
 
 
-    fun addHistory(mediaId: String) {
+    fun addHistory(mediaId: MediaId) {
         if (history.contains(mediaId)) {
             history.remove(mediaId)
             history.add(0, mediaId)

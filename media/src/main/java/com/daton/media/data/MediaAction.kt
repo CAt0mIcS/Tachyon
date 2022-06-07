@@ -1,4 +1,4 @@
-package com.daton.media
+package com.daton.media.data
 
 /**
  * Defines custom actions sent to the MediaPlaybackService. The first item is the event name the ones

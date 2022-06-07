@@ -1,17 +1,12 @@
 package com.daton.media.device
 
-import android.content.Context
-import android.graphics.BitmapFactory
-import android.media.MediaMetadataRetriever
 import android.os.Environment
 import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
-import com.daton.media.SongMetadata
+import com.daton.media.data.MediaId
+import com.daton.media.data.SongMetadata
 import com.daton.media.ext.*
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileReader
-import java.lang.IllegalStateException
 
 
 /**
@@ -64,7 +59,7 @@ class MediaSource : Iterable<MediaMetadataCompat> {
 
         fun loadSong(file: File): MediaMetadataCompat {
             return MediaMetadataCompat.Builder().apply {
-                mediaId = "Song_" + file.absolutePath
+                mediaId = MediaId.fromSongFile(file)
                 this.path = file
 
                 SongMetadata(file).let { songMetadata ->
@@ -161,7 +156,7 @@ class MediaSource : Iterable<MediaMetadataCompat> {
         }
     }
 
-    operator fun get(mediaId: String) = catalog.find { it.mediaId == mediaId }
+    operator fun get(mediaId: MediaId) = catalog.find { it.mediaId == mediaId }
 
     private fun invokeOnChanged() {
         synchronized(onChangedListeners) {

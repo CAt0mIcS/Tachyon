@@ -18,6 +18,7 @@ import com.daton.media.device.BrowserTree
 import com.daton.media.device.MediaSource
 import com.daton.media.ext.*
 import com.daton.media.CustomPlayer
+import com.daton.media.data.MediaId
 import com.daton.media.device.Loop
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
@@ -313,7 +314,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 "PlaybackPreparer.onPrepareFromMediaId with mediaId = $mediaId and playWhenReady = $playWhenReady"
             )
 
-            onSetMediaId(mediaId)
+            onSetMediaId(mediaId.toMediaId())
             onPrepare(playWhenReady)
         }
 
@@ -332,14 +333,16 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
 
-        override fun onSetMediaId(mediaId: String) {
+        override fun onSetMediaId(mediaId: MediaId) {
             mediaSource.whenReady {
                 // Find either the underlying playback or the top-level playback to play
                 val itemToPlay =
                     mediaSource.find { item ->
-                        if (mediaId.hasUnderlyingPlayback)
-                            mediaId.underlyingPlayback == item.mediaId
+                        // Media id is loop or playlist --> get song to play
+                        if (mediaId.underlyingMediaId != null)
+                            mediaId.underlyingMediaId == item.mediaId
                         else
+                        // Media id is song
                             item.mediaId == mediaId
                     }
                 if (itemToPlay == null)
@@ -356,7 +359,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                      * TODO: Fix this to work with new [MediaSource] as it won't load loops and playlists anymore
                      */
                     when {
-                        mediaId.isSongMediaId -> {
+                        mediaId.isSong -> {
                             preparePlayer(
 //                                mediaSource.filter { it.mediaId.isSongMediaId },
                                 mediaSource.catalog,
@@ -364,7 +367,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                             )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
-                        mediaId.isLoopMediaId -> {
+                        mediaId.isLoop -> {
                             preparePlayer(
 //                                mediaSource.filter { it.mediaId.isLoopMediaId },
                                 listOf(itemToPlay),

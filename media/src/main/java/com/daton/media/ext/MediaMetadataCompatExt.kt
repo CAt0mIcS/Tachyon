@@ -3,24 +3,24 @@ package com.daton.media.ext
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
-import com.daton.media.MetadataKeys
+import com.daton.media.data.MediaId
+import com.daton.media.data.MetadataKeys
 import com.google.android.exoplayer2.MediaItem
 import java.io.File
 
 /**
  * Useful extensions for [MediaMetadataCompat].
  */
-inline val MediaMetadataCompat.mediaId: String
-    get() = getString(MetadataKeys.MediaId)
+inline val MediaMetadataCompat.mediaId: MediaId
+    get() = getString(MetadataKeys.MediaId).toMediaId()
 
-inline var MediaMetadataCompat.Builder.mediaId: String
+inline var MediaMetadataCompat.Builder.mediaId: MediaId
     get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
     set(value) {
-        putString(MetadataKeys.MediaId, value)
+        putString(MetadataKeys.MediaId, value.serialize())
     }
 
 
@@ -57,15 +57,15 @@ inline var MediaMetadataCompat.Builder.albumArt: Bitmap?
     }
 
 inline val MediaMetadataCompat.isSong: Boolean
-    get() = getString(MetadataKeys.MediaId).isSongMediaId
+    get() = mediaId.isSong
 
 
 inline val MediaMetadataCompat.isLoop: Boolean
-    get() = getString(MetadataKeys.MediaId).isLoopMediaId
+    get() = mediaId.isLoop
 
 
 inline val MediaMetadataCompat.isPlaylist: Boolean
-    get() = getString(MetadataKeys.MediaId).isPlaylistMediaId
+    get() = mediaId.isPlaylist
 
 
 inline val MediaMetadataCompat.duration: Long
@@ -120,7 +120,7 @@ fun MediaMetadataCompat.toMediaBrowserMediaItem(): MediaBrowserCompat.MediaItem 
 
 fun MediaMetadataCompat.toMediaDescriptionCompat(): MediaDescriptionCompat {
     return MediaDescriptionCompat.Builder().let { desc ->
-        desc.setMediaId(mediaId)
+        desc.setMediaId(mediaId.serialize())
         desc.title = title
         desc.artist = artist
         desc.iconBitmap = albumArt
@@ -137,7 +137,7 @@ fun MediaMetadataCompat.toMediaDescriptionCompat(): MediaDescriptionCompat {
 
 fun MediaMetadataCompat.toExoMediaItem(): com.google.android.exoplayer2.MediaItem {
     return MediaItem.Builder().apply {
-        setMediaId(mediaId)
+        setMediaId(mediaId.serialize())
         setUri(Uri.parse(path.absolutePath))
 
         setMediaMetadata(toExoMediaItemMetadata())

@@ -6,8 +6,9 @@ import android.support.v4.media.MediaBrowserCompat
 import android.util.Log
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
-import com.daton.media.MediaAction
+import com.daton.media.data.MediaAction
 import com.daton.media.MediaController
+import com.daton.media.data.MediaId
 import com.daton.media.device.BrowserTree
 import com.daton.mucify.R
 import com.daton.mucify.databinding.ActivityMainBinding
@@ -125,7 +126,7 @@ class ActivityMain : AppCompatActivity() {
             User.metadata.history
         )
 
-        val playMedia = { mediaId: String ->
+        val playMedia = { mediaId: MediaId ->
             mediaController.mediaId = mediaId
             mediaController.play()
 
@@ -135,7 +136,7 @@ class ActivityMain : AppCompatActivity() {
         }
 
         binding.rvHistory.setOnItemClickListener { adapterView, view, i, l ->
-            playMedia(adapterView.getItemAtPosition(i).toString())
+            playMedia(adapterView.getItemAtPosition(i) as MediaId)
         }
 
         User.metadata.onHistoryChanged = {

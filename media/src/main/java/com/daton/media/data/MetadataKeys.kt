@@ -1,4 +1,4 @@
-package com.daton.media
+package com.daton.media.data
 
 import android.support.v4.media.MediaMetadataCompat
 

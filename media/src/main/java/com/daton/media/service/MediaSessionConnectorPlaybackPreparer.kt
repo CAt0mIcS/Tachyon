@@ -1,21 +1,17 @@
 package com.daton.media.service
 
 import android.os.Bundle
-import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import com.daton.media.R
-import com.daton.media.MediaAction
+import com.daton.media.data.MediaAction
+import com.daton.media.data.MediaId
 import com.daton.media.device.Loop
-import com.daton.media.ext.endTime
-import com.daton.media.ext.mediaId
-import com.daton.media.ext.path
-import com.daton.media.ext.startTime
+import com.daton.media.ext.toMediaId
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import java.io.File
 
 abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.PlaybackPreparer {
 
@@ -23,7 +19,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         const val TAG: String = "PlaybackPreparerBase"
     }
 
-    open fun onSetMediaId(mediaId: String) {}
+    open fun onSetMediaId(mediaId: MediaId) {}
 
     open fun onSetStartTime(startTime: Long) {}
 
@@ -49,7 +45,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 TAG,
                 "CustomActionSetMediaId.onCustomAction with action $action"
             )
-            onSetMediaId(extras!!.getString(MediaAction.MediaId)!!)
+            onSetMediaId(extras!!.getString(MediaAction.MediaId)!!.toMediaId())
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =

@@ -3,7 +3,8 @@ package com.daton.media.ext
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.support.v4.media.MediaDescriptionCompat
-import com.daton.media.MetadataKeys
+import com.daton.media.data.MediaId
+import com.daton.media.data.MetadataKeys
 import java.io.File
 
 
@@ -23,13 +24,13 @@ inline val MediaDescriptionCompat.endTime: Long
     get() = extras!!.getLong(MetadataKeys.EndTime)
 
 inline val MediaDescriptionCompat.isSong: Boolean
-    get() = mediaId.isSongMediaId
+    get() = mediaId!!.toMediaId().isSong
 
 inline val MediaDescriptionCompat.isLoop: Boolean
-    get() = mediaId.isLoopMediaId
+    get() = mediaId!!.toMediaId().isLoop
 
 inline val MediaDescriptionCompat.isPlaylist: Boolean
-    get() = mediaId.isPlaylistMediaId
+    get() = mediaId!!.toMediaId().isPlaylist
 
 
 inline var MediaDescriptionCompat.Builder.title: String

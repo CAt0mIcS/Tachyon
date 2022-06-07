@@ -1,17 +1,18 @@
 package com.daton.media.ext
 
-import com.daton.media.MetadataKeys
+import com.daton.media.data.MediaId
+import com.daton.media.data.MetadataKeys
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.MediaMetadata
 
 inline val MediaItem.isSong: Boolean
-    get() = mediaId.isSongMediaId
+    get() = mediaId.toMediaId().isSong
 
 inline val MediaItem.isLoop: Boolean
-    get() = mediaId.isLoopMediaId
+    get() = mediaId.toMediaId().isLoop
 
 inline val MediaItem.isPlaylist: Boolean
-    get() = mediaId.isPlaylistMediaId
+    get() = mediaId.toMediaId().isPlaylist
 
 
 // Returns 0 as default

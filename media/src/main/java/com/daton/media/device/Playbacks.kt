@@ -1,8 +1,10 @@
 package com.daton.media.device
 
-import android.provider.MediaStore
+import android.content.Context
+import android.os.Environment
 import android.support.v4.media.MediaMetadataCompat
-import com.daton.media.SongMetadata
+import com.daton.media.data.MediaId
+import com.daton.media.data.SongMetadata
 import com.daton.media.ext.*
 import kotlinx.serialization.Serializable
 import java.io.File
@@ -11,20 +13,13 @@ import java.io.File
 @Serializable
 class Loop {
 
-    constructor(mediaId: String, songPath: String, startTime: Long, endTime: Long) {
-        this.mediaId = mediaId
-        this.songPath = songPath
-        this.startTime = startTime
-        this.endTime = endTime
-    }
-
-//    var timestamp: Long = System.currentTimeMillis()
+    //    var timestamp: Long = System.currentTimeMillis()
 //        private set
 
-    var mediaId: String = MediaId.Empty
+    var mediaId: MediaId = MediaId.Empty
         private set
 
-    var songPath: String = ""
+    var songMediaId: MediaId = MediaId.Empty
         set(value) {
             field = value
 //            timestamp = System.currentTimeMillis()
@@ -45,16 +40,16 @@ class Loop {
     fun toMediaMetadata(mediaSource: MediaSource? = null): MediaMetadataCompat {
         return MediaMetadataCompat.Builder().apply {
             mediaId = this@Loop.mediaId
-            path = File(this@Loop.songPath)
+            path = songMediaId.path
             startTime = this@Loop.startTime
             endTime = this@Loop.endTime
 
-            val songMetadata = mediaSource?.get(this@Loop.songPath.toSongMediaId())
+            val songMetadata = mediaSource?.get(songMediaId)
             if (mediaSource != null && songMetadata != null) {
                 title = songMetadata.title
                 artist = songMetadata.artist
             } else {
-                SongMetadata(File(this@Loop.songPath)).let { songMetadata ->
+                SongMetadata(songMediaId.path).let { songMetadata ->
                     title = songMetadata.title
                     artist = songMetadata.artist
                 }
@@ -68,7 +63,7 @@ class Loop {
         if (other == null || other !is Loop)
             return false
 
-        return mediaId == other.mediaId && songPath == other.songPath && startTime == other.startTime && endTime == other.endTime
+        return mediaId == other.mediaId && songMediaId == other.songMediaId && startTime == other.startTime && endTime == other.endTime
     }
 }
 
@@ -78,7 +73,7 @@ class Playlist : ArrayList<String>() {
 //    var timestamp: Long = System.currentTimeMillis()
 //        private set
 
-    var mediaId: String = MediaId.Empty
+    var mediaId: MediaId = MediaId.Empty
         private set
 
     var currentPlaybackIndex: Int = 0

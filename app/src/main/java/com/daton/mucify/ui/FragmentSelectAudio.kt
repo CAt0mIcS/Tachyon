@@ -8,17 +8,19 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.annotation.Nullable
 import androidx.fragment.app.Fragment
+import com.daton.media.data.MediaId
+import com.daton.media.ext.toMediaId
 import com.daton.mucify.databinding.FragmentSelectAudioBinding
 
 
 class FragmentSelectAudio(private val playbacks: List<MediaBrowserCompat.MediaItem>) : Fragment() {
 
-    private val playbackStrings = mutableListOf<String>()
+    private val playbackStrings = mutableListOf<MediaId>()
 
     private var _binding: FragmentSelectAudioBinding? = null
     private val binding get() = _binding!!
 
-    var onItemClicked: ((String) -> Unit)? = null
+    var onItemClicked: ((MediaId) -> Unit)? = null
 
 
     constructor() : this(listOf())
@@ -42,7 +44,7 @@ class FragmentSelectAudio(private val playbacks: List<MediaBrowserCompat.MediaIt
 
         playbackStrings.clear()
         for (metadata in playbacks) {
-            playbackStrings += metadata.mediaId!!
+            playbackStrings += metadata.mediaId!!.toMediaId()
         }
 
         binding.rvFiles.adapter = ArrayAdapter(
@@ -52,7 +54,7 @@ class FragmentSelectAudio(private val playbacks: List<MediaBrowserCompat.MediaIt
         )
 
         binding.rvFiles.setOnItemClickListener { adapterView, _, i, _ ->
-            onItemClicked?.invoke(adapterView.getItemAtPosition(i).toString())
+            onItemClicked?.invoke(adapterView.getItemAtPosition(i) as MediaId)
         }
     }
 
