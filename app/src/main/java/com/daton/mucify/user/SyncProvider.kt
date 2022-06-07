@@ -43,6 +43,7 @@ class SyncProvider {
     }
 
 
+    // TODO: Loop/Playlist might've been deleted on another device --> Gets added here again
     private fun mergePlaybacks(newMetadata: UserMetadata, oldMetadata: UserMetadata): UserMetadata =
         mergeLoops(mergePlaylists(newMetadata, oldMetadata), oldMetadata)
 

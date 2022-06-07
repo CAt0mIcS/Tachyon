@@ -13,7 +13,7 @@ import java.io.File
  * Class which manages and holds access to the entire media library. Once loaded, all songs, loops
  * and playlists available on the device as device files will be accessible through this class.
  */
-class MediaSource : Iterable<MediaMetadataCompat> {
+class MediaSource {
 
     companion object {
         const val TAG = "MediaSource"
@@ -60,7 +60,7 @@ class MediaSource : Iterable<MediaMetadataCompat> {
         fun loadSong(file: File): MediaMetadataCompat {
             return MediaMetadataCompat.Builder().apply {
                 mediaId = MediaId.fromSongFile(file)
-                this.path = file
+//                this.path = file
 
                 SongMetadata(file).let { songMetadata ->
                     title = songMetadata.title
@@ -100,13 +100,22 @@ class MediaSource : Iterable<MediaMetadataCompat> {
      * List of all available media items
      * TODO Should have separate classes for Song, Playlist, ...
      */
-    val catalog = mutableListOf<MediaMetadataCompat>()
+    val songs = mutableListOf<MediaMetadataCompat>()
+    val loops = mutableListOf<Loop>()
+    val playlists = mutableListOf<Playlist>()
 
     private var onReadyListeners = mutableListOf<(Boolean) -> Unit>()
     private var onChangedListeners = mutableListOf<() -> Unit>()
 
-    operator fun plusAssign(items: List<MediaMetadataCompat>) {
-        catalog += items
+    @JvmName("plusAssignLoop")
+    operator fun plusAssign(items: List<Loop>) {
+        loops += items
+        invokeOnChanged()
+    }
+
+    @JvmName("plusAssignPlaylist")
+    operator fun plusAssign(items: List<Playlist>) {
+        playlists += items
         invokeOnChanged()
     }
 
@@ -156,7 +165,9 @@ class MediaSource : Iterable<MediaMetadataCompat> {
         }
     }
 
-    operator fun get(mediaId: MediaId) = catalog.find { it.mediaId == mediaId }
+    fun getSong(mediaId: MediaId) = songs.find { it.mediaId == mediaId }
+    fun getLoop(mediaId: MediaId) = loops.find { it.mediaId == mediaId }
+    fun getPlaylist(mediaId: MediaId) = playlists.find { it.mediaId == mediaId }
 
     private fun invokeOnChanged() {
         synchronized(onChangedListeners) {
@@ -164,7 +175,63 @@ class MediaSource : Iterable<MediaMetadataCompat> {
         }
     }
 
-    override fun iterator() = catalog.iterator()
+    fun forEachSong(perSong: (MediaMetadataCompat) -> Unit) {
+        for (song in songs)
+            perSong(song)
+    }
+
+    fun forEachLoop(perLoop: (Loop) -> Unit) {
+        for (loop in loops)
+            perLoop(loop)
+    }
+
+    fun forEachPlaylist(perPlaylist: (Playlist) -> Unit) {
+        for (playlist in playlists)
+            perPlaylist(playlist)
+    }
+
+    fun findSong(pred: (MediaMetadataCompat) -> Boolean): MediaMetadataCompat? {
+        for (song in songs)
+            if (pred(song))
+                return song
+        return null
+    }
+
+    fun findLoop(pred: (Loop) -> Boolean): Loop? {
+        for (loop in loops)
+            if (pred(loop))
+                return loop
+        return null
+    }
+
+    fun findPlaylist(pred: (Playlist) -> Boolean): Playlist? {
+        for (playlist in playlists)
+            if (pred(playlist))
+                return playlist
+        return null
+    }
+
+
+    fun indexOfSong(pred: (MediaMetadataCompat) -> Boolean): Int {
+        for (i in 0 until songs.size)
+            if (pred(songs[i]))
+                return i
+        return -1
+    }
+
+    fun indexOfLoop(pred: (Loop) -> Boolean): Int {
+        for (i in 0 until loops.size)
+            if (pred(loops[i]))
+                return i
+        return -1
+    }
+
+    fun indexOfPlaylist(pred: (Playlist) -> Boolean): Int {
+        for (i in 0 until playlists.size)
+            if (pred(playlists[i]))
+                return i
+        return -1
+    }
 
 
     private fun loadSongs(path: File?) {
@@ -173,7 +240,7 @@ class MediaSource : Iterable<MediaMetadataCompat> {
         for (file in files) {
             if (file.isDirectory) loadSongs(file) else {
                 if (file.isSongFile) {
-                    catalog += loadSong(file)
+                    songs += loadSong(file)
                 }
             }
         }

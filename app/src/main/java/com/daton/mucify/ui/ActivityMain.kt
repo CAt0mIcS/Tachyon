@@ -70,7 +70,7 @@ class ActivityMain : AppCompatActivity() {
          */
         User.onLogin {
             mediaController.sendLoops(User.metadata.loops)
-//            sendPlaylists(User.metadata.playlists.map { it.toMediaMetadata() })
+            mediaController.sendPlaylists(User.metadata.playlists)
         }
 
         Log.d(TAG, "onCreate finished")
@@ -90,7 +90,7 @@ class ActivityMain : AppCompatActivity() {
     fun onConnected() {
         mediaController.onMediaSourceChanged = {
             mediaController.browser.subscribe(
-                BrowserTree.ROOT,
+                BrowserTree.PLAYLIST_ROOT,
                 object : MediaBrowserCompat.SubscriptionCallback() {
                     override fun onChildrenLoaded(
                         parentId: String,
@@ -112,6 +112,11 @@ class ActivityMain : AppCompatActivity() {
                 mediaController.sendCustomAction(MediaAction.StoragePermissionChanged, bundle)
             }
         }
+
+        if (!User.loggedIn) {
+            mediaController.sendLoops(User.metadata.loops)
+            mediaController.sendPlaylists(User.metadata.playlists)
+        }
     }
 
     private fun setupUI(playbacks: List<MediaBrowserCompat.MediaItem>) {
@@ -127,7 +132,10 @@ class ActivityMain : AppCompatActivity() {
         )
 
         val playMedia = { mediaId: MediaId ->
-            mediaController.mediaId = mediaId
+
+            val playlist = MediaId("*playlist*/TestPlaylist", mediaId)
+
+            mediaController.mediaId = playlist
             mediaController.play()
 
             User.metadata.addHistory(mediaId)

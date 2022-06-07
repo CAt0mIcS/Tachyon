@@ -13,6 +13,7 @@ import android.util.Log
 import com.daton.media.data.MediaAction
 import com.daton.media.data.MediaId
 import com.daton.media.device.Loop
+import com.daton.media.device.Playlist
 import com.daton.media.ext.*
 import com.daton.media.service.MediaPlaybackService
 import kotlinx.serialization.encodeToString
@@ -209,6 +210,21 @@ class MediaController {
             Array(loops.size) { i -> Json.encodeToString(loops[i]) })
 
         sendCustomAction(MediaAction.SendLoops, bundle)
+    }
+
+    /**
+     * Updates the [MediaSource] with [playlists]. Do not add already added playlists again
+     */
+    fun sendPlaylists(playlists: List<Playlist>) {
+        if (playlists.isEmpty())
+            return
+
+        val bundle = Bundle()
+        bundle.putStringArray(
+            MediaAction.Playlists,
+            Array(playlists.size) { i -> Json.encodeToString(playlists[i]) })
+
+        sendCustomAction(MediaAction.SendPlaylists, bundle)
     }
 
     /**

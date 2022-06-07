@@ -19,12 +19,6 @@ class Loop {
     var mediaId: MediaId = MediaId.Empty
         private set
 
-    var songMediaId: MediaId = MediaId.Empty
-        set(value) {
-            field = value
-//            timestamp = System.currentTimeMillis()
-        }
-
     var startTime: Long = 0L
         set(value) {
             field = value
@@ -37,19 +31,22 @@ class Loop {
 //            timestamp = System.currentTimeMillis()
         }
 
+    val songMediaId: MediaId
+        get() = mediaId.underlyingMediaId!!
+
     fun toMediaMetadata(mediaSource: MediaSource? = null): MediaMetadataCompat {
         return MediaMetadataCompat.Builder().apply {
             mediaId = this@Loop.mediaId
-            path = songMediaId.path
+//            path = songMediaId.path
             startTime = this@Loop.startTime
             endTime = this@Loop.endTime
 
-            val songMetadata = mediaSource?.get(songMediaId)
+            val songMetadata = mediaSource?.getSong(songMediaId)
             if (mediaSource != null && songMetadata != null) {
                 title = songMetadata.title
                 artist = songMetadata.artist
             } else {
-                SongMetadata(songMediaId.path).let { songMetadata ->
+                SongMetadata(songMediaId.path!!).let { songMetadata ->
                     title = songMetadata.title
                     artist = songMetadata.artist
                 }
@@ -69,12 +66,14 @@ class Loop {
 
 
 @Serializable
-class Playlist : ArrayList<String>() {
+class Playlist {
 //    var timestamp: Long = System.currentTimeMillis()
 //        private set
 
     var mediaId: MediaId = MediaId.Empty
         private set
+
+    val playbacks: MutableList<MediaId> = mutableListOf()
 
     var currentPlaybackIndex: Int = 0
         set(value) {
@@ -82,13 +81,33 @@ class Playlist : ArrayList<String>() {
 //            timestamp = System.currentTimeMillis()
         }
 
-    operator fun plus(mediaId: String) {
-        add(mediaId)
+    operator fun plusAssign(mediaId: MediaId) {
+        playbacks += mediaId
 //        timestamp = System.currentTimeMillis()
     }
 
-    operator fun minus(mediaId: String) {
-        remove(mediaId)
+    operator fun minusAssign(mediaId: MediaId) {
+        playbacks -= mediaId
 //        timestamp = System.currentTimeMillis()
+    }
+
+    fun toMediaMetadata(): MediaMetadataCompat {
+        return MediaMetadataCompat.Builder().apply {
+            mediaId = this@Playlist.mediaId
+            title = ""
+            artist = ""
+        }.build()
+    }
+
+    fun toMediaMetadataList(mediaSource: MediaSource): List<MediaMetadataCompat> {
+        return List(playbacks.size) { i ->
+            if (playbacks[i].isSong) {
+                mediaSource.getSong(playbacks[i]) ?: TODO("Invalid song ${playbacks[i]}")
+            } else if (playbacks[i].isLoop) {
+                (mediaSource.getLoop(playbacks[i])
+                    ?: TODO("Invalid loop ${playbacks[i]}")).toMediaMetadata()
+            } else
+                TODO("Playback is neither song nor loop, nested playlists are currently not supported")
+        }
     }
 }

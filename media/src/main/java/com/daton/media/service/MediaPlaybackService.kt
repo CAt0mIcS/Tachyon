@@ -20,6 +20,7 @@ import com.daton.media.ext.*
 import com.daton.media.CustomPlayer
 import com.daton.media.data.MediaId
 import com.daton.media.device.Loop
+import com.daton.media.device.Playlist
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -251,12 +252,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
     fun preparePlayer(
         items: List<MediaMetadataCompat>,
-        itemToPlay: MediaMetadataCompat? = null
+        initialWindowIndex: Int
     ) {
         currentMediaItems = items
         currentPlayer.setMediaItems(items.map { it.toExoMediaItem() })
 
-        val initialWindowIndex = if (itemToPlay == null) 0 else items.indexOf(itemToPlay)
         // TODO: [itemToPlay] not in [playlist]
         currentPlayer.seekTo(initialWindowIndex, C.TIME_UNSET)
     }
@@ -336,16 +336,24 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         override fun onSetMediaId(mediaId: MediaId) {
             mediaSource.whenReady {
                 // Find either the underlying playback or the top-level playback to play
-                val itemToPlay =
-                    mediaSource.find { item ->
-                        // Media id is loop or playlist --> get song to play
-                        if (mediaId.underlyingMediaId != null)
-                            mediaId.underlyingMediaId == item.mediaId
-                        else
-                        // Media id is song
-                            item.mediaId == mediaId
+                val initialWindowIndex: Int = if (mediaId.isSong)
+                    mediaSource.indexOfSong { song ->
+                        song.mediaId == mediaId
                     }
-                if (itemToPlay == null)
+                else if (mediaId.isLoop)
+                    mediaSource.indexOfLoop { loop ->
+                        loop.mediaId == mediaId
+                    }
+                else
+                    mediaSource.indexOfPlaylist { playlist ->
+                        // Base playback is the same and playlist contains song/loop
+                        mediaId.source == playlist.mediaId.source && (mediaId.underlyingMediaId == null ||
+                                playlist.playbacks.contains(
+                                    mediaId.underlyingMediaId
+                                ))
+                    }
+
+                if (initialWindowIndex == -1)
                     TODO("Invalid media id $mediaId")
                 else {
                     currentPlayer.stop()
@@ -362,23 +370,39 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                         mediaId.isSong -> {
                             preparePlayer(
 //                                mediaSource.filter { it.mediaId.isSongMediaId },
-                                mediaSource.catalog,
-                                itemToPlay
+                                mediaSource.songs,
+                                initialWindowIndex,
                             )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
                         mediaId.isLoop -> {
                             preparePlayer(
-//                                mediaSource.filter { it.mediaId.isLoopMediaId },
-                                listOf(itemToPlay),
-                                itemToPlay
+                                mediaSource.loops.map { loop -> loop.toMediaMetadata() },
+                                initialWindowIndex,
                             )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
-//                        mediaId.isPlaylistMediaId -> {
-//                            preparePlayer(browserTree[mediaId.basePlayback]!!, itemToPlay)
-//                            currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
-//                        }
+                        mediaId.isPlaylist -> {
+                            val playlist: Playlist = mediaSource.playlists[initialWindowIndex]
+                            // Request for a specific song in playlist
+                            if (mediaId.underlyingMediaId != null) {
+
+                                val indexToPlay: Int =
+                                    playlist.playbacks.indexOf(mediaId.underlyingMediaId)
+
+                                preparePlayer(
+                                    playlist.toMediaMetadataList(mediaSource),
+                                    indexToPlay
+                                )
+
+                            } else
+                                preparePlayer(
+                                    playlist.toMediaMetadataList(mediaSource),
+                                    playlist.currentPlaybackIndex
+                                )
+
+                            currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
+                        }
                     }
                 }
             }
@@ -430,11 +454,18 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
         override fun onLoopsReceived(loops: List<Loop>) {
             mediaSource.whenReady { successfullyInitialized ->
-                if (successfullyInitialized) {
-                    mediaSource += loops.map { loop ->
-                        loop.toMediaMetadata(mediaSource)
-                    }
-                } else
+                if (successfullyInitialized)
+                    mediaSource += loops
+                else
+                    TODO("Media Source not initialized properly")
+            }
+        }
+
+        override fun onPlaylistsReceived(playlists: List<Playlist>) {
+            mediaSource.whenReady { successfullyInitialized ->
+                if (successfullyInitialized)
+                    mediaSource += playlists
+                else
                     TODO("Media Source not initialized properly")
             }
         }
@@ -480,11 +511,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 Player.STATE_READY -> {
                     notificationManager.showNotificationForPlayer(currentPlayer)
                     if (playbackState == Player.STATE_READY) {
-
-                        // When playing/paused save the current media item in persistent
-                        // storage so that playback can be resumed between device reboots.
-//                        saveRecentSongToStorage()
-
                         // TODO: Notification not swipeable on some devices if foreground service is still attached to it
                         // TODO: Figure out the exact build numbers where this is the case and limit it
 

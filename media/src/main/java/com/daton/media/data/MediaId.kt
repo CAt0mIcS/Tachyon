@@ -82,7 +82,7 @@ data class MediaId(
     val isStoredShared: Boolean
         get() = source.substring(0, SONG_SOURCE_SHARED_STORAGE.length) == SONG_SOURCE_SHARED_STORAGE
 
-    val path: File
+    val path: File?
         get() {
             if (isStoredInternally)
                 return File("./" + source.replaceFirst(SONG_SOURCE_INTERNAL_STORAGE, ""))
@@ -94,8 +94,14 @@ data class MediaId(
                 )
             // Loops/playlists don't have path at the moment as they're stored in the settings file
             // But loops/playlists have an underlying playback
-            return underlyingMediaId!!.path
+            return underlyingMediaId?.path
         }
 
     fun serialize(): String = Json.encodeToString(this)
+
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is MediaId)
+            return false
+        return serialize() == other.serialize()
+    }
 }

@@ -104,14 +104,8 @@ inline var MediaMetadataCompat.Builder.endTime: Long
     }
 
 
-inline val MediaMetadataCompat.path: File
-    get() = File(getString(MetadataKeys.MediaUri))
-
-inline var MediaMetadataCompat.Builder.path: File
-    get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
-    set(value) {
-        putString(MetadataKeys.MediaUri, value.absolutePath)
-    }
+inline val MediaMetadataCompat.path: File?
+    get() = mediaId.path
 
 
 fun MediaMetadataCompat.toMediaBrowserMediaItem(): MediaBrowserCompat.MediaItem {
@@ -138,7 +132,7 @@ fun MediaMetadataCompat.toMediaDescriptionCompat(): MediaDescriptionCompat {
 fun MediaMetadataCompat.toExoMediaItem(): com.google.android.exoplayer2.MediaItem {
     return MediaItem.Builder().apply {
         setMediaId(mediaId.serialize())
-        setUri(Uri.parse(path.absolutePath))
+        setUri(Uri.parse(path!!.absolutePath))
 
         setMediaMetadata(toExoMediaItemMetadata())
     }.build()

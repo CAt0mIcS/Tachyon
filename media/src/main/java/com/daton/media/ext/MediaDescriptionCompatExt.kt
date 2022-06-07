@@ -52,13 +52,14 @@ inline var MediaDescriptionCompat.Builder.iconBitmap: Bitmap?
     }
 
 fun MediaDescriptionCompat.Builder.setExtras(
-    path: File,
+    path: File?,
     duration: Long,
     startTime: Long,
     endTime: Long
 ) {
     val bundle = Bundle()
-    bundle.putString(MetadataKeys.MediaUri, path.absolutePath)
+    if (path != null)
+        bundle.putString(MetadataKeys.MediaUri, path.absolutePath)
     bundle.putLong(MetadataKeys.Duration, duration)
     bundle.putLong(MetadataKeys.StartTime, startTime)
     bundle.putLong(MetadataKeys.EndTime, endTime)

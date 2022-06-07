@@ -39,6 +39,9 @@ object User {
     var metadata = UserMetadata()
         private set
 
+    val loggedIn: Boolean
+        get() = cachedCredentials != null && cachedUserProfile != null
+
     /**
      * Should be called in the first activity to initialize the user
      */

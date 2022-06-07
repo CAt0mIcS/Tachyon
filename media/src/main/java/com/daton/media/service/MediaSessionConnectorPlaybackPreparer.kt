@@ -7,6 +7,7 @@ import com.daton.media.R
 import com.daton.media.data.MediaAction
 import com.daton.media.data.MediaId
 import com.daton.media.device.Loop
+import com.daton.media.device.Playlist
 import com.daton.media.ext.toMediaId
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -29,13 +30,16 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
     open fun onLoopsReceived(loops: List<Loop>) {}
 
+    open fun onPlaylistsReceived(playlists: List<Playlist>) {}
+
     fun getCustomActions(): Array<out MediaSessionConnector.CustomActionProvider> {
         return arrayOf(
             CustomActionSetMediaId(),
             CustomActionSetStartTime(),
             CustomActionSetEndTime(),
             CustomActionStoragePermissionChanged(),
-            CustomActionSendLoops()
+            CustomActionSendLoops(),
+            CustomActionSendPlaylists()
         )
     }
 
@@ -121,6 +125,25 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
                 MediaAction.SendLoops,
+                javaClass.name,
+                R.drawable.music_note
+            ).build()
+    }
+
+    inner class CustomActionSendPlaylists : MediaSessionConnector.CustomActionProvider {
+        override fun onCustomAction(player: Player, action: String, extras: Bundle?) {
+            Log.d(
+                TAG,
+                "CustomActionSetEndTime.onCustomAction with action $action"
+            )
+
+            onPlaylistsReceived(extras!!.getStringArray(MediaAction.Playlists)!!
+                .map { playlist: String -> Json.decodeFromString<Playlist>(playlist) })
+        }
+
+        override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
+            PlaybackStateCompat.CustomAction.Builder(
+                MediaAction.SendPlaylists,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
