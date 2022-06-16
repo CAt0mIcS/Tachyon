@@ -30,6 +30,8 @@ class MediaController {
     var onDisconnected: (() -> Unit)? = null
     var onMediaSourceChanged: (() -> Unit)? = null
 
+    var onMediaIdChanged: (() -> Unit)? = null
+
     private var activity: Activity? = null
 
     fun create(activity: Activity) {
@@ -45,12 +47,18 @@ class MediaController {
         Log.d("Mucify", "MediaBrowserController created")
     }
 
+    /**
+     * Connects to the [MediaBrowserService]. Should be called from Activity.onStart
+     */
     fun connect(activity: Activity) {
         this.activity = activity
         browser.connect()
         Log.d("Mucify", "Started connecting to MediaPlaybackService")
     }
 
+    /**
+     * Disconnects from the [MediaBrowserService] and unregisters any callbacks. Should be called from Activity.onStop
+     */
     fun disconnect() {
         if (activity != null && MediaControllerCompat.getMediaController(activity!!) != null) {
             MediaControllerCompat.getMediaController(activity!!)
@@ -279,8 +287,11 @@ class MediaController {
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
         override fun onSessionEvent(event: String, extras: Bundle) {
             when (event) {
-                "MediaSourceChanged" -> {
+                MediaAction.MediaSourceChanged -> {
                     onMediaSourceChanged?.invoke()
+                }
+                MediaAction.MediaIdChanged -> {
+                    onMediaIdChanged?.invoke()
                 }
             }
         }

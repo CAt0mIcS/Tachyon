@@ -18,6 +18,7 @@ import com.daton.media.device.BrowserTree
 import com.daton.media.device.MediaSource
 import com.daton.media.ext.*
 import com.daton.media.CustomPlayer
+import com.daton.media.data.MediaAction
 import com.daton.media.data.MediaId
 import com.daton.media.device.Loop
 import com.daton.media.device.Playlist
@@ -96,7 +97,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
         mediaSource.onChanged {
             browserTree.reload(mediaSource)
-            mediaSession.sendSessionEvent("MediaSourceChanged", null)
+            mediaSession.sendSessionEvent(MediaAction.MediaSourceChanged, null)
         }
 
         // Build a PendingIntent that can be used to launch the UI.
@@ -546,6 +547,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                     mediaItem.mediaMetadata.endTime
                 )
             }
+
+            // Notify [MediaController] which notifies subscribed activities
+            mediaSession.sendSessionEvent(MediaAction.MediaIdChanged, null)
         }
 
         override fun onEvents(player: Player, events: Player.Events) {

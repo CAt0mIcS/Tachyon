@@ -133,14 +133,15 @@ class ActivityMain : AppCompatActivity() {
 
         val playMedia = { mediaId: MediaId ->
 
-            val playlist = MediaId("*playlist*/TestPlaylist", mediaId)
-
-            mediaController.mediaId = playlist
+            mediaController.mediaId = mediaId
             mediaController.play()
 
             User.metadata.addHistory(mediaId)
             User.metadata.saveToLocal()
             User.uploadMetadata()
+
+            val intent = Intent(this@ActivityMain, ActivityPlayer::class.java)
+            startActivity(intent)
         }
 
         binding.rvHistory.setOnItemClickListener { adapterView, view, i, l ->

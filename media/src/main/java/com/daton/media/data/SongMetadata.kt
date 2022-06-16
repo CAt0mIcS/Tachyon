@@ -19,7 +19,7 @@ class SongMetadata(path: File) {
             metaRetriever.setDataSource(path.absolutePath)
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
-            TODO("Implement error handling")
+            TODO("Implement error handling: ${path.absolutePath}")
         }
 
         title =

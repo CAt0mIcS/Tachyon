@@ -33,6 +33,10 @@
             android:name="com.daton.mucify.ui.ActivitySettings"
             android:exported="true" />
 
+        <activity
+            android:name="com.daton.mucify.ui.ActivityPlayer"
+            android:exported="true" />
+
 
         <!--
        Declare the common MediaBrowserService for use in the mobile app, including
