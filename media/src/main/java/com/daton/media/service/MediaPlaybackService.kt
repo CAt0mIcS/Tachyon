@@ -3,13 +3,11 @@ package com.daton.media.service
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.*
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
@@ -471,11 +469,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             // Only load device files if they haven't already been loaded.
             if (permissionGranted && mediaSource.state != MediaSource.STATE_INITIALIZED) {
                 /**
-                 * Starts asynchronously loading all possible media playbacks
+                 * Starts asynchronously loading all playbacks in shared storage (only songs atm)
                  */
                 Log.d(MediaPlaybackService.TAG, "Loading MediaSource")
                 serviceScope.launch {
-                    mediaSource.loadDeviceFiles()
+                    mediaSource.loadSharedDeviceFiles()
                 }
             } else if (!permissionGranted)
                 mediaSource.clearSongs()

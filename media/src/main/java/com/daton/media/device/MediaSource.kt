@@ -130,11 +130,7 @@ class MediaSource {
      */
     var onChangedListener: ((String, String?) -> Unit)? = null
 
-    /**
-     * Should be called after storage permission is granted to load music that is stored in the phone's
-     * external storage
-     */
-    fun loadDeviceFiles() {
+    init {
         /**
          * Music directory may not be available, if so we'll set the state to STATE_ERROR
          */
@@ -148,8 +144,13 @@ class MediaSource {
             Log.e(TAG, "Music directory not available")
             state = STATE_ERROR
         }
+    }
 
-
+    /**
+     * Should be called after storage permission is granted to load music that is stored in the phone's
+     * external storage
+     */
+    fun loadSharedDeviceFiles() {
         songs.clear()
         loadSongs(musicDirectory)
         onChangedListener?.invoke(BrowserTree.SONG_ROOT, null)
