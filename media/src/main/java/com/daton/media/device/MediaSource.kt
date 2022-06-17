@@ -101,24 +101,20 @@ class MediaSource {
      * TODO Should have separate classes for Song, Playlist, ...
      */
     val songs = mutableListOf<MediaMetadataCompat>()
-    val loops = mutableListOf<Loop>()
-    val playlists = mutableListOf<Playlist>()
+    var loops = mutableListOf<Loop>()
+        set(value) {
+            field = value
+            invokeOnChanged()
+        }
+
+    var playlists = mutableListOf<Playlist>()
+        set(value) {
+            field = value
+            invokeOnChanged()
+        }
 
     private var onReadyListeners = mutableListOf<(Boolean) -> Unit>()
     private var onChangedListeners = mutableListOf<() -> Unit>()
-
-    @JvmName("plusAssignLoop")
-    operator fun plusAssign(items: List<Loop>) {
-        loops += items
-        invokeOnChanged()
-    }
-
-    @JvmName("plusAssignPlaylist")
-    operator fun plusAssign(items: List<Playlist>) {
-        playlists += items
-        invokeOnChanged()
-    }
-
 
     /**
      * Should be called after storage permission is granted to load music that is stored in the phone's

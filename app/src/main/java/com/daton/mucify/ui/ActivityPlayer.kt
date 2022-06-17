@@ -1,10 +1,15 @@
 package com.daton.mucify.ui
 
+import android.R
 import android.os.Bundle
 import android.os.Handler
+import android.widget.EditText
 import android.widget.SeekBar
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.daton.media.MediaController
+import com.daton.media.device.Loop
 import com.daton.mucify.Util
 import com.daton.mucify.databinding.ActivityPlayerBinding
 import com.daton.mucify.user.User
@@ -138,6 +143,9 @@ class ActivityPlayer : AppCompatActivity() {
 
             binding.btnPlayPause.setOnClickListener { if (controller.isPaused) controller.play() else controller.pause() }
 
+            binding.btnSaveLoop.setOnClickListener { displaySaveLoopDialog() }
+            binding.btnSavePlaylist.setOnClickListener { displaySavePlaylistDialog() }
+
             // Media id is set by [ActivityMain] before transitioning to [ActivityPlayer]
             controller.onMediaIdChanged?.invoke()
         }
@@ -151,5 +159,41 @@ class ActivityPlayer : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         controller.disconnect()
+    }
+
+    private fun displaySaveLoopDialog() {
+        val editLoopName = EditText(this)
+        AlertDialog.Builder(this)
+            .setMessage("Enter loop name")
+            .setView(editLoopName)
+            .setPositiveButton("Save") { dialog, id ->
+                val loopName = editLoopName.text.toString()
+                if (loopName.isEmpty()) {
+                    Toast.makeText(
+                        this,
+                        "Failed to save loop: Name mustn't be empty",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@setPositiveButton
+                }
+
+                User.metadata += Loop(
+                    loopName,
+                    (binding.sbStartPos.progress * User.metadata.audioUpdateInterval).toLong(),
+                    (binding.sbEndPos.progress * User.metadata.audioUpdateInterval).toLong(),
+                    // Already a loop but modified
+                    if (controller.mediaId.underlyingMediaId != null) controller.mediaId.underlyingMediaId!! else controller.mediaId
+                )
+                controller.sendLoops(User.metadata.loops)
+                User.metadata.saveToLocal()
+                User.uploadMetadata()
+
+            }
+            .setNegativeButton(R.string.cancel) { dialog, id -> dialog.dismiss() }
+            .create().show()
+    }
+
+    private fun displaySavePlaylistDialog() {
+
     }
 }

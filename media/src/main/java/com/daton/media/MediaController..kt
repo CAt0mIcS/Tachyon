@@ -206,7 +206,7 @@ class MediaController {
         get() = metadata.artist
 
     /**
-     * Updates the [MediaSource] with [loops]. Do not add already added loops again
+     * Updates the [MediaSource] with [loops]. Overwrites previous loops
      */
     fun sendLoops(loops: List<Loop>) {
         if (loops.isEmpty())
@@ -221,7 +221,7 @@ class MediaController {
     }
 
     /**
-     * Updates the [MediaSource] with [playlists]. Do not add already added playlists again
+     * Updates the [MediaSource] with [playlists]. Overwrites previous playlists
      */
     fun sendPlaylists(playlists: List<Playlist>) {
         if (playlists.isEmpty())

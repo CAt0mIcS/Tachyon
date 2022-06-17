@@ -16,6 +16,14 @@ class Loop {
     //    var timestamp: Long = System.currentTimeMillis()
 //        private set
 
+    constructor()
+
+    constructor(loopName: String, startTime: Long, endTime: Long, songMediaId: MediaId) {
+        mediaId = MediaId.fromLoop(loopName, songMediaId)
+        this.startTime = startTime
+        this.endTime = endTime
+    }
+
     var mediaId: MediaId = MediaId.Empty
         private set
 

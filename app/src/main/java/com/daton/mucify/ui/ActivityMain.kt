@@ -90,7 +90,7 @@ class ActivityMain : AppCompatActivity() {
     fun onConnected() {
         mediaController.onMediaSourceChanged = {
             mediaController.browser.subscribe(
-                BrowserTree.PLAYLIST_ROOT,
+                BrowserTree.ROOT,
                 object : MediaBrowserCompat.SubscriptionCallback() {
                     override fun onChildrenLoaded(
                         parentId: String,

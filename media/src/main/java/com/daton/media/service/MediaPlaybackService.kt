@@ -477,7 +477,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         override fun onLoopsReceived(loops: List<Loop>) {
             mediaSource.whenReady { successfullyInitialized ->
                 if (successfullyInitialized)
-                    mediaSource += loops
+                    mediaSource.loops = loops as MutableList<Loop>
                 else
                     TODO("Media Source not initialized properly")
             }
@@ -486,7 +486,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         override fun onPlaylistsReceived(playlists: List<Playlist>) {
             mediaSource.whenReady { successfullyInitialized ->
                 if (successfullyInitialized)
-                    mediaSource += playlists
+                    mediaSource.playlists = playlists as MutableList<Playlist>
                 else
                     TODO("Media Source not initialized properly")
             }
