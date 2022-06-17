@@ -244,4 +244,11 @@ class MediaSource {
             }
         }
     }
+
+    fun clearSongs() {
+        val shouldInvokeOnChanged = songs.size != 0
+        songs.clear()
+        if (shouldInvokeOnChanged)
+            onChangedListener?.invoke(BrowserTree.SONG_ROOT, null)
+    }
 }

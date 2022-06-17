@@ -468,7 +468,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
         override fun onStoragePermissionChanged(permissionGranted: Boolean) {
-            if (permissionGranted) {
+            // Only load device files if they haven't already been loaded.
+            if (permissionGranted && mediaSource.state != MediaSource.STATE_INITIALIZED) {
                 /**
                  * Starts asynchronously loading all possible media playbacks
                  */
@@ -476,7 +477,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 serviceScope.launch {
                     mediaSource.loadDeviceFiles()
                 }
-            }
+            } else if (!permissionGranted)
+                mediaSource.clearSongs()
         }
 
         override fun onLoopsReceived(loops: List<Loop>) {
