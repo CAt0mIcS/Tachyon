@@ -45,10 +45,12 @@ class Loop {
             if (mediaSource != null && songMetadata != null) {
                 title = songMetadata.title
                 artist = songMetadata.artist
+                duration = songMetadata.duration
             } else {
                 SongMetadata(songMediaId.path!!).let { songMetadata ->
                     title = songMetadata.title
                     artist = songMetadata.artist
+                    duration = songMetadata.duration
                 }
             }
 

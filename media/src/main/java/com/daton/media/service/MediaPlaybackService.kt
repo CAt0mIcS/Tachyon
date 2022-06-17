@@ -3,25 +3,27 @@ package com.daton.media.service
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.*
 import android.support.v4.media.MediaBrowserCompat.MediaItem
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.RatingCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
-import com.daton.media.device.BrowserTree
-import com.daton.media.device.MediaSource
-import com.daton.media.ext.*
 import com.daton.media.CustomPlayer
 import com.daton.media.data.MediaAction
 import com.daton.media.data.MediaId
+import com.daton.media.device.BrowserTree
 import com.daton.media.device.Loop
+import com.daton.media.device.MediaSource
 import com.daton.media.device.Playlist
+import com.daton.media.ext.*
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -152,6 +154,23 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
             setPlaybackPreparer(preparer)
             setQueueNavigator(QueueNavigator(mediaSession))
+
+            /**
+             * When updating e.g. the endTime in [PlaybackPreparer.onSetEndTime] the metadata of the [MediaController]
+             * needs to be updated with the new one
+             * TODO: We now need to maintain [MediaMetadata.toMediaMetadataCompat] and update it when [MediaMetadataCompat] changes
+             * TODO: What to return if [player.currentMediaItem] == null
+             */
+            setMediaMetadataProvider { player ->
+                if (player.currentTimeline.isEmpty)
+                    MediaMetadataCompat.Builder().build()
+                else if (player.currentMediaItem != null)
+                    player.mediaMetadata.toMediaMetadataCompat(MediaId.deserialize(player.currentMediaItem!!.mediaId))
+                else
+                // TODO: Might not work
+                    MediaMetadataCompat.Builder().build()
+            }
+
             registerCustomCommandReceiver(preparer)
             setCustomActionProviders(*preparer.getCustomActions())
 
@@ -439,6 +458,14 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             postLoopMessage(startTime, endTime)
 
             currentPlayer.mediaMetadata.endTime = endTime
+            mediaSessionConnector.invalidateMediaSessionMetadata()
+//            mediaSession.setMetadata(
+//                currentPlayer.mediaMetadata.toMediaMetadataCompat(
+//                    MediaId.deserialize(
+//                        currentPlayer.currentMediaItem!!.mediaId
+//                    )
+//                )
+//            )
         }
 
         override fun onStoragePermissionChanged(permissionGranted: Boolean) {

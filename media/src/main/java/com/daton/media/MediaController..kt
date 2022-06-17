@@ -128,7 +128,7 @@ class MediaController {
      * Checks if the service already has a media id to play. If true all media operations will be supported
      */
     val isCreated: Boolean
-        get() = playbackState.state != PlaybackStateCompat.STATE_NONE
+        get() = activity != null && playbackState.state != PlaybackStateCompat.STATE_NONE
 
     /**
      * Checks if the playback state is equal to playing. Crashes if the Playback hasn't been started yet.
