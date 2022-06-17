@@ -1,64 +1,57 @@
 package com.daton.media.device
 
+import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
+import com.daton.media.data.MediaId
 import com.daton.media.ext.*
 
 class BrowserTree(
-    mediaSource: MediaSource
+    private var mediaSource: MediaSource
 ) {
     companion object {
         /**
-         * Use this to get all songs
+         * Use this to get all playbacks
          */
         const val ROOT = "/"
 
+        const val SONG_ROOT = ROOT + "Song/"
+
         const val PLAYLIST_ROOT = ROOT + "Playlist/"
+
+        const val LOOP_ROOT = ROOT + "Loop/"
     }
 
-    private val mediaIdToChildren = mutableMapOf<String, MutableList<MediaMetadataCompat>>()
-    private val playlistsToChildren = mutableMapOf<String, MutableList<MediaMetadataCompat>>()
+    operator fun get(parentId: String): List<MediaBrowserCompat.MediaItem>? {
+        // TODO: Optimize
 
-    operator fun get(parentId: String): MutableList<MediaMetadataCompat>? {
-        if (parentId == ROOT) {
-            return mediaIdToChildren[ROOT]
-        } else if (parentId == PLAYLIST_ROOT) {
-            val metadata = arrayListOf<MediaMetadataCompat>()
-            for (key in playlistsToChildren.keys)
-                if (key.toMediaId().isPlaylist)
-                    metadata += playlistsToChildren[key]!!
-            return metadata
+        // Basic predefined types
+        when (parentId) {
+            ROOT -> {
+                return get(SONG_ROOT)!! + get(LOOP_ROOT)!! + get(PLAYLIST_ROOT)!!
+            }
+            SONG_ROOT -> {
+                return mediaSource.songs.map { it.toMediaBrowserMediaItem() }
+            }
+            PLAYLIST_ROOT -> {
+                return mediaSource.playlists.map { it.toMediaMetadata().toMediaBrowserMediaItem() }
+            }
+            LOOP_ROOT -> {
+                return mediaSource.loops.map {
+                    it.toMediaMetadata(mediaSource).toMediaBrowserMediaItem()
+                }
+            }
         }
-        return mediaIdToChildren[parentId]
-    }
 
-
-    /**
-     * Resets the entire [BrowserTree] and reloads from the media source
-     */
-    fun reload(mediaSource: MediaSource) {
-        mediaIdToChildren[ROOT] = mutableListOf()
-
-        mediaSource.whenReady { successfullyInitialized ->
-            if (successfullyInitialized) {
-                mediaSource.forEachSong { songMetadata ->
-                    mediaIdToChildren[ROOT]!! += songMetadata
-                }
-                mediaSource.forEachLoop { loop ->
-                    mediaIdToChildren[ROOT]!! += loop.toMediaMetadata(mediaSource)
-                }
-                mediaSource.forEachPlaylist { playlist ->
-                    playlistsToChildren[playlist.mediaId.toString()] = mutableListOf()
-                    playlistsToChildren[playlist.mediaId.toString()]!! += playlist.toMediaMetadataList(
-                        mediaSource
-                    )
-                }
-            } else
-                TODO("MediaSource initialization unsuccessful")
+        /**
+         * Assume that [parentId] is a Json-serialized [MediaId].
+         * If that media id is valid and is a playlist we should return all items in the playlist
+         */
+        val mediaId = MediaId.deserializeIfValid(parentId)
+        if (mediaId != null && mediaId.isPlaylist) {
+            return mediaSource.findPlaylist { it.mediaId == mediaId }
+                ?.toMediaMetadataList(mediaSource)?.map { it.toMediaBrowserMediaItem() }
         }
-    }
 
-
-    init {
-        reload(mediaSource)
+        return null
     }
 }

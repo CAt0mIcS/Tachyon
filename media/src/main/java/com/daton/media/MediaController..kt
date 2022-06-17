@@ -3,6 +3,7 @@ package com.daton.media
 import android.app.Activity
 import android.content.ComponentName
 import android.graphics.Bitmap
+import android.media.browse.MediaBrowser
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -21,14 +22,19 @@ import kotlinx.serialization.json.Json
 
 
 class MediaController {
+    companion object {
+        const val TAG = "MediaController"
+    }
+
     lateinit var browser: MediaBrowserCompat
         private set
 
     private val controllerCallback: MediaControllerCallback = MediaControllerCallback()
 
+    private val subscribedIds = mutableSetOf<String>()
+
     var onConnected: (() -> Unit)? = null
     var onDisconnected: (() -> Unit)? = null
-    var onMediaSourceChanged: (() -> Unit)? = null
 
     var onMediaIdChanged: (() -> Unit)? = null
 
@@ -57,13 +63,18 @@ class MediaController {
     }
 
     /**
-     * Disconnects from the [MediaBrowserService] and unregisters any callbacks. Should be called from Activity.onStop
+     * Disconnects from the [MediaBrowserService] and unregisters any callbacks including callbacks
+     * registered in [subscribe]. Should be called from Activity.onStop
      */
     fun disconnect() {
         if (activity != null && MediaControllerCompat.getMediaController(activity!!) != null) {
             MediaControllerCompat.getMediaController(activity!!)
                 .unregisterCallback(controllerCallback)
         }
+        if (subscribedIds.size > 0)
+            for (i in subscribedIds.size - 1 downTo 0)
+                unsubscribe(subscribedIds.elementAt(i))
+
         browser.disconnect()
         activity = null
         Log.d("Mucify", "Started disconnecting from MediaPlaybackService")
@@ -254,6 +265,40 @@ class MediaController {
         )
     }
 
+    /**
+     * Calls [onChanged] when the media source changes on the specified [id], e.g.
+     * * subscribe(BrowserTree.PLAYLIST_ROOT) { ... } will be called whenever a playlist changes or
+     *   is added/removed
+     * * subscribe(BrowserTree.ExampleAlbum) { ... } will be called whenever the songs in the specified
+     *   album change or songs are added/removed
+     */
+    fun subscribe(id: String, onChanged: (List<MediaBrowserCompat.MediaItem>) -> Unit) {
+        Log.d(TAG, "Subscribing to $id")
+
+        subscribedIds += id
+
+        // TODO: A lot of unnecessary calls to [MediaBrowserCompat.SubscriptionCallback.onChildrenLoaded] (around 4 atm at [BrowserTree.ROOT])
+        browser.subscribe(id, object : MediaBrowserCompat.SubscriptionCallback() {
+            override fun onChildrenLoaded(
+                parentId: String,
+                children: MutableList<MediaBrowserCompat.MediaItem>
+            ) {
+                Log.d(TAG, "Media source changed")
+                onChanged(children)
+            }
+        })
+    }
+
+    /**
+     * Removes the callback which was previously subscribed to with [subscribe]
+     */
+    fun unsubscribe(id: String) {
+        Log.d(TAG, "Unsubscribing id $id")
+
+        browser.unsubscribe(id)
+        subscribedIds -= id
+    }
+
     private inner class ConnectionCallback : MediaBrowserCompat.ConnectionCallback() {
         override fun onConnected() {
             val token: MediaSessionCompat.Token = browser.sessionToken
@@ -287,9 +332,6 @@ class MediaController {
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
         override fun onSessionEvent(event: String, extras: Bundle) {
             when (event) {
-                MediaAction.MediaSourceChanged -> {
-                    onMediaSourceChanged?.invoke()
-                }
                 MediaAction.MediaIdChanged -> {
                     onMediaIdChanged?.invoke()
                 }

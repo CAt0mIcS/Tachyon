@@ -90,6 +90,7 @@ class MediaSource {
                     onReadyListeners.forEach { listener ->
                         listener(state == STATE_INITIALIZED)
                     }
+                    onReadyListeners.clear()
                 }
             } else {
                 field = value
@@ -104,17 +105,30 @@ class MediaSource {
     var loops = mutableListOf<Loop>()
         set(value) {
             field = value
-            invokeOnChanged()
+            onChangedListener?.invoke(BrowserTree.LOOP_ROOT, null)
         }
 
     var playlists = mutableListOf<Playlist>()
         set(value) {
             field = value
-            invokeOnChanged()
+            onChangedListener?.invoke(BrowserTree.PLAYLIST_ROOT, null)
         }
 
     private var onReadyListeners = mutableListOf<(Boolean) -> Unit>()
-    private var onChangedListeners = mutableListOf<() -> Unit>()
+
+    /**
+     * Called whenever an item is added/removed from [loops]/[playlists]
+     * * The first argument specifies either [BrowserTree.SONG_ROOT], [BrowserTree.LOOP_ROOT]
+     *   or [BrowserTree.PLAYLIST_ROOT]
+     * * The second argument is null
+     *
+     * Called whenever an item changes (item added to playlist, for example)
+     * * The first argument specifies either [BrowserTree.LOOP_ROOT] or [BrowserTree.PLAYLIST_ROOT]
+     *   depending on what changed
+     * * The second argument specifies the serialized media id of the playlist that was changed
+     *   which can be deserialized using [MediaId.deserialize]
+     */
+    var onChangedListener: ((String, String?) -> Unit)? = null
 
     /**
      * Should be called after storage permission is granted to load music that is stored in the phone's
@@ -136,9 +150,10 @@ class MediaSource {
         }
 
 
+        songs.clear()
         loadSongs(musicDirectory)
+        onChangedListener?.invoke(BrowserTree.SONG_ROOT, null)
         state = STATE_INITIALIZED
-        invokeOnChanged()
     }
 
 
@@ -155,21 +170,9 @@ class MediaSource {
         }
     }
 
-    fun onChanged(performAction: () -> Unit) {
-        synchronized(onChangedListeners) {
-            onChangedListeners += performAction
-        }
-    }
-
     fun getSong(mediaId: MediaId) = songs.find { it.mediaId == mediaId }
     fun getLoop(mediaId: MediaId) = loops.find { it.mediaId == mediaId }
     fun getPlaylist(mediaId: MediaId) = playlists.find { it.mediaId == mediaId }
-
-    private fun invokeOnChanged() {
-        synchronized(onChangedListeners) {
-            onChangedListeners.forEach { listener -> listener() }
-        }
-    }
 
     fun forEachSong(perSong: (MediaMetadataCompat) -> Unit) {
         for (song in songs)

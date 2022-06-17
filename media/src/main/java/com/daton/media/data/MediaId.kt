@@ -44,6 +44,14 @@ data class MediaId(
 
         fun deserialize(json: String): MediaId = Json.decodeFromString(json)
 
+        fun deserializeIfValid(json: String): MediaId? {
+            return try {
+                Json.decodeFromString(json)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
         /**
          * TODO: Song files must currently be in shared storage
          */
@@ -90,14 +98,17 @@ data class MediaId(
 
     val path: File?
         get() {
-            if (isStoredInternally)
-                return File("./" + source.replaceFirst(SONG_SOURCE_INTERNAL_STORAGE, ""))
-            else if (isStoredShared)
-                return File(
-                    Environment.getExternalStorageDirectory().absolutePath + "/" + source.replaceFirst(
-                        SONG_SOURCE_SHARED_STORAGE, ""
+            if (!isLoop && !isPlaylist) {
+                if (isStoredInternally)
+                    return File("./" + source.replaceFirst(SONG_SOURCE_INTERNAL_STORAGE, ""))
+                else if (isStoredShared)
+                    return File(
+                        Environment.getExternalStorageDirectory().absolutePath + "/" + source.replaceFirst(
+                            SONG_SOURCE_SHARED_STORAGE, ""
+                        )
                     )
-                )
+            }
+
             // Loops/playlists don't have path at the moment as they're stored in the settings file
             // But loops/playlists have an underlying playback
             return underlyingMediaId?.path

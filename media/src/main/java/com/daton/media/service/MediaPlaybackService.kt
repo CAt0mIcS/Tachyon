@@ -87,9 +87,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         })
     }
 
-    private val browserTree: BrowserTree by lazy {
-        BrowserTree(mediaSource)
-    }
+    private lateinit var browserTree: BrowserTree
 
 
     override fun onCreate() {
@@ -97,9 +95,14 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
         Log.d(TAG, "Creating MediaPlaybackService")
 
-        mediaSource.onChanged {
-            browserTree.reload(mediaSource)
-            mediaSession.sendSessionEvent(MediaAction.MediaSourceChanged, null)
+        mediaSource.onChangedListener = { parentId, mediaId ->
+            browserTree = BrowserTree(mediaSource)
+            notifyChildrenChanged(BrowserTree.ROOT)
+            notifyChildrenChanged(parentId)
+
+            if (mediaId != null) {
+                notifyChildrenChanged(mediaId)
+            }
         }
 
         // Build a PendingIntent that can be used to launch the UI.
@@ -203,9 +206,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         Log.d(TAG, "MediaPlaybackService.onLoadChildren with parentId: $parentId")
         val resultsSent = mediaSource.whenReady { successfullyInitialized ->
             if (successfullyInitialized) {
-                val children = browserTree[parentId]?.map { item ->
-                    item.toMediaBrowserMediaItem()
-                }
+                val children = browserTree[parentId]
                 try {
                     result.sendResult(children)
                 } catch (_: IllegalStateException) {
@@ -228,6 +229,10 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             result.detach()
         }
     }
+
+    /**
+     * TODO: [MediaBrowserServiceCompat.onSearch] to allow e.g. Google Assistant to search and play music
+     */
 
     /**
      * Called when swiping activity away from recents. We might want to pause the audio here
@@ -527,6 +532,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
      */
     private inner class PlayerEventListener : Player.Listener {
 
+        @Deprecated("Deprecated in Java")
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
                 Player.STATE_BUFFERING,

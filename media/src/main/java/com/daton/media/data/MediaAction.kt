@@ -30,8 +30,6 @@ object MediaAction {
     /**
      * Events sent to the MediaBrowserController by the MediaPlaybackService
      */
-    const val MediaSourceChanged = "com.daton.mucify.MEDIA_SOURCE_CHANGED"
-
     const val MediaIdChanged = "com.daton.mucify.MEDIA_ID_CHANGED"
 
 }
