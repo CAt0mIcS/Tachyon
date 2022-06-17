@@ -442,6 +442,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             postLoopMessage(startTime, endTime)
 
             currentPlayer.mediaMetadata.startTime = startTime
+            mediaSessionConnector.invalidateMediaSessionMetadata()
         }
 
         override fun onSetEndTime(endTime: Long) {
@@ -459,13 +460,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
             currentPlayer.mediaMetadata.endTime = endTime
             mediaSessionConnector.invalidateMediaSessionMetadata()
-//            mediaSession.setMetadata(
-//                currentPlayer.mediaMetadata.toMediaMetadataCompat(
-//                    MediaId.deserialize(
-//                        currentPlayer.currentMediaItem!!.mediaId
-//                    )
-//                )
-//            )
         }
 
         override fun onStoragePermissionChanged(permissionGranted: Boolean) {
