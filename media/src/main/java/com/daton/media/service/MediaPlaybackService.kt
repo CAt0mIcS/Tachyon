@@ -558,7 +558,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-
+            val bundle = Bundle()
+            bundle.putBoolean(MediaAction.IsPlaying, isPlaying)
+            mediaSession.sendSessionEvent(MediaAction.OnPlaybackStateChanged, bundle)
         }
 
         override fun onMediaItemTransition(

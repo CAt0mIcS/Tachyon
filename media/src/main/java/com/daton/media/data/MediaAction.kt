@@ -32,4 +32,6 @@ object MediaAction {
      */
     const val MediaIdChanged = "com.daton.mucify.MEDIA_ID_CHANGED"
 
+    const val OnPlaybackStateChanged = "com.daton.mucify.ON_PLAYBACK_STATE_CHANGED"
+    const val IsPlaying = "IsPlaying"
 }

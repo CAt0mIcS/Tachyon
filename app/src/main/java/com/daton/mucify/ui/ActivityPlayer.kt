@@ -1,8 +1,9 @@
 package com.daton.mucify.ui
 
-import android.R
+import com.daton.mucify.R
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.Toast
@@ -19,7 +20,7 @@ class ActivityPlayer : AppCompatActivity() {
     private val controller = MediaController()
     private lateinit var binding: ActivityPlayerBinding
 
-    private val handler = Handler()
+    private val handler = Handler(Looper.getMainLooper())
 
     private var isSeeking = false
 
@@ -44,6 +45,10 @@ class ActivityPlayer : AppCompatActivity() {
             binding.sbEndPos.progress =
                 (controller.endTime / User.metadata.audioUpdateInterval).toInt()
 
+        }
+
+        controller.onPlaybackStateChanged = { isPlaying ->
+            binding.btnPlayPause.setImageResource(if (isPlaying) R.drawable.pause else R.drawable.play)
         }
 
         controller.onConnected = {
@@ -146,6 +151,8 @@ class ActivityPlayer : AppCompatActivity() {
             binding.btnSaveLoop.setOnClickListener { displaySaveLoopDialog() }
             binding.btnSavePlaylist.setOnClickListener { displaySavePlaylistDialog() }
 
+            controller.onPlaybackStateChanged?.invoke(controller.isPlaying)
+
             // Media id is set by [ActivityMain] before transitioning to [ActivityPlayer]
             controller.onMediaIdChanged?.invoke()
         }
@@ -166,7 +173,7 @@ class ActivityPlayer : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setMessage("Enter loop name")
             .setView(editLoopName)
-            .setPositiveButton("Save") { dialog, id ->
+            .setPositiveButton("Save") { _, _ ->
                 val loopName = editLoopName.text.toString()
                 if (loopName.isEmpty()) {
                     Toast.makeText(
@@ -189,7 +196,7 @@ class ActivityPlayer : AppCompatActivity() {
                 User.uploadMetadata()
 
             }
-            .setNegativeButton(R.string.cancel) { dialog, id -> dialog.dismiss() }
+            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
             .create().show()
     }
 

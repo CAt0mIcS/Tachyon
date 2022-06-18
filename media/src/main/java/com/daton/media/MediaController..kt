@@ -37,6 +37,7 @@ class MediaController {
     var onDisconnected: (() -> Unit)? = null
 
     var onMediaIdChanged: (() -> Unit)? = null
+    var onPlaybackStateChanged: ((Boolean) -> Unit)? = null
 
     private var activity: Activity? = null
 
@@ -334,6 +335,9 @@ class MediaController {
             when (event) {
                 MediaAction.MediaIdChanged -> {
                     onMediaIdChanged?.invoke()
+                }
+                MediaAction.OnPlaybackStateChanged -> {
+                    onPlaybackStateChanged?.invoke(extras.getBoolean(MediaAction.IsPlaying))
                 }
             }
         }

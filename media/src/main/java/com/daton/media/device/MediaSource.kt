@@ -97,11 +97,8 @@ class MediaSource {
             }
         }
 
-    /**
-     * List of all available media items
-     * TODO Should have separate classes for Song, Playlist, ...
-     */
     val songs = mutableListOf<MediaMetadataCompat>()
+
     var loops = mutableListOf<Loop>()
         set(value) {
             field = value
