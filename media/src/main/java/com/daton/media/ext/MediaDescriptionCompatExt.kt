@@ -8,8 +8,8 @@ import com.daton.media.data.MetadataKeys
 import java.io.File
 
 
-inline val MediaDescriptionCompat.artist: String
-    get() = subtitle as String
+inline val MediaDescriptionCompat.artist: String?
+    get() = subtitle as String?
 
 inline val MediaDescriptionCompat.duration: Long
     get() = extras!!.getLong(MetadataKeys.Duration)
@@ -33,13 +33,13 @@ inline val MediaDescriptionCompat.isPlaylist: Boolean
     get() = mediaId!!.toMediaId().isPlaylist
 
 
-inline var MediaDescriptionCompat.Builder.title: String
+inline var MediaDescriptionCompat.Builder.title: String?
     get() = throw IllegalAccessException("Cannot get from MediaDescriptionCompat.Builder")
     set(value) {
         setTitle(value)
     }
 
-inline var MediaDescriptionCompat.Builder.artist: String
+inline var MediaDescriptionCompat.Builder.artist: String?
     get() = throw IllegalAccessException("Cannot get from MediaDescriptionCompat.Builder")
     set(value) {
         setSubtitle(value)

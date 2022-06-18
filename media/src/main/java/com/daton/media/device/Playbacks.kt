@@ -15,7 +15,10 @@ abstract class Playback {
     var mediaId: MediaId = MediaId.Empty
         protected set
 
-    abstract fun toMediaMetadata(mediaSource: MediaSource? = null): MediaMetadataCompat
+    abstract fun toMediaMetadata(
+        mediaSource: MediaSource? = null,
+        baseMediaId: MediaId? = null
+    ): MediaMetadataCompat
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -45,9 +48,15 @@ class Song(path: File) : Playback() {
         }
     }
 
-    override fun toMediaMetadata(mediaSource: MediaSource?): MediaMetadataCompat =
+    override fun toMediaMetadata(
+        mediaSource: MediaSource?,
+        baseMediaId: MediaId?
+    ): MediaMetadataCompat =
         MediaMetadataCompat.Builder().also {
-            it.mediaId = mediaId
+            if (baseMediaId != null) {
+                it.mediaId = baseMediaId + mediaId
+            } else
+                it.mediaId = mediaId
             it.title = title
             it.artist = artist
             it.albumArt = albumArt
@@ -84,27 +93,31 @@ class Loop constructor() : Playback() {
         get() = mediaId.underlyingMediaId!!
 
     // TODO: Is it faster to pass [mediaSource] or using [SongMetadata]
-    override fun toMediaMetadata(mediaSource: MediaSource?): MediaMetadataCompat {
-        return MediaMetadataCompat.Builder().apply {
-            mediaId = this@Loop.mediaId
+    override fun toMediaMetadata(
+        mediaSource: MediaSource?,
+        baseMediaId: MediaId?
+    ): MediaMetadataCompat {
+        return MediaMetadataCompat.Builder().also {
+            if (baseMediaId != null) {
+                it.mediaId = baseMediaId + mediaId
+            } else
+                it.mediaId = mediaId
 //            path = songMediaId.path
-            startTime = this@Loop.startTime
-            endTime = this@Loop.endTime
+            it.startTime = this@Loop.startTime
+            it.endTime = this@Loop.endTime
 
             val songMetadata = mediaSource?.getSong(songMediaId)
             if (mediaSource != null && songMetadata != null) {
-                title = songMetadata.title
-                artist = songMetadata.artist
-                duration = songMetadata.duration
+                it.title = songMetadata.title
+                it.artist = songMetadata.artist
+                it.duration = songMetadata.duration
             } else {
                 SongMetadata(songMediaId.path!!).let { songMetadata ->
-                    title = songMetadata.title
-                    artist = songMetadata.artist
-                    duration = songMetadata.duration
+                    it.title = songMetadata.title
+                    it.artist = songMetadata.artist
+                    it.duration = songMetadata.duration
                 }
             }
-
-
         }.build()
     }
 
@@ -153,11 +166,12 @@ class Playlist : Playback() {
 //        timestamp = System.currentTimeMillis()
     }
 
-    override fun toMediaMetadata(mediaSource: MediaSource?): MediaMetadataCompat {
+    override fun toMediaMetadata(
+        mediaSource: MediaSource?,
+        baseMediaId: MediaId?
+    ): MediaMetadataCompat {
         return MediaMetadataCompat.Builder().apply {
             mediaId = this@Playlist.mediaId
-            title = ""
-            artist = ""
         }.build()
     }
 
@@ -165,10 +179,10 @@ class Playlist : Playback() {
         return List(playbacks.size) { i ->
             if (playbacks[i].isSong) {
                 (mediaSource.getSong(playbacks[i])
-                    ?: TODO("Invalid song ${playbacks[i]}")).toMediaMetadata(mediaSource)
+                    ?: TODO("Invalid song ${playbacks[i]}")).toMediaMetadata(mediaSource, mediaId)
             } else if (playbacks[i].isLoop) {
                 (mediaSource.getLoop(playbacks[i])
-                    ?: TODO("Invalid loop ${playbacks[i]}")).toMediaMetadata(mediaSource)
+                    ?: TODO("Invalid loop ${playbacks[i]}")).toMediaMetadata(mediaSource, mediaId)
             } else
                 TODO("Playback is neither song nor loop, nested playlists are currently not supported")
         }

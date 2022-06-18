@@ -22,15 +22,15 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
 
         controller.create(this)
 
+        binding.rvPlaylistItems.adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_list_item_1,
+            playbackStrings
+        )
+
         controller.onMediaIdChanged = {
             binding.txtPlaylistTitle.text = controller.playlistName
             binding.txtTitle.text = controller.title
-
-            binding.rvPlaylistItems.adapter = ArrayAdapter(
-                this,
-                android.R.layout.simple_list_item_1,
-                playbackStrings
-            )
         }
 
         controller.onConnected = {

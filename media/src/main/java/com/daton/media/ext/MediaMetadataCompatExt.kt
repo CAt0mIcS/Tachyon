@@ -24,23 +24,23 @@ inline var MediaMetadataCompat.Builder.mediaId: MediaId
     }
 
 
-inline val MediaMetadataCompat.title: String
+inline val MediaMetadataCompat.title: String?
     get() = getString(MetadataKeys.Title)
 
-inline var MediaMetadataCompat.Builder.title: String
+inline var MediaMetadataCompat.Builder.title: String?
     get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
     set(value) {
         putString(MetadataKeys.Title, value)
     }
 
 
-inline val MediaMetadataCompat.artist: String
+inline val MediaMetadataCompat.artist: String?
     get() {
         // Artist not set on client side MediaMetadataCompat for some reason, but it's in description.artist
         return getString(MetadataKeys.Artist) ?: description.artist
     }
 
-inline var MediaMetadataCompat.Builder.artist: String
+inline var MediaMetadataCompat.Builder.artist: String?
     get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
     set(value) {
         putString(MetadataKeys.Artist, value)

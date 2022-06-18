@@ -133,6 +133,11 @@ data class MediaId(
 
     fun serialize(): String = Json.encodeToString(this)
 
+    /**
+     * Combines two media ids, the first one will be the [baseMediaId] and the second one the [underlyingMediaId]
+     */
+    operator fun plus(other: MediaId?) = MediaId(source, other)
+
     override fun equals(other: Any?): Boolean {
         if (other == null || other !is MediaId)
             return false

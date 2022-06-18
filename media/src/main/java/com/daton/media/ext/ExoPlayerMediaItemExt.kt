@@ -39,8 +39,8 @@ inline val MediaMetadata.duration: Long
 
 fun MediaMetadata.toMediaMetadataCompat(mediaId: MediaId): MediaMetadataCompat =
     MediaMetadataCompat.Builder().let {
-        it.title = title?.toString() ?: ""
-        it.artist = artist?.toString() ?: ""
+        it.title = title?.toString()
+        it.artist = artist?.toString()
         it.duration = duration
 
 //        TODO(it.albumArt = artworkData)

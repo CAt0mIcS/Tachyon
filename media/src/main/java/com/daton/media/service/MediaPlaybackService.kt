@@ -52,6 +52,17 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
     // Doesn't start loading files yet as we need to wait on storage permission to be granted
     private val mediaSource = MediaSource()
 
+    /**
+     * When media id is set to a playlist without specifying any underlying media id to play we need to
+     * update metadata with the base media id of the playlist
+     */
+    private var basePlaylistMediaId: MediaId? = null
+        set(value) {
+            field = value
+            if (field != null)
+                mediaSessionConnector.invalidateMediaSessionMetadata()
+        }
+
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mediaSessionConnector: MediaSessionConnector
 
@@ -163,7 +174,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
              * TODO: What to return if [player.currentMediaItem] == null
              */
             setMediaMetadataProvider { player ->
-                if (player.currentTimeline.isEmpty)
+                if (basePlaylistMediaId != null) {
+                    MediaMetadataCompat.Builder().apply {
+                        mediaId = basePlaylistMediaId!!
+                    }.build()
+                } else if (player.currentTimeline.isEmpty)
                     MediaMetadataCompat.Builder().build()
                 else if (player.currentMediaItem != null)
                     player.mediaMetadata.toMediaMetadataCompat(player.currentMediaItem!!.mediaId.toMediaId())
@@ -378,8 +393,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 if (initialWindowIndex == -1)
                     TODO("Invalid media id $mediaId")
                 else {
-                    currentPlayer.stop()
-
                     /**
                      * All songs/loops will be set as the internal playlist when playing song/loop
                      * When playing an actual playlist, all songs/loops in the playlist will be set as
@@ -390,6 +403,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                      */
                     when {
                         mediaId.isSong -> {
+                            currentPlayer.stop()
                             preparePlayer(
 //                                mediaSource.filter { it.mediaId.isSongMediaId },
                                 mediaSource.songs.map { song -> song.toMediaMetadata() },
@@ -398,6 +412,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
                         mediaId.isLoop -> {
+                            currentPlayer.stop()
                             preparePlayer(
                                 mediaSource.loops.map { loop -> loop.toMediaMetadata(mediaSource) },
                                 initialWindowIndex,
@@ -408,6 +423,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                             val playlist: Playlist = mediaSource.playlists[initialWindowIndex]
                             // Request for a specific song in playlist
                             if (mediaId.underlyingMediaId != null) {
+                                currentPlayer.stop()
+                                basePlaylistMediaId = null
 
                                 val indexToPlay: Int =
                                     playlist.playbacks.indexOf(mediaId.underlyingMediaId)
@@ -417,12 +434,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                                     indexToPlay
                                 )
 
-                            } else
-                                preparePlayer(
-                                    playlist.toMediaMetadataList(mediaSource),
-                                    playlist.currentPlaybackIndex
-                                )
-
+                            } else {
+                                basePlaylistMediaId = mediaId
+                            }
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
                         }
                     }

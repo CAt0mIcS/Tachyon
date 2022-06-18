@@ -207,7 +207,7 @@ class MediaController {
      * Title of the currently playing song. Metadata must've been set, otherwise the
      * function will crash.
      */
-    val title: String
+    val title: String?
         get() = metadata.title
 
     /**
@@ -238,7 +238,7 @@ class MediaController {
      * Artist of the currently playing song. Metadata must've been set, otherwise the
      * function will crash.
      */
-    val artist: String
+    val artist: String?
         get() = metadata.artist
 
     /**
