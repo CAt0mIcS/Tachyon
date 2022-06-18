@@ -581,13 +581,28 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             reason: Int
         ) {
             // TODO: Loops for [CastPlayer]
-            if (mediaItem != null && mediaItem.isLoop) {
-                currentPlayer.seekTo(mediaItem.mediaMetadata.startTime)
 
-                postLoopMessage(
-                    mediaItem.mediaMetadata.startTime,
-                    mediaItem.mediaMetadata.endTime
-                )
+            if (mediaItem != null) {
+                val mediaId = mediaItem.mediaId.toMediaId()
+                if (mediaId.isLoop || mediaId.underlyingMediaId?.isLoop == true) {
+                    val (startTime: Long, endTime: Long) = if (mediaId.isLoop)
+                        arrayOf(mediaItem.mediaMetadata.startTime, mediaItem.mediaMetadata.endTime)
+                    else {
+                        val loop =
+                            mediaSource.findLoop { it.mediaId == mediaId.underlyingMediaId }
+                                ?: TODO("Loop ${mediaId.underlyingMediaId} not found")
+
+                        arrayOf(loop.startTime, loop.endTime)
+                    }
+
+                    // TODO: Loops in playlist not seeking to beginning
+                    currentPlayer.seekTo(startTime)
+
+                    postLoopMessage(
+                        startTime,
+                        endTime
+                    )
+                }
             }
 
             // Notify [MediaController] which notifies subscribed activities
@@ -595,7 +610,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
         override fun onEvents(player: Player, events: Player.Events) {
-            Log.d(TAG, "PlayerEventListener.onEvent with events $events")
+            Log.d(TAG, "PlayerEventListener.onEvent")
 
             if (events.contains(Player.EVENT_POSITION_DISCONTINUITY)
                 || events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)

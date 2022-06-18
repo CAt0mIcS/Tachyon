@@ -13,7 +13,7 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
     private lateinit var binding: ActivityPlaylistPlayerBinding
     private val controller = MediaController()
 
-    private var playbackStrings = listOf<MediaId>()
+    private var playbackStrings = mutableListOf<MediaId>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +28,12 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
             playbackStrings
         )
 
+        binding.rvPlaylistItems.setOnItemClickListener { adapterView, _, i, _ ->
+            controller.mediaId = adapterView.getItemAtPosition(i) as MediaId
+            controller.play()
+        }
+
+
         controller.onMediaIdChanged = {
             binding.txtPlaylistTitle.text = controller.playlistName
             binding.txtTitle.text = controller.title
@@ -36,9 +42,11 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
         controller.onConnected = {
             // Getting media id requires connection to MediaService
             controller.subscribe(controller.mediaId.baseMediaId.serialize()) { playlistItems ->
-                playbackStrings = playlistItems.map { it.mediaId!!.toMediaId() }
+                playbackStrings.addAll(playlistItems.map { it.mediaId!!.toMediaId() })
                 (binding.rvPlaylistItems.adapter as ArrayAdapter<*>).notifyDataSetChanged()
             }
+
+            controller.onMediaIdChanged!!()
         }
     }
 
