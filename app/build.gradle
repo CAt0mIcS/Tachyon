@@ -12,8 +12,8 @@ android {
         applicationId "com.daton.mucify"
         minSdk 21
         targetSdk 32
-        versionCode 29
-        versionName "Dev 29"
+        versionCode 30
+        versionName "Dev 30"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 

@@ -13,8 +13,10 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import com.daton.media.data.MediaAction
 import com.daton.media.data.MediaId
+import com.daton.media.device.BrowserTree
 import com.daton.media.device.Loop
 import com.daton.media.device.Playlist
+import com.daton.media.device.Song
 import com.daton.media.ext.*
 import com.daton.media.service.MediaPlaybackService
 import kotlinx.serialization.encodeToString
@@ -31,7 +33,7 @@ class MediaController {
 
     private val controllerCallback: MediaControllerCallback = MediaControllerCallback()
 
-    private val subscribedIds = mutableSetOf<String>()
+    private val subscribedIds = mutableMapOf<String, (List<MediaBrowserCompat.MediaItem>) -> Unit>()
 
     var onConnected: (() -> Unit)? = null
     var onDisconnected: (() -> Unit)? = null
@@ -72,9 +74,10 @@ class MediaController {
             MediaControllerCompat.getMediaController(activity!!)
                 .unregisterCallback(controllerCallback)
         }
-        if (subscribedIds.size > 0)
-            for (i in subscribedIds.size - 1 downTo 0)
-                unsubscribe(subscribedIds.elementAt(i))
+        val keys = mutableListOf<String>().apply { addAll(subscribedIds.keys) }
+        if (keys.size > 0)
+            for (i in keys.size - 1 downTo 0)
+                unsubscribe(keys[i])
 
         browser.disconnect()
         activity = null
@@ -300,7 +303,7 @@ class MediaController {
     fun subscribe(id: String, onChanged: (List<MediaBrowserCompat.MediaItem>) -> Unit) {
         Log.d(TAG, "Subscribing to $id")
 
-        subscribedIds += id
+        subscribedIds += Pair(id, onChanged)
 
         // TODO: A lot of unnecessary calls to [MediaBrowserCompat.SubscriptionCallback.onChildrenLoaded] (around 4 atm at [BrowserTree.ROOT])
         browser.subscribe(id, object : MediaBrowserCompat.SubscriptionCallback() {
@@ -312,6 +315,48 @@ class MediaController {
                 onChanged(children)
             }
         })
+    }
+
+    /**
+     * Quick way to call [subscribe] with [BrowserTree.SONG_ROOT] and once the results are there call
+     * [unsubscribe]. The previously subscribed callback will be restored once [action] is done
+     */
+    fun songs(action: (List<Song>) -> Unit) {
+        val previousOnChanged = subscribedIds[BrowserTree.SONG_ROOT]
+
+        subscribe(BrowserTree.SONG_ROOT) { children ->
+            action(children.map { it.toSong() })
+            if (previousOnChanged != null)
+                subscribe(BrowserTree.SONG_ROOT, previousOnChanged)
+        }
+    }
+
+    /**
+     * Quick way to call [subscribe] with [BrowserTree.LOOP_ROOT] and once the results are there call
+     * [unsubscribe]. The previously subscribed callback will be restored once [action] is done
+     */
+    fun loops(action: (List<Loop>) -> Unit) {
+        val previousOnChanged = subscribedIds[BrowserTree.LOOP_ROOT]
+
+        subscribe(BrowserTree.LOOP_ROOT) { children ->
+            action(children.map { it.toLoop() })
+            if (previousOnChanged != null)
+                subscribe(BrowserTree.LOOP_ROOT, previousOnChanged)
+        }
+    }
+
+    /**
+     * Quick way to call [subscribe] with [BrowserTree.PLAYLIST_ROOT] and once the results are there call
+     * [unsubscribe]. The previously subscribed callback will be restored once [action] is done
+     */
+    fun playlists(action: (List<Playlist>) -> Unit) {
+        val previousOnChanged = subscribedIds[BrowserTree.PLAYLIST_ROOT]
+
+        subscribe(BrowserTree.PLAYLIST_ROOT) { children ->
+            action(children.map { it.toPlaylist() })
+            if (previousOnChanged != null)
+                subscribe(BrowserTree.PLAYLIST_ROOT, previousOnChanged)
+        }
     }
 
     /**

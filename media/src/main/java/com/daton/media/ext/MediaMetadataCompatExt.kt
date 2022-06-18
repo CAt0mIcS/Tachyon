@@ -9,6 +9,9 @@ import android.support.v4.media.MediaMetadataCompat
 import com.daton.media.data.MediaId
 import com.daton.media.data.MetadataKeys
 import com.google.android.exoplayer2.MediaItem
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.io.File
 
 /**
@@ -103,6 +106,27 @@ inline var MediaMetadataCompat.Builder.endTime: Long
         putLong(MetadataKeys.EndTime, value)
     }
 
+inline val MediaMetadataCompat.playlistPlaybacks: List<MediaId>
+    get() {
+        val jsonString = getString(MetadataKeys.PlaylistPlaybacks) ?: return emptyList()
+        return Json.decodeFromString(jsonString)
+    }
+
+inline var MediaMetadataCompat.Builder.playlistPlaybacks: List<MediaId>
+    get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
+    set(value) {
+        putString(MetadataKeys.PlaylistPlaybacks, Json.encodeToString(value))
+    }
+
+inline val MediaMetadataCompat.currentPlaylistPlaybackIndex: Int
+    get() = getLong(MetadataKeys.CurrentPlaylistPlaybackIndex).toInt()
+
+inline var MediaMetadataCompat.Builder.currentPlaylistPlaybackIndex: Int
+    get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
+    set(value) {
+        putLong(MetadataKeys.CurrentPlaylistPlaybackIndex, value.toLong())
+    }
+
 
 inline val MediaMetadataCompat.path: File?
     get() = mediaId.path
@@ -117,12 +141,13 @@ fun MediaMetadataCompat.toMediaDescriptionCompat(): MediaDescriptionCompat {
         desc.setMediaId(mediaId.serialize())
         desc.title = title
         desc.artist = artist
-        desc.iconBitmap = albumArt
+        desc.albumArt = albumArt
         desc.setExtras(
             path,
             duration,
             startTime,
-            endTime
+            endTime,
+            playlistPlaybacks
         )
 
         return@let desc.build()

@@ -8,6 +8,8 @@ import com.daton.media.data.MediaId
 import com.daton.media.data.SongMetadata
 import com.daton.media.ext.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.io.File
 
 @Serializable
@@ -30,14 +32,22 @@ abstract class Playback {
     }
 }
 
-class Song(path: File) : Playback() {
+class Song constructor() : Playback() {
 
-    val title: String
-    val artist: String
-    val albumArt: Bitmap?
-    val duration: Long
+    var title: String = ""
+        private set
 
-    init {
+    var artist: String = ""
+        private set
+
+    var albumArt: Bitmap? = null
+        private set
+
+    var duration: Long = 0
+        private set
+
+
+    constructor(path: File) : this() {
         mediaId = MediaId.fromSongFile(path)
 
         SongMetadata(path).let { songMetadata ->
@@ -46,6 +56,20 @@ class Song(path: File) : Playback() {
             albumArt = songMetadata.albumArt
             duration = songMetadata.duration
         }
+    }
+
+    constructor(
+        mediaId: MediaId,
+        title: String,
+        artist: String,
+        duration: Long,
+        albumArt: Bitmap? = null
+    ) : this() {
+        this.mediaId = mediaId
+        this.title = title
+        this.artist = artist
+        this.duration = duration
+        this.albumArt = albumArt
     }
 
     override fun toMediaMetadata(
@@ -73,6 +97,12 @@ class Loop constructor() : Playback() {
 
     constructor(loopName: String, startTime: Long, endTime: Long, songMediaId: MediaId) : this() {
         mediaId = MediaId.fromLoop(loopName, songMediaId)
+        this.startTime = startTime
+        this.endTime = endTime
+    }
+
+    constructor(mediaId: MediaId, startTime: Long, endTime: Long) : this() {
+        this.mediaId = mediaId
         this.startTime = startTime
         this.endTime = endTime
     }
@@ -121,6 +151,8 @@ class Loop constructor() : Playback() {
         }.build()
     }
 
+    override fun toString() = Json.encodeToString(this)
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -144,9 +176,23 @@ class Loop constructor() : Playback() {
 
 
 @Serializable
-class Playlist : Playback() {
+class Playlist constructor() : Playback() {
 //    var timestamp: Long = System.currentTimeMillis()
 //        private set
+
+    constructor(name: String) : this() {
+        mediaId = MediaId.fromPlaylist(name)
+    }
+
+    constructor(
+        mediaId: MediaId,
+        playbacks: List<MediaId>,
+        currentPlaybackIndex: Int = 0
+    ) : this() {
+        this.mediaId = mediaId
+        this.playbacks.addAll(playbacks)
+        this.currentPlaybackIndex = currentPlaybackIndex
+    }
 
     val playbacks: MutableList<MediaId> = mutableListOf()
 
@@ -172,6 +218,8 @@ class Playlist : Playback() {
     ): MediaMetadataCompat {
         return MediaMetadataCompat.Builder().apply {
             mediaId = this@Playlist.mediaId
+            playlistPlaybacks = playbacks
+            currentPlaylistPlaybackIndex = currentPlaybackIndex
         }.build()
     }
 
@@ -187,6 +235,8 @@ class Playlist : Playback() {
                 TODO("Playback is neither song nor loop, nested playlists are currently not supported")
         }
     }
+
+    override fun toString() = Json.encodeToString(this)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

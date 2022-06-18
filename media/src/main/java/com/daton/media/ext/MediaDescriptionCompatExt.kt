@@ -23,6 +23,15 @@ inline val MediaDescriptionCompat.startTime: Long
 inline val MediaDescriptionCompat.endTime: Long
     get() = extras!!.getLong(MetadataKeys.EndTime)
 
+inline val MediaDescriptionCompat.albumArt: Bitmap?
+    get() = iconBitmap
+
+inline val MediaDescriptionCompat.playlistPlaybacks: List<MediaId>
+    get() = extras!!.getStringArray(MetadataKeys.PlaylistPlaybacks)!!.map { it.toMediaId() }
+
+inline val MediaDescriptionCompat.currentPlaylistPlaybackIndex: Int
+    get() = extras!!.getInt(MetadataKeys.CurrentPlaylistPlaybackIndex)
+
 inline val MediaDescriptionCompat.isSong: Boolean
     get() = mediaId!!.toMediaId().isSong
 
@@ -45,7 +54,7 @@ inline var MediaDescriptionCompat.Builder.artist: String?
         setSubtitle(value)
     }
 
-inline var MediaDescriptionCompat.Builder.iconBitmap: Bitmap?
+inline var MediaDescriptionCompat.Builder.albumArt: Bitmap?
     get() = throw IllegalAccessException("Cannot get from MediaDescriptionCompat.Builder")
     set(value) {
         setIconBitmap(value)
@@ -55,7 +64,9 @@ fun MediaDescriptionCompat.Builder.setExtras(
     path: File?,
     duration: Long,
     startTime: Long,
-    endTime: Long
+    endTime: Long,
+    playbacksInPlaylist: List<MediaId> = emptyList(),
+    currentPlaybackIndex: Int = 0
 ) {
     val bundle = Bundle()
     if (path != null)
@@ -63,5 +74,10 @@ fun MediaDescriptionCompat.Builder.setExtras(
     bundle.putLong(MetadataKeys.Duration, duration)
     bundle.putLong(MetadataKeys.StartTime, startTime)
     bundle.putLong(MetadataKeys.EndTime, endTime)
+    bundle.putStringArray(
+        MetadataKeys.PlaylistPlaybacks,
+        playbacksInPlaylist.map { it.toString() }.toTypedArray()
+    )
+    bundle.putInt(MetadataKeys.CurrentPlaylistPlaybackIndex, currentPlaybackIndex)
     setExtras(bundle)
 }

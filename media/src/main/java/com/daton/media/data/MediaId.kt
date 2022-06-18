@@ -71,6 +71,12 @@ data class MediaId(
         fun fromLoop(loopName: String, songMediaId: MediaId) =
             MediaId(LOOP_SOURCE + loopName, songMediaId)
 
+        /**
+         * TODO: Loops are currently not stored as files
+         */
+        fun fromPlaylist(playlistName: String, songOrLoopMediaId: MediaId? = null) =
+            MediaId(PLAYLIST_SOURCE + playlistName, songOrLoopMediaId)
+
         val Empty = MediaId("")
     }
 
