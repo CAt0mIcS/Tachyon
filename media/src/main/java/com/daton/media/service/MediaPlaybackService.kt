@@ -584,21 +584,24 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
             if (mediaItem != null) {
                 val mediaId = mediaItem.mediaId.toMediaId()
-                if (mediaId.isLoop || mediaId.underlyingMediaId?.isLoop == true) {
-                    val (startTime: Long, endTime: Long) = if (mediaId.isLoop)
-                        arrayOf(mediaItem.mediaMetadata.startTime, mediaItem.mediaMetadata.endTime)
-                    else {
-                        val loop =
-                            mediaSource.findLoop { it.mediaId == mediaId.underlyingMediaId }
-                                ?: TODO("Loop ${mediaId.underlyingMediaId} not found")
 
-                        arrayOf(loop.startTime, loop.endTime)
-                    }
+                if (mediaId.isLoop) {
+                    // Single loop
+                    currentPlayer.seekTo(mediaItem.mediaMetadata.startTime)
+                    postLoopMessage(
+                        mediaItem.mediaMetadata.startTime,
+                        mediaItem.mediaMetadata.endTime
+                    )
 
+                } else if (mediaId.isPlaylist && mediaId.underlyingMediaId?.isLoop == true) {
+                    // Loop in playlist
                     // TODO: Loops in playlist not seeking to beginning
-                    currentPlayer.seekTo(startTime)
+                    val loop =
+                        mediaSource.findLoop { it.mediaId == mediaId.underlyingMediaId }
+                            ?: TODO("Loop ${mediaId.underlyingMediaId} not found")
 
-                    postLoopMessageForPlaylist(endTime)
+                    currentPlayer.seekTo(loop.startTime)
+                    postLoopMessageForPlaylist(loop.endTime)
                 }
             }
 
