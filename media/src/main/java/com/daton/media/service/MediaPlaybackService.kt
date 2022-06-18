@@ -598,10 +598,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                     // TODO: Loops in playlist not seeking to beginning
                     currentPlayer.seekTo(startTime)
 
-                    postLoopMessage(
-                        startTime,
-                        endTime
-                    )
+                    postLoopMessageForPlaylist(endTime)
                 }
             }
 
@@ -658,6 +655,20 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             looper = Looper.getMainLooper()
             deleteAfterDelivery = false
             payload = startTime
+            setPosition(endTime)
+            send()
+        }
+    }
+
+    private fun postLoopMessageForPlaylist(endTime: Long) {
+        // Cancel any previous messages
+        playerMessage?.cancel()
+
+        playerMessage = currentPlayer.createMessage { _, _ ->
+            currentPlayer.seekToNext()
+        }.apply {
+            looper = Looper.getMainLooper()
+            deleteAfterDelivery = true
             setPosition(endTime)
             send()
         }
