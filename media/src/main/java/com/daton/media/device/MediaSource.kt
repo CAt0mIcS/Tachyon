@@ -56,22 +56,6 @@ class MediaSource {
             "ogg",
             "wav"
         )
-
-        fun loadSong(file: File): MediaMetadataCompat {
-            return MediaMetadataCompat.Builder().apply {
-                mediaId = MediaId.fromSongFile(file)
-//                this.path = file
-
-                SongMetadata(file).let { songMetadata ->
-                    title = songMetadata.title
-                    artist = songMetadata.artist
-                    albumArt = songMetadata.albumArt
-                    duration = songMetadata.duration
-                }
-
-
-            }.build()
-        }
     }
 
     /**
@@ -97,7 +81,7 @@ class MediaSource {
             }
         }
 
-    val songs = mutableListOf<MediaMetadataCompat>()
+    val songs = mutableListOf<Song>()
 
     var loops = mutableListOf<Loop>()
         set(value) {
@@ -172,7 +156,7 @@ class MediaSource {
     fun getLoop(mediaId: MediaId) = loops.find { it.mediaId == mediaId }
     fun getPlaylist(mediaId: MediaId) = playlists.find { it.mediaId == mediaId }
 
-    fun forEachSong(perSong: (MediaMetadataCompat) -> Unit) {
+    fun forEachSong(perSong: (Song) -> Unit) {
         for (song in songs)
             perSong(song)
     }
@@ -187,7 +171,7 @@ class MediaSource {
             perPlaylist(playlist)
     }
 
-    fun findSong(pred: (MediaMetadataCompat) -> Boolean): MediaMetadataCompat? {
+    fun findSong(pred: (Song) -> Boolean): Song? {
         for (song in songs)
             if (pred(song))
                 return song
@@ -209,7 +193,7 @@ class MediaSource {
     }
 
 
-    fun indexOfSong(pred: (MediaMetadataCompat) -> Boolean): Int {
+    fun indexOfSong(pred: (Song) -> Boolean): Int {
         for (i in 0 until songs.size)
             if (pred(songs[i]))
                 return i
@@ -237,7 +221,7 @@ class MediaSource {
         for (file in files) {
             if (file.isDirectory) loadSongs(file) else {
                 if (file.isSongFile) {
-                    songs += loadSong(file)
+                    songs += Song(file)
                 }
             }
         }

@@ -1,16 +1,21 @@
 package com.daton.media.device
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import android.support.v4.media.MediaMetadataCompat
 import com.daton.media.data.MediaId
 import com.daton.media.data.SongMetadata
 import com.daton.media.ext.*
 import kotlinx.serialization.Serializable
+import java.io.File
 
 @Serializable
-open class Playback : Any() {
+abstract class Playback {
     var mediaId: MediaId = MediaId.Empty
         protected set
+
+    abstract fun toMediaMetadata(mediaSource: MediaSource? = null): MediaMetadataCompat
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -22,7 +27,7 @@ open class Playback : Any() {
     }
 }
 
-class Song : Playback() {
+class Song(path: File) : Playback() {
 
     val title: String
     val artist: String
@@ -30,7 +35,9 @@ class Song : Playback() {
     val duration: Long
 
     init {
-        SongMetadata(mediaId.path!!).let { songMetadata ->
+        mediaId = MediaId.fromSongFile(path)
+
+        SongMetadata(path).let { songMetadata ->
             title = songMetadata.title
             artist = songMetadata.artist
             albumArt = songMetadata.albumArt
@@ -38,7 +45,7 @@ class Song : Playback() {
         }
     }
 
-    fun toMediaMetadata(): MediaMetadataCompat =
+    override fun toMediaMetadata(mediaSource: MediaSource?): MediaMetadataCompat =
         MediaMetadataCompat.Builder().also {
             it.mediaId = mediaId
             it.title = title
@@ -76,7 +83,8 @@ class Loop constructor() : Playback() {
     val songMediaId: MediaId
         get() = mediaId.underlyingMediaId!!
 
-    fun toMediaMetadata(mediaSource: MediaSource? = null): MediaMetadataCompat {
+    // TODO: Is it faster to pass [mediaSource] or using [SongMetadata]
+    override fun toMediaMetadata(mediaSource: MediaSource?): MediaMetadataCompat {
         return MediaMetadataCompat.Builder().apply {
             mediaId = this@Loop.mediaId
 //            path = songMediaId.path
@@ -106,6 +114,7 @@ class Loop constructor() : Playback() {
 
         other as Loop
 
+        if (!super.equals(other)) return false
         if (startTime != other.startTime) return false
         if (endTime != other.endTime) return false
         if (songMediaId != other.songMediaId) return false
@@ -122,12 +131,9 @@ class Loop constructor() : Playback() {
 
 
 @Serializable
-class Playlist {
+class Playlist : Playback() {
 //    var timestamp: Long = System.currentTimeMillis()
 //        private set
-
-    var mediaId: MediaId = MediaId.Empty
-        private set
 
     val playbacks: MutableList<MediaId> = mutableListOf()
 
@@ -147,7 +153,7 @@ class Playlist {
 //        timestamp = System.currentTimeMillis()
     }
 
-    fun toMediaMetadata(): MediaMetadataCompat {
+    override fun toMediaMetadata(mediaSource: MediaSource?): MediaMetadataCompat {
         return MediaMetadataCompat.Builder().apply {
             mediaId = this@Playlist.mediaId
             title = ""
@@ -158,12 +164,25 @@ class Playlist {
     fun toMediaMetadataList(mediaSource: MediaSource): List<MediaMetadataCompat> {
         return List(playbacks.size) { i ->
             if (playbacks[i].isSong) {
-                mediaSource.getSong(playbacks[i]) ?: TODO("Invalid song ${playbacks[i]}")
+                (mediaSource.getSong(playbacks[i])
+                    ?: TODO("Invalid song ${playbacks[i]}")).toMediaMetadata(mediaSource)
             } else if (playbacks[i].isLoop) {
                 (mediaSource.getLoop(playbacks[i])
-                    ?: TODO("Invalid loop ${playbacks[i]}")).toMediaMetadata()
+                    ?: TODO("Invalid loop ${playbacks[i]}")).toMediaMetadata(mediaSource)
             } else
                 TODO("Playback is neither song nor loop, nested playlists are currently not supported")
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Playlist) return false
+        if (!super.equals(other)) return false
+
+        if (!super.equals(other)) return false
+        if (playbacks != other.playbacks) return false
+        if (currentPlaybackIndex != other.currentPlaybackIndex) return false
+
+        return true
     }
 }

@@ -392,14 +392,14 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                         mediaId.isSong -> {
                             preparePlayer(
 //                                mediaSource.filter { it.mediaId.isSongMediaId },
-                                mediaSource.songs,
+                                mediaSource.songs.map { song -> song.toMediaMetadata() },
                                 initialWindowIndex,
                             )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
                         mediaId.isLoop -> {
                             preparePlayer(
-                                mediaSource.loops.map { loop -> loop.toMediaMetadata() },
+                                mediaSource.loops.map { loop -> loop.toMediaMetadata(mediaSource) },
                                 initialWindowIndex,
                             )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE

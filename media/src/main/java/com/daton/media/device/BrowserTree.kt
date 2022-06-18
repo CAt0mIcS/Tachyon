@@ -30,10 +30,14 @@ class BrowserTree(
                 return get(SONG_ROOT)!! + get(LOOP_ROOT)!! + get(PLAYLIST_ROOT)!!
             }
             SONG_ROOT -> {
-                return mediaSource.songs.map { it.toMediaBrowserMediaItem() }
+                return mediaSource.songs.map {
+                    it.toMediaMetadata(mediaSource).toMediaBrowserMediaItem()
+                }
             }
             PLAYLIST_ROOT -> {
-                return mediaSource.playlists.map { it.toMediaMetadata().toMediaBrowserMediaItem() }
+                return mediaSource.playlists.map {
+                    it.toMediaMetadata(mediaSource).toMediaBrowserMediaItem()
+                }
             }
             LOOP_ROOT -> {
                 return mediaSource.loops.map {
