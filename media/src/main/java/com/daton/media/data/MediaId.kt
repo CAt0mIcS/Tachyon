@@ -88,13 +88,30 @@ data class MediaId(
         get() = source.contains(PLAYLIST_SOURCE)
 
     val isStoredInternally: Boolean
-        get() = source.substring(
-            0,
-            SONG_SOURCE_INTERNAL_STORAGE.length
-        ) == SONG_SOURCE_INTERNAL_STORAGE
+        get() {
+            assert(!isLoop && !isPlaylist) { "Calling isStoredInternally only valid for songs" }
+            return source.substring(
+                0,
+                SONG_SOURCE_INTERNAL_STORAGE.length
+            ) == SONG_SOURCE_INTERNAL_STORAGE
+        }
 
     val isStoredShared: Boolean
-        get() = source.substring(0, SONG_SOURCE_SHARED_STORAGE.length) == SONG_SOURCE_SHARED_STORAGE
+        get() {
+            assert(!isLoop && !isPlaylist) { "Calling isStoredShared only valid for songs" }
+            return source.substring(
+                0,
+                SONG_SOURCE_SHARED_STORAGE.length
+            ) == SONG_SOURCE_SHARED_STORAGE
+        }
+
+    /**
+     * Returns a new media id with only the [source] set and with [underlyingMediaId] = null
+     */
+    val baseMediaId: MediaId
+        get() {
+            return MediaId(source)
+        }
 
     val path: File?
         get() {

@@ -15,7 +15,7 @@ import com.daton.mucify.databinding.FragmentSelectAudioBinding
 
 class FragmentSelectAudio(private val playbacks: List<MediaBrowserCompat.MediaItem>) : Fragment() {
 
-    private val playbackStrings = mutableListOf<MediaId>()
+    private lateinit var playbackStrings: List<MediaId>
 
     private var _binding: FragmentSelectAudioBinding? = null
     private val binding get() = _binding!!
@@ -42,10 +42,7 @@ class FragmentSelectAudio(private val playbacks: List<MediaBrowserCompat.MediaIt
     override fun onViewCreated(view: View, @Nullable savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        playbackStrings.clear()
-        for (metadata in playbacks) {
-            playbackStrings += metadata.mediaId!!.toMediaId()
-        }
+        playbackStrings = playbacks.map { it.mediaId!!.toMediaId() }
 
         binding.rvFiles.adapter = ArrayAdapter(
             requireContext(),

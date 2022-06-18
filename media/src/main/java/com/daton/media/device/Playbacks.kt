@@ -1,31 +1,65 @@
 package com.daton.media.device
 
-import android.content.Context
-import android.os.Environment
+import android.graphics.Bitmap
 import android.support.v4.media.MediaMetadataCompat
 import com.daton.media.data.MediaId
 import com.daton.media.data.SongMetadata
 import com.daton.media.ext.*
 import kotlinx.serialization.Serializable
-import java.io.File
+
+@Serializable
+open class Playback : Any() {
+    var mediaId: MediaId = MediaId.Empty
+        protected set
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Playback) return false
+
+        if (mediaId != other.mediaId) return false
+
+        return true
+    }
+}
+
+class Song : Playback() {
+
+    val title: String
+    val artist: String
+    val albumArt: Bitmap?
+    val duration: Long
+
+    init {
+        SongMetadata(mediaId.path!!).let { songMetadata ->
+            title = songMetadata.title
+            artist = songMetadata.artist
+            albumArt = songMetadata.albumArt
+            duration = songMetadata.duration
+        }
+    }
+
+    fun toMediaMetadata(): MediaMetadataCompat =
+        MediaMetadataCompat.Builder().also {
+            it.mediaId = mediaId
+            it.title = title
+            it.artist = artist
+            it.albumArt = albumArt
+            it.duration = duration
+        }.build()!!
+}
 
 
 @Serializable
-class Loop {
+class Loop constructor() : Playback() {
 
     //    var timestamp: Long = System.currentTimeMillis()
 //        private set
 
-    constructor()
-
-    constructor(loopName: String, startTime: Long, endTime: Long, songMediaId: MediaId) {
+    constructor(loopName: String, startTime: Long, endTime: Long, songMediaId: MediaId) : this() {
         mediaId = MediaId.fromLoop(loopName, songMediaId)
         this.startTime = startTime
         this.endTime = endTime
     }
-
-    var mediaId: MediaId = MediaId.Empty
-        private set
 
     var startTime: Long = 0L
         set(value) {
@@ -66,11 +100,23 @@ class Loop {
         }.build()
     }
 
-    override operator fun equals(other: Any?): Boolean {
-        if (other == null || other !is Loop)
-            return false
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
 
-        return mediaId == other.mediaId && songMediaId == other.songMediaId && startTime == other.startTime && endTime == other.endTime
+        other as Loop
+
+        if (startTime != other.startTime) return false
+        if (endTime != other.endTime) return false
+        if (songMediaId != other.songMediaId) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = startTime.hashCode()
+        result = 31 * result + endTime.hashCode()
+        return result
     }
 }
 

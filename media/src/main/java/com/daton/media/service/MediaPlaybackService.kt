@@ -166,7 +166,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 if (player.currentTimeline.isEmpty)
                     MediaMetadataCompat.Builder().build()
                 else if (player.currentMediaItem != null)
-                    player.mediaMetadata.toMediaMetadataCompat(MediaId.deserialize(player.currentMediaItem!!.mediaId))
+                    player.mediaMetadata.toMediaMetadataCompat(player.currentMediaItem!!.mediaId.toMediaId())
                 else
                 // TODO: Might not work
                     MediaMetadataCompat.Builder().build()
@@ -280,7 +280,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         currentMediaItems = items
         currentPlayer.setMediaItems(items.map { it.toExoMediaItem() })
 
-        // TODO: [itemToPlay] not in [playlist]
         currentPlayer.seekTo(initialWindowIndex, C.TIME_UNSET)
     }
 

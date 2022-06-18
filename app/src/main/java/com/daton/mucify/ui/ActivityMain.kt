@@ -125,14 +125,22 @@ class ActivityMain : AppCompatActivity() {
         val playMedia = { mediaId: MediaId ->
 
             mediaController.mediaId = mediaId
-            mediaController.play()
+            // Only play if not playlist or an underlying media id is given (play specific song in playlist)
+            if (!mediaId.isPlaylist || mediaId.underlyingMediaId != null)
+                mediaController.play()
 
             User.metadata.addHistory(mediaId)
             User.metadata.saveToLocal()
             User.uploadMetadata()
 
-            val intent = Intent(this@ActivityMain, ActivityPlayer::class.java)
-            startActivity(intent)
+            if (mediaId.isPlaylist) {
+                val intent = Intent(this@ActivityMain, ActivityPlaylistPlayer::class.java)
+                startActivity(intent)
+            } else {
+                val intent = Intent(this@ActivityMain, ActivityPlayer::class.java)
+                startActivity(intent)
+            }
+
         }
 
         binding.rvHistory.setOnItemClickListener { adapterView, view, i, l ->

@@ -211,6 +211,30 @@ class MediaController {
         get() = metadata.title
 
     /**
+     * Extracts the loop name from the media id. If this is no loop null is returned
+     */
+    val loopName: String?
+        get() {
+            val localMediaId = mediaId
+            if (localMediaId.isLoop) {
+                return localMediaId.source.replace(MediaId.LOOP_SOURCE, "")
+            }
+            return null
+        }
+
+    /**
+     * Extracts the playlist name from the media id. If this is no playlist null is returned
+     */
+    val playlistName: String?
+        get() {
+            val localMediaId = mediaId
+            if (localMediaId.isPlaylist) {
+                return localMediaId.source.replace(MediaId.PLAYLIST_SOURCE, "")
+            }
+            return null
+        }
+
+    /**
      * Artist of the currently playing song. Metadata must've been set, otherwise the
      * function will crash.
      */
