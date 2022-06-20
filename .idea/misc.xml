@@ -3,6 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/David/Documents/Mucify Project Folder/Mucify/app/src/main/res/layout/activity_main.xml" value="0.360054347826087" />
+        <entry key="..\:/Users/David/Documents/Mucify Project Folder/Mucify/app/src/main/res/layout/activity_player.xml" value="0.26766304347826086" />
+        <entry key="..\:/Users/David/Documents/Mucify Project Folder/Mucify/app/src/main/res/layout/dialog_add_to_playlist.xml" value="0.5541666666666667" />
+        <entry key="..\:/Users/David/Documents/Mucify Project Folder/Mucify/app/src/main/res/layout/fragment_select_audio.xml" value="0.5541666666666667" />
         <entry key="..\:/dev/Android/Projects/Mucify/app/src/main/res/layout/activity_main.xml" value="0.264" />
         <entry key="..\:/dev/Android/Projects/Mucify/app/src/main/res/layout/activity_player.xml" value="0.19655521783181357" />
         <entry key="..\:/dev/Android/Projects/Mucify/app/src/main/res/layout/activity_playlist_player.xml" value="0.27239583333333334" />

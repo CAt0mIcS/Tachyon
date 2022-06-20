@@ -189,6 +189,7 @@
                 android:text="+Loop" />
 
             <Button
+                android:layout_marginLeft="16dp"
                 android:id="@+id/btnSavePlaylist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
