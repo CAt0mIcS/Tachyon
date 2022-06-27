@@ -1,12 +1,8 @@
-package com.daton.mucify.user
+package com.daton.user
 
-import android.support.v4.media.MediaBrowserCompat
 import com.daton.media.data.MediaId
 import com.daton.media.device.Loop
 import com.daton.media.device.Playlist
-import com.daton.media.ext.endTime
-import com.daton.media.ext.path
-import com.daton.media.ext.startTime
 import kotlinx.serialization.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json

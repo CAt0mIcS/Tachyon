@@ -3,8 +3,6 @@ package com.daton.mucify.ui
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.service.autofill.UserData
-import android.telecom.VideoProfile.isPaused
 import android.widget.ArrayAdapter
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
@@ -15,7 +13,7 @@ import com.daton.media.ext.toMediaId
 import com.daton.mucify.R
 import com.daton.mucify.Util
 import com.daton.mucify.databinding.ActivityPlaylistPlayerBinding
-import com.daton.mucify.user.User
+import com.daton.user.User
 
 
 class ActivityPlaylistPlayer : AppCompatActivity() {
@@ -51,7 +49,7 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
             binding.txtPlaylistTitle.text = controller.playlistName
             binding.txtTitle.text = controller.title
 
-            binding.sbPos.max = (controller.duration / User.metadata.audioUpdateInterval).toInt()
+            binding.sbPos.max = (controller.duration / com.daton.user.User.metadata.audioUpdateInterval).toInt()
         }
 
         controller.onPlaybackStateChanged = { isPlaying ->
@@ -69,18 +67,18 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
                 override fun run() {
                     if (controller.isCreated && controller.isPlaying && !isSeeking) {
                         val currentPos: Int =
-                            (controller.currentPosition / User.metadata.audioUpdateInterval).toInt()
+                            (controller.currentPosition / com.daton.user.User.metadata.audioUpdateInterval).toInt()
                         binding.sbPos.progress = currentPos
                     }
                     if (!isDestroyed)
-                        handler.postDelayed(this, User.metadata.audioUpdateInterval.toLong())
+                        handler.postDelayed(this, com.daton.user.User.metadata.audioUpdateInterval.toLong())
                 }
             })
 
             binding.sbPos.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
                 override fun onStopTrackingTouch(seekBar: SeekBar) {
                     isSeeking = false
-                    controller.seekTo((seekBar.progress * User.metadata.audioUpdateInterval).toLong())
+                    controller.seekTo((seekBar.progress * com.daton.user.User.metadata.audioUpdateInterval).toLong())
                 }
 
                 override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -89,7 +87,7 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
 
                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                     binding.txtPos.text =
-                        Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
+                        Util.millisecondsToReadableString(progress * com.daton.user.User.metadata.audioUpdateInterval)
                 }
             })
 

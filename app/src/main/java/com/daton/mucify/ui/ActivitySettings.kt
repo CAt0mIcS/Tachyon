@@ -1,12 +1,10 @@
 package com.daton.mucify.ui
 
 import android.os.Bundle
-import android.text.Editable
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
 import com.daton.mucify.databinding.ActivitySettingsBinding
-import com.daton.mucify.user.User
+import com.daton.user.User
 
 class ActivitySettings : AppCompatActivity() {
 
@@ -18,14 +16,14 @@ class ActivitySettings : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.switchAudioFocus.isChecked = !User.metadata.ignoreAudioFocus
-        binding.editAudioIncDecInterval.setText(User.metadata.songIncDecInterval.toString())
-        binding.editAudioUpdateInterval.setText(User.metadata.audioUpdateInterval.toString())
-        binding.editMaxPlaybacksInHistory.setText(User.metadata.maxPlaybacksInHistory.toString())
+        binding.switchAudioFocus.isChecked = !com.daton.user.User.metadata.ignoreAudioFocus
+        binding.editAudioIncDecInterval.setText(com.daton.user.User.metadata.songIncDecInterval.toString())
+        binding.editAudioUpdateInterval.setText(com.daton.user.User.metadata.audioUpdateInterval.toString())
+        binding.editMaxPlaybacksInHistory.setText(com.daton.user.User.metadata.maxPlaybacksInHistory.toString())
 
         binding.switchAudioFocus.setOnCheckedChangeListener { _, b ->
-            User.metadata.ignoreAudioFocus = !b
-            User.metadata.saveToLocal()
+            com.daton.user.User.metadata.ignoreAudioFocus = !b
+            com.daton.user.User.metadata.saveToLocal()
             changed = true
         }
 
@@ -33,8 +31,8 @@ class ActivitySettings : AppCompatActivity() {
             if (text?.isEmpty() == true)
                 return@doAfterTextChanged
 
-            User.metadata.songIncDecInterval = text?.toString()?.toInt() ?: 100
-            User.metadata.saveToLocal()
+            com.daton.user.User.metadata.songIncDecInterval = text?.toString()?.toInt() ?: 100
+            com.daton.user.User.metadata.saveToLocal()
             changed = true
         }
 
@@ -42,8 +40,8 @@ class ActivitySettings : AppCompatActivity() {
             if (text?.isEmpty() == true)
                 return@doAfterTextChanged
 
-            User.metadata.audioUpdateInterval = text?.toString()?.toInt() ?: 100
-            User.metadata.saveToLocal()
+            com.daton.user.User.metadata.audioUpdateInterval = text?.toString()?.toInt() ?: 100
+            com.daton.user.User.metadata.saveToLocal()
             changed = true
         }
 
@@ -51,8 +49,8 @@ class ActivitySettings : AppCompatActivity() {
             if (text?.isEmpty() == true)
                 return@doAfterTextChanged
 
-            User.metadata.maxPlaybacksInHistory = text?.toString()?.toInt() ?: 25
-            User.metadata.saveToLocal()
+            com.daton.user.User.metadata.maxPlaybacksInHistory = text?.toString()?.toInt() ?: 25
+            com.daton.user.User.metadata.saveToLocal()
             changed = true
         }
     }
@@ -60,7 +58,7 @@ class ActivitySettings : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         if (changed) {
-            User.uploadMetadata()
+            com.daton.user.User.uploadMetadata()
             changed = false
         }
     }

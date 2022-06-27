@@ -1,4 +1,4 @@
-package com.daton.mucify.ext
+package com.daton.user.ext
 
 import org.json.JSONArray
 import org.json.JSONObject

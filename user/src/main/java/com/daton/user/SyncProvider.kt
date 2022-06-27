@@ -1,7 +1,6 @@
-package com.daton.mucify.user
+package com.daton.user
 
 import com.daton.media.device.Loop
-import kotlinx.coroutines.flow.merge
 
 /**
  * Manages synchronization of metadata and conflict resolution

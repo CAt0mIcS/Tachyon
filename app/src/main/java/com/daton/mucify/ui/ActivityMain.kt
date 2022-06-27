@@ -14,7 +14,7 @@ import com.daton.mucify.R
 import com.daton.mucify.databinding.ActivityMainBinding
 import com.daton.mucify.permission.Permission
 import com.daton.mucify.permission.PermissionManager
-import com.daton.mucify.user.User
+import com.daton.user.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

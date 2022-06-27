@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+    Auth0 identifiers and settings
+    ==============================
+    -->
+
+    <!-- Identifiers -->
+    <string name="com_auth0_scheme">app</string>
+
+    <!-- Settings -->
+    <string name="auth0_login_scopes">openid profile email read:current_user update:current_user_metadata</string>
+    <string name="auth0_login_audience">https://%1$s/api/v2/</string>
+
+    <string name="com_auth0_domain">dev-udh0lslz.eu.auth0.com</string>
+    <string name="auth0_client_id">0evIEjsue6qjx5FqQjA45qssu6jIEBOZ</string>
+
+</resources>

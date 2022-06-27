@@ -1,4 +1,4 @@
-package com.daton.mucify.user
+package com.daton.user
 
 import android.content.Context
 import android.util.Log
@@ -11,8 +11,7 @@ import com.auth0.android.management.UsersAPIClient
 import com.auth0.android.provider.WebAuthProvider
 import com.auth0.android.result.Credentials
 import com.auth0.android.result.UserProfile
-import com.daton.mucify.R
-import com.daton.mucify.ext.toMap
+import com.daton.user.ext.toMap
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString

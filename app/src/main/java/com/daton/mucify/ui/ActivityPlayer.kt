@@ -10,13 +10,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.daton.media.MediaController
-import com.daton.media.device.BrowserTree
 import com.daton.media.device.Loop
 import com.daton.media.device.Playlist
-import com.daton.media.ext.toMediaId
 import com.daton.mucify.Util
 import com.daton.mucify.databinding.ActivityPlayerBinding
-import com.daton.mucify.user.User
+import com.daton.user.User
 
 
 class ActivityPlayer : AppCompatActivity() {
@@ -38,15 +36,15 @@ class ActivityPlayer : AppCompatActivity() {
             binding.txtTitle.text = controller.title
             binding.txtArtist.text = controller.artist
 
-            val duration = (controller.duration / User.metadata.audioUpdateInterval).toInt()
+            val duration = (controller.duration / com.daton.user.User.metadata.audioUpdateInterval).toInt()
             binding.sbPos.max = duration
             binding.sbStartPos.max = duration
             binding.sbEndPos.max = duration
 
             binding.sbStartPos.progress =
-                (controller.startTime / User.metadata.audioUpdateInterval).toInt()
+                (controller.startTime / com.daton.user.User.metadata.audioUpdateInterval).toInt()
             binding.sbEndPos.progress =
-                (controller.endTime / User.metadata.audioUpdateInterval).toInt()
+                (controller.endTime / com.daton.user.User.metadata.audioUpdateInterval).toInt()
 
         }
 
@@ -59,18 +57,18 @@ class ActivityPlayer : AppCompatActivity() {
                 override fun run() {
                     if (controller.isCreated && controller.isPlaying && !isSeeking) {
                         val currentPos: Int =
-                            (controller.currentPosition / User.metadata.audioUpdateInterval).toInt()
+                            (controller.currentPosition / com.daton.user.User.metadata.audioUpdateInterval).toInt()
                         binding.sbPos.progress = currentPos
                     }
                     if (!isDestroyed)
-                        handler.postDelayed(this, User.metadata.audioUpdateInterval.toLong())
+                        handler.postDelayed(this, com.daton.user.User.metadata.audioUpdateInterval.toLong())
                 }
             })
 
             binding.sbPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
                     binding.txtPos.text =
-                        Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
+                        Util.millisecondsToReadableString(progress * com.daton.user.User.metadata.audioUpdateInterval)
                 }
 
                 override fun onStartTrackingTouch(p0: SeekBar?) {
@@ -79,21 +77,21 @@ class ActivityPlayer : AppCompatActivity() {
 
                 override fun onStopTrackingTouch(sb: SeekBar) {
                     isSeeking = false
-                    controller.seekTo(sb.progress * User.metadata.audioUpdateInterval.toLong())
+                    controller.seekTo(sb.progress * com.daton.user.User.metadata.audioUpdateInterval.toLong())
                 }
             })
 
             binding.sbStartPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
                     binding.txtStartPos.text =
-                        Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
+                        Util.millisecondsToReadableString(progress * com.daton.user.User.metadata.audioUpdateInterval)
                 }
 
                 override fun onStartTrackingTouch(p0: SeekBar?) {}
 
                 override fun onStopTrackingTouch(sb: SeekBar) {
                     controller.startTime =
-                        (sb.progress * User.metadata.audioUpdateInterval).toLong()
+                        (sb.progress * com.daton.user.User.metadata.audioUpdateInterval).toLong()
                 }
 
             })
@@ -101,52 +99,52 @@ class ActivityPlayer : AppCompatActivity() {
             binding.sbEndPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
                     binding.txtEndPos.text =
-                        Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
+                        Util.millisecondsToReadableString(progress * com.daton.user.User.metadata.audioUpdateInterval)
                 }
 
                 override fun onStartTrackingTouch(p0: SeekBar?) {}
 
                 override fun onStopTrackingTouch(sb: SeekBar) {
                     controller.endTime =
-                        (sb.progress * User.metadata.audioUpdateInterval).toLong()
+                        (sb.progress * com.daton.user.User.metadata.audioUpdateInterval).toLong()
                 }
 
             })
 
             binding.btnStartPosDec.setOnClickListener {
-                var time: Long = controller.startTime - User.metadata.songIncDecInterval
+                var time: Long = controller.startTime - com.daton.user.User.metadata.songIncDecInterval
                 if (time < 0) time = 0
                 controller.startTime = time
-                binding.sbStartPos.progress = (time / User.metadata.audioUpdateInterval).toInt()
+                binding.sbStartPos.progress = (time / com.daton.user.User.metadata.audioUpdateInterval).toInt()
             }
             binding.btnStartPosInc.setOnClickListener {
-                var time: Long = controller.startTime + User.metadata.songIncDecInterval
+                var time: Long = controller.startTime + com.daton.user.User.metadata.songIncDecInterval
                 if (time > controller.duration) time = controller.duration
                 controller.startTime = time
-                binding.sbStartPos.progress = (time / User.metadata.audioUpdateInterval).toInt()
+                binding.sbStartPos.progress = (time / com.daton.user.User.metadata.audioUpdateInterval).toInt()
             }
             binding.btnEndPosDec.setOnClickListener {
-                var time: Long = controller.endTime - User.metadata.songIncDecInterval
+                var time: Long = controller.endTime - com.daton.user.User.metadata.songIncDecInterval
                 if (time < 0) time = 0
                 controller.endTime = time
-                binding.sbEndPos.progress = (time / User.metadata.audioUpdateInterval).toInt()
+                binding.sbEndPos.progress = (time / com.daton.user.User.metadata.audioUpdateInterval).toInt()
             }
             binding.btnEndPosInc.setOnClickListener {
-                var time: Long = controller.endTime + User.metadata.songIncDecInterval
+                var time: Long = controller.endTime + com.daton.user.User.metadata.songIncDecInterval
                 if (time > controller.duration) time = controller.duration
                 controller.endTime = time
-                binding.sbEndPos.progress = (time / User.metadata.audioUpdateInterval).toInt()
+                binding.sbEndPos.progress = (time / com.daton.user.User.metadata.audioUpdateInterval).toInt()
             }
 
             binding.linearLayoutStartPos.setOnClickListener {
                 controller.startTime = controller.currentPosition
                 binding.sbStartPos.progress =
-                    (controller.startTime / User.metadata.audioUpdateInterval).toInt()
+                    (controller.startTime / com.daton.user.User.metadata.audioUpdateInterval).toInt()
             }
             binding.linearLayoutEndPos.setOnClickListener {
                 controller.endTime = controller.currentPosition
                 binding.sbEndPos.progress =
-                    (controller.endTime / User.metadata.audioUpdateInterval).toInt()
+                    (controller.endTime / com.daton.user.User.metadata.audioUpdateInterval).toInt()
             }
 
             binding.btnPlayPause.setOnClickListener { if (controller.isPaused) controller.play() else controller.pause() }
@@ -187,16 +185,16 @@ class ActivityPlayer : AppCompatActivity() {
                     return@setPositiveButton
                 }
 
-                User.metadata += Loop(
+                com.daton.user.User.metadata += Loop(
                     loopName,
-                    (binding.sbStartPos.progress * User.metadata.audioUpdateInterval).toLong(),
-                    (binding.sbEndPos.progress * User.metadata.audioUpdateInterval).toLong(),
+                    (binding.sbStartPos.progress * com.daton.user.User.metadata.audioUpdateInterval).toLong(),
+                    (binding.sbEndPos.progress * com.daton.user.User.metadata.audioUpdateInterval).toLong(),
                     // Already a loop but modified
                     if (controller.mediaId.underlyingMediaId != null) controller.mediaId.underlyingMediaId!! else controller.mediaId
                 )
-                controller.sendLoops(User.metadata.loops)
-                User.metadata.saveToLocal()
-                User.uploadMetadata()
+                controller.sendLoops(com.daton.user.User.metadata.loops)
+                com.daton.user.User.metadata.saveToLocal()
+                com.daton.user.User.uploadMetadata()
 
             }
             .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
@@ -211,18 +209,18 @@ class ActivityPlayer : AppCompatActivity() {
                 this@ActivityPlayer
             ).apply {
                 onCreateNewPlaylist = { name ->
-                    User.metadata += Playlist(name)
-                    User.metadata.saveToLocal()
-                    User.uploadMetadata()
-                    controller.sendPlaylists(User.metadata.playlists)
+                    com.daton.user.User.metadata += Playlist(name)
+                    com.daton.user.User.metadata.saveToLocal()
+                    com.daton.user.User.uploadMetadata()
+                    controller.sendPlaylists(com.daton.user.User.metadata.playlists)
                 }
 
                 onDone = { toAdd, playlistsToAddTo ->
                     for (playlist in playlistsToAddTo) {
-                        User.metadata.playlists.find { it.mediaId == playlist.mediaId }!! += toAdd
-                        User.metadata.saveToLocal()
-                        User.uploadMetadata()
-                        controller.sendPlaylists(User.metadata.playlists)
+                        com.daton.user.User.metadata.playlists.find { it.mediaId == playlist.mediaId }!! += toAdd
+                        com.daton.user.User.metadata.saveToLocal()
+                        com.daton.user.User.uploadMetadata()
+                        controller.sendPlaylists(com.daton.user.User.metadata.playlists)
                     }
                 }
 
