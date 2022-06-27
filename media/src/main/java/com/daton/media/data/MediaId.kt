@@ -19,20 +19,15 @@ data class MediaId(
 
     /**
      * Specifies a possible media id in this media id
-     * * Is null if this is a song
-     * * Is a single media id pointing to a song if this is a loop or playlist
+     * * Is null if this is a song or a playlist without a specific media id attached
+     * * Is a single media id pointing to a song if this is a loop or playlist with media id attached
      */
     var underlyingMediaId: MediaId? = null
 ) {
 
     companion object {
         /**
-         * Points to e.g. data/user/0/com.daton.mucify/
-         */
-        const val SONG_SOURCE_INTERNAL_STORAGE = "*song-internal*"
-
-        /**
-         * Points to e.g. 'storage/user/emulated/
+         * Points to e.g. 'storage/user/emulated/0/
          */
         const val SONG_SOURCE_SHARED_STORAGE = "*song-shared*"
 
@@ -77,7 +72,8 @@ data class MediaId(
         fun fromPlaylist(playlistName: String, songOrLoopMediaId: MediaId? = null) =
             MediaId(PLAYLIST_SOURCE + playlistName, songOrLoopMediaId)
 
-        val Empty = MediaId("")
+        val Empty: MediaId
+            get() = MediaId("")
     }
 
     override fun toString(): String {
@@ -85,7 +81,7 @@ data class MediaId(
     }
 
     val isSong: Boolean
-        get() = MediaSource.SupportedAudioExtensions.contains(File(source).extension)
+        get() = source.contains(SONG_SOURCE_SHARED_STORAGE)
 
     val isLoop: Boolean
         get() = source.contains(LOOP_SOURCE)
@@ -93,43 +89,20 @@ data class MediaId(
     val isPlaylist: Boolean
         get() = source.contains(PLAYLIST_SOURCE)
 
-    val isStoredInternally: Boolean
-        get() {
-            assert(!isLoop && !isPlaylist) { "Calling isStoredInternally only valid for songs" }
-            return source.substring(
-                0,
-                SONG_SOURCE_INTERNAL_STORAGE.length
-            ) == SONG_SOURCE_INTERNAL_STORAGE
-        }
-
-    val isStoredShared: Boolean
-        get() {
-            assert(!isLoop && !isPlaylist) { "Calling isStoredShared only valid for songs" }
-            return source.substring(
-                0,
-                SONG_SOURCE_SHARED_STORAGE.length
-            ) == SONG_SOURCE_SHARED_STORAGE
-        }
-
     /**
      * Returns a new media id with only the [source] set and with [underlyingMediaId] = null
      */
     val baseMediaId: MediaId
-        get() {
-            return MediaId(source)
-        }
+        get() = MediaId(source)
 
     val path: File?
         get() {
-            if (!isLoop && !isPlaylist) {
-                if (isStoredInternally)
-                    return File("./" + source.replaceFirst(SONG_SOURCE_INTERNAL_STORAGE, ""))
-                else if (isStoredShared)
-                    return File(
-                        Environment.getExternalStorageDirectory().absolutePath + "/" + source.replaceFirst(
-                            SONG_SOURCE_SHARED_STORAGE, ""
-                        )
+            if (isSong) {
+                return File(
+                    Environment.getExternalStorageDirectory().absolutePath + "/" + source.replaceFirst(
+                        SONG_SOURCE_SHARED_STORAGE, ""
                     )
+                )
             }
 
             // Loops/playlists don't have path at the moment as they're stored in the settings file
@@ -145,8 +118,6 @@ data class MediaId(
     operator fun plus(other: MediaId?) = MediaId(source, other)
 
     override fun equals(other: Any?): Boolean {
-        if (other == null || other !is MediaId)
-            return false
-        return serialize() == other.serialize()
+        return this === other && source == other.source && underlyingMediaId == other.underlyingMediaId
     }
 }

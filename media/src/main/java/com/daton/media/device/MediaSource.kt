@@ -38,10 +38,6 @@ class MediaSource {
          */
         const val STATE_ERROR = 4
 
-        // TODO: Move somewhere else as MediaStore is no longer loading loops and playlists
-        const val LoopFileExtension = "loop"
-        const val PlaylistFileExtension = "playlist"
-
         // TODO: Does ExoPlayer support more audio formats? Does it support all of the listed ones? Do all of them work?
         val SupportedAudioExtensions: List<String> = listOf(
             "3gp",

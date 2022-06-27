@@ -132,7 +132,6 @@ class Loop constructor() : Playback() {
                 it.mediaId = baseMediaId + mediaId
             } else
                 it.mediaId = mediaId
-//            path = songMediaId.path
             it.startTime = this@Loop.startTime
             it.endTime = this@Loop.endTime
 

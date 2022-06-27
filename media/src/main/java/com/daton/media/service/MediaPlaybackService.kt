@@ -174,6 +174,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
              * TODO: What to return if [player.currentMediaItem] == null
              */
             setMediaMetadataProvider { player ->
+                /**
+                 * [player.currentMediaItem] is null if media id is a playlist without any underlying
+                 * playback. [basePlaylistMediaId] will be set to the playlist media id if this is the
+                 * case and the metadata can be updated with [basePlaylistMediaId]
+                 */
                 if (basePlaylistMediaId != null) {
                     MediaMetadataCompat.Builder().apply {
                         mediaId = basePlaylistMediaId!!
