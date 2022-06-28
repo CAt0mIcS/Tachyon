@@ -118,6 +118,6 @@ data class MediaId(
     operator fun plus(other: MediaId?) = MediaId(source, other)
 
     override fun equals(other: Any?): Boolean {
-        return this === other && source == other.source && underlyingMediaId == other.underlyingMediaId
+        return this === other || (other is MediaId && source == other.source && underlyingMediaId == other.underlyingMediaId)
     }
 }
