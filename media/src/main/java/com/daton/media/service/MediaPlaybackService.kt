@@ -651,7 +651,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
      * Checks if we need to stop the foreground service when the playback is paused to make
      * the notification swipeable
      */
-    private fun requiresOldNotificationHandling(): Boolean = Build.VERSION.SDK_INT <= 23
+    private fun requiresOldNotificationHandling(): Boolean = Build.VERSION.SDK_INT <= 26
 
     private fun postLoopMessage(startTime: Long, endTime: Long) {
         // Cancel any previous messages
