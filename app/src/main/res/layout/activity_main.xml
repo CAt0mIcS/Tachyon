@@ -29,7 +29,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:layout_marginTop="16dp"
             android:layout_marginRight="16dp"
             android:text="Logout"
             app:layout_constraintEnd_toEndOf="parent"
@@ -41,7 +40,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:layout_marginTop="16dp"
             android:layout_marginRight="16dp"
             android:text="Settings"
             app:layout_constraintEnd_toEndOf="parent"
@@ -63,7 +61,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
-                android:text="Songs"
+                android:text="Playbacks"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
@@ -73,82 +71,18 @@
                 android:layout_alignParentEnd="true"
                 android:src="@drawable/arrow_forward_ios" />
         </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/relLayoutLoops"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/relLayoutSongs">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:text="Loops"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:src="@drawable/arrow_forward_ios" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/relLayoutPlaylists"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/relLayoutLoops">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:text="Playlists"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:src="@drawable/arrow_forward_ios" />
-        </RelativeLayout>
-
-        <TextView
-            android:id="@+id/txtHistory"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="48dp"
-            android:text="History"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/relLayoutPlaylists" />
 
         <ListView
             android:id="@+id/rvHistory"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginLeft="16dp"
-            android:layout_marginTop="360dp"
+            android:layout_marginTop="230dp"
             android:layout_marginRight="16dp"
             android:layout_marginBottom="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtHistory" />
+            app:layout_constraintTop_toBottomOf="@+id/relLayoutSongs" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
