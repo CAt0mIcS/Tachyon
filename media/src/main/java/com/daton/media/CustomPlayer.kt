@@ -1,5 +1,6 @@
 package com.daton.media
 
+import com.daton.media.ext.startTime
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.ForwardingPlayer
 import com.google.android.exoplayer2.Player
@@ -50,7 +51,7 @@ class CustomPlayer(player: Player) : ForwardingPlayer(player) {
             return
         }
         // Seek to either the previous song or to the last one if we don't have a previous one
-        if (isCurrentMediaItemLive && !isCurrentMediaItemSeekable || currentPosition <= maxSeekToPreviousPosition) {
+        if (isCurrentMediaItemLive && !isCurrentMediaItemSeekable || currentPosition <= maxSeekToPreviousPosition + mediaMetadata.startTime) {
             if (hasPreviousMediaItem())
                 seekToPreviousMediaItem()
             else
@@ -58,7 +59,7 @@ class CustomPlayer(player: Player) : ForwardingPlayer(player) {
         } else {
             // If the player position is less than [maxSeekToPreviousPosition], we'll seek to
             // the beginning of the song
-            seekTo(0)
+            seekTo(mediaMetadata.startTime)
         }
     }
 }

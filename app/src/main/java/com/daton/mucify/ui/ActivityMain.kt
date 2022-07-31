@@ -120,6 +120,7 @@ class ActivityMain : AppCompatActivity() {
         binding.btnLogout.setOnClickListener { User.logout(this) }
 
         loadHistoryStrings()
+        sendInformation()
 
         binding.rvHistory.adapter = ArrayAdapter(
             this,
@@ -171,6 +172,18 @@ class ActivityMain : AppCompatActivity() {
             val intent = Intent(this@ActivityMain, ActivitySettings::class.java)
             startActivity(intent)
         }
+    }
+
+    /**
+     * Sends basic things like [User.metadata.combineDifferentPlaybackTypes] to the [MediaBrowserCompat]
+     */
+    private fun sendInformation() {
+        val bundle = Bundle()
+        bundle.putBoolean(
+            MediaAction.CombinePlaybackTypes,
+            User.metadata.combineDifferentPlaybackTypes
+        )
+        mediaController.sendCustomAction(MediaAction.CombinePlaybackTypesChanged, bundle)
     }
 
     private fun loadHistoryStrings() {

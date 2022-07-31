@@ -28,6 +28,10 @@ object MediaAction {
         "Playlists"  // use Bundle.putStringArray with Json.encodeToString(playlist)
 
 
+    const val CombinePlaybackTypesChanged = "com.daton.mucify.COMBINE_PLAYBACK_TYPES_CHANGED"
+    const val CombinePlaybackTypes = "CombinePlaybackTypes"
+
+
     /**
      * Events sent to the MediaBrowserController by the MediaPlaybackService
      */

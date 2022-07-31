@@ -27,6 +27,17 @@ class UserMetadata {
         }
 
     /**
+     * False: Clicking on a song/loop will only allow you to cycle between them when pressing next/previous
+     * True: Clicking on a song/loop will merge all of them into a playlist and after pressing next/previous
+     *       a couple of times you'll be listening to the other type of playback
+     */
+    var combineDifferentPlaybackTypes: Boolean = false
+        set(value) {
+            field = value
+            timestamp = System.currentTimeMillis()
+        }
+
+    /**
      * Interval by which the seekbars in the player should increment/decrement the time in milliseconds
      */
     var songIncDecInterval: Int = 100

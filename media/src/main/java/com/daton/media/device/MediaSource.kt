@@ -82,12 +82,14 @@ class MediaSource {
     var loops = mutableListOf<Loop>()
         set(value) {
             field = value
+            field.sortBy { it.loopName }
             onChangedListener?.invoke(BrowserTree.LOOP_ROOT, null)
         }
 
     var playlists = mutableListOf<Playlist>()
         set(value) {
             field = value
+            field.sortBy { it.playlistName }
             onChangedListener?.invoke(BrowserTree.PLAYLIST_ROOT, null)
         }
 

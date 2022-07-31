@@ -71,6 +71,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
     private var currentMediaItems = listOf<MediaMetadataCompat>()
     private var currentPlaybackIndex: Int = 0
 
+    /**
+     * Controls if songs and loops should be combined into one playlist when playing a song/loop
+     */
+    private var combinePlaybackTypes = false
+
     private var isForegroundService = false
 
     /**
@@ -81,7 +86,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         CustomPlayer(ExoPlayer.Builder(this).run {
             setAudioAttributes(
                 AudioAttributes.Builder()
-                    .setContentType(C.CONTENT_TYPE_MUSIC)
+                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                     .setUsage(C.USAGE_MEDIA)
                     .build(), true
             )
@@ -402,25 +407,29 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                      * All songs/loops will be set as the internal playlist when playing song/loop
                      * When playing an actual playlist, all songs/loops in the playlist will be set as
                      * the internal playlist
-                     * TODO: Maybe introduce setting to combine songs and loops as playlist items when playing either song or loop
-                     *
-                     * TODO: Fix this to work with new [MediaSource] as it won't load loops and playlists anymore
                      */
                     when {
                         mediaId.isSong -> {
                             currentPlayer.stop()
                             preparePlayer(
-//                                mediaSource.filter { it.mediaId.isSongMediaId },
-                                mediaSource.songs.map { song -> song.toMediaMetadata() },
-                                initialWindowIndex,
+                                if (combinePlaybackTypes)
+                                    mediaSource.songs.map { it.toMediaMetadata() } +
+                                            mediaSource.loops.map { it.toMediaMetadata(mediaSource) }
+                                else
+                                    mediaSource.songs.map { it.toMediaMetadata() },
+                                initialWindowIndex
                             )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
                         mediaId.isLoop -> {
                             currentPlayer.stop()
                             preparePlayer(
-                                mediaSource.loops.map { loop -> loop.toMediaMetadata(mediaSource) },
-                                initialWindowIndex,
+                                if (combinePlaybackTypes)
+                                    mediaSource.loops.map { it.toMediaMetadata(mediaSource) } +
+                                            mediaSource.songs.map { it.toMediaMetadata() }
+                                else
+                                    mediaSource.loops.map { it.toMediaMetadata(mediaSource) },
+                                initialWindowIndex
                             )
                             currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                         }
@@ -495,6 +504,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 }
             } else if (!permissionGranted)
                 mediaSource.clearSongs()
+        }
+
+        override fun onCombinePlaybackTypesChanged(combine: Boolean) {
+            combinePlaybackTypes = combine
+            // TODO: Immediately reload player to have instant results (maybe because this is called quite often)
         }
 
         override fun onLoopsReceived(loops: List<Loop>) {
