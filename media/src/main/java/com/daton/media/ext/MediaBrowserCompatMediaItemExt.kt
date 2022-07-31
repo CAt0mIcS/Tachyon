@@ -37,6 +37,18 @@ inline val MediaBrowserCompat.MediaItem.playlistPlaybacks: List<MediaId>
         return description.playlistPlaybacks
     }
 
+inline val MediaBrowserCompat.MediaItem.playlistName: String
+    get() {
+        assert(isPlaylist) { "Trying to get playlist name from a media item that is not a playlist" }
+        return description.playlistName
+    }
+
+inline val MediaBrowserCompat.MediaItem.loopName: String
+    get() {
+        assert(isLoop) { "Trying to get loop name from a media item that is not a loop" }
+        return description.loopName
+    }
+
 inline val MediaBrowserCompat.MediaItem.currentPlaylistPlaybackIndex: Int
     get() = description.currentPlaylistPlaybackIndex
 

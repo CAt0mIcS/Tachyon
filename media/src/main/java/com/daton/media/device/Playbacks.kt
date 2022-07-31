@@ -101,7 +101,7 @@ class Loop constructor() : Playback() {
         this.endTime = endTime
     }
 
-    constructor(mediaId: MediaId, startTime: Long, endTime: Long) : this() {
+    constructor(mediaId: MediaId, startTime: Long = 0, endTime: Long = 0) : this() {
         this.mediaId = mediaId
         this.startTime = startTime
         this.endTime = endTime
@@ -121,6 +121,9 @@ class Loop constructor() : Playback() {
 
     val songMediaId: MediaId
         get() = mediaId.underlyingMediaId!!
+
+    val loopName: String
+        get() = mediaId.source.replace(MediaId.LOOP_SOURCE, "")
 
     // TODO: Is it faster to pass [mediaSource] or using [SongMetadata]
     override fun toMediaMetadata(
@@ -185,15 +188,21 @@ class Playlist constructor() : Playback() {
 
     constructor(
         mediaId: MediaId,
-        playbacks: List<MediaId>,
+        playbacks: List<MediaId>? = null,
         currentPlaybackIndex: Int = 0
     ) : this() {
         this.mediaId = mediaId
-        this.playbacks.addAll(playbacks)
+
+        if (playbacks != null)
+            this.playbacks.addAll(playbacks)
+
         this.currentPlaybackIndex = currentPlaybackIndex
     }
 
     val playbacks: MutableList<MediaId> = mutableListOf()
+
+    val playlistName: String
+        get() = mediaId.source.replace(MediaId.PLAYLIST_SOURCE, "")
 
     var currentPlaybackIndex: Int = 0
         set(value) {

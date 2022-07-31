@@ -130,6 +130,10 @@ class MediaSource {
     fun loadSharedDeviceFiles() {
         songs.clear()
         loadSongs(musicDirectory)
+
+        // Order alphabetically by song title
+        songs.sortBy { it.title + it.artist }
+
         onChangedListener?.invoke(BrowserTree.SONG_ROOT, null)
         state = STATE_INITIALIZED
     }

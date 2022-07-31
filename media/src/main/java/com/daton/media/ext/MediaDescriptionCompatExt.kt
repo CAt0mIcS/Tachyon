@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.support.v4.media.MediaDescriptionCompat
 import com.daton.media.data.MediaId
 import com.daton.media.data.MetadataKeys
+import com.daton.media.device.Loop
+import com.daton.media.device.Playlist
 import java.io.File
 
 
@@ -28,6 +30,12 @@ inline val MediaDescriptionCompat.albumArt: Bitmap?
 
 inline val MediaDescriptionCompat.playlistPlaybacks: List<MediaId>
     get() = extras!!.getStringArray(MetadataKeys.PlaylistPlaybacks)!!.map { it.toMediaId() }
+
+inline val MediaDescriptionCompat.playlistName: String
+    get() = Playlist(mediaId!!.toMediaId()).playlistName
+
+inline val MediaDescriptionCompat.loopName: String
+    get() = Loop(mediaId!!.toMediaId()).loopName
 
 inline val MediaDescriptionCompat.currentPlaylistPlaybackIndex: Int
     get() = extras!!.getInt(MetadataKeys.CurrentPlaylistPlaybackIndex)

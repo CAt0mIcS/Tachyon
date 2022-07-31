@@ -19,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.concurrent.CountDownLatch
 
 
@@ -34,6 +35,8 @@ class ActivityMain : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val mediaController = MediaController()
+
+    private val historyStrings = mutableListOf<String>()
 
     /**
      * Counts down when the storage permission was either accepted or denied
@@ -116,10 +119,12 @@ class ActivityMain : AppCompatActivity() {
         binding.btnLogin.setOnClickListener { User.login(this) }
         binding.btnLogout.setOnClickListener { User.logout(this) }
 
+        loadHistoryStrings()
+
         binding.rvHistory.adapter = ArrayAdapter(
             this,
             android.R.layout.simple_list_item_1,
-            User.metadata.history
+            historyStrings
         )
 
         val playMedia = { mediaId: MediaId ->
@@ -144,10 +149,11 @@ class ActivityMain : AppCompatActivity() {
         }
 
         binding.rvHistory.setOnItemClickListener { adapterView, view, i, l ->
-            playMedia(adapterView.getItemAtPosition(i) as MediaId)
+            playMedia(User.metadata.history[i])
         }
 
         User.metadata.onHistoryChanged = {
+            loadHistoryStrings()
             (binding.rvHistory.adapter as ArrayAdapter<*>).notifyDataSetChanged()
         }
 
@@ -165,5 +171,13 @@ class ActivityMain : AppCompatActivity() {
             val intent = Intent(this@ActivityMain, ActivitySettings::class.java)
             startActivity(intent)
         }
+    }
+
+    private fun loadHistoryStrings() {
+        historyStrings.clear()
+        historyStrings.addAll(User.metadata.history.map {
+            if (it.isSong) "*song*" + it.path!!.nameWithoutExtension
+            else it.baseMediaId.source
+        })
     }
 }
