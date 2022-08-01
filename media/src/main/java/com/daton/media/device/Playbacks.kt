@@ -58,6 +58,8 @@ class Song constructor() : Playback() {
         }
     }
 
+    constructor(mediaId: MediaId) : this(mediaId.path!!)
+
     constructor(
         mediaId: MediaId,
         title: String,

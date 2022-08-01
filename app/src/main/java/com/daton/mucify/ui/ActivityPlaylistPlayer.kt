@@ -9,7 +9,7 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.appcompat.app.AppCompatActivity
 import com.daton.media.MediaController
 import com.daton.media.data.MediaId
-import com.daton.media.ext.toMediaId
+import com.daton.media.ext.*
 import com.daton.mucify.R
 import com.daton.mucify.Util
 import com.daton.mucify.databinding.ActivityPlaylistPlayerBinding
@@ -21,7 +21,8 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
     private lateinit var binding: ActivityPlaylistPlayerBinding
     private val controller = MediaController()
 
-    private var playbackStrings = mutableListOf<MediaId>()
+    private var playbackStrings = mutableListOf<String>()
+    private var playlistItems = mutableListOf<MediaId>()
 
     private var isSeeking = false
     private val handler = Handler(Looper.getMainLooper())
@@ -40,7 +41,7 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
         )
 
         binding.rvPlaylistItems.setOnItemClickListener { adapterView, _, i, _ ->
-            controller.mediaId = adapterView.getItemAtPosition(i) as MediaId
+            controller.mediaId = playlistItems[i]
             controller.play()
         }
 
@@ -49,7 +50,7 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
             binding.txtPlaylistTitle.text = controller.playlistName
             binding.txtTitle.text = controller.title
 
-            binding.sbPos.max = (controller.duration / com.daton.user.User.metadata.audioUpdateInterval).toInt()
+            binding.sbPos.max = (controller.duration / User.metadata.audioUpdateInterval).toInt()
         }
 
         controller.onPlaybackStateChanged = { isPlaying ->
@@ -59,7 +60,16 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
         controller.onConnected = {
             // Getting media id requires connection to MediaService
             controller.subscribe(controller.mediaId.baseMediaId.serialize()) { playlistItems ->
-                playbackStrings.addAll(playlistItems.map { it.mediaId!!.toMediaId() })
+                this.playlistItems.addAll(playlistItems.map { it.mediaId!!.toMediaId() })
+                playbackStrings.addAll(playlistItems.map {
+                    if (it.mediaId!!.toMediaId().underlyingMediaId!!.isSong)
+                        "*song*" + it.title + " - " + it.artist
+                    else if (it.mediaId!!.toMediaId().underlyingMediaId!!.isLoop)
+                        "*loop*" + it.loopName + " - " + it.title + " - " + it.artist
+                    else
+                        "*playlist*" + it.playlistName
+
+                })
                 (binding.rvPlaylistItems.adapter as ArrayAdapter<*>).notifyDataSetChanged()
             }
 
@@ -67,18 +77,18 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
                 override fun run() {
                     if (controller.isCreated && controller.isPlaying && !isSeeking) {
                         val currentPos: Int =
-                            (controller.currentPosition / com.daton.user.User.metadata.audioUpdateInterval).toInt()
+                            (controller.currentPosition / User.metadata.audioUpdateInterval).toInt()
                         binding.sbPos.progress = currentPos
                     }
                     if (!isDestroyed)
-                        handler.postDelayed(this, com.daton.user.User.metadata.audioUpdateInterval.toLong())
+                        handler.postDelayed(this, User.metadata.audioUpdateInterval.toLong())
                 }
             })
 
             binding.sbPos.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
                 override fun onStopTrackingTouch(seekBar: SeekBar) {
                     isSeeking = false
-                    controller.seekTo((seekBar.progress * com.daton.user.User.metadata.audioUpdateInterval).toLong())
+                    controller.seekTo((seekBar.progress * User.metadata.audioUpdateInterval).toLong())
                 }
 
                 override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -87,7 +97,7 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
 
                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                     binding.txtPos.text =
-                        Util.millisecondsToReadableString(progress * com.daton.user.User.metadata.audioUpdateInterval)
+                        Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
                 }
             })
 

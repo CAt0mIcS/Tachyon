@@ -10,6 +10,8 @@ import com.daton.media.data.MediaAction
 import com.daton.media.MediaController
 import com.daton.media.data.MediaId
 import com.daton.media.device.BrowserTree
+import com.daton.media.device.Loop
+import com.daton.media.device.Song
 import com.daton.mucify.R
 import com.daton.mucify.databinding.ActivityMainBinding
 import com.daton.mucify.permission.Permission
@@ -189,8 +191,14 @@ class ActivityMain : AppCompatActivity() {
     private fun loadHistoryStrings() {
         historyStrings.clear()
         historyStrings.addAll(User.metadata.history.map {
-            if (it.isSong) "*song*" + it.path!!.nameWithoutExtension
-            else it.baseMediaId.source
+            if (it.isSong) {
+                val song = Song(it)
+                "*song*" + song.title + " - " + song.artist
+            } else if (it.isLoop) {
+                val loop = Loop(it)
+                val song = Song(loop.songMediaId)
+                "*loop*" + loop.loopName + " - " + song.title + " - " + song.artist
+            } else it.baseMediaId.source
         })
     }
 }

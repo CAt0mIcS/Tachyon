@@ -45,7 +45,8 @@ inline val MediaBrowserCompat.MediaItem.playlistName: String
 
 inline val MediaBrowserCompat.MediaItem.loopName: String
     get() {
-        assert(isLoop) { "Trying to get loop name from a media item that is not a loop" }
+        assert(isLoop || (isPlaylist && mediaId!!.toMediaId().underlyingMediaId?.isLoop == true))
+        { "Trying to get loop name from a media item that is not a loop or isn't a playlist with a loop as underlyingMediaId" }
         return description.loopName
     }
 

@@ -35,7 +35,12 @@ inline val MediaDescriptionCompat.playlistName: String
     get() = Playlist(mediaId!!.toMediaId()).playlistName
 
 inline val MediaDescriptionCompat.loopName: String
-    get() = Loop(mediaId!!.toMediaId()).loopName
+    get() {
+        val mediaId = this.mediaId!!.toMediaId()
+        if (mediaId.isPlaylist && mediaId.underlyingMediaId?.isLoop == true)
+            return Loop(mediaId.underlyingMediaId!!).loopName
+        return Loop(mediaId).loopName
+    }
 
 inline val MediaDescriptionCompat.currentPlaylistPlaybackIndex: Int
     get() = extras!!.getInt(MetadataKeys.CurrentPlaylistPlaybackIndex)
