@@ -6,8 +6,8 @@ import android.support.v4.media.MediaBrowserCompat
 import android.util.Log
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
-import com.daton.media.data.MediaAction
 import com.daton.media.MediaController
+import com.daton.media.data.MediaAction
 import com.daton.media.data.MediaId
 import com.daton.media.device.BrowserTree
 import com.daton.media.device.Loop
@@ -17,11 +17,7 @@ import com.daton.mucify.databinding.ActivityMainBinding
 import com.daton.mucify.permission.Permission
 import com.daton.mucify.permission.PermissionManager
 import com.daton.user.User
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import java.io.File
+import kotlinx.coroutines.*
 import java.util.concurrent.CountDownLatch
 
 
@@ -29,9 +25,6 @@ class ActivityMain : AppCompatActivity() {
     companion object {
         const val TAG = "ActivityMain"
     }
-
-    private val serviceJob = SupervisorJob()
-    private val serviceScope = CoroutineScope(Dispatchers.IO + serviceJob)
 
     private var hasStoragePermission: Boolean = false
 
@@ -68,7 +61,7 @@ class ActivityMain : AppCompatActivity() {
         mediaController.create(this)
         mediaController.onConnected = { onConnected() }
 
-        User.create(this)
+        CoroutineScope(Dispatchers.IO).launch { User.create(this@ActivityMain) }
 
         /**
          * Send loops and playlists to service
@@ -92,9 +85,8 @@ class ActivityMain : AppCompatActivity() {
         mediaController.disconnect()
     }
 
-
     fun onConnected() {
-        serviceScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             // Wait for permission dialog to be accepted or denied
             permissionResultAvailable.await()
 
@@ -150,7 +142,7 @@ class ActivityMain : AppCompatActivity() {
 
         }
 
-        binding.rvHistory.setOnItemClickListener { adapterView, view, i, l ->
+        binding.rvHistory.setOnItemClickListener { _, _, i, _ ->
             playMedia(User.metadata.history[i])
         }
 

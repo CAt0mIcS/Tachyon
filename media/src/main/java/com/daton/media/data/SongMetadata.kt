@@ -30,10 +30,11 @@ class SongMetadata(path: File) {
             metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
                 ?: "Unknown Artist"
 
-        val art: ByteArray? = metaRetriever.embeddedPicture
-        if (art != null) {
-            albumArt = BitmapFactory.decodeByteArray(art, 0, art.size)
-        }
+        // TODO: Decide if should be stored for all songs or loaded only when required
+//        val art: ByteArray? = metaRetriever.embeddedPicture
+//        if (art != null) {
+//            albumArt = BitmapFactory.decodeByteArray(art, 0, art.size)
+//        }
 
         duration =
             metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!!

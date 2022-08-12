@@ -18,7 +18,6 @@ import androidx.media.MediaBrowserServiceCompat
 import com.daton.media.CustomPlayer
 import com.daton.media.data.MediaAction
 import com.daton.media.data.MediaId
-import com.daton.media.data.SongMetadata
 import com.daton.media.device.BrowserTree
 import com.daton.media.device.Loop
 import com.daton.media.device.MediaSource
@@ -33,9 +32,7 @@ import com.google.android.exoplayer2.util.EventLogger
 import com.google.android.exoplayer2.util.Util.constrainValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import java.util.concurrent.CountDownLatch
 
 
 class MediaPlaybackService : MediaBrowserServiceCompat() {
@@ -43,9 +40,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
     companion object {
         const val TAG = "MediaPlaybackService"
     }
-
-    private val serviceJob = SupervisorJob()
-    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
 
     // The current player will either be an ExoPlayer (for local playback) or a CastPlayer (for
     // remote playback through a Cast device).
@@ -508,7 +502,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             /**
              * Starts asynchronously loading all playbacks in shared storage (only songs atm)
              */
-            serviceScope.launch {
+            CoroutineScope(Dispatchers.IO).launch {
                 Log.d(MediaPlaybackService.TAG, "Loading MediaSource")
                 mediaSource.loadSharedDeviceFiles()
             }
