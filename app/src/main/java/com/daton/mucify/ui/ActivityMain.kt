@@ -68,14 +68,11 @@ class ActivityMain : AppCompatActivity() {
         mediaController.create(this)
         mediaController.onConnected = { onConnected() }
 
-        mediaController.subscribe(BrowserTree.ROOT) { items ->
-            setupUI(items)
-        }
-
         User.create(this)
 
         /**
          * Send loops and playlists to service
+         * TODO: Optimize this as [MediaSource] updates multiple times
          */
         User.onLogin {
             mediaController.sendLoops(User.metadata.loops)
@@ -103,15 +100,17 @@ class ActivityMain : AppCompatActivity() {
 
             // Notify service to load local device files
             if (hasStoragePermission) {
-                val bundle = Bundle()
-                bundle.putBoolean(MediaAction.StoragePermissionGranted, true)
-                mediaController.sendCustomAction(MediaAction.StoragePermissionChanged, bundle)
-            }
-        }
+                if (!User.loggedIn) {
+                    mediaController.sendLoops(User.metadata.loops)
+                    mediaController.sendPlaylists(User.metadata.playlists)
+                }
 
-        if (!User.loggedIn) {
-            mediaController.sendLoops(User.metadata.loops)
-            mediaController.sendPlaylists(User.metadata.playlists)
+                mediaController.loadMediaSource()
+
+                mediaController.subscribe(BrowserTree.ROOT) { items ->
+                    setupUI(items)
+                }
+            }
         }
     }
 

@@ -17,9 +17,6 @@ object MediaAction {
     const val SetEndTime = "com.daton.mucify.SET_END_TIME"
     const val EndTime = "EndTime"  // use Bundle.putLong
 
-    const val StoragePermissionChanged = "com.daton.mucify.STORAGE_PERMISSION_CHANGED"
-    const val StoragePermissionGranted = "StoragePermissionGranted"  // use Bundle.putBoolean
-
     const val SendLoops = "com.daton.mucify.SEND_LOOPS"
     const val Loops = "Loops"  // use Bundle.putStringArray with Json.encodeToString(loop)
 
@@ -27,6 +24,7 @@ object MediaAction {
     const val Playlists =
         "Playlists"  // use Bundle.putStringArray with Json.encodeToString(playlist)
 
+    const val RequestMediaSourceReload = "com.daton.mucify.REQUEST_MEDIA_SOURCE_RELOAD"
 
     const val CombinePlaybackTypesChanged = "com.daton.mucify.COMBINE_PLAYBACK_TYPES_CHANGED"
     const val CombinePlaybackTypes = "CombinePlaybackTypes"

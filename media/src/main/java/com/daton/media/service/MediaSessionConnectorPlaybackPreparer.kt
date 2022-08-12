@@ -26,11 +26,11 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
     open fun onSetEndTime(endTime: Long) {}
 
+    open fun onRequestMediaSourceReload() {}
+
     open fun onLoopsReceived(loops: List<Loop>) {}
 
     open fun onPlaylistsReceived(playlists: List<Playlist>) {}
-
-    open fun onStoragePermissionChanged(permissionGranted: Boolean) {}
 
     open fun onCombinePlaybackTypesChanged(combine: Boolean) {}
 
@@ -39,9 +39,9 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
             CustomActionSetMediaId(),
             CustomActionSetStartTime(),
             CustomActionSetEndTime(),
+            CustomActionRequestMediaSourceReload(),
             CustomActionSendLoops(),
             CustomActionSendPlaylists(),
-            CustomActionStoragePermissionChanged(),
             CustomActionCombinePlaybackTypesChanged()
         )
     }
@@ -97,6 +97,23 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
             ).build()
     }
 
+    inner class CustomActionRequestMediaSourceReload : MediaSessionConnector.CustomActionProvider {
+        override fun onCustomAction(player: Player, action: String, extras: Bundle?) {
+            Log.d(
+                TAG,
+                "CustomActionSetEndTime.onCustomAction with action $action"
+            )
+            onRequestMediaSourceReload()
+        }
+
+        override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
+            PlaybackStateCompat.CustomAction.Builder(
+                MediaAction.RequestMediaSourceReload,
+                javaClass.name,
+                R.drawable.music_note
+            ).build()
+    }
+
     inner class CustomActionSendLoops : MediaSessionConnector.CustomActionProvider {
         override fun onCustomAction(player: Player, action: String, extras: Bundle?) {
             Log.d(
@@ -130,23 +147,6 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
                 MediaAction.SendPlaylists,
-                javaClass.name,
-                R.drawable.music_note
-            ).build()
-    }
-
-    inner class CustomActionStoragePermissionChanged : MediaSessionConnector.CustomActionProvider {
-        override fun onCustomAction(player: Player, action: String, extras: Bundle?) {
-            Log.d(
-                TAG,
-                "CustomActionSetEndTime.onCustomAction with action $action"
-            )
-            onStoragePermissionChanged(extras!!.getBoolean(MediaAction.StoragePermissionGranted))
-        }
-
-        override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
-            PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.StoragePermissionChanged,
                 javaClass.name,
                 R.drawable.music_note
             ).build()

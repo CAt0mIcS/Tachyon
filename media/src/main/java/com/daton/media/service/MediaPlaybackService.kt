@@ -18,6 +18,7 @@ import androidx.media.MediaBrowserServiceCompat
 import com.daton.media.CustomPlayer
 import com.daton.media.data.MediaAction
 import com.daton.media.data.MediaId
+import com.daton.media.data.SongMetadata
 import com.daton.media.device.BrowserTree
 import com.daton.media.device.Loop
 import com.daton.media.device.MediaSource
@@ -34,6 +35,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import java.util.concurrent.CountDownLatch
 
 
 class MediaPlaybackService : MediaBrowserServiceCompat() {
@@ -109,6 +111,13 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         super.onCreate()
 
         Log.d(TAG, "Creating MediaPlaybackService")
+
+        mediaSource.whenReady { successfullyInitialized ->
+            if (successfullyInitialized)
+                browserTree = BrowserTree(mediaSource)
+            else
+                TODO("Handle unsuccessful initialization")
+        }
 
         mediaSource.onChangedListener = { parentId, mediaId ->
             browserTree = BrowserTree(mediaSource)
@@ -387,15 +396,15 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             mediaSource.whenReady {
                 // Find either the underlying playback or the top-level playback to play
                 val initialWindowIndex: Int = if (mediaId.isSong)
-                    mediaSource.indexOfSong { song ->
+                    mediaSource.songs.indexOfFirst { song ->
                         song.mediaId == mediaId
                     }
                 else if (mediaId.isLoop)
-                    mediaSource.indexOfLoop { loop ->
+                    mediaSource.loops.indexOfFirst { loop ->
                         loop.mediaId == mediaId
                     }
                 else
-                    mediaSource.indexOfPlaylist { playlist ->
+                    mediaSource.playlists.indexOfFirst { playlist ->
                         // Base playback is the same and playlist contains song/loop
                         mediaId.source == playlist.mediaId.source && (mediaId.underlyingMediaId == null ||
                                 playlist.playbacks.contains(
@@ -495,41 +504,27 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             mediaSessionConnector.invalidateMediaSessionMetadata()
         }
 
-        override fun onStoragePermissionChanged(permissionGranted: Boolean) {
-            // Only load device files if they haven't already been loaded.
-            if (permissionGranted && mediaSource.state != MediaSource.STATE_INITIALIZED) {
-                /**
-                 * Starts asynchronously loading all playbacks in shared storage (only songs atm)
-                 */
+        override fun onRequestMediaSourceReload() {
+            /**
+             * Starts asynchronously loading all playbacks in shared storage (only songs atm)
+             */
+            serviceScope.launch {
                 Log.d(MediaPlaybackService.TAG, "Loading MediaSource")
-                serviceScope.launch {
-                    mediaSource.loadSharedDeviceFiles()
-                }
-            } else if (!permissionGranted)
-                mediaSource.clearSongs()
+                mediaSource.loadSharedDeviceFiles()
+            }
         }
 
         override fun onCombinePlaybackTypesChanged(combine: Boolean) {
             combinePlaybackTypes = combine
-            // TODO: Immediately reload player to have instant results (maybe because this is called quite often)
+            // TODO: Immediately reload player to have instant results (maybe not because this is called quite often)
         }
 
         override fun onLoopsReceived(loops: List<Loop>) {
-            mediaSource.whenReady { successfullyInitialized ->
-                if (successfullyInitialized)
-                    mediaSource.loops = loops as MutableList<Loop>
-                else
-                    TODO("Media Source not initialized properly")
-            }
+            mediaSource.loops = loops as MutableList<Loop>
         }
 
         override fun onPlaylistsReceived(playlists: List<Playlist>) {
-            mediaSource.whenReady { successfullyInitialized ->
-                if (successfullyInitialized)
-                    mediaSource.playlists = playlists as MutableList<Playlist>
-                else
-                    TODO("Media Source not initialized properly")
-            }
+            mediaSource.playlists = playlists as MutableList<Playlist>
         }
     }
 
@@ -619,7 +614,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                     // Loop in playlist
                     // TODO: Loops in playlist not seeking to beginning
                     val loop =
-                        mediaSource.findLoop { it.mediaId == mediaId.underlyingMediaId }
+                        mediaSource.loops.find { it.mediaId == mediaId.underlyingMediaId }
                             ?: TODO("Loop ${mediaId.underlyingMediaId} not found")
 
                     currentPlayer.seekTo(loop.startTime)

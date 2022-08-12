@@ -5,6 +5,7 @@ import android.content.ComponentName
 import android.graphics.Bitmap
 import android.media.browse.MediaBrowser
 import android.os.Bundle
+import android.provider.MediaStore
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -245,12 +246,16 @@ class MediaController {
         get() = metadata.artist
 
     /**
+     * Requests that the [MediaSource] is (re)loaded. Requires storage permission
+     */
+    fun loadMediaSource() {
+        sendCustomAction(MediaAction.RequestMediaSourceReload, null)
+    }
+
+    /**
      * Updates the [MediaSource] with [loops]. Overwrites previous loops
      */
     fun sendLoops(loops: List<Loop>) {
-        if (loops.isEmpty())
-            return
-
         val bundle = Bundle()
         bundle.putStringArray(
             MediaAction.Loops,
@@ -263,9 +268,6 @@ class MediaController {
      * Updates the [MediaSource] with [playlists]. Overwrites previous playlists
      */
     fun sendPlaylists(playlists: List<Playlist>) {
-        if (playlists.isEmpty())
-            return
-
         val bundle = Bundle()
         bundle.putStringArray(
             MediaAction.Playlists,

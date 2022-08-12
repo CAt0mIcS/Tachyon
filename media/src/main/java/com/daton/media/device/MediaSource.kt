@@ -1,10 +1,8 @@
 package com.daton.media.device
 
 import android.os.Environment
-import android.support.v4.media.MediaMetadataCompat
 import android.util.Log
 import com.daton.media.data.MediaId
-import com.daton.media.data.SongMetadata
 import com.daton.media.ext.*
 import java.io.File
 
@@ -54,6 +52,8 @@ class MediaSource {
         )
     }
 
+    private var songsLoaded = false
+
     /**
      * Path to the external storage music directory
      */
@@ -64,7 +64,7 @@ class MediaSource {
     var state: Int = STATE_CREATED
         private set(value) {
             Log.d(TAG, "Setting state to $value")
-            if (value == STATE_INITIALIZED || value == STATE_ERROR) {
+            if (songsLoaded && _loops != null && _playlists != null && value == STATE_INITIALIZED || value == STATE_ERROR) {
                 synchronized(onReadyListeners) {
                     field = value
                     onReadyListeners.forEach { listener ->
@@ -72,26 +72,41 @@ class MediaSource {
                     }
                     onReadyListeners.clear()
                 }
-            } else {
+            } else if (value != STATE_INITIALIZED) {
                 field = value
             }
         }
 
     val songs = mutableListOf<Song>()
 
-    var loops = mutableListOf<Loop>()
+    private var _loops: MutableList<Loop>? = null
         set(value) {
             field = value
-            field.sortBy { it.loopName }
+            field!!.sortBy { it.loopName }
             onChangedListener?.invoke(BrowserTree.LOOP_ROOT, null)
+            state = STATE_INITIALIZED
         }
 
-    var playlists = mutableListOf<Playlist>()
+    var loops: MutableList<Loop>
+        set(value) {
+            _loops = value
+        }
+        get() = _loops!!
+
+
+    private var _playlists: MutableList<Playlist>? = null
         set(value) {
             field = value
-            field.sortBy { it.playlistName }
+            field!!.sortBy { it.playlistName }
             onChangedListener?.invoke(BrowserTree.PLAYLIST_ROOT, null)
+            state = STATE_INITIALIZED
         }
+
+    var playlists: MutableList<Playlist>
+        set(value) {
+            _playlists = value
+        }
+        get() = _playlists!!
 
     private var onReadyListeners = mutableListOf<(Boolean) -> Unit>()
 
@@ -101,13 +116,15 @@ class MediaSource {
      *   or [BrowserTree.PLAYLIST_ROOT]
      * * The second argument is null
      *
-     * Called whenever an item changes (item added to playlist, for example)
+     * Called whenever an item changes (item added to playlist, for example) and if the
+     * [MediaSource] is already loaded
      * * The first argument specifies either [BrowserTree.LOOP_ROOT] or [BrowserTree.PLAYLIST_ROOT]
      *   depending on what changed
      * * The second argument specifies the serialized media id of the playlist that was changed
      *   which can be deserialized using [MediaId.deserialize]
      */
     var onChangedListener: ((String, String?) -> Unit)? = null
+        get() = if (state == STATE_INITIALIZED) field else null
 
     init {
         /**
@@ -137,6 +154,7 @@ class MediaSource {
         songs.sortBy { it.title + it.artist }
 
         onChangedListener?.invoke(BrowserTree.SONG_ROOT, null)
+        songsLoaded = true
         state = STATE_INITIALIZED
     }
 
@@ -157,65 +175,6 @@ class MediaSource {
     fun getSong(mediaId: MediaId) = songs.find { it.mediaId == mediaId }
     fun getLoop(mediaId: MediaId) = loops.find { it.mediaId == mediaId }
     fun getPlaylist(mediaId: MediaId) = playlists.find { it.mediaId == mediaId }
-
-    fun forEachSong(perSong: (Song) -> Unit) {
-        for (song in songs)
-            perSong(song)
-    }
-
-    fun forEachLoop(perLoop: (Loop) -> Unit) {
-        for (loop in loops)
-            perLoop(loop)
-    }
-
-    fun forEachPlaylist(perPlaylist: (Playlist) -> Unit) {
-        for (playlist in playlists)
-            perPlaylist(playlist)
-    }
-
-    fun findSong(pred: (Song) -> Boolean): Song? {
-        for (song in songs)
-            if (pred(song))
-                return song
-        return null
-    }
-
-    fun findLoop(pred: (Loop) -> Boolean): Loop? {
-        for (loop in loops)
-            if (pred(loop))
-                return loop
-        return null
-    }
-
-    fun findPlaylist(pred: (Playlist) -> Boolean): Playlist? {
-        for (playlist in playlists)
-            if (pred(playlist))
-                return playlist
-        return null
-    }
-
-
-    fun indexOfSong(pred: (Song) -> Boolean): Int {
-        for (i in 0 until songs.size)
-            if (pred(songs[i]))
-                return i
-        return -1
-    }
-
-    fun indexOfLoop(pred: (Loop) -> Boolean): Int {
-        for (i in 0 until loops.size)
-            if (pred(loops[i]))
-                return i
-        return -1
-    }
-
-    fun indexOfPlaylist(pred: (Playlist) -> Boolean): Int {
-        for (i in 0 until playlists.size)
-            if (pred(playlists[i]))
-                return i
-        return -1
-    }
-
 
     private fun loadSongs(path: File?) {
         if (path == null || !path.exists()) return

@@ -52,7 +52,7 @@ class BrowserTree(
          */
         val mediaId = MediaId.deserializeIfValid(parentId)
         if (mediaId != null && mediaId.isPlaylist) {
-            return mediaSource.findPlaylist { it.mediaId == mediaId }
+            return mediaSource.playlists.find { it.mediaId == mediaId }
                 ?.toMediaMetadataList(mediaSource)?.map { it.toMediaBrowserMediaItem() }
         }
 
