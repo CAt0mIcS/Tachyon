@@ -11,6 +11,7 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
+import android.view.KeyEvent
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
@@ -199,6 +200,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
             registerCustomCommandReceiver(preparer)
             setCustomActionProviders(*preparer.getCustomActions())
+
+            setMediaButtonEventHandler(MediaButtonEventHandler())
 
             // If not next playback is present in queue we still want to dispatch ACTION_SKIP_TO_NEXT
             // to loop back to the beginning of the playlist (Logic in CustomPlayer)
@@ -660,6 +663,26 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             ).show()
         }
     }
+
+    private inner class MediaButtonEventHandler : MediaSessionConnector.MediaButtonEventHandler {
+        override fun onMediaButtonEvent(player: Player, mediaButtonIntent: Intent): Boolean {
+            if (Intent.ACTION_MEDIA_BUTTON == mediaButtonIntent.action) {
+                val key = mediaButtonIntent.getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+                if (key != null && key.action == KeyEvent.ACTION_DOWN) {
+                    // TODO: Debug if action might be handled twice
+                    if (key.keyCode == KeyEvent.KEYCODE_MEDIA_NEXT) {
+                        currentPlayer.seekToNext()
+                        return true
+                    } else if (key.keyCode == KeyEvent.KEYCODE_MEDIA_PREVIOUS) {
+                        currentPlayer.seekToPrevious()
+                        return true
+                    }
+                }
+            }
+            return false
+        }
+    }
+
 
     /**
      * Checks if we need to stop the foreground service when the playback is paused to make
