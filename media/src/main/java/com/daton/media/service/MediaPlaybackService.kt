@@ -115,7 +115,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
         mediaSource.onChangedListener = { parentId, mediaId ->
             browserTree = BrowserTree(mediaSource)
-            notifyChildrenChanged(BrowserTree.ROOT)
+            if (parentId != BrowserTree.ROOT)
+                notifyChildrenChanged(BrowserTree.ROOT)
             notifyChildrenChanged(parentId)
 
             if (mediaId != null) {
