@@ -62,6 +62,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 })
         }
 
+    private var isPlayingPlaylist = false
+
     /**
      * Controls if songs and loops should be combined into one playlist when playing a song/loop
      */
@@ -410,6 +412,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                         if (initialWindowIndex == -1)
                             TODO("Invalid initial window index for $playback")
 
+                        isPlayingPlaylist = false
                         preparePlayer(
                             if (combinePlaybackTypes)
                                 mediaSource.songs.map { it.toExoPlayerMediaItem() } +
@@ -426,6 +429,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                         if (initialWindowIndex == -1)
                             TODO("Invalid initial window index for $playback")
 
+                        isPlayingPlaylist = false
                         preparePlayer(
                             if (combinePlaybackTypes)
                                 mediaSource.loops.map { it.toExoPlayerMediaItem() } +
@@ -438,6 +442,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                     }
                     is Playlist -> {
                         // Request for a specific song in playlist
+                        isPlayingPlaylist = true
+                        currentPlayback = playback
+
                         if (playback.currentPlaylistIndex != -1) {
                             currentPlayer.stop()
 
@@ -517,6 +524,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 putParcelable(MediaAction.Playback, currentPlayback)
             })
         }
+
+        override fun onCurrentPlaylistIndexChanged(currentPlaylistIndex: Int) {
+            currentPlayer.seekToDefaultPosition(currentPlaylistIndex)
+            onRequestPlaybackUpdate()
+        }
     }
 
     /**
@@ -589,8 +601,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             reason: Int
         ) {
             // TODO: Loops for [CastPlayer]
-
-            currentPlayback = mediaItem!!.mediaMetadata.playback
+            if (isPlayingPlaylist)
+                (currentPlayback as Playlist).currentPlaylistIndex =
+                    currentPlayer.currentMediaItemIndex
+            else
+                currentPlayback = mediaItem!!.mediaMetadata.playback
             val playback = currentPlayback
 
             if (playback != null) {
@@ -603,7 +618,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                     )
 
                     // TODO: Check if [playback.current is Loop] is true if playback.current is null
-                } else if (playback is Playlist && playback.current is Loop) {
+                } else if (playback is Playlist && playback.current!! is Loop) {
                     // Loop in playlist
                     // TODO: Loops in playlist not seeking to beginning
                     val loop = playback.current!! as Loop

@@ -9,6 +9,10 @@ import com.daton.media.data.MediaId
 import com.google.android.exoplayer2.MediaItem
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.serializer
 import java.io.File
 
 
@@ -16,6 +20,24 @@ import java.io.File
 abstract class Playback : Parcelable {
     abstract val mediaId: MediaId
     abstract val path: File?
+
+    companion object {
+        private val module = SerializersModule {
+            polymorphic(Playback::class) {
+                polymorphic(SinglePlayback::class) {
+                    subclass(Song::class, serializer<Song>())
+                    subclass(Loop::class, serializer<Loop>())
+                }
+                subclass(Playlist::class, serializer<Playlist>())
+            }
+        }
+
+        val JSON = Json {
+            // TODO: This isn't nice
+            useArrayPolymorphism = true
+            serializersModule = module
+        }
+    }
 
     @Transient
     var onStartTimeChanged: (((Long /*startTime*/) -> Unit))? = null
@@ -40,6 +62,7 @@ abstract class Playback : Parcelable {
     }
 }
 
+@Serializable
 abstract class SinglePlayback : Playback() {
     abstract val title: String?
     abstract val artist: String?

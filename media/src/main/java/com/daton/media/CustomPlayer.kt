@@ -25,6 +25,7 @@ class CustomPlayer(player: Player) : ForwardingPlayer(player) {
         }
     }
 
+    // TODO: [COMMAND_SEEK_TO_NEXT/-PREVIOUS] still appears when playing playlist
     override fun isCommandAvailable(command: @Player.Command Int): Boolean {
         return wrappedPlayer.isCommandAvailable(command) || (command == COMMAND_SEEK_TO_NEXT && !isPlayingAd && mediaItemCount > 1) ||
                 (command == COMMAND_SEEK_TO_PREVIOUS && !isPlayingAd && mediaItemCount > 1)

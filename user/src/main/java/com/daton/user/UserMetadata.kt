@@ -82,7 +82,7 @@ class UserMetadata {
     /**
      * Remotely stored playlists. The string specifies the local file content
      */
-//    val playlists: MutableList<Playlist> = mutableListOf()
+    val playlists: ArrayList<Playlist> = arrayListOf()
 
     /**
      * History items with media id
@@ -98,10 +98,10 @@ class UserMetadata {
         timestamp = System.currentTimeMillis()
     }
 
-//    operator fun plusAssign(playlist: Playlist) {
-//        playlists.add(playlist)
-//        timestamp = System.currentTimeMillis()
-//    }
+    operator fun plusAssign(playlist: Playlist) {
+        playlists.add(playlist)
+        timestamp = System.currentTimeMillis()
+    }
 
 
     fun addHistory(playback: Playback) {
@@ -171,14 +171,18 @@ class UserMetadata {
          * Loads settings from a json-readable string
          */
         fun loadFromString(jsonString: String): UserMetadata {
-            return Json.decodeFromString(jsonString)
+            try {
+                return Playback.JSON.decodeFromString(jsonString)
+            } catch (e: Exception) {
+                TODO("Handle JSON exception, and figure out which exception to catch")
+            }
         }
 
         /**
          * @return settings encoded into json string
          */
         fun toJsonString(userMetadata: UserMetadata): String {
-            return Json.encodeToString(userMetadata)
+            return Playback.JSON.encodeToString(userMetadata)
         }
     }
 

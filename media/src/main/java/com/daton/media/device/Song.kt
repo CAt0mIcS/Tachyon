@@ -13,8 +13,16 @@ import com.daton.media.data.MetadataKeys
 import com.daton.media.data.SongMetadata
 import com.daton.media.ext.*
 import com.google.android.exoplayer2.MediaItem
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.io.File
 
+@Serializable(with = Song.Serializer::class)
 class Song : SinglePlayback {
 
     override val path: File
@@ -136,5 +144,23 @@ class Song : SinglePlayback {
             override fun createFromParcel(parcel: Parcel): Song = Song(parcel)
             override fun newArray(size: Int): Array<Song?> = arrayOfNulls(size)
         }
+    }
+
+    class Serializer : KSerializer<Song> {
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor("songPath", PrimitiveKind.STRING)
+
+        override fun serialize(encoder: Encoder, value: Song) {
+            encoder.encodeSerializableValue(
+                kotlinx.serialization.serializer<MediaId>(),
+                value.mediaId
+            )
+        }
+
+        override fun deserialize(decoder: Decoder): Song = Song(
+            decoder.decodeSerializableValue(
+                kotlinx.serialization.serializer<MediaId>()
+            )
+        )
     }
 }

@@ -20,26 +20,10 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import java.io.File
 
-private class SongSerializer : KSerializer<Song> {
-    override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("songPath", PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: Song) {
-        encoder.encodeSerializableValue(serializer<MediaId>(), value.mediaId)
-    }
-
-    override fun deserialize(decoder: Decoder): Song = Song(
-        decoder.decodeSerializableValue(
-            serializer<MediaId>()
-        )
-    )
-}
 
 @Serializable
 class Loop(
     val name: String,
-
-    @Serializable(with = SongSerializer::class)
     val song: Song
 ) : SinglePlayback() {
 

@@ -3,6 +3,7 @@ package com.daton.media.ext
 import android.os.Bundle
 import com.daton.media.data.MetadataKeys
 import com.daton.media.device.Playback
+import com.daton.media.device.SinglePlayback
 import com.google.android.exoplayer2.MediaMetadata
 
 val MediaMetadata.duration: Long
@@ -14,14 +15,14 @@ val MediaMetadata.startTime: Long
 val MediaMetadata.endTime: Long
     get() = extras!!.getLong(MetadataKeys.EndTime)
 
-val MediaMetadata.playback: Playback
+val MediaMetadata.playback: SinglePlayback
     get() = extras!!.getParcelable(MetadataKeys.Playback)!!
 
 fun MediaMetadata.Builder.setExtras(
     duration: Long,
     startTime: Long,
     endTime: Long,
-    playback: Playback
+    playback: SinglePlayback
 ) {
     setExtras(Bundle().apply {
         putLong(MetadataKeys.Duration, duration)

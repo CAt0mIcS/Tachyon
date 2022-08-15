@@ -10,13 +10,19 @@ import com.daton.media.data.MediaId
 import com.daton.media.data.MetadataKeys
 import com.daton.media.ext.mediaId
 import com.google.android.exoplayer2.MediaItem
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.serializer
 import java.io.File
 
+@Serializable
 data class Playlist(
     val name: String,
-    val playbacks: MutableList<SinglePlayback> = mutableListOf(),
-    var currentPlaylistIndex: Int = 0
+    val playbacks: MutableList<SinglePlayback> = mutableListOf()
 ) : Playback() {
+
+    @Transient
+    var onCurrentPlaylistIndexChanged: ((Int /*currentPlaylistIndex*/) -> Unit)? = null
 
     override val mediaId: MediaId = MediaId(this)
 
@@ -35,27 +41,38 @@ data class Playlist(
             current?.endTime = value
         }
 
+    var currentPlaylistIndex: Int = 0
+        set(value) {
+            val prevIdx = field
+            field = value
+            if (prevIdx != field)
+                onCurrentPlaylistIndexChanged?.invoke(field)
+        }
+
     val current: SinglePlayback?
         get() = if (currentPlaylistIndex == -1) null else playbacks[currentPlaylistIndex]
 
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
-        parcel.readParcelableArray(SinglePlayback::class.java.classLoader)!! as MutableList<SinglePlayback>,
-        parcel.readInt()
-    )
+        // TODO: More efficient way to convert Array<Parcelable> to MutableList<SinglePlayback>
+        parcel.readParcelableArray(SinglePlayback::class.java.classLoader)!!.let { array ->
+            MutableList<SinglePlayback>(array.size) { i ->
+                array[i] as SinglePlayback
+            }
+        }
+    ) {
+        currentPlaylistIndex = parcel.readInt()
+    }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
-        parcel.writeParcelableArray(playbacks as Array<Parcelable>, flags)
+        parcel.writeParcelableArray(playbacks.toTypedArray(), flags)
         parcel.writeInt(currentPlaylistIndex)
     }
 
-    override fun toMediaMetadata(): MediaMetadataCompat {
-        if (currentPlaylistIndex != -1)
-            return playbacks[currentPlaylistIndex].toMediaMetadata()
-        return MediaMetadataCompat.Builder()
+    override fun toMediaMetadata(): MediaMetadataCompat =
+        current?.toMediaMetadata() ?: MediaMetadataCompat.Builder()
             .also { metadata -> metadata.mediaId = mediaId.toString() }.build()
-    }
 
     override fun toMediaBrowserMediaItem(): MediaBrowserCompat.MediaItem =
         MediaBrowserCompat.MediaItem(toMediaDescriptionCompat(), 0)
@@ -75,6 +92,8 @@ data class Playlist(
     override fun describeContents(): Int = 0
 
     operator fun get(i: Int): SinglePlayback = playbacks[i]
+
+    override fun toString(): String = mediaId.toString()
 
     companion object CREATOR : Parcelable.Creator<Playlist> {
         override fun createFromParcel(parcel: Parcel): Playlist = Playlist(parcel)

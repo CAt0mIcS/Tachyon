@@ -8,8 +8,10 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.appcompat.app.AppCompatActivity
 import com.daton.media.MediaController
+import com.daton.media.device.Loop
 import com.daton.media.device.Playlist
 import com.daton.media.device.SinglePlayback
+import com.daton.media.device.Song
 import com.daton.media.ext.*
 import com.daton.mucify.R
 import com.daton.mucify.Util
@@ -23,7 +25,6 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
     private val controller = MediaController()
 
     private var playbackStrings = mutableListOf<String>()
-    private var playlistItems = mutableListOf<SinglePlayback>()
 
     private var isSeeking = false
     private val handler = Handler(Looper.getMainLooper())
@@ -42,19 +43,20 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
         )
 
         binding.rvPlaylistItems.setOnItemClickListener { adapterView, _, i, _ ->
-            controller.playback = playlistItems[i]
+            (controller.playback as Playlist).currentPlaylistIndex = i
             controller.play()
         }
 
-
+        // TODO: A lot of unnecessary calls
         controller.onPlaybackChanged = {
-            val playlist = controller.playback as Playlist
-            val playback = playlist[playlist.currentPlaylistIndex]
+            val playlist = controller.playback as Playlist?
+            if (playlist?.current != null) {
+                binding.txtPlaylistTitle.text = playlist.name
+                binding.txtTitle.text = playlist.current!!.title
 
-            binding.txtPlaylistTitle.text = playlist.name
-            binding.txtTitle.text = playback.title
-
-            binding.sbPos.max = (playback.duration / User.metadata.audioUpdateInterval).toInt()
+                binding.sbPos.max =
+                    (playlist.current!!.duration / User.metadata.audioUpdateInterval).toInt()
+            }
         }
 
         controller.onPlaybackStateChanged = { isPlaying ->
@@ -62,32 +64,36 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
         }
 
         controller.onConnected = {
-            // Getting media id requires connection to MediaService
-//            controller.subscribe(controller.mediaId.baseMediaId.serialize()) { playlistItems ->
-//                this.playlistItems.addAll(playlistItems.map { it.mediaId!!.toMediaId() })
-//                playbackStrings.addAll(playlistItems.map {
-//                    if (it.mediaId!!.toMediaId().underlyingMediaId!!.isSong)
-//                        "*song*" + it.title + " - " + it.artist
-//                    else if (it.mediaId!!.toMediaId().underlyingMediaId!!.isLoop)
-//                        "*loop*" + it.loopName + " - " + it.title + " - " + it.artist
-//                    else
-//                        "*playlist*" + it.playlistName
-//
-//                })
-//                (binding.rvPlaylistItems.adapter as ArrayAdapter<*>).notifyDataSetChanged()
+            playbackStrings.addAll((controller.playback!! as Playlist).playbacks.map {
+                when (it) {
+                    is Song -> "*song*" + it.title + " - " + it.artist
+                    is Loop -> "*loop*" + it.name + " - " + it.title + " - " + it.artist
+                    else -> TODO("Invalid playback type in playlist")
+                }
+            })
+
+            runOnUiThread(object : Runnable {
+                override fun run() {
+                    if (controller.isCreated && controller.isPlaying && !isSeeking) {
+                        val currentPos: Int =
+                            (controller.currentPosition / User.metadata.audioUpdateInterval).toInt()
+                        binding.sbPos.progress = currentPos
+                    }
+                    if (!isDestroyed)
+                        handler.postDelayed(
+                            this,
+                            User.metadata.audioUpdateInterval.toLong()
+                        )
+                }
+            })
+
+            Handler(Looper.getMainLooper()).post {
+                (binding.rvPlaylistItems.adapter as ArrayAdapter<*>).notifyDataSetChanged()
+                controller.onPlaybackStateChanged!!(controller.isPlaying)
+                controller.onPlaybackChanged!!()
+            }
         }
 
-        runOnUiThread(object : Runnable {
-            override fun run() {
-                if (controller.isCreated && controller.isPlaying && !isSeeking) {
-                    val currentPos: Int =
-                        (controller.currentPosition / User.metadata.audioUpdateInterval).toInt()
-                    binding.sbPos.progress = currentPos
-                }
-                if (!isDestroyed)
-                    handler.postDelayed(this, User.metadata.audioUpdateInterval.toLong())
-            }
-        })
 
         binding.sbPos.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onStopTrackingTouch(seekBar: SeekBar) {
@@ -99,7 +105,11 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
                 isSeeking = true
             }
 
-            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+            override fun onProgressChanged(
+                seekBar: SeekBar,
+                progress: Int,
+                fromUser: Boolean
+            ) {
                 binding.txtPos.text =
                     Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
             }
@@ -109,9 +119,6 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
 
         binding.btnNext.setOnClickListener { controller.next() }
         binding.btnPrevious.setOnClickListener { controller.previous() }
-
-        controller.onPlaybackStateChanged!!(controller.isPlaying)
-        controller.onPlaybackChanged!!()
     }
 
     override fun onStart() {

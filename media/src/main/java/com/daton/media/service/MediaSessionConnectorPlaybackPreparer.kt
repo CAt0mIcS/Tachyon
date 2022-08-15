@@ -33,6 +33,8 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
     open fun onRequestPlaybackUpdate() {}
 
+    open fun onCurrentPlaylistIndexChanged(currentPlaylistIndex: Int) {}
+
     fun getCustomActions(): Array<out MediaSessionConnector.CustomActionProvider> {
         return arrayOf(
             CustomActionSetPlayback(),
@@ -42,7 +44,8 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
             CustomActionSendLoops(),
             CustomActionSendPlaylists(),
             CustomActionCombinePlaybackTypesChanged(),
-            CustomActionRequestPlaybackUpdate()
+            CustomActionRequestPlaybackUpdate(),
+            CustomActionCurrentPlaylistIndexChanged()
         )
     }
 
@@ -183,6 +186,25 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
                 MediaAction.RequestPlaybackUpdateEvent,
+                javaClass.name,
+                R.drawable.music_note
+            ).build()
+    }
+
+    inner class CustomActionCurrentPlaylistIndexChanged :
+        MediaSessionConnector.CustomActionProvider {
+        override fun onCustomAction(player: Player, action: String, extras: Bundle?) {
+            Log.d(
+                TAG,
+                "CustomActionSetEndTime.onCustomAction with action $action"
+            )
+
+            onCurrentPlaylistIndexChanged(extras!!.getInt(MediaAction.CurrentPlaylistIndex))
+        }
+
+        override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
+            PlaybackStateCompat.CustomAction.Builder(
+                MediaAction.CurrentPlaylistIndexChangedEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()

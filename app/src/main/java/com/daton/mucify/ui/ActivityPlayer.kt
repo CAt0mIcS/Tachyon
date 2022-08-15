@@ -11,6 +11,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.daton.media.MediaController
 import com.daton.media.device.Loop
+import com.daton.media.device.Playlist
 import com.daton.media.device.SinglePlayback
 import com.daton.media.device.Song
 import com.daton.mucify.Util
@@ -226,32 +227,33 @@ class ActivityPlayer : AppCompatActivity() {
     }
 
     private fun displaySavePlaylistDialog() {
-//        val fragmentAddToPlaylist =
-//            FragmentAddToPlaylist(controller.mediaId, User.metadata.playlists)
-//        fragmentAddToPlaylist.apply {
-//            onCreateNewPlaylist = { name ->
-//                User.metadata += Playlist(name)
-//                User.metadata.saveToLocal()
-//                User.uploadMetadata()
-//                controller.sendPlaylists(User.metadata.playlists)
-//            }
-//
-//            onChanged = { toAdd, playlistToAddTo ->
-//
-//                if (playlistToAddTo.playbacks.contains(toAdd))
-//                    playlistToAddTo -= toAdd
-//                else
-//                    playlistToAddTo += toAdd
-//
-//                User.metadata.saveToLocal()
-//                User.uploadMetadata()
-//                controller.sendPlaylists(User.metadata.playlists)
-//            }
-//
-//            supportFragmentManager.beginTransaction()
-//                .addToBackStack(null)
-//                .add(R.id.fragment_container_view, fragmentAddToPlaylist)
-//                .commit()
-//        }
+        FragmentAddToPlaylist(
+            controller.playback!! as SinglePlayback,
+            User.metadata.playlists
+        ).apply {
+            onCreateNewPlaylist = { name ->
+                User.metadata += Playlist(name)
+                User.metadata.saveToLocal()
+                User.uploadMetadata()
+                controller.sendPlaylists(User.metadata.playlists)
+            }
+
+            onChanged = { toAdd, playlistToAddTo ->
+
+                if (playlistToAddTo.playbacks.contains(toAdd))
+                    playlistToAddTo.playbacks.remove(toAdd)
+                else
+                    playlistToAddTo.playbacks.add(toAdd)
+
+                User.metadata.saveToLocal()
+                User.uploadMetadata()
+                controller.sendPlaylists(User.metadata.playlists)
+            }
+
+            supportFragmentManager.beginTransaction()
+                .addToBackStack(null)
+                .add(R.id.fragment_container_view, this)
+                .commit()
+        }
     }
 }

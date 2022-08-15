@@ -31,6 +31,9 @@ object MediaAction {
 
     const val RequestPlaybackUpdateEvent = "com.daton.mucify.REQUEST_PLAYBACK_UPDATE"
 
+    const val CurrentPlaylistIndexChangedEvent = "com.daton.mucify.CURRENT_PLAYLIST_INDEX_CHANGED"
+    const val CurrentPlaylistIndex = "CurrentPlaylistIndex"
+
 
     /**
      * Events sent to the MediaBrowserController by the MediaPlaybackService

@@ -94,8 +94,7 @@ class ActivityMain : AppCompatActivity() {
                 if (!mediaLoaded) {
                     if (!User.loggedIn) {
                         mediaController.sendLoops(User.metadata.loops)
-//                    mediaController.sendPlaylists(User.metadata.playlists)
-                        mediaController.sendPlaylists(arrayListOf())
+                        mediaController.sendPlaylists(User.metadata.playlists)
                     }
 
                     mediaController.loadMediaSource()

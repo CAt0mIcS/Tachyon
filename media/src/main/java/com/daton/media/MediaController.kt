@@ -15,6 +15,10 @@ import com.daton.media.data.MetadataKeys
 import com.daton.media.device.*
 import com.daton.media.ext.*
 import com.daton.media.service.MediaPlaybackService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.util.concurrent.CountDownLatch
 
 
 class MediaController {
@@ -28,6 +32,9 @@ class MediaController {
     private val controllerCallback: MediaControllerCallback = MediaControllerCallback()
 
     private val subscribedIds = mutableMapOf<String, (List<Playback>) -> Unit>()
+
+    // TODO: Why is [playback] not updating when the controller is connected
+    private var firstPlaybackUpdateDone: CountDownLatch? = null
 
     var onConnected: (() -> Unit)? = null
     var onDisconnected: (() -> Unit)? = null
@@ -112,12 +119,22 @@ class MediaController {
                 sendCustomAction(
                     MediaAction.SetStartTimeEvent,
                     Bundle().apply { putLong(MediaAction.StartTime, startTime) })
+                field?.startTime = startTime
             }
             field?.onEndTimeChanged = { endTime ->
                 sendCustomAction(
                     MediaAction.SetEndTimeEvent,
                     Bundle().apply { putLong(MediaAction.EndTime, endTime) })
+                field?.endTime = endTime
             }
+            if (field is Playlist?)
+                (field as Playlist?)?.onCurrentPlaylistIndexChanged = { i ->
+                    sendCustomAction(
+                        MediaAction.CurrentPlaylistIndexChangedEvent,
+                        Bundle().apply { putInt(MediaAction.CurrentPlaylistIndex, i) }
+                    )
+                    (field as Playlist?)?.currentPlaylistIndex = i
+                }
         }
 
     /**
@@ -333,18 +350,24 @@ class MediaController {
             // Create a MediaControllerCompat
             val mediaController = MediaControllerCompat(activity!!, token)
 
+            // Register a Callback to stay in sync
+            mediaController.registerCallback(controllerCallback)
+
             // Save the controller
             MediaControllerCompat.setMediaController(activity!!, mediaController)
 
+            firstPlaybackUpdateDone = CountDownLatch(1)
             // Request [playback] to be updated
             sendCustomAction(MediaAction.RequestPlaybackUpdateEvent)
+            // TODO TODO TODO TODO
+            CoroutineScope(Dispatchers.IO).launch {
+                firstPlaybackUpdateDone!!.await()
+                firstPlaybackUpdateDone = null
 
-            // Finish building the UI
-            onConnected?.invoke()
+                // Finish building the UI
+                onConnected?.invoke()
+            }
 
-            // Register a Callback to stay in sync
-            MediaControllerCompat.getMediaController(activity!!)
-                .registerCallback(controllerCallback)
             Log.d("Mucify", "MediaBrowserController connection established")
         }
 
@@ -363,10 +386,9 @@ class MediaController {
         override fun onSessionEvent(event: String, extras: Bundle) {
             when (event) {
                 MediaAction.SetPlaybackEvent -> {
-                    val previousPlayback = playback
                     _playback = extras.getParcelable(MediaAction.Playback)
-                    if (previousPlayback != playback)
-                        onPlaybackChanged?.invoke()
+                    firstPlaybackUpdateDone?.countDown()
+                    onPlaybackChanged?.invoke()
                 }
                 MediaAction.OnPlaybackStateChangedEvent -> {
                     onPlaybackStateChanged?.invoke(extras.getBoolean(MediaAction.IsPlaying))
