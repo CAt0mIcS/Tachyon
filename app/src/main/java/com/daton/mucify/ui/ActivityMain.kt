@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch
 class ActivityMain : AppCompatActivity() {
     companion object {
         const val TAG = "ActivityMain"
+        private var mediaLoaded = false
     }
 
     private var hasStoragePermission: Boolean = false
@@ -89,13 +90,17 @@ class ActivityMain : AppCompatActivity() {
 
             // Notify service to load local device files
             if (hasStoragePermission) {
-                if (!User.loggedIn) {
-                    mediaController.sendLoops(User.metadata.loops)
-//                    mediaController.sendPlaylists(User.metadata.playlists)
-                    mediaController.sendPlaylists(arrayListOf())
-                }
 
-                mediaController.loadMediaSource()
+                if (!mediaLoaded) {
+                    if (!User.loggedIn) {
+                        mediaController.sendLoops(User.metadata.loops)
+//                    mediaController.sendPlaylists(User.metadata.playlists)
+                        mediaController.sendPlaylists(arrayListOf())
+                    }
+
+                    mediaController.loadMediaSource()
+                    mediaLoaded = true
+                }
 
                 mediaController.subscribe(BrowserTree.ROOT) { items ->
                     setupUI(items)

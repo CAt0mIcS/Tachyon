@@ -405,14 +405,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 when (playback) {
                     is Song -> {
                         currentPlayer.stop()
+
                         val initialWindowIndex = mediaSource.songs.indexOf(playback)
-                        /**
-                         * TODO: Sometimes fails to find existing songs
-                         * TO REPRODUCE:
-                         * * Click on song
-                         * * Click back fast
-                         * * Click on another song immediately after
-                         */
                         if (initialWindowIndex == -1)
                             TODO("Invalid initial window index for $playback")
 

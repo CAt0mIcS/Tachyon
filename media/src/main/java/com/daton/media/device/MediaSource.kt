@@ -147,6 +147,9 @@ class MediaSource {
      * external storage
      */
     fun loadSharedDeviceFiles() {
+        state = STATE_INITIALIZING
+        songsLoaded = false
+
         songs.clear()
         loadSongs(musicDirectory)
 
