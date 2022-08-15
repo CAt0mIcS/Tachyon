@@ -1,9 +1,7 @@
 package com.daton.media.device
 
 import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaMetadataCompat
-import com.daton.media.data.MediaId
-import com.daton.media.ext.*
+
 
 class BrowserTree(
     private var mediaSource: MediaSource
@@ -30,30 +28,32 @@ class BrowserTree(
                 return get(SONG_ROOT)!! + get(LOOP_ROOT)!! + get(PLAYLIST_ROOT)!!
             }
             SONG_ROOT -> {
+                // TODO: Takes ages?
                 return mediaSource.songs.map {
-                    it.toMediaMetadata(mediaSource).toMediaBrowserMediaItem()
+                    it.toMediaBrowserMediaItem()
                 }
             }
             PLAYLIST_ROOT -> {
                 return mediaSource.playlists.map {
-                    it.toMediaMetadata(mediaSource).toMediaBrowserMediaItem()
+                    it.toMediaBrowserMediaItem()
                 }
             }
             LOOP_ROOT -> {
                 return mediaSource.loops.map {
-                    it.toMediaMetadata(mediaSource).toMediaBrowserMediaItem()
+                    it.toMediaBrowserMediaItem()
                 }
             }
         }
 
         /**
-         * Assume that [parentId] is a Json-serialized [MediaId].
-         * If that media id is valid and is a playlist we should return all items in the playlist
+         * Assume that [parentId] is the id of a [Playback].
+         * If the id points to a [Playlist], return the items in the playlist
          */
-        val mediaId = MediaId.deserializeIfValid(parentId)
-        if (mediaId != null && mediaId.isPlaylist) {
-            return mediaSource.playlists.find { it.mediaId == mediaId }
-                ?.toMediaMetadataList(mediaSource)?.map { it.toMediaBrowserMediaItem() }
+        try {
+            val playback = mediaSource.findById(parentId)
+            if (playback is Playlist)
+                return playback.toMediaBrowserMediaItemList()
+        } catch (e: NumberFormatException) {
         }
 
         return null

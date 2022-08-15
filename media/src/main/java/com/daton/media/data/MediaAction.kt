@@ -8,33 +8,36 @@ object MediaAction {
     /**
      * Events sent to the MediaPlaybackService by the MediaBrowserController
      */
-    const val SetMediaId = "com.daton.mucify.SET_MEDIA_ID"
-    const val MediaId = "MediaId"  // use Bundle.putString
+    const val SetPlaybackEvent = "com.daton.mucify.SET_PLAYBACK"
+    const val Playback = "Playback"  // use Bundle.putParcelable
 
-    const val SetStartTime = "com.daton.mucify.SET_START_TIME"
+    const val SetStartTimeEvent = "com.daton.mucify.SET_START_TIME"
     const val StartTime = "StartTime"  // use Bundle.putLong
 
-    const val SetEndTime = "com.daton.mucify.SET_END_TIME"
+    const val SetEndTimeEvent = "com.daton.mucify.SET_END_TIME"
     const val EndTime = "EndTime"  // use Bundle.putLong
 
-    const val SendLoops = "com.daton.mucify.SEND_LOOPS"
-    const val Loops = "Loops"  // use Bundle.putStringArray with Json.encodeToString(loop)
+    const val SendLoopsEvent = "com.daton.mucify.SEND_LOOPS"
+    const val Loops = "Loops"  // use Bundle.putParcelableArrayList
 
-    const val SendPlaylists = "com.daton.mucify.SEND_PLAYLISTS"
+    const val SendPlaylistsEvent = "com.daton.mucify.SEND_PLAYLISTS"
     const val Playlists =
-        "Playlists"  // use Bundle.putStringArray with Json.encodeToString(playlist)
+        "Playlists"  // use Bundle.putParcelableArrayList
 
-    const val RequestMediaSourceReload = "com.daton.mucify.REQUEST_MEDIA_SOURCE_RELOAD"
+    const val RequestMediaSourceReloadEvent = "com.daton.mucify.REQUEST_MEDIA_SOURCE_RELOAD"
 
-    const val CombinePlaybackTypesChanged = "com.daton.mucify.COMBINE_PLAYBACK_TYPES_CHANGED"
-    const val CombinePlaybackTypes = "CombinePlaybackTypes"
+    const val CombinePlaybackTypesChangedEvent = "com.daton.mucify.COMBINE_PLAYBACK_TYPES_CHANGED"
+    const val CombinePlaybackTypes = "CombinePlaybackTypes" // use putBoolean
+
+    const val RequestPlaybackUpdateEvent = "com.daton.mucify.REQUEST_PLAYBACK_UPDATE"
 
 
     /**
      * Events sent to the MediaBrowserController by the MediaPlaybackService
      */
-    const val MediaIdChanged = "com.daton.mucify.MEDIA_ID_CHANGED"
-
-    const val OnPlaybackStateChanged = "com.daton.mucify.ON_PLAYBACK_STATE_CHANGED"
+    const val OnPlaybackStateChangedEvent = "com.daton.mucify.ON_PLAYBACK_STATE_CHANGED"
     const val IsPlaying = "IsPlaying"  // use Bundle.putBoolean
+
+    //    const val SetPlaybackEvent = "com.daton.mucify.SET_PLAYBACK"
+//    const val Playback = "Playback"  // use Bundle.putParcelable
 }

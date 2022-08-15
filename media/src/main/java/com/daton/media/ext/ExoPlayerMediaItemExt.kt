@@ -1,19 +1,18 @@
 package com.daton.media.ext
 
-import android.support.v4.media.MediaMetadataCompat
-import com.daton.media.data.MediaId
+import android.support.v4.media.MediaDescriptionCompat
 import com.daton.media.data.MetadataKeys
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.MediaMetadata
 
-inline val MediaItem.isSong: Boolean
-    get() = mediaId.toMediaId().isSong
-
-inline val MediaItem.isLoop: Boolean
-    get() = mediaId.toMediaId().isLoop
-
-inline val MediaItem.isPlaylist: Boolean
-    get() = mediaId.toMediaId().isPlaylist
+//inline val MediaItem.isSong: Boolean
+//    get() = mediaId.toMediaId().isSong
+//
+//inline val MediaItem.isLoop: Boolean
+//    get() = mediaId.toMediaId().isLoop
+//
+//inline val MediaItem.isPlaylist: Boolean
+//    get() = mediaId.toMediaId().isPlaylist
 
 
 // Returns 0 as default
@@ -37,18 +36,18 @@ inline var MediaMetadata.endTime: Long
 inline val MediaMetadata.duration: Long
     get() = extras!!.getLong(MetadataKeys.Duration)
 
-fun MediaMetadata.toMediaMetadataCompat(mediaId: MediaId): MediaMetadataCompat =
-    MediaMetadataCompat.Builder().let {
-        it.title = title?.toString()
-        it.artist = artist?.toString()
-        it.duration = duration
-
-//        TODO(it.albumArt = artworkData)
-        it.startTime = startTime
-        it.endTime = endTime
-        it.mediaId = mediaId
-
-        return@let it.build()
-    }
+//fun MediaMetadata.toMediaMetadataCompat(mediaId: MediaId): MediaMetadataCompat =
+//    MediaMetadataCompat.Builder().let {
+//        it.title = title?.toString()
+//        it.artist = artist?.toString()
+//        it.duration = duration
+//
+////        TODO(it.albumArt = artworkData)
+//        it.startTime = startTime
+//        it.endTime = endTime
+//        it.mediaId = mediaId
+//
+//        return@let it.build()
+//    }
 
 

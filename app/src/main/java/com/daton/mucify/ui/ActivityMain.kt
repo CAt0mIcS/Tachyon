@@ -8,10 +8,7 @@ import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
 import com.daton.media.MediaController
 import com.daton.media.data.MediaAction
-import com.daton.media.data.MediaId
-import com.daton.media.device.BrowserTree
-import com.daton.media.device.Loop
-import com.daton.media.device.Song
+import com.daton.media.device.*
 import com.daton.mucify.R
 import com.daton.mucify.databinding.ActivityMainBinding
 import com.daton.mucify.permission.Permission
@@ -68,8 +65,8 @@ class ActivityMain : AppCompatActivity() {
          * TODO: Optimize this as [MediaSource] updates multiple times
          */
         User.onLogin {
-            mediaController.sendLoops(User.metadata.loops)
-            mediaController.sendPlaylists(User.metadata.playlists)
+//            mediaController.sendLoops(User.metadata.loops)
+//            mediaController.sendPlaylists(User.metadata.playlists)
         }
 
         Log.d(TAG, "onCreate finished")
@@ -93,8 +90,10 @@ class ActivityMain : AppCompatActivity() {
             // Notify service to load local device files
             if (hasStoragePermission) {
                 if (!User.loggedIn) {
-                    mediaController.sendLoops(User.metadata.loops)
-                    mediaController.sendPlaylists(User.metadata.playlists)
+//                    mediaController.sendLoops(User.metadata.loops)
+//                    mediaController.sendPlaylists(User.metadata.playlists)
+                    mediaController.sendLoops(arrayListOf())
+                    mediaController.sendPlaylists(arrayListOf())
                 }
 
                 mediaController.loadMediaSource()
@@ -106,7 +105,7 @@ class ActivityMain : AppCompatActivity() {
         }
     }
 
-    private fun setupUI(playbacks: List<MediaBrowserCompat.MediaItem>) {
+    private fun setupUI(playbacks: List<Playback>) {
         Log.d(TAG, "Setting up ui")
 
         binding.btnLogin.setOnClickListener { User.login(this) }
@@ -121,18 +120,18 @@ class ActivityMain : AppCompatActivity() {
             historyStrings
         )
 
-        val playMedia = { mediaId: MediaId ->
+        val playMedia = { playback: Playback ->
 
-            mediaController.mediaId = mediaId
+            mediaController.playback = playback
             // Only play if not playlist or an underlying media id is given (play specific song in playlist)
-            if (!mediaId.isPlaylist || mediaId.underlyingMediaId != null)
+            if (playback !is Playlist || playback.currentPlaylistIndex != -1)
                 mediaController.play()
 
-            User.metadata.addHistory(mediaId)
+//            User.metadata.addHistory(mediaId)
             User.metadata.saveToLocal()
             User.uploadMetadata()
 
-            if (mediaId.isPlaylist) {
+            if (playback is Playlist) {
                 val intent = Intent(this@ActivityMain, ActivityPlaylistPlayer::class.java)
                 startActivity(intent)
             } else {
@@ -143,7 +142,7 @@ class ActivityMain : AppCompatActivity() {
         }
 
         binding.rvHistory.setOnItemClickListener { _, _, i, _ ->
-            playMedia(User.metadata.history[i])
+//            playMedia(User.metadata.history[i])
         }
 
         User.metadata.onHistoryChanged = {
@@ -176,20 +175,20 @@ class ActivityMain : AppCompatActivity() {
             MediaAction.CombinePlaybackTypes,
             User.metadata.combineDifferentPlaybackTypes
         )
-        mediaController.sendCustomAction(MediaAction.CombinePlaybackTypesChanged, bundle)
+        mediaController.sendCustomAction(MediaAction.CombinePlaybackTypesChangedEvent, bundle)
     }
 
     private fun loadHistoryStrings() {
         historyStrings.clear()
-        historyStrings.addAll(User.metadata.history.map {
-            if (it.isSong) {
-                val song = Song(it)
-                "*song*" + song.title + " - " + song.artist
-            } else if (it.isLoop) {
-                val loop = Loop(it)
-                val song = Song(loop.songMediaId)
-                "*loop*" + loop.loopName + " - " + song.title + " - " + song.artist
-            } else it.baseMediaId.source
-        })
+//        historyStrings.addAll(User.metadata.history.map {
+//            if (it.isSong) {
+//                val song = SongMetadata(it)
+//                "*song*" + song.title + " - " + song.artist
+//            } else if (it.isLoop) {
+//                val loop = Loop(it)
+//                val song = Song(loop.songMediaId)
+//                "*loop*" + loop.loopName + " - " + song.title + " - " + song.artist
+//            } else it.baseMediaId.source
+//        })
     }
 }

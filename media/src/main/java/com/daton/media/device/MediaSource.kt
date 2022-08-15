@@ -2,7 +2,6 @@ package com.daton.media.device
 
 import android.os.Environment
 import android.util.Log
-import com.daton.media.data.MediaId
 import com.daton.media.ext.*
 import java.io.File
 
@@ -82,7 +81,7 @@ class MediaSource {
     private var _loops: MutableList<Loop>? = null
         set(value) {
             field = value
-            field!!.sortBy { it.loopName }
+            field!!.sortBy { it.name }
             onChangedListener?.invoke(BrowserTree.LOOP_ROOT, null)
             state = STATE_INITIALIZED
         }
@@ -97,7 +96,7 @@ class MediaSource {
     private var _playlists: MutableList<Playlist>? = null
         set(value) {
             field = value
-            field!!.sortBy { it.playlistName }
+            field!!.sortBy { it.name }
             onChangedListener?.invoke(BrowserTree.PLAYLIST_ROOT, null)
             state = STATE_INITIALIZED
         }
@@ -172,10 +171,6 @@ class MediaSource {
         }
     }
 
-    fun getSong(mediaId: MediaId) = songs.find { it.mediaId == mediaId }
-    fun getLoop(mediaId: MediaId) = loops.find { it.mediaId == mediaId }
-    fun getPlaylist(mediaId: MediaId) = playlists.find { it.mediaId == mediaId }
-
     private fun loadSongs(path: File?) {
         if (path == null || !path.exists()) return
         val files = path.listFiles() ?: return
@@ -193,5 +188,18 @@ class MediaSource {
         songs.clear()
         if (shouldInvokeOnChanged)
             onChangedListener?.invoke(BrowserTree.SONG_ROOT, null)
+    }
+
+    fun findById(mediaId: String): Playback? {
+        for (song in songs)
+            if (song.mediaId == mediaId)
+                return song
+        for (loop in loops)
+            if (loop.mediaId == mediaId)
+                return loop
+        for (playlist in playlists)
+            if (playlist.mediaId == mediaId)
+                return playlist
+        return null
     }
 }

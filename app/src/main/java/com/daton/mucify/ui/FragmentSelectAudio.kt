@@ -8,19 +8,22 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.annotation.Nullable
 import androidx.fragment.app.Fragment
-import com.daton.media.data.MediaId
+import com.daton.media.device.Loop
+import com.daton.media.device.Playback
+import com.daton.media.device.Playlist
+import com.daton.media.device.Song
 import com.daton.media.ext.*
 import com.daton.mucify.databinding.FragmentSelectAudioBinding
 
 
-class FragmentSelectAudio(private val playbacks: List<MediaBrowserCompat.MediaItem>) : Fragment() {
+class FragmentSelectAudio(private val playbacks: List<Playback>) : Fragment() {
 
     private lateinit var playbackStrings: List<String>
 
     private var _binding: FragmentSelectAudioBinding? = null
     private val binding get() = _binding!!
 
-    var onItemClicked: ((MediaId) -> Unit)? = null
+    var onItemClicked: ((Playback) -> Unit)? = null
 
 
     constructor() : this(listOf())
@@ -43,12 +46,14 @@ class FragmentSelectAudio(private val playbacks: List<MediaBrowserCompat.MediaIt
         super.onViewCreated(view, savedInstanceState)
 
         playbackStrings = playbacks.map {
-            if (it.isSong)
+            if (it is Song)
                 it.title + " - " + it.artist
-            else if (it.isLoop)
-                it.loopName + " - " + it.title + " - " + it.artist
+            else if (it is Loop)
+                it.name + " - " + it.title + " - " + it.artist
+            else if (it is Playlist)
+                "*playlist*" + it.name
             else
-                "*playlist*" + it.playlistName
+                TODO("Invalid playback type")
         }
 
         binding.rvFiles.adapter = ArrayAdapter(
@@ -58,7 +63,7 @@ class FragmentSelectAudio(private val playbacks: List<MediaBrowserCompat.MediaIt
         )
 
         binding.rvFiles.setOnItemClickListener { adapterView, _, i, _ ->
-            onItemClicked?.invoke(playbacks[i].mediaId!!.toMediaId())
+            onItemClicked?.invoke(playbacks[i])
         }
     }
 

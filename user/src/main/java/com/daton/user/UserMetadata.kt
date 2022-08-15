@@ -1,6 +1,5 @@
 package com.daton.user
 
-import com.daton.media.data.MediaId
 import com.daton.media.device.Loop
 import com.daton.media.device.Playlist
 import kotlinx.serialization.*
@@ -61,10 +60,10 @@ class UserMetadata {
     var maxPlaybacksInHistory: Int = 25
         set(value) {
             field = value
-            if (history.size > field) {
-                shrinkHistory()
-                onHistoryChanged?.invoke()
-            }
+//            if (history.size > field) {
+//                shrinkHistory()
+//                onHistoryChanged?.invoke()
+//            }
             timestamp = System.currentTimeMillis()
         }
 
@@ -76,57 +75,57 @@ class UserMetadata {
     /**
      * Remotely stored loops.
      */
-    val loops: MutableList<Loop> = mutableListOf()
+//    val loops: MutableList<Loop> = mutableListOf()
 
     /**
      * Remotely stored playlists. The string specifies the local file content
      */
-    val playlists: MutableList<Playlist> = mutableListOf()
+//    val playlists: MutableList<Playlist> = mutableListOf()
 
     /**
      * History items with media id
      */
-    val history: MutableList<MediaId> = mutableListOf()
+//    val history: MutableList<MediaId> = mutableListOf()
 
 
     @Transient
     var onHistoryChanged: (() -> Unit)? = null
 
-    operator fun plusAssign(loop: Loop) {
-        loops.add(loop)
-        timestamp = System.currentTimeMillis()
-    }
+//    operator fun plusAssign(loop: Loop) {
+//        loops.add(loop)
+//        timestamp = System.currentTimeMillis()
+//    }
+//
+//    operator fun plusAssign(playlist: Playlist) {
+//        playlists.add(playlist)
+//        timestamp = System.currentTimeMillis()
+//    }
 
-    operator fun plusAssign(playlist: Playlist) {
-        playlists.add(playlist)
-        timestamp = System.currentTimeMillis()
-    }
-
-    operator fun plusAssign(history: MediaId) {
-        addHistory(history)
-    }
+//    operator fun plusAssign(history: MediaId) {
+//        addHistory(history)
+//    }
 
 
-    fun addHistory(mediaId: MediaId) {
-        if (history.contains(mediaId)) {
-            history.remove(mediaId)
-            history.add(0, mediaId)
-        } else {
-            history.add(0, mediaId)
-            if (history.size > maxPlaybacksInHistory)
-                shrinkHistory()
-        }
-        onHistoryChanged?.invoke()
-        timestamp = System.currentTimeMillis()
-    }
-
-    fun clearHistory() {
-        if (history.isNotEmpty()) {
-            history.clear()
-            onHistoryChanged?.invoke()
-            timestamp = System.currentTimeMillis()
-        }
-    }
+//    fun addHistory(mediaId: MediaId) {
+//        if (history.contains(mediaId)) {
+//            history.remove(mediaId)
+//            history.add(0, mediaId)
+//        } else {
+//            history.add(0, mediaId)
+//            if (history.size > maxPlaybacksInHistory)
+//                shrinkHistory()
+//        }
+//        onHistoryChanged?.invoke()
+//        timestamp = System.currentTimeMillis()
+//    }
+//
+//    fun clearHistory() {
+//        if (history.isNotEmpty()) {
+//            history.clear()
+//            onHistoryChanged?.invoke()
+//            timestamp = System.currentTimeMillis()
+//        }
+//    }
 
     /**
      * Loads the settings from the local predefined settings file. If the file doesn't exist
@@ -189,6 +188,6 @@ class UserMetadata {
      * Shrinks length of [history] to [maxPlaybacksInHistory]
      */
     private fun shrinkHistory() {
-        history.subList(0, history.size - maxPlaybacksInHistory).clear()
+//        history.subList(0, history.size - maxPlaybacksInHistory).clear()
     }
 }

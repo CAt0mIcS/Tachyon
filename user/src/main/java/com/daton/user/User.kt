@@ -172,17 +172,17 @@ object User {
 
         requestMetadata { remoteMetadata ->
             val newMetadata = syncProvider.sync(remoteMetadata, metadata)
-            if (newMetadata != null) {
-                val historyChanged = newMetadata.history != metadata.history
-
-                metadata = newMetadata
-                if (historyChanged)
-                    metadata.onHistoryChanged?.invoke()
-
-                // TODO: Might not be necessary
-                uploadMetadata()
-                metadata.saveToLocal()
-            }
+//            if (newMetadata != null) {
+//                val historyChanged = newMetadata.history != metadata.history
+//
+//                metadata = newMetadata
+//                if (historyChanged)
+//                    metadata.onHistoryChanged?.invoke()
+//
+//                // TODO: Might not be necessary
+//                uploadMetadata()
+//                metadata.saveToLocal()
+//            }
             onSynced()
         }
     }

@@ -7,19 +7,23 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.annotation.Nullable
 import androidx.fragment.app.Fragment
-import com.daton.media.data.MediaId
 import com.daton.media.device.Playlist
+import com.daton.media.device.SinglePlayback
 import com.daton.mucify.databinding.FragmentAddToPlaylistBinding
 
 
-class FragmentAddToPlaylist(val playbackToAdd: MediaId, private val playlists: List<Playlist>) :
+class FragmentAddToPlaylist(
+    val playbackToAdd: SinglePlayback,
+    private val playlists: List<Playlist>
+) :
     Fragment() {
 
     private var _binding: FragmentAddToPlaylistBinding? = null
     private val binding get() = _binding!!
 
     var onCreateNewPlaylist: ((String /*playlistName*/) -> Unit)? = null
-    var onChanged: ((MediaId /*playbackToAdd*/, Playlist /*playlistToAddTo*/) -> Unit)? = null
+    var onChanged: ((SinglePlayback /*playbackToAdd*/, Playlist /*playlistToAddTo*/) -> Unit)? =
+        null
 
 
     override fun onCreateView(

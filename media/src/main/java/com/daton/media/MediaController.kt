@@ -2,10 +2,8 @@ package com.daton.media
 
 import android.app.Activity
 import android.content.ComponentName
-import android.graphics.Bitmap
-import android.media.browse.MediaBrowser
 import android.os.Bundle
-import android.provider.MediaStore
+import android.os.Parcelable
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaControllerCompat
@@ -13,15 +11,10 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import com.daton.media.data.MediaAction
-import com.daton.media.data.MediaId
-import com.daton.media.device.BrowserTree
-import com.daton.media.device.Loop
-import com.daton.media.device.Playlist
-import com.daton.media.device.Song
+import com.daton.media.data.MetadataKeys
+import com.daton.media.device.*
 import com.daton.media.ext.*
 import com.daton.media.service.MediaPlaybackService
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 
 class MediaController {
@@ -34,12 +27,12 @@ class MediaController {
 
     private val controllerCallback: MediaControllerCallback = MediaControllerCallback()
 
-    private val subscribedIds = mutableMapOf<String, (List<MediaBrowserCompat.MediaItem>) -> Unit>()
+    private val subscribedIds = mutableMapOf<String, (List<Playback>) -> Unit>()
 
     var onConnected: (() -> Unit)? = null
     var onDisconnected: (() -> Unit)? = null
 
-    var onMediaIdChanged: (() -> Unit)? = null
+    var onPlaybackChanged: (() -> Unit)? = null
     var onPlaybackStateChanged: ((Boolean) -> Unit)? = null
 
     private var activity: Activity? = null
@@ -86,15 +79,6 @@ class MediaController {
     }
 
     /**
-     * Passes the new media id to the service, after this, all media operations are supported
-     */
-    fun setPlayback(mediaId: MediaId) {
-        val bundle = Bundle()
-        bundle.putString(MediaAction.MediaId, mediaId.serialize())
-        sendCustomAction(MediaAction.SetMediaId, bundle)
-    }
-
-    /**
      * Pauses the currently playing audio. Crashes if the Playback hasn't been started yet.
      */
     fun pause() {
@@ -111,11 +95,15 @@ class MediaController {
     /**
      * @return media id of current playback (song/loop/playlist)
      */
-    var mediaId: MediaId
-        get() = metadata.mediaId
+    var playback: Playback?
+        get() = _playback
         set(value) {
-            setPlayback(value)
+            val bundle = Bundle()
+            bundle.putParcelable(MediaAction.Playback, value)
+            sendCustomAction(MediaAction.SetPlaybackEvent, bundle)
         }
+
+    private var _playback: Playback? = null
 
     /**
      * Starts playback, requires that media id was already set
@@ -165,34 +153,6 @@ class MediaController {
         }
 
     /**
-     * Start time of the currently playing song. Crashes if the Playback hasn't been started yet.
-     */
-    var startTime: Long
-        get() = metadata.startTime
-        set(value) {
-            val bundle = Bundle()
-            bundle.putLong(MediaAction.StartTime, value)
-            sendCustomAction(MediaAction.SetStartTime, bundle)
-        }
-
-    /**
-     * End time of the currently playing song. Crashes if the Playback hasn't been started yet.
-     */
-    var endTime: Long
-        get() = metadata.endTime
-        set(value) {
-            val bundle = Bundle()
-            bundle.putLong(MediaAction.EndTime, value)
-            sendCustomAction(MediaAction.SetEndTime, bundle)
-        }
-
-    /**
-     * @return the image associated with the album of the current playing playback
-     */
-    val albumArt: Bitmap?
-        get() = metadata.albumArt
-
-    /**
      * Current position of the currently playing song. Crashes if the Playback hasn't been started yet.
      */
     var currentPosition: Long
@@ -202,78 +162,36 @@ class MediaController {
         }
 
     /**
-     * Duration of the currently playing song. Crashes if the Playback hasn't been started yet.
-     */
-    val duration: Long
-        get() = metadata.duration
-
-    /**
-     * Title of the currently playing song. Metadata must've been set, otherwise the
-     * function will crash.
-     */
-    val title: String?
-        get() = metadata.title
-
-    /**
-     * Extracts the loop name from the media id. If this is no loop null is returned
-     */
-    val loopName: String?
-        get() {
-            val localMediaId = mediaId
-            if (localMediaId.isLoop) {
-                return localMediaId.source.replace(MediaId.LOOP_SOURCE, "")
-            }
-            return null
-        }
-
-    /**
-     * Extracts the playlist name from the media id. If this is no playlist null is returned
-     */
-    val playlistName: String?
-        get() {
-            val localMediaId = mediaId
-            if (localMediaId.isPlaylist) {
-                return localMediaId.source.replace(MediaId.PLAYLIST_SOURCE, "")
-            }
-            return null
-        }
-
-    /**
-     * Artist of the currently playing song. Metadata must've been set, otherwise the
-     * function will crash.
-     */
-    val artist: String?
-        get() = metadata.artist
-
-    /**
      * Requests that the [MediaSource] is (re)loaded. Requires storage permission
      */
     fun loadMediaSource() {
-        sendCustomAction(MediaAction.RequestMediaSourceReload, null)
+        sendCustomAction(MediaAction.RequestMediaSourceReloadEvent, null)
     }
 
     /**
      * Updates the [MediaSource] with [loops]. Overwrites previous loops
      */
-    fun sendLoops(loops: List<Loop>) {
+    fun sendLoops(loops: ArrayList<Loop>) {
         val bundle = Bundle()
-        bundle.putStringArray(
+        bundle.putParcelableArrayList(
             MediaAction.Loops,
-            Array(loops.size) { i -> Json.encodeToString(loops[i]) })
+            loops as ArrayList<out Parcelable>
+        )
 
-        sendCustomAction(MediaAction.SendLoops, bundle)
+        sendCustomAction(MediaAction.SendLoopsEvent, bundle)
     }
 
     /**
      * Updates the [MediaSource] with [playlists]. Overwrites previous playlists
      */
-    fun sendPlaylists(playlists: List<Playlist>) {
+    fun sendPlaylists(playlists: ArrayList<Playlist>) {
         val bundle = Bundle()
-        bundle.putStringArray(
+        bundle.putParcelableArrayList(
             MediaAction.Playlists,
-            Array(playlists.size) { i -> Json.encodeToString(playlists[i]) })
+            playlists as ArrayList<out Parcelable>
+        )
 
-        sendCustomAction(MediaAction.SendPlaylists, bundle)
+        sendCustomAction(MediaAction.SendPlaylistsEvent, bundle)
     }
 
     /**
@@ -288,7 +206,7 @@ class MediaController {
     val metadata: MediaMetadataCompat
         get() = MediaControllerCompat.getMediaController(activity!!).metadata
 
-    fun sendCustomAction(action: String?, bundle: Bundle?) {
+    fun sendCustomAction(action: String?, bundle: Bundle? = null) {
         MediaControllerCompat.getMediaController(activity!!).transportControls.sendCustomAction(
             action,
             bundle
@@ -302,19 +220,20 @@ class MediaController {
      * * subscribe(BrowserTree.ExampleAlbum) { ... } will be called whenever the songs in the specified
      *   album change or songs are added/removed
      */
-    fun subscribe(id: String, onChanged: (List<MediaBrowserCompat.MediaItem>) -> Unit) {
+    fun subscribe(id: String, onChanged: (List<Playback>) -> Unit) {
         Log.d(TAG, "Subscribing to $id")
 
         subscribedIds += Pair(id, onChanged)
 
-        // TODO: A lot of unnecessary calls to [MediaBrowserCompat.SubscriptionCallback.onChildrenLoaded] (around 4 atm at [BrowserTree.ROOT])
         browser.subscribe(id, object : MediaBrowserCompat.SubscriptionCallback() {
             override fun onChildrenLoaded(
                 parentId: String,
                 children: MutableList<MediaBrowserCompat.MediaItem>
             ) {
                 Log.d(TAG, "Media source changed")
-                onChanged(children)
+                onChanged(children.map {
+                    it.description.extras!!.getParcelable(MetadataKeys.Playback)!!
+                })
             }
         })
     }
@@ -326,11 +245,18 @@ class MediaController {
     fun songs(action: (List<Song>) -> Unit) {
         val previousOnChanged = subscribedIds[BrowserTree.SONG_ROOT]
 
-        subscribe(BrowserTree.SONG_ROOT) { children ->
-            action(children.map { it.toSong() })
-            if (previousOnChanged != null)
-                subscribe(BrowserTree.SONG_ROOT, previousOnChanged)
-        }
+        browser.subscribe(
+            BrowserTree.SONG_ROOT,
+            object : MediaBrowserCompat.SubscriptionCallback() {
+                override fun onChildrenLoaded(
+                    parentId: String,
+                    children: MutableList<MediaBrowserCompat.MediaItem>
+                ) {
+                    action(children.map { it.description.extras!!.getParcelable(MetadataKeys.Playback)!! })
+                    if (previousOnChanged != null)
+                        subscribe(BrowserTree.SONG_ROOT, previousOnChanged)
+                }
+            })
     }
 
     /**
@@ -340,11 +266,18 @@ class MediaController {
     fun loops(action: (List<Loop>) -> Unit) {
         val previousOnChanged = subscribedIds[BrowserTree.LOOP_ROOT]
 
-        subscribe(BrowserTree.LOOP_ROOT) { children ->
-            action(children.map { it.toLoop() })
-            if (previousOnChanged != null)
-                subscribe(BrowserTree.LOOP_ROOT, previousOnChanged)
-        }
+        browser.subscribe(
+            BrowserTree.LOOP_ROOT,
+            object : MediaBrowserCompat.SubscriptionCallback() {
+                override fun onChildrenLoaded(
+                    parentId: String,
+                    children: MutableList<MediaBrowserCompat.MediaItem>
+                ) {
+                    action(children.map { it.description.extras!!.getParcelable(MetadataKeys.Playback)!! })
+                    if (previousOnChanged != null)
+                        subscribe(BrowserTree.SONG_ROOT, previousOnChanged)
+                }
+            })
     }
 
     /**
@@ -354,11 +287,18 @@ class MediaController {
     fun playlists(action: (List<Playlist>) -> Unit) {
         val previousOnChanged = subscribedIds[BrowserTree.PLAYLIST_ROOT]
 
-        subscribe(BrowserTree.PLAYLIST_ROOT) { children ->
-            action(children.map { it.toPlaylist() })
-            if (previousOnChanged != null)
-                subscribe(BrowserTree.PLAYLIST_ROOT, previousOnChanged)
-        }
+        browser.subscribe(
+            BrowserTree.PLAYLIST_ROOT,
+            object : MediaBrowserCompat.SubscriptionCallback() {
+                override fun onChildrenLoaded(
+                    parentId: String,
+                    children: MutableList<MediaBrowserCompat.MediaItem>
+                ) {
+                    action(children.map { it.description.extras!!.getParcelable(MetadataKeys.Playback)!! })
+                    if (previousOnChanged != null)
+                        subscribe(BrowserTree.SONG_ROOT, previousOnChanged)
+                }
+            })
     }
 
     /**
@@ -380,6 +320,9 @@ class MediaController {
 
             // Save the controller
             MediaControllerCompat.setMediaController(activity!!, mediaController)
+
+            // Request [playback] to be updated
+            sendCustomAction(MediaAction.RequestPlaybackUpdateEvent)
 
             // Finish building the UI
             onConnected?.invoke()
@@ -404,10 +347,13 @@ class MediaController {
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
         override fun onSessionEvent(event: String, extras: Bundle) {
             when (event) {
-                MediaAction.MediaIdChanged -> {
-                    onMediaIdChanged?.invoke()
+                MediaAction.SetPlaybackEvent -> {
+                    val previousPlayback = playback
+                    _playback = extras.getParcelable(MediaAction.Playback)
+                    if (previousPlayback != playback)
+                        onPlaybackChanged?.invoke()
                 }
-                MediaAction.OnPlaybackStateChanged -> {
+                MediaAction.OnPlaybackStateChangedEvent -> {
                     onPlaybackStateChanged?.invoke(extras.getBoolean(MediaAction.IsPlaying))
                 }
             }

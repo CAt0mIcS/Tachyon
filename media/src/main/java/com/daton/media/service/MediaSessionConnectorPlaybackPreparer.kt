@@ -5,14 +5,11 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import com.daton.media.R
 import com.daton.media.data.MediaAction
-import com.daton.media.data.MediaId
 import com.daton.media.device.Loop
+import com.daton.media.device.Playback
 import com.daton.media.device.Playlist
-import com.daton.media.ext.toMediaId
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 
 abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.PlaybackPreparer {
 
@@ -20,7 +17,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         const val TAG: String = "PlaybackPreparerBase"
     }
 
-    open fun onSetMediaId(mediaId: MediaId) {}
+    open fun onSetPlayback(playback: Playback) {}
 
     open fun onSetStartTime(startTime: Long) {}
 
@@ -28,36 +25,39 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
     open fun onRequestMediaSourceReload() {}
 
-    open fun onLoopsReceived(loops: List<Loop>) {}
+    open fun onLoopsReceived(loops: MutableList<Loop>) {}
 
-    open fun onPlaylistsReceived(playlists: List<Playlist>) {}
+    open fun onPlaylistsReceived(playlists: MutableList<Playlist>) {}
 
     open fun onCombinePlaybackTypesChanged(combine: Boolean) {}
 
+    open fun onRequestPlaybackUpdate() {}
+
     fun getCustomActions(): Array<out MediaSessionConnector.CustomActionProvider> {
         return arrayOf(
-            CustomActionSetMediaId(),
+            CustomActionSetPlayback(),
             CustomActionSetStartTime(),
             CustomActionSetEndTime(),
             CustomActionRequestMediaSourceReload(),
             CustomActionSendLoops(),
             CustomActionSendPlaylists(),
-            CustomActionCombinePlaybackTypesChanged()
+            CustomActionCombinePlaybackTypesChanged(),
+            CustomActionRequestPlaybackUpdate()
         )
     }
 
-    inner class CustomActionSetMediaId : MediaSessionConnector.CustomActionProvider {
+    inner class CustomActionSetPlayback : MediaSessionConnector.CustomActionProvider {
         override fun onCustomAction(player: Player, action: String, extras: Bundle?) {
             Log.d(
                 TAG,
                 "CustomActionSetMediaId.onCustomAction with action $action"
             )
-            onSetMediaId(extras!!.getString(MediaAction.MediaId)!!.toMediaId())
+            onSetPlayback(extras!!.getParcelable(MediaAction.Playback)!!)
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.SetMediaId,
+                MediaAction.SetPlaybackEvent,
                 javaClass.name,
                 R.drawable.music_note // TODO: WHY????
             ).build()
@@ -74,7 +74,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.SetStartTime,
+                MediaAction.SetStartTimeEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -91,7 +91,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.SetEndTime,
+                MediaAction.SetEndTimeEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -108,7 +108,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.RequestMediaSourceReload,
+                MediaAction.RequestMediaSourceReloadEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -121,13 +121,12 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 "CustomActionSetEndTime.onCustomAction with action $action"
             )
 
-            onLoopsReceived(extras!!.getStringArray(MediaAction.Loops)!!
-                .map { loop: String -> Json.decodeFromString<Loop>(loop) })
+            onLoopsReceived(extras!!.getParcelableArrayList(MediaAction.Loops)!!)
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.SendLoops,
+                MediaAction.SendLoopsEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -140,13 +139,12 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 "CustomActionSetEndTime.onCustomAction with action $action"
             )
 
-            onPlaylistsReceived(extras!!.getStringArray(MediaAction.Playlists)!!
-                .map { playlist: String -> Json.decodeFromString<Playlist>(playlist) })
+            onPlaylistsReceived(extras!!.getParcelableArrayList(MediaAction.Playlists)!!)
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.SendPlaylists,
+                MediaAction.SendPlaylistsEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -165,7 +163,26 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.CombinePlaybackTypesChanged,
+                MediaAction.CombinePlaybackTypesChangedEvent,
+                javaClass.name,
+                R.drawable.music_note
+            ).build()
+    }
+
+    inner class CustomActionRequestPlaybackUpdate :
+        MediaSessionConnector.CustomActionProvider {
+        override fun onCustomAction(player: Player, action: String, extras: Bundle?) {
+            Log.d(
+                TAG,
+                "CustomActionSetEndTime.onCustomAction with action $action"
+            )
+
+            onRequestPlaybackUpdate()
+        }
+
+        override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
+            PlaybackStateCompat.CustomAction.Builder(
+                MediaAction.RequestPlaybackUpdateEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()

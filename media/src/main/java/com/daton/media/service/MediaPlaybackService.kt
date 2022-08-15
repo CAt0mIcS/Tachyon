@@ -17,11 +17,8 @@ import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.daton.media.CustomPlayer
 import com.daton.media.data.MediaAction
-import com.daton.media.data.MediaId
-import com.daton.media.device.BrowserTree
-import com.daton.media.device.Loop
-import com.daton.media.device.MediaSource
-import com.daton.media.device.Playlist
+import com.daton.media.data.MetadataKeys
+import com.daton.media.device.*
 import com.daton.media.ext.*
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
@@ -49,24 +46,21 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
     // Doesn't start loading files yet as we need to wait on storage permission to be granted
     private val mediaSource = MediaSource()
 
-    /**
-     * When media id is set to a playlist without specifying any underlying media id to play we need to
-     * update metadata with the base media id of the playlist
-     */
-    private var basePlaylistMediaId: MediaId? = null
-        set(value) {
-            field = value
-            if (field != null)
-                mediaSessionConnector.invalidateMediaSessionMetadata()
-        }
-
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mediaSessionConnector: MediaSessionConnector
 
     private lateinit var notificationManager: MucifyNotificationManager
 
-    private var currentMediaItems = listOf<MediaMetadataCompat>()
-    private var currentPlaybackIndex: Int = 0
+    private var currentMediaItems = listOf<com.google.android.exoplayer2.MediaItem>()
+    private var currentPlayback: Playback? = null
+        set(value) {
+            field = value
+            mediaSession.sendSessionEvent(
+                MediaAction.SetPlaybackEvent,
+                Bundle().apply {
+                    putParcelable(MediaAction.Playback, field)
+                })
+        }
 
     /**
      * Controls if songs and loops should be combined into one playlist when playing a song/loop
@@ -185,21 +179,33 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
              */
             setMediaMetadataProvider { player ->
                 /**
-                 * [player.currentMediaItem] is null if media id is a playlist without any underlying
-                 * playback. [basePlaylistMediaId] will be set to the playlist media id if this is the
-                 * case and the metadata can be updated with [basePlaylistMediaId]
+                 * Update Playback on UI side whenever new metadata is requested
                  */
-                if (basePlaylistMediaId != null) {
-                    MediaMetadataCompat.Builder().apply {
-                        mediaId = basePlaylistMediaId!!
-                    }.build()
-                } else if (player.currentTimeline.isEmpty)
-                    MediaMetadataCompat.Builder().build()
-                else if (player.currentMediaItem != null)
-                    player.mediaMetadata.toMediaMetadataCompat(player.currentMediaItem!!.mediaId.toMediaId())
-                else
-                // TODO: Might not work
-                    MediaMetadataCompat.Builder().build()
+                if (currentPlayback != null) {
+                    val playback = currentPlayback!!
+
+                    mediaSession.sendSessionEvent(
+                        MediaAction.SetPlaybackEvent,
+                        Bundle().apply {
+                            putParcelable(MediaAction.Playback, playback)
+                        })
+
+                    return@setMediaMetadataProvider playback.toMediaMetadata()
+                }
+
+                val playback =
+                    player.mediaMetadata.extras?.getParcelable<Playback>(MetadataKeys.Playback)
+
+                if (playback != null) {
+                    mediaSession.sendSessionEvent(
+                        MediaAction.SetPlaybackEvent,
+                        Bundle().apply {
+                            putParcelable(MediaAction.Playback, playback)
+                        })
+
+                    return@setMediaMetadataProvider playback.toMediaMetadata()
+                }
+                MediaMetadataCompat.Builder().build()
             }
 
             registerCustomCommandReceiver(preparer)
@@ -306,11 +312,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
     }
 
     fun preparePlayer(
-        items: List<MediaMetadataCompat>,
+        items: List<com.google.android.exoplayer2.MediaItem>,
         initialWindowIndex: Int
     ) {
         currentMediaItems = items
-        currentPlayer.setMediaItems(items.map { it.toExoMediaItem() })
+        currentPlayer.setMediaItems(items)
 
         currentPlayer.seekTo(initialWindowIndex, C.TIME_UNSET)
     }
@@ -319,10 +325,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         mediaSession: MediaSessionCompat
     ) : TimelineQueueNavigator(mediaSession) {
         override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
-            if (windowIndex < currentMediaItems.size) {
-                return currentMediaItems[windowIndex].toMediaDescriptionCompat()
-            }
-            return MediaDescriptionCompat.Builder().build()
+            if (currentPlayback is Playlist && windowIndex < (currentPlayback as Playlist).playbacks.size)
+                return (currentPlayback as Playlist).playbacks[windowIndex].toMediaDescriptionCompat()
+
+            return currentPlayback?.toMediaDescriptionCompat() ?: MediaDescriptionCompat.Builder()
+                .build()
         }
     }
 
@@ -352,8 +359,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 currentPlayer.playWhenReady
                 currentPlayer.prepare()
 
-                if (currentPlayer.currentMediaItem!!.isLoop) {
-                    currentPlayer.seekTo(currentPlayer.currentMediaItem!!.mediaMetadata.startTime)
+                if (currentPlayback is Loop) {
+                    currentPlayer.seekTo((currentPlayback as Loop).startTime)
                 }
             }
         }
@@ -368,7 +375,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 "PlaybackPreparer.onPrepareFromMediaId with mediaId = $mediaId and playWhenReady = $playWhenReady"
             )
 
-            onSetMediaId(mediaId.toMediaId())
+            TODO()
+//            onSetPlayback(mediaId.toMediaId())
             onPrepare(playWhenReady)
         }
 
@@ -387,79 +395,50 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
 
-        override fun onSetMediaId(mediaId: MediaId) {
+        override fun onSetPlayback(playback: Playback) {
             mediaSource.whenReady {
-                // Find either the underlying playback or the top-level playback to play
-                val initialWindowIndex: Int = if (mediaId.isSong)
-                    mediaSource.songs.indexOfFirst { song ->
-                        song.mediaId == mediaId
+                /**
+                 * All songs/loops will be set as the internal playlist when playing song/loop
+                 * When playing an actual playlist, all songs/loops in the playlist will be set as
+                 * the internal playlist
+                 */
+                when (playback) {
+                    is Song -> {
+                        currentPlayer.stop()
+                        preparePlayer(
+                            if (combinePlaybackTypes)
+                                mediaSource.songs.map { it.toExoPlayerMediaItem() } +
+                                        mediaSource.loops.map { it.toExoPlayerMediaItem() }
+                            else
+                                mediaSource.songs.map { it.toExoPlayerMediaItem() },
+                            mediaSource.songs.indexOf(playback)
+                        )
+                        currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                     }
-                else if (mediaId.isLoop)
-                    mediaSource.loops.indexOfFirst { loop ->
-                        loop.mediaId == mediaId
+                    is Loop -> {
+                        currentPlayer.stop()
+                        preparePlayer(
+                            if (combinePlaybackTypes)
+                                mediaSource.loops.map { it.toExoPlayerMediaItem() } +
+                                        mediaSource.songs.map { it.toExoPlayerMediaItem() }
+                            else
+                                mediaSource.loops.map { it.toExoPlayerMediaItem() },
+                            mediaSource.loops.indexOf(playback)
+                        )
+                        currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                     }
-                else
-                    mediaSource.playlists.indexOfFirst { playlist ->
-                        // Base playback is the same and playlist contains song/loop
-                        mediaId.source == playlist.mediaId.source && (mediaId.underlyingMediaId == null ||
-                                playlist.playbacks.contains(
-                                    mediaId.underlyingMediaId
-                                ))
-                    }
-
-                if (initialWindowIndex == -1)
-                    TODO("Invalid media id $mediaId")
-                else {
-                    /**
-                     * All songs/loops will be set as the internal playlist when playing song/loop
-                     * When playing an actual playlist, all songs/loops in the playlist will be set as
-                     * the internal playlist
-                     */
-                    when {
-                        mediaId.isSong -> {
+                    is Playlist -> {
+                        // Request for a specific song in playlist
+                        if (playback.currentPlaylistIndex != -1) {
                             currentPlayer.stop()
+
                             preparePlayer(
-                                if (combinePlaybackTypes)
-                                    mediaSource.songs.map { it.toMediaMetadata() } +
-                                            mediaSource.loops.map { it.toMediaMetadata(mediaSource) }
-                                else
-                                    mediaSource.songs.map { it.toMediaMetadata() },
-                                initialWindowIndex
+                                playback.toExoPlayerMediaItemList(),
+                                playback.currentPlaylistIndex
                             )
-                            currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
-                        }
-                        mediaId.isLoop -> {
-                            currentPlayer.stop()
-                            preparePlayer(
-                                if (combinePlaybackTypes)
-                                    mediaSource.loops.map { it.toMediaMetadata(mediaSource) } +
-                                            mediaSource.songs.map { it.toMediaMetadata() }
-                                else
-                                    mediaSource.loops.map { it.toMediaMetadata(mediaSource) },
-                                initialWindowIndex
-                            )
-                            currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
-                        }
-                        mediaId.isPlaylist -> {
-                            val playlist: Playlist = mediaSource.playlists[initialWindowIndex]
-                            // Request for a specific song in playlist
-                            if (mediaId.underlyingMediaId != null) {
-                                currentPlayer.stop()
-                                basePlaylistMediaId = null
 
-                                val indexToPlay: Int =
-                                    playlist.playbacks.indexOf(mediaId.underlyingMediaId)
-
-                                preparePlayer(
-                                    playlist.toMediaMetadataList(mediaSource),
-                                    indexToPlay
-                                )
-
-                            } else {
-                                basePlaylistMediaId = mediaId
-                            }
-                            currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
                         }
+                        currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
                     }
                 }
             }
@@ -514,12 +493,18 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             // TODO: Immediately reload player to have instant results (maybe not because this is called quite often)
         }
 
-        override fun onLoopsReceived(loops: List<Loop>) {
-            mediaSource.loops = loops as MutableList<Loop>
+        override fun onLoopsReceived(loops: MutableList<Loop>) {
+            mediaSource.loops = loops
         }
 
-        override fun onPlaylistsReceived(playlists: List<Playlist>) {
-            mediaSource.playlists = playlists as MutableList<Playlist>
+        override fun onPlaylistsReceived(playlists: MutableList<Playlist>) {
+            mediaSource.playlists = playlists
+        }
+
+        override fun onRequestPlaybackUpdate() {
+            mediaSession.sendSessionEvent(MediaAction.SetPlaybackEvent, Bundle().apply {
+                putParcelable(MediaAction.Playback, currentPlayback)
+            })
         }
     }
 
@@ -585,7 +570,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             val bundle = Bundle()
             bundle.putBoolean(MediaAction.IsPlaying, isPlaying)
-            mediaSession.sendSessionEvent(MediaAction.OnPlaybackStateChanged, bundle)
+            mediaSession.sendSessionEvent(MediaAction.OnPlaybackStateChangedEvent, bundle)
         }
 
         override fun onMediaItemTransition(
@@ -594,31 +579,31 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         ) {
             // TODO: Loops for [CastPlayer]
 
-            if (mediaItem != null) {
-                val mediaId = mediaItem.mediaId.toMediaId()
+//            if (mediaItem != null) {
+//                val mediaId = mediaItem.mediaId.toMediaId()
+//
+//                if (mediaId.isLoop) {
+//                    // Single loop
+//                    currentPlayer.seekTo(mediaItem.mediaMetadata.startTime)
+//                    postLoopMessage(
+//                        mediaItem.mediaMetadata.startTime,
+//                        mediaItem.mediaMetadata.endTime
+//                    )
+//
+//                } else if (mediaId.isPlaylist && mediaId.underlyingMediaId?.isLoop == true) {
+//                    // Loop in playlist
+//                    // TODO: Loops in playlist not seeking to beginning
+//                    val loop =
+//                        mediaSource.loops.find { it.mediaId == mediaId.underlyingMediaId }
+//                            ?: TODO("Loop ${mediaId.underlyingMediaId} not found")
+//
+//                    currentPlayer.seekTo(loop.startTime)
+//                    postLoopMessageForPlaylist(loop.endTime)
+//                }
+//            }
 
-                if (mediaId.isLoop) {
-                    // Single loop
-                    currentPlayer.seekTo(mediaItem.mediaMetadata.startTime)
-                    postLoopMessage(
-                        mediaItem.mediaMetadata.startTime,
-                        mediaItem.mediaMetadata.endTime
-                    )
-
-                } else if (mediaId.isPlaylist && mediaId.underlyingMediaId?.isLoop == true) {
-                    // Loop in playlist
-                    // TODO: Loops in playlist not seeking to beginning
-                    val loop =
-                        mediaSource.loops.find { it.mediaId == mediaId.underlyingMediaId }
-                            ?: TODO("Loop ${mediaId.underlyingMediaId} not found")
-
-                    currentPlayer.seekTo(loop.startTime)
-                    postLoopMessageForPlaylist(loop.endTime)
-                }
-            }
-
-            // Notify [MediaController] which notifies subscribed activities
-            mediaSession.sendSessionEvent(MediaAction.MediaIdChanged, null)
+            currentPlayback =
+                mediaItem!!.mediaMetadata.extras!!.getParcelable(MetadataKeys.Playback)
         }
 
         override fun onEvents(player: Player, events: Player.Events) {
@@ -628,13 +613,16 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 || events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)
                 || events.contains(Player.EVENT_PLAY_WHEN_READY_CHANGED)
             ) {
-                currentPlaybackIndex = if (currentMediaItems.isNotEmpty()) {
-                    constrainValue(
-                        player.currentMediaItemIndex,
-                        0,
-                        currentMediaItems.size - 1
-                    )
-                } else 0
+                if (currentPlayback is Playlist) {
+                    (currentPlayback as Playlist).currentPlaylistIndex =
+                        if (currentMediaItems.isNotEmpty()) {
+                            constrainValue(
+                                player.currentMediaItemIndex,
+                                0,
+                                currentMediaItems.size - 1
+                            )
+                        } else 0
+                }
             }
         }
 

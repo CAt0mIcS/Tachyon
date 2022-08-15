@@ -49,30 +49,30 @@ class SyncProvider {
     private fun mergeLoops(newMetadata: UserMetadata, oldMetadata: UserMetadata): UserMetadata {
         // Cannot have any conflicts if one of the metadata doesn't have a loop
         // and we already know that the newMetadata is newer and has the most recent loop version
-        if (newMetadata.loops.isEmpty() || oldMetadata.loops.isEmpty())
-            return newMetadata
+//        if (newMetadata.loops.isEmpty() || oldMetadata.loops.isEmpty())
+//            return newMetadata
 
-        val loopsToAdd = mutableListOf<Loop>()
-
-        for (newLoop in newMetadata.loops) {
-            for (oldLoop in oldMetadata.loops) {
-
-                // Exact loop already saved in [oldMetadata], no action necessary
-                if (newLoop == oldLoop)
-                    continue
-
-                // Some part of the loop is not the same, decide which to keep
-                if (newLoop.mediaId == oldLoop.mediaId) {
-                    TODO("Merge loops and decide which to keep")
-                }
-
-                // Loop only stored in old version
-                if (!newMetadata.loops.contains(oldLoop)) // TODO: Check if ever false
-                    loopsToAdd += oldLoop
-            }
-        }
-
-        newMetadata.loops += loopsToAdd
+//        val loopsToAdd = mutableListOf<Loop>()
+//
+//        for (newLoop in newMetadata.loops) {
+//            for (oldLoop in oldMetadata.loops) {
+//
+//                // Exact loop already saved in [oldMetadata], no action necessary
+//                if (newLoop == oldLoop)
+//                    continue
+//
+//                // Some part of the loop is not the same, decide which to keep
+////                if (newLoop.mediaId == oldLoop.mediaId) {
+////                    TODO("Merge loops and decide which to keep")
+////                }
+//
+//                // Loop only stored in old version
+//                if (!newMetadata.loops.contains(oldLoop)) // TODO: Check if ever false
+//                    loopsToAdd += oldLoop
+//            }
+//        }
+//
+//        newMetadata.loops += loopsToAdd
 
         return newMetadata
     }
