@@ -87,11 +87,9 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
                 }
             })
 
-            Handler(Looper.getMainLooper()).post {
-                (binding.rvPlaylistItems.adapter as ArrayAdapter<*>).notifyDataSetChanged()
-                controller.onPlaybackStateChanged!!(controller.isPlaying)
-                controller.onPlaybackChanged!!()
-            }
+            (binding.rvPlaylistItems.adapter as ArrayAdapter<*>).notifyDataSetChanged()
+            controller.onPlaybackStateChanged!!(controller.isPlaying)
+            controller.onPlaybackChanged!!()
         }
 
 

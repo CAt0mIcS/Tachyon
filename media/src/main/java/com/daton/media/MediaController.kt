@@ -3,6 +3,8 @@ package com.daton.media
 import android.app.Activity
 import android.content.ComponentName
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.Parcelable
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -365,7 +367,9 @@ class MediaController {
                 firstPlaybackUpdateDone = null
 
                 // Finish building the UI
-                onConnected?.invoke()
+                Handler(Looper.getMainLooper()).post {
+                    onConnected?.invoke()
+                }
             }
 
             Log.d("Mucify", "MediaBrowserController connection established")
@@ -388,10 +392,19 @@ class MediaController {
                 MediaAction.SetPlaybackEvent -> {
                     _playback = extras.getParcelable(MediaAction.Playback)
                     firstPlaybackUpdateDone?.countDown()
-                    onPlaybackChanged?.invoke()
+
+                    Handler(Looper.getMainLooper()).post {
+                        onPlaybackChanged?.invoke()
+                    }
                 }
                 MediaAction.OnPlaybackStateChangedEvent -> {
-                    onPlaybackStateChanged?.invoke(extras.getBoolean(MediaAction.IsPlaying))
+                    Handler(Looper.getMainLooper()).post {
+                        onPlaybackStateChanged?.invoke(
+                            extras.getBoolean(
+                                MediaAction.IsPlaying
+                            )
+                        )
+                    }
                 }
             }
         }
