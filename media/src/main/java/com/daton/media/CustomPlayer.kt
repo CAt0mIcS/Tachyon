@@ -52,10 +52,8 @@ class CustomPlayer(player: Player) : ForwardingPlayer(player) {
         if (currentTimeline.isEmpty || isPlayingAd) {
             return
         }
-        // TODO: How slow is this? Should we just store [startTime] in [mediaMetadata]?
-        val playback = mediaMetadata.extras!!.getParcelable<Playback>(MetadataKeys.Playback)!!
         // Seek to either the previous song or to the last one if we don't have a previous one
-        if (isCurrentMediaItemLive && !isCurrentMediaItemSeekable || currentPosition <= maxSeekToPreviousPosition + playback.startTime) {
+        if (isCurrentMediaItemLive && !isCurrentMediaItemSeekable || currentPosition <= maxSeekToPreviousPosition + mediaMetadata.startTime) {
             if (hasPreviousMediaItem())
                 seekToPreviousMediaItem()
             else
@@ -63,7 +61,7 @@ class CustomPlayer(player: Player) : ForwardingPlayer(player) {
         } else {
             // If the player position is less than [maxSeekToPreviousPosition], we'll seek to
             // the beginning of the song
-            seekTo(playback.endTime)
+            seekTo(mediaMetadata.startTime)
         }
     }
 }

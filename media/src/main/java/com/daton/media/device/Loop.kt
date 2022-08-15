@@ -95,9 +95,6 @@ class Loop(
     override fun toMediaMetadata(): MediaMetadataCompat =
         MediaMetadataCompat.Builder().also { metadata ->
             metadata.mediaId = mediaId.toString()
-            metadata.loopName = name
-            metadata.startTime = startTime
-            metadata.endTime = endTime
 
             metadata.title = song.title
             metadata.artist = song.artist
@@ -123,12 +120,7 @@ class Loop(
                 setTitle(title)
                 setArtist(artist)
 
-                val bundle = Bundle()
-                bundle.putLong(MetadataKeys.Duration, duration)
-                bundle.putLong(MetadataKeys.StartTime, startTime)
-                bundle.putLong(MetadataKeys.EndTime, endTime)
-                bundle.putParcelable(MetadataKeys.Playback, this@Loop)
-                setExtras(bundle)
+                setExtras(duration, startTime, endTime, this@Loop)
             }.build())
         }.build()
 

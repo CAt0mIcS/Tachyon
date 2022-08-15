@@ -118,10 +118,7 @@ class Song : SinglePlayback {
                 setTitle(title)
                 setArtist(artist)
 
-                val bundle = Bundle()
-                bundle.putLong(MetadataKeys.Duration, duration)
-                bundle.putParcelable(MetadataKeys.Playback, this@Song)
-                setExtras(bundle)
+                setExtras(duration, startTime, endTime, this@Song)
             }.build())
         }.build()
 

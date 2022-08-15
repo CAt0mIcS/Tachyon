@@ -1,7 +1,5 @@
 package com.daton.media.device
 
-import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -10,10 +8,7 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import com.daton.media.data.MediaId
 import com.daton.media.data.MetadataKeys
-import com.daton.media.ext.albumArt
-import com.daton.media.ext.artist
 import com.daton.media.ext.mediaId
-import com.daton.media.ext.title
 import com.google.android.exoplayer2.MediaItem
 import java.io.File
 
@@ -71,14 +66,10 @@ data class Playlist(
             desc.setExtras(Bundle().apply { putParcelable(MetadataKeys.Playback, this@Playlist) })
         }.build()
 
-    override fun toExoPlayerMediaItem(): MediaItem {
-        TODO("Not yet implemented")
-    }
-
     fun toMediaBrowserMediaItemList(): List<MediaBrowserCompat.MediaItem> =
         List(playbacks.size) { i -> playbacks[i].toMediaBrowserMediaItem() }
 
-    fun toExoPlayerMediaItemList(): List<com.google.android.exoplayer2.MediaItem> =
+    fun toExoPlayerMediaItemList(): List<MediaItem> =
         List(playbacks.size) { i -> playbacks[i].toExoPlayerMediaItem() }
 
     override fun describeContents(): Int = 0

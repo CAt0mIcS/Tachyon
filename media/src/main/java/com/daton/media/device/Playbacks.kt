@@ -29,7 +29,6 @@ abstract class Playback : Parcelable {
     abstract fun toMediaMetadata(): MediaMetadataCompat
     abstract fun toMediaBrowserMediaItem(): MediaBrowserCompat.MediaItem
     abstract fun toMediaDescriptionCompat(): MediaDescriptionCompat
-    abstract fun toExoPlayerMediaItem(): MediaItem
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -46,5 +45,7 @@ abstract class SinglePlayback : Playback() {
     abstract val artist: String?
     abstract val duration: Long
     abstract val albumArt: Bitmap?
+
+    abstract fun toExoPlayerMediaItem(): MediaItem
 }
 

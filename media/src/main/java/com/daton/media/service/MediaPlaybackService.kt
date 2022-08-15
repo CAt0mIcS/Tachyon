@@ -581,9 +581,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         ) {
             // TODO: Loops for [CastPlayer]
 
-            currentPlayback =
-                mediaItem!!.mediaMetadata.extras!!.getParcelable(MetadataKeys.Playback)
-
+            currentPlayback = mediaItem!!.mediaMetadata.playback
             val playback = currentPlayback
 
             if (playback != null) {
