@@ -396,7 +396,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
 
         override fun onSetPlayback(playback: Playback) {
-            mediaSource.whenReady {
+            mediaSource.whenReady { successfullyInitialized ->
                 /**
                  * All songs/loops will be set as the internal playlist when playing song/loop
                  * When playing an actual playlist, all songs/loops in the playlist will be set as
@@ -405,25 +405,40 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 when (playback) {
                     is Song -> {
                         currentPlayer.stop()
+                        val initialWindowIndex = mediaSource.songs.indexOf(playback)
+                        /**
+                         * TODO: Sometimes fails to find existing songs
+                         * TO REPRODUCE:
+                         * * Click on song
+                         * * Click back fast
+                         * * Click on another song immediately after
+                         */
+                        if (initialWindowIndex == -1)
+                            TODO("Invalid initial window index for $playback")
+
                         preparePlayer(
                             if (combinePlaybackTypes)
                                 mediaSource.songs.map { it.toExoPlayerMediaItem() } +
                                         mediaSource.loops.map { it.toExoPlayerMediaItem() }
                             else
                                 mediaSource.songs.map { it.toExoPlayerMediaItem() },
-                            mediaSource.songs.indexOf(playback)
+                            initialWindowIndex
                         )
                         currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                     }
                     is Loop -> {
                         currentPlayer.stop()
+                        val initialWindowIndex = mediaSource.loops.indexOf(playback)
+                        if (initialWindowIndex == -1)
+                            TODO("Invalid initial window index for $playback")
+
                         preparePlayer(
                             if (combinePlaybackTypes)
                                 mediaSource.loops.map { it.toExoPlayerMediaItem() } +
                                         mediaSource.songs.map { it.toExoPlayerMediaItem() }
                             else
                                 mediaSource.loops.map { it.toExoPlayerMediaItem() },
-                            mediaSource.loops.indexOf(playback)
+                            initialWindowIndex
                         )
                         currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                     }

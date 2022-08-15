@@ -14,17 +14,20 @@ import com.google.android.exoplayer2.PlayerMessage
 class CustomPlayer(player: Player) : ForwardingPlayer(player) {
 
     override fun getAvailableCommands(): Player.Commands {
-        return wrappedPlayer
-            .availableCommands
-            .buildUpon()
-            .add(COMMAND_SEEK_TO_NEXT)
-            .add(COMMAND_SEEK_TO_PREVIOUS)
-            .build()
+        return with(wrappedPlayer.availableCommands) {
+            if (mediaItemCount > 1) {
+                buildUpon()
+                    .add(COMMAND_SEEK_TO_NEXT)
+                    .add(COMMAND_SEEK_TO_PREVIOUS)
+                    .build()
+            }
+            this
+        }
     }
 
     override fun isCommandAvailable(command: @Player.Command Int): Boolean {
-        return wrappedPlayer.isCommandAvailable(command) || (command == COMMAND_SEEK_TO_NEXT && !isPlayingAd) ||
-                (command == COMMAND_SEEK_TO_PREVIOUS && !isPlayingAd)
+        return wrappedPlayer.isCommandAvailable(command) || (command == COMMAND_SEEK_TO_NEXT && !isPlayingAd && mediaItemCount > 1) ||
+                (command == COMMAND_SEEK_TO_PREVIOUS && !isPlayingAd && mediaItemCount > 1)
     }
 
     fun createMessage(target: PlayerMessage.Target): PlayerMessage {
@@ -58,6 +61,7 @@ class CustomPlayer(player: Player) : ForwardingPlayer(player) {
                 seekToPreviousMediaItem()
             else
                 wrappedPlayer.seekToDefaultPosition(wrappedPlayer.mediaItemCount - 1)
+
         } else {
             // If the player position is less than [maxSeekToPreviousPosition], we'll seek to
             // the beginning of the song
