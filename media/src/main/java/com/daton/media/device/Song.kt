@@ -8,6 +8,7 @@ import android.os.Parcelable
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import com.daton.media.data.MediaId
 import com.daton.media.data.MetadataKeys
 import com.daton.media.data.SongMetadata
 import com.daton.media.ext.*
@@ -17,13 +18,29 @@ import java.io.File
 class Song : SinglePlayback {
 
     override val path: File
+
+    override var startTime: Long = 0L
+        set(value) {
+            val oldStart = field
+            field = value
+            if (field != oldStart)
+                onStartTimeChanged?.invoke(field)
+        }
+
+    override var endTime: Long
+        set(value) {
+            val oldEnd = field
+            field = value
+            if (field != oldEnd)
+                onEndTimeChanged?.invoke(field)
+        }
+
     override val title: String
     override val artist: String
     override val duration: Long
     override val albumArt: Bitmap?
 
-    override val mediaId: String
-        get() = "*song*${path.path}"
+    override val mediaId: MediaId
 
     constructor(path: File) {
         this.path = path
@@ -33,7 +50,11 @@ class Song : SinglePlayback {
             duration = metadata.duration
             albumArt = metadata.albumArt
         }
+        mediaId = MediaId(this)
+        endTime = duration
     }
+
+    constructor(mediaId: MediaId) : this(mediaId.path)
 
     constructor(
         path: File,
@@ -47,6 +68,8 @@ class Song : SinglePlayback {
         this.artist = artist
         this.duration = duration
         this.albumArt = albumArt
+        mediaId = MediaId(this)
+        endTime = duration
     }
 
 
@@ -69,7 +92,7 @@ class Song : SinglePlayback {
 
     override fun toMediaMetadata(): MediaMetadataCompat =
         MediaMetadataCompat.Builder().also { metadata ->
-            metadata.mediaId = mediaId
+            metadata.mediaId = mediaId.toString()
             metadata.path = path
             metadata.title = title
             metadata.artist = artist
@@ -82,13 +105,13 @@ class Song : SinglePlayback {
 
     override fun toMediaDescriptionCompat(): MediaDescriptionCompat =
         MediaDescriptionCompat.Builder().also { desc ->
-            desc.setMediaId(mediaId)
+            desc.setMediaId(mediaId.toString())
             desc.setExtras(Bundle().apply { putParcelable(MetadataKeys.Playback, this@Song) })
         }.build()
 
     override fun toExoPlayerMediaItem(): MediaItem =
         MediaItem.Builder().apply {
-            setMediaId(mediaId)
+            setMediaId(mediaId.toString())
             setUri(Uri.parse(path.absolutePath))
 
             setMediaMetadata(com.google.android.exoplayer2.MediaMetadata.Builder().apply {
@@ -107,8 +130,14 @@ class Song : SinglePlayback {
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<Song> {
-        override fun createFromParcel(parcel: Parcel): Song = Song(parcel)
-        override fun newArray(size: Int): Array<Song?> = arrayOfNulls(size)
+    companion object {
+
+        const val SONG_SOURCE_SHARED_STORAGE = "*song-shared*"
+
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<Song> {
+            override fun createFromParcel(parcel: Parcel): Song = Song(parcel)
+            override fun newArray(size: Int): Array<Song?> = arrayOfNulls(size)
+        }
     }
 }

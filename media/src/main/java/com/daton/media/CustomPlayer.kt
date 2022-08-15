@@ -1,5 +1,7 @@
 package com.daton.media
 
+import com.daton.media.data.MetadataKeys
+import com.daton.media.device.Playback
 import com.daton.media.ext.startTime
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.ForwardingPlayer
@@ -50,8 +52,10 @@ class CustomPlayer(player: Player) : ForwardingPlayer(player) {
         if (currentTimeline.isEmpty || isPlayingAd) {
             return
         }
+        // TODO: How slow is this? Should we just store [startTime] in [mediaMetadata]?
+        val playback = mediaMetadata.extras!!.getParcelable<Playback>(MetadataKeys.Playback)!!
         // Seek to either the previous song or to the last one if we don't have a previous one
-        if (isCurrentMediaItemLive && !isCurrentMediaItemSeekable || currentPosition <= maxSeekToPreviousPosition + mediaMetadata.startTime) {
+        if (isCurrentMediaItemLive && !isCurrentMediaItemSeekable || currentPosition <= maxSeekToPreviousPosition + playback.startTime) {
             if (hasPreviousMediaItem())
                 seekToPreviousMediaItem()
             else
@@ -59,7 +63,7 @@ class CustomPlayer(player: Player) : ForwardingPlayer(player) {
         } else {
             // If the player position is less than [maxSeekToPreviousPosition], we'll seek to
             // the beginning of the song
-            seekTo(mediaMetadata.startTime)
+            seekTo(playback.endTime)
         }
     }
 }

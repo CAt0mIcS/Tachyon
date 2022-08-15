@@ -90,9 +90,8 @@ class ActivityMain : AppCompatActivity() {
             // Notify service to load local device files
             if (hasStoragePermission) {
                 if (!User.loggedIn) {
-//                    mediaController.sendLoops(User.metadata.loops)
+                    mediaController.sendLoops(User.metadata.loops)
 //                    mediaController.sendPlaylists(User.metadata.playlists)
-                    mediaController.sendLoops(arrayListOf())
                     mediaController.sendPlaylists(arrayListOf())
                 }
 
@@ -142,7 +141,7 @@ class ActivityMain : AppCompatActivity() {
         }
 
         binding.rvHistory.setOnItemClickListener { _, _, i, _ ->
-//            playMedia(User.metadata.history[i])
+            playMedia(User.metadata.history[i])
         }
 
         User.metadata.onHistoryChanged = {
@@ -180,15 +179,16 @@ class ActivityMain : AppCompatActivity() {
 
     private fun loadHistoryStrings() {
         historyStrings.clear()
-//        historyStrings.addAll(User.metadata.history.map {
-//            if (it.isSong) {
-//                val song = SongMetadata(it)
-//                "*song*" + song.title + " - " + song.artist
-//            } else if (it.isLoop) {
-//                val loop = Loop(it)
-//                val song = Song(loop.songMediaId)
-//                "*loop*" + loop.loopName + " - " + song.title + " - " + song.artist
-//            } else it.baseMediaId.source
-//        })
+        historyStrings.addAll(User.metadata.history.map {
+            when (it) {
+                is Song -> {
+                    "*song*" + it.title + " - " + it.artist
+                }
+                is Loop -> {
+                    "*loop*" + it.name + " - " + it.song.title + " - " + it.song.artist
+                }
+                else -> it.mediaId.source
+            }
+        })
     }
 }

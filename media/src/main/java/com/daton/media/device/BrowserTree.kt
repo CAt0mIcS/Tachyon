@@ -1,6 +1,7 @@
 package com.daton.media.device
 
 import android.support.v4.media.MediaBrowserCompat
+import com.daton.media.data.MediaId
 
 
 class BrowserTree(
@@ -49,11 +50,11 @@ class BrowserTree(
          * Assume that [parentId] is the id of a [Playback].
          * If the id points to a [Playlist], return the items in the playlist
          */
-        try {
-            val playback = mediaSource.findById(parentId)
+        val mediaId = MediaId.deserializeIfValid(parentId)
+        if (mediaId != null) {
+            val playback = mediaSource.findById(mediaId)
             if (playback is Playlist)
                 return playback.toMediaBrowserMediaItemList()
-        } catch (e: NumberFormatException) {
         }
 
         return null

@@ -104,6 +104,21 @@ class MediaController {
         }
 
     private var _playback: Playback? = null
+        set(value) {
+            field = value
+
+            // Event to [MediaPlaybackService] to update start/end time
+            field?.onStartTimeChanged = { startTime ->
+                sendCustomAction(
+                    MediaAction.SetStartTimeEvent,
+                    Bundle().apply { putLong(MediaAction.StartTime, startTime) })
+            }
+            field?.onEndTimeChanged = { endTime ->
+                sendCustomAction(
+                    MediaAction.SetEndTimeEvent,
+                    Bundle().apply { putLong(MediaAction.EndTime, endTime) })
+            }
+        }
 
     /**
      * Starts playback, requires that media id was already set

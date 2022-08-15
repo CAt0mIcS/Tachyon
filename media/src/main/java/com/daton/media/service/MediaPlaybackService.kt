@@ -445,7 +445,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
         override fun onSetStartTime(startTime: Long) {
-            val endTime = currentPlayer.mediaMetadata.endTime
+            val playback = currentPlayback ?: return
+
+            val endTime = playback.endTime
 
             // Start time and end time are back to default: Delete message
             if (startTime == 0L && endTime == currentPlayer.duration) {
@@ -457,12 +459,13 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 currentPlayer.seekTo(startTime)
             postLoopMessage(startTime, endTime)
 
-            currentPlayer.mediaMetadata.startTime = startTime
-            mediaSessionConnector.invalidateMediaSessionMetadata()
+            playback.startTime = startTime
         }
 
         override fun onSetEndTime(endTime: Long) {
-            val startTime = currentPlayer.mediaMetadata.startTime
+            val playback = currentPlayback ?: return
+
+            val startTime = playback.startTime
 
             // Start time and end time are back to default: Delete message
             if (startTime == 0L && endTime == currentPlayer.duration) {
@@ -474,8 +477,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
                 currentPlayer.seekTo(startTime)
             postLoopMessage(startTime, endTime)
 
-            currentPlayer.mediaMetadata.endTime = endTime
-            mediaSessionConnector.invalidateMediaSessionMetadata()
+            playback.endTime = endTime
         }
 
         override fun onRequestMediaSourceReload() {
@@ -579,31 +581,30 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         ) {
             // TODO: Loops for [CastPlayer]
 
-//            if (mediaItem != null) {
-//                val mediaId = mediaItem.mediaId.toMediaId()
-//
-//                if (mediaId.isLoop) {
-//                    // Single loop
-//                    currentPlayer.seekTo(mediaItem.mediaMetadata.startTime)
-//                    postLoopMessage(
-//                        mediaItem.mediaMetadata.startTime,
-//                        mediaItem.mediaMetadata.endTime
-//                    )
-//
-//                } else if (mediaId.isPlaylist && mediaId.underlyingMediaId?.isLoop == true) {
-//                    // Loop in playlist
-//                    // TODO: Loops in playlist not seeking to beginning
-//                    val loop =
-//                        mediaSource.loops.find { it.mediaId == mediaId.underlyingMediaId }
-//                            ?: TODO("Loop ${mediaId.underlyingMediaId} not found")
-//
-//                    currentPlayer.seekTo(loop.startTime)
-//                    postLoopMessageForPlaylist(loop.endTime)
-//                }
-//            }
-
             currentPlayback =
                 mediaItem!!.mediaMetadata.extras!!.getParcelable(MetadataKeys.Playback)
+
+            val playback = currentPlayback
+
+            if (playback != null) {
+                if (playback is Loop) {
+                    // Single loop
+                    currentPlayer.seekTo(playback.startTime)
+                    postLoopMessage(
+                        playback.startTime,
+                        playback.endTime
+                    )
+
+                    // TODO: Check if [playback.current is Loop] is true if playback.current is null
+                } else if (playback is Playlist && playback.current is Loop) {
+                    // Loop in playlist
+                    // TODO: Loops in playlist not seeking to beginning
+                    val loop = playback.current!! as Loop
+
+                    currentPlayer.seekTo(loop.startTime)
+                    postLoopMessageForPlaylist(loop.endTime)
+                }
+            }
         }
 
         override fun onEvents(player: Player, events: Player.Events) {

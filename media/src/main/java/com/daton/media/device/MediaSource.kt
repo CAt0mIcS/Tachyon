@@ -2,6 +2,7 @@ package com.daton.media.device
 
 import android.os.Environment
 import android.util.Log
+import com.daton.media.data.MediaId
 import com.daton.media.ext.*
 import java.io.File
 
@@ -190,7 +191,7 @@ class MediaSource {
             onChangedListener?.invoke(BrowserTree.SONG_ROOT, null)
     }
 
-    fun findById(mediaId: String): Playback? {
+    fun findById(mediaId: MediaId): Playback? {
         for (song in songs)
             if (song.mediaId == mediaId)
                 return song

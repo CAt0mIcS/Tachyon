@@ -4,10 +4,15 @@ import com.daton.mucify.R
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.widget.EditText
 import android.widget.SeekBar
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.daton.media.MediaController
+import com.daton.media.device.Loop
 import com.daton.media.device.SinglePlayback
+import com.daton.media.device.Song
 import com.daton.mucify.Util
 import com.daton.mucify.databinding.ActivityPlayerBinding
 import com.daton.user.User
@@ -95,7 +100,7 @@ class ActivityPlayer : AppCompatActivity() {
                 override fun onStartTrackingTouch(p0: SeekBar?) {}
 
                 override fun onStopTrackingTouch(sb: SeekBar) {
-                    (controller.playback as SinglePlayback).startTime =
+                    controller.playback?.startTime =
                         (sb.progress * User.metadata.audioUpdateInterval).toLong()
                 }
 
@@ -110,7 +115,7 @@ class ActivityPlayer : AppCompatActivity() {
                 override fun onStartTrackingTouch(p0: SeekBar?) {}
 
                 override fun onStopTrackingTouch(sb: SeekBar) {
-                    (controller.playback as SinglePlayback).endTime =
+                    controller.playback?.endTime =
                         (sb.progress * User.metadata.audioUpdateInterval).toLong()
                 }
 
@@ -189,35 +194,35 @@ class ActivityPlayer : AppCompatActivity() {
     }
 
     private fun displaySaveLoopDialog() {
-//        val editLoopName = EditText(this)
-//        AlertDialog.Builder(this)
-//            .setMessage("Enter loop name")
-//            .setView(editLoopName)
-//            .setPositiveButton("Save") { _, _ ->
-//                val loopName = editLoopName.text.toString()
-//                if (loopName.isEmpty()) {
-//                    Toast.makeText(
-//                        this,
-//                        "Failed to save loop: Name mustn't be empty",
-//                        Toast.LENGTH_LONG
-//                    ).show()
-//                    return@setPositiveButton
-//                }
-//
-//                User.metadata += Loop(
-//                    loopName,
-//                    (binding.sbStartPos.progress * User.metadata.audioUpdateInterval).toLong(),
-//                    (binding.sbEndPos.progress * User.metadata.audioUpdateInterval).toLong(),
-//                    // Already a loop but modified
-//                    if (controller.mediaId.underlyingMediaId != null) controller.mediaId.underlyingMediaId!! else controller.mediaId
-//                )
-//                controller.sendLoops(User.metadata.loops)
-//                User.metadata.saveToLocal()
-//                User.uploadMetadata()
-//
-//            }
-//            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-//            .create().show()
+        val editLoopName = EditText(this)
+        AlertDialog.Builder(this)
+            .setMessage("Enter loop name")
+            .setView(editLoopName)
+            .setPositiveButton("Save") { _, _ ->
+                val loopName = editLoopName.text.toString()
+                if (loopName.isEmpty()) {
+                    Toast.makeText(
+                        this,
+                        "Failed to save loop: Name mustn't be empty",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@setPositiveButton
+                }
+
+                User.metadata += Loop(
+                    loopName,
+                    (binding.sbStartPos.progress * User.metadata.audioUpdateInterval).toLong(),
+                    (binding.sbEndPos.progress * User.metadata.audioUpdateInterval).toLong(),
+                    // Already a loop but modified
+                    if (controller.playback is Loop) (controller.playback as Loop).song else controller.playback as Song
+                )
+                controller.sendLoops(User.metadata.loops)
+                User.metadata.saveToLocal()
+                User.uploadMetadata()
+
+            }
+            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .create().show()
     }
 
     private fun displaySavePlaylistDialog() {
