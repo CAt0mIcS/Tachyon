@@ -12,18 +12,32 @@ android {
         applicationId "com.daton.mucify"
         minSdk 21
         targetSdk 32
-        versionCode 42
-        versionName "Dev 42"
+        versionCode 43
+        versionName "Dev 43"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         manifestPlaceholders = [auth0Domain: "@string/com_auth0_domain", auth0Scheme: "@string/com_auth0_scheme"]
     }
 
+    signingConfigs {
+        profileRelease {
+            storeFile file("D:\\dev\\Android\\Android Keys\\profile_release_key.keystore")
+            storePassword "profile_release_key"
+            keyAlias "profile_release_key"
+            keyPassword "profile_release_key"
+        }
+    }
+
     buildTypes {
         release {
+            debuggable false
+//            shrinkResources true
             minifyEnabled false
+
+            // TODO: Some serialization class is missing when [minifyEnabled] = true, use (-keep class ... { *; }) in proguard file
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.profileRelease
         }
     }
     compileOptions {

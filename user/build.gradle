@@ -11,17 +11,28 @@ android {
     defaultConfig {
         minSdk 21
         targetSdk 32
-        versionCode 6
-        versionName "Dev 6"
+        versionCode 7
+        versionName "Dev 7"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
 
+    signingConfigs {
+        profileRelease {
+            storeFile file("D:\\dev\\Android\\Android Keys\\profile_release_key.keystore")
+            storePassword "profile_release_key"
+            keyAlias "profile_release_key"
+            keyPassword "profile_release_key"
+        }
+    }
+
     buildTypes {
         release {
+            debuggable false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.profileRelease
         }
     }
     compileOptions {

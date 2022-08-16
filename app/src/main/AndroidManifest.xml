@@ -18,6 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Mucify">
 
+        <profileable android:shell="true"/>
 
         <activity
             android:name="com.daton.mucify.ui.ActivityMain"

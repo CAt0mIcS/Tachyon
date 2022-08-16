@@ -25,14 +25,18 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
             } catch (e: Exception) {
                 null
             }
+
+        // Stored for performance reasons
+        val EXTERNAL_STORAGE_DIRECTORY: String =
+            Environment.getExternalStorageDirectory().absolutePath
     }
 
     constructor(song: Song) : this(
         SONG_SOURCE_SHARED_STORAGE +
                 song.path.absolutePath.substring(
                     song.path.absolutePath.indexOf(
-                        Environment.getExternalStorageDirectory().absolutePath
-                    ) + Environment.getExternalStorageDirectory().absolutePath.length
+                        EXTERNAL_STORAGE_DIRECTORY
+                    ) + EXTERNAL_STORAGE_DIRECTORY.length
                 )
     )
 
@@ -54,9 +58,11 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
             assert(!isPlaylist || underlyingMediaId != null) { "Cannot get path from playlist" }
             if (isSong)
                 return File(
-                    Environment.getExternalStorageDirectory().absolutePath + "/" + source.replaceFirst(
-                        SONG_SOURCE_SHARED_STORAGE, ""
-                    )
+                    "$EXTERNAL_STORAGE_DIRECTORY/${
+                        source.replaceFirst(
+                            SONG_SOURCE_SHARED_STORAGE, ""
+                        )
+                    }"
                 )
             return underlyingMediaId!!.path
         }
