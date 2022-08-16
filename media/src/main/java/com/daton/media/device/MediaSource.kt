@@ -4,7 +4,13 @@ import android.os.Environment
 import android.util.Log
 import com.daton.media.data.MediaId
 import com.daton.media.ext.*
+import kotlinx.coroutines.*
+import java.io.BufferedWriter
 import java.io.File
+import java.io.FileWriter
+import java.io.IOException
+import java.util.*
+import kotlin.system.measureTimeMillis
 
 
 /**
@@ -38,16 +44,16 @@ class MediaSource {
 
         // TODO: Does ExoPlayer support more audio formats? Does it support all of the listed ones? Do all of them work?
         val SupportedAudioExtensions: List<String> = listOf(
-            "3gp",
-            "mp4",
-            "m4a",
-            "aac",
-            "ts",
-            "flac",
-            "imy",
+//            "3gp",
+//            "mp4",
+//            "m4a",
+//            "aac",
+//            "ts",
+//            "flac",
+//            "imy",
             "mp3",
-            "mkv",
-            "ogg",
+//            "mkv",
+//            "ogg",
             "wav"
         )
     }
@@ -76,6 +82,8 @@ class MediaSource {
                 field = value
             }
         }
+
+    private var songLock = Any()
 
     val songs = mutableListOf<Song>()
 
@@ -144,21 +152,36 @@ class MediaSource {
 
     /**
      * Should be called after storage permission is granted to load music that is stored in the phone's
-     * external storage
+     * external storage (TODO: Suspend function?)
      */
     fun loadSharedDeviceFiles() {
         state = STATE_INITIALIZING
         songsLoaded = false
 
         songs.clear()
-        loadSongs(musicDirectory)
+        // TODO: Search subdirectories of [musicDirectory]
+        val files = musicDirectory.listFiles()!!
+        CoroutineScope(Dispatchers.IO).launch {
 
-        // Order alphabetically by song title
-        songs.sortBy { it.title + it.artist }
+            MutableList(files.size) { i ->
+                launch {
+                    if (files[i].isSongFile) {
+                        val song = Song(files[i])
+                        synchronized(songs) {
+                            songs += song
+                        }
+                    }
+                }
+            }.joinAll()
 
-        onChangedListener?.invoke(BrowserTree.SONG_ROOT, null)
-        songsLoaded = true
-        state = STATE_INITIALIZED
+
+            // Order alphabetically by song title
+            songs.sortBy { it.title + it.artist }
+
+            onChangedListener?.invoke(BrowserTree.SONG_ROOT, null)
+            songsLoaded = true
+            state = STATE_INITIALIZED
+        }
     }
 
 
@@ -179,10 +202,8 @@ class MediaSource {
         if (path == null || !path.exists()) return
         val files = path.listFiles() ?: return
         for (file in files) {
-            if (file.isDirectory) loadSongs(file) else {
-                if (file.isSongFile) {
-                    songs += Song(file)
-                }
+            if (file.isSongFile) {
+                songs += Song(file)
             }
         }
     }
@@ -205,5 +226,28 @@ class MediaSource {
             if (playlist.mediaId == mediaId)
                 return playlist
         return null
+    }
+
+    private fun appendLog(text: String?) {
+        val logFile =
+            File(Environment.getExternalStorageDirectory().absolutePath + "/Documents/mucifylog.txt")
+        if (!logFile.exists()) {
+            try {
+                logFile.createNewFile()
+            } catch (e: IOException) {
+                e.printStackTrace()
+                TODO()
+            }
+        }
+        try {
+            // BufferedWriter for performance, true to set append to file flag
+            val buf = BufferedWriter(FileWriter(logFile, true))
+            buf.append(text)
+            buf.newLine()
+            buf.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            TODO()
+        }
     }
 }

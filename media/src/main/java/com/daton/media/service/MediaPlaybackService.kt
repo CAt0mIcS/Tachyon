@@ -500,10 +500,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
             /**
              * Starts asynchronously loading all playbacks in shared storage (only songs atm)
              */
-            CoroutineScope(Dispatchers.IO).launch {
-                Log.d(MediaPlaybackService.TAG, "Loading MediaSource")
-                mediaSource.loadSharedDeviceFiles()
-            }
+            Log.d(MediaPlaybackService.TAG, "Loading MediaSource")
+            mediaSource.loadSharedDeviceFiles()
+            val i = 0
         }
 
         override fun onCombinePlaybackTypesChanged(combine: Boolean) {

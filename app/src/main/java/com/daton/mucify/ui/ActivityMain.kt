@@ -2,6 +2,8 @@ package com.daton.mucify.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.support.v4.media.MediaBrowserCompat
 import android.util.Log
 import android.widget.ArrayAdapter
@@ -16,6 +18,7 @@ import com.daton.mucify.permission.PermissionManager
 import com.daton.user.User
 import kotlinx.coroutines.*
 import java.util.concurrent.CountDownLatch
+import kotlin.concurrent.thread
 
 
 class ActivityMain : AppCompatActivity() {
@@ -84,7 +87,7 @@ class ActivityMain : AppCompatActivity() {
     }
 
     fun onConnected() {
-        CoroutineScope(Dispatchers.IO).launch {
+        thread {
             // Wait for permission dialog to be accepted or denied
             permissionResultAvailable.await()
 
@@ -102,7 +105,7 @@ class ActivityMain : AppCompatActivity() {
                 }
 
                 mediaController.subscribe(BrowserTree.ROOT) { items ->
-                    setupUI(items)
+                    Handler(Looper.getMainLooper()).post { setupUI(items) }
                 }
             }
         }

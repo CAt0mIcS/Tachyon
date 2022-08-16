@@ -17,10 +17,8 @@ import com.daton.media.data.MetadataKeys
 import com.daton.media.device.*
 import com.daton.media.ext.*
 import com.daton.media.service.MediaPlaybackService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.concurrent.CountDownLatch
+import kotlin.concurrent.thread
 
 
 class MediaController {
@@ -362,7 +360,7 @@ class MediaController {
             // Request [playback] to be updated
             sendCustomAction(MediaAction.RequestPlaybackUpdateEvent)
             // TODO TODO TODO TODO
-            CoroutineScope(Dispatchers.IO).launch {
+            thread {
                 firstPlaybackUpdateDone!!.await()
                 firstPlaybackUpdateDone = null
 
