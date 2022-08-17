@@ -19,7 +19,8 @@ import com.daton.mucify.databinding.ActivityPlayerBinding
 import com.daton.user.User
 
 
-class ActivityPlayer : AppCompatActivity() {
+class ActivityPlayer : AppCompatActivity(),
+    MediaController.IEventListener by MediaController.EventListener() {
     private val controller = MediaController()
     private lateinit var binding: ActivityPlayerBinding
 
@@ -33,155 +34,7 @@ class ActivityPlayer : AppCompatActivity() {
         setContentView(binding.root)
 
         controller.create(this)
-
-        controller.onPlaybackChanged = {
-            val playback = controller.playback as SinglePlayback?
-            if (playback != null) {
-                binding.txtTitle.text = playback.title
-                binding.txtArtist.text = playback.artist
-
-                val duration =
-                    (playback.duration / User.metadata.audioUpdateInterval).toInt()
-                binding.sbPos.max = duration
-                binding.sbStartPos.max = duration
-                binding.sbEndPos.max = duration
-
-                binding.sbStartPos.progress =
-                    (playback.startTime / User.metadata.audioUpdateInterval).toInt()
-                binding.sbEndPos.progress =
-                    (playback.endTime / User.metadata.audioUpdateInterval).toInt()
-            }
-        }
-
-        controller.onPlaybackStateChanged = { isPlaying ->
-            binding.btnPlayPause.setImageResource(if (isPlaying) R.drawable.pause else R.drawable.play)
-        }
-
-        controller.onConnected = {
-            // Handle case where [controller.playback] isn't yet set in [onCreate]
-            controller.onPlaybackChanged?.invoke()
-
-            runOnUiThread(object : Runnable {
-                override fun run() {
-                    if (controller.isCreated && controller.isPlaying && !isSeeking) {
-                        val currentPos: Int =
-                            (controller.currentPosition / User.metadata.audioUpdateInterval).toInt()
-                        binding.sbPos.progress = currentPos
-                    }
-                    if (!isDestroyed)
-                        handler.postDelayed(
-                            this,
-                            User.metadata.audioUpdateInterval.toLong()
-                        )
-                }
-            })
-
-            binding.sbPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
-                    binding.txtPos.text =
-                        Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
-                }
-
-                override fun onStartTrackingTouch(p0: SeekBar?) {
-                    isSeeking = true
-                }
-
-                override fun onStopTrackingTouch(sb: SeekBar) {
-                    isSeeking = false
-                    controller.seekTo(sb.progress * User.metadata.audioUpdateInterval.toLong())
-                }
-            })
-
-            binding.sbStartPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
-                    binding.txtStartPos.text =
-                        Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
-                }
-
-                override fun onStartTrackingTouch(p0: SeekBar?) {}
-
-                override fun onStopTrackingTouch(sb: SeekBar) {
-                    controller.playback?.startTime =
-                        (sb.progress * User.metadata.audioUpdateInterval).toLong()
-                }
-
-            })
-
-            binding.sbEndPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
-                    binding.txtEndPos.text =
-                        Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
-                }
-
-                override fun onStartTrackingTouch(p0: SeekBar?) {}
-
-                override fun onStopTrackingTouch(sb: SeekBar) {
-                    controller.playback?.endTime =
-                        (sb.progress * User.metadata.audioUpdateInterval).toLong()
-                }
-
-            })
-
-            binding.btnStartPosDec.setOnClickListener {
-                val playback = controller.playback as SinglePlayback
-                var time: Long =
-                    playback.startTime - User.metadata.songIncDecInterval
-                if (time < 0) time = 0
-                playback.startTime = time
-                binding.sbStartPos.progress =
-                    (time / User.metadata.audioUpdateInterval).toInt()
-            }
-            binding.btnStartPosInc.setOnClickListener {
-                val playback = controller.playback as SinglePlayback
-                var time: Long =
-                    playback.startTime + User.metadata.songIncDecInterval
-                if (time > playback.duration) time = playback.duration
-                playback.startTime = time
-                binding.sbStartPos.progress =
-                    (time / User.metadata.audioUpdateInterval).toInt()
-            }
-            binding.btnEndPosDec.setOnClickListener {
-                val playback = controller.playback as SinglePlayback
-                var time: Long =
-                    playback.endTime - User.metadata.songIncDecInterval
-                if (time < 0) time = 0
-                playback.endTime = time
-                binding.sbEndPos.progress =
-                    (time / User.metadata.audioUpdateInterval).toInt()
-            }
-            binding.btnEndPosInc.setOnClickListener {
-                val playback = controller.playback as SinglePlayback
-                var time: Long =
-                    playback.endTime + User.metadata.songIncDecInterval
-                if (time > playback.duration) time = playback.duration
-                playback.endTime = time
-                binding.sbEndPos.progress =
-                    (time / User.metadata.audioUpdateInterval).toInt()
-            }
-
-            binding.linearLayoutStartPos.setOnClickListener {
-                val playback = controller.playback as SinglePlayback
-                playback.startTime = controller.currentPosition
-                binding.sbStartPos.progress =
-                    (playback.startTime / User.metadata.audioUpdateInterval).toInt()
-            }
-            binding.linearLayoutEndPos.setOnClickListener {
-                val playback = controller.playback as SinglePlayback
-                playback.endTime = controller.currentPosition
-                binding.sbEndPos.progress =
-                    (playback.endTime / User.metadata.audioUpdateInterval).toInt()
-            }
-
-            binding.btnPlayPause.setOnClickListener { if (controller.isPaused) controller.play() else controller.pause() }
-
-            binding.btnSaveLoop.setOnClickListener { displaySaveLoopDialog() }
-            binding.btnSavePlaylist.setOnClickListener { displaySavePlaylistDialog() }
-
-            controller.onPlaybackStateChanged?.invoke(controller.isPlaying)
-
-            // Media id is set by [ActivityMain] before transitioning to [ActivityPlayer]
-            controller.onPlaybackChanged?.invoke()
-        }
+        controller.registerEventListener(this)
     }
 
     override fun onStart() {
@@ -192,6 +45,151 @@ class ActivityPlayer : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         controller.disconnect()
+    }
+
+    override fun onConnected() {
+        runOnUiThread(object : Runnable {
+            override fun run() {
+                if (controller.isCreated && controller.isPlaying && !isSeeking) {
+                    val currentPos: Int =
+                        (controller.currentPosition / User.metadata.audioUpdateInterval).toInt()
+                    binding.sbPos.progress = currentPos
+                }
+                if (!isDestroyed)
+                    handler.postDelayed(
+                        this,
+                        User.metadata.audioUpdateInterval.toLong()
+                    )
+            }
+        })
+
+        binding.sbPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
+                binding.txtPos.text =
+                    Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
+            }
+
+            override fun onStartTrackingTouch(p0: SeekBar?) {
+                isSeeking = true
+            }
+
+            override fun onStopTrackingTouch(sb: SeekBar) {
+                isSeeking = false
+                controller.seekTo(sb.progress * User.metadata.audioUpdateInterval.toLong())
+            }
+        })
+
+        binding.sbStartPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
+                binding.txtStartPos.text =
+                    Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
+            }
+
+            override fun onStartTrackingTouch(p0: SeekBar?) {}
+
+            override fun onStopTrackingTouch(sb: SeekBar) {
+                controller.playback?.startTime =
+                    (sb.progress * User.metadata.audioUpdateInterval).toLong()
+            }
+
+        })
+
+        binding.sbEndPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
+                binding.txtEndPos.text =
+                    Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
+            }
+
+            override fun onStartTrackingTouch(p0: SeekBar?) {}
+
+            override fun onStopTrackingTouch(sb: SeekBar) {
+                controller.playback?.endTime =
+                    (sb.progress * User.metadata.audioUpdateInterval).toLong()
+            }
+
+        })
+
+        binding.btnStartPosDec.setOnClickListener {
+            val playback = controller.playback as SinglePlayback
+            var time: Long =
+                playback.startTime - User.metadata.songIncDecInterval
+            if (time < 0) time = 0
+            playback.startTime = time
+            binding.sbStartPos.progress =
+                (time / User.metadata.audioUpdateInterval).toInt()
+        }
+        binding.btnStartPosInc.setOnClickListener {
+            val playback = controller.playback as SinglePlayback
+            var time: Long =
+                playback.startTime + User.metadata.songIncDecInterval
+            if (time > playback.duration) time = playback.duration
+            playback.startTime = time
+            binding.sbStartPos.progress =
+                (time / User.metadata.audioUpdateInterval).toInt()
+        }
+        binding.btnEndPosDec.setOnClickListener {
+            val playback = controller.playback as SinglePlayback
+            var time: Long =
+                playback.endTime - User.metadata.songIncDecInterval
+            if (time < 0) time = 0
+            playback.endTime = time
+            binding.sbEndPos.progress =
+                (time / User.metadata.audioUpdateInterval).toInt()
+        }
+        binding.btnEndPosInc.setOnClickListener {
+            val playback = controller.playback as SinglePlayback
+            var time: Long =
+                playback.endTime + User.metadata.songIncDecInterval
+            if (time > playback.duration) time = playback.duration
+            playback.endTime = time
+            binding.sbEndPos.progress =
+                (time / User.metadata.audioUpdateInterval).toInt()
+        }
+
+        binding.linearLayoutStartPos.setOnClickListener {
+            val playback = controller.playback as SinglePlayback
+            playback.startTime = controller.currentPosition
+            binding.sbStartPos.progress =
+                (playback.startTime / User.metadata.audioUpdateInterval).toInt()
+        }
+        binding.linearLayoutEndPos.setOnClickListener {
+            val playback = controller.playback as SinglePlayback
+            playback.endTime = controller.currentPosition
+            binding.sbEndPos.progress =
+                (playback.endTime / User.metadata.audioUpdateInterval).toInt()
+        }
+
+        binding.btnPlayPause.setOnClickListener { if (controller.isPaused) controller.play() else controller.pause() }
+
+        binding.btnSaveLoop.setOnClickListener { displaySaveLoopDialog() }
+        binding.btnSavePlaylist.setOnClickListener { displaySavePlaylistDialog() }
+
+        onPlaybackStateChanged(controller.isPlaying)
+        // Media id is set by [ActivityMain] before transitioning to [ActivityPlayer]
+        onSetPlayback()
+    }
+
+    override fun onSetPlayback() {
+        val playback = controller.playback as SinglePlayback?
+        if (playback != null) {
+            binding.txtTitle.text = playback.title
+            binding.txtArtist.text = playback.artist
+
+            val duration =
+                (playback.duration / User.metadata.audioUpdateInterval).toInt()
+            binding.sbPos.max = duration
+            binding.sbStartPos.max = duration
+            binding.sbEndPos.max = duration
+
+            binding.sbStartPos.progress =
+                (playback.startTime / User.metadata.audioUpdateInterval).toInt()
+            binding.sbEndPos.progress =
+                (playback.endTime / User.metadata.audioUpdateInterval).toInt()
+        }
+    }
+
+    override fun onPlaybackStateChanged(isPlaying: Boolean) {
+        binding.btnPlayPause.setImageResource(if (isPlaying) R.drawable.pause else R.drawable.play)
     }
 
     private fun displaySaveLoopDialog() {

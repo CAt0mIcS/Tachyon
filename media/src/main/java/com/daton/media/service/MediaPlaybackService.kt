@@ -32,7 +32,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
-class MediaPlaybackService : MediaBrowserServiceCompat() {
+class MediaPlaybackService : MediaBrowserServiceCompat(),
+    MediaSource.IEventListener by MediaSource.EventListener() {
 
     companion object {
         const val TAG = "MediaPlaybackService"
@@ -102,22 +103,12 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
 
         Log.d(TAG, "Creating MediaPlaybackService")
 
+        mediaSource.registerEventListener(this)
         mediaSource.whenReady { successfullyInitialized ->
             if (successfullyInitialized)
                 browserTree = BrowserTree(mediaSource)
             else
                 TODO("Handle unsuccessful initialization")
-        }
-
-        mediaSource.onChangedListener = { parentId, mediaId ->
-            browserTree = BrowserTree(mediaSource)
-            if (parentId != BrowserTree.ROOT)
-                notifyChildrenChanged(BrowserTree.ROOT)
-            notifyChildrenChanged(parentId)
-
-            if (mediaId != null) {
-                notifyChildrenChanged(mediaId)
-            }
         }
 
         // Build a PendingIntent that can be used to launch the UI.
@@ -310,6 +301,17 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         previousPlayer?.run {
             stop()
             clearMediaItems()
+        }
+    }
+
+    override fun onMediaSourceChanged(root: String, mediaId: String?) {
+        browserTree = BrowserTree(mediaSource)
+        if (root != BrowserTree.ROOT)
+            notifyChildrenChanged(BrowserTree.ROOT)
+        notifyChildrenChanged(root)
+
+        if (mediaId != null) {
+            notifyChildrenChanged(mediaId)
         }
     }
 
@@ -590,9 +592,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat() {
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            val bundle = Bundle()
-            bundle.putBoolean(MediaAction.IsPlaying, isPlaying)
-            mediaSession.sendSessionEvent(MediaAction.OnPlaybackStateChangedEvent, bundle)
+            mediaSession.sendSessionEvent(MediaAction.OnPlaybackStateChangedEvent, Bundle().apply {
+                putBoolean(MediaAction.IsPlaying, isPlaying)
+            })
         }
 
         override fun onMediaItemTransition(

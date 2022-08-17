@@ -3,8 +3,6 @@ package com.daton.media
 import android.app.Activity
 import android.content.ComponentName
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.os.Parcelable
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
@@ -17,6 +15,8 @@ import com.daton.media.data.MetadataKeys
 import com.daton.media.device.*
 import com.daton.media.ext.*
 import com.daton.media.service.MediaPlaybackService
+import com.daton.util.launch
+import kotlinx.coroutines.Dispatchers
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
 
@@ -30,17 +30,12 @@ class MediaController {
         private set
 
     private val controllerCallback: MediaControllerCallback = MediaControllerCallback()
+    private var eventListener: IEventListener? = null
 
     private val subscribedIds = mutableMapOf<String, (List<Playback>) -> Unit>()
 
     // TODO: Why is [playback] not updating when the controller is connected
     private var firstPlaybackUpdateDone: CountDownLatch? = null
-
-    var onConnected: (() -> Unit)? = null
-    var onDisconnected: (() -> Unit)? = null
-
-    var onPlaybackChanged: (() -> Unit)? = null
-    var onPlaybackStateChanged: ((Boolean) -> Unit)? = null
 
     private var activity: Activity? = null
 
@@ -86,6 +81,13 @@ class MediaController {
     }
 
     /**
+     * Registers [listener] to listen to all events sent by the [MediaBrowserServiceCompat]
+     */
+    fun registerEventListener(listener: IEventListener?) {
+        eventListener = listener
+    }
+
+    /**
      * Pauses the currently playing audio. Crashes if the Playback hasn't been started yet.
      */
     fun pause() {
@@ -105,9 +107,9 @@ class MediaController {
     var playback: Playback?
         get() = _playback
         set(value) {
-            val bundle = Bundle()
-            bundle.putParcelable(MediaAction.Playback, value)
-            sendCustomAction(MediaAction.SetPlaybackEvent, bundle)
+            sendCustomAction(MediaAction.SetPlaybackEvent, Bundle().apply {
+                putParcelable(MediaAction.Playback, value)
+            })
         }
 
     private var _playback: Playback? = null
@@ -204,26 +206,24 @@ class MediaController {
      * Updates the [MediaSource] with [loops]. Overwrites previous loops
      */
     fun sendLoops(loops: ArrayList<Loop>) {
-        val bundle = Bundle()
-        bundle.putParcelableArrayList(
-            MediaAction.Loops,
-            loops as ArrayList<out Parcelable>
-        )
-
-        sendCustomAction(MediaAction.SendLoopsEvent, bundle)
+        sendCustomAction(MediaAction.SendLoopsEvent, Bundle().apply {
+            putParcelableArrayList(
+                MediaAction.Loops,
+                loops as ArrayList<out Parcelable>
+            )
+        })
     }
 
     /**
      * Updates the [MediaSource] with [playlists]. Overwrites previous playlists
      */
     fun sendPlaylists(playlists: ArrayList<Playlist>) {
-        val bundle = Bundle()
-        bundle.putParcelableArrayList(
-            MediaAction.Playlists,
-            playlists as ArrayList<out Parcelable>
-        )
-
-        sendCustomAction(MediaAction.SendPlaylistsEvent, bundle)
+        sendCustomAction(MediaAction.SendPlaylistsEvent, Bundle().apply {
+            putParcelableArrayList(
+                MediaAction.Playlists,
+                playlists as ArrayList<out Parcelable>
+            )
+        })
     }
 
     /**
@@ -263,9 +263,14 @@ class MediaController {
                 children: MutableList<MediaBrowserCompat.MediaItem>
             ) {
                 Log.d(TAG, "Media source changed")
-                onChanged(children.map {
-                    it.description.extras!!.getParcelable(MetadataKeys.Playback)!!
-                })
+                val mapped = children.map {
+                    it.description.extras!!.getParcelable<Playback>(MetadataKeys.Playback)!!
+                }
+
+                launch(Dispatchers.Main) {
+                    onChanged(mapped)
+                }
+
             }
         })
     }
@@ -284,7 +289,12 @@ class MediaController {
                     parentId: String,
                     children: MutableList<MediaBrowserCompat.MediaItem>
                 ) {
-                    action(children.map { it.description.extras!!.getParcelable(MetadataKeys.Playback)!! })
+                    val mapped =
+                        children.map { it.description.extras!!.getParcelable<Song>(MetadataKeys.Playback)!! }
+                    launch(Dispatchers.Main) {
+                        action(mapped)
+                    }
+
                     if (previousOnChanged != null)
                         subscribe(BrowserTree.SONG_ROOT, previousOnChanged)
                 }
@@ -305,7 +315,12 @@ class MediaController {
                     parentId: String,
                     children: MutableList<MediaBrowserCompat.MediaItem>
                 ) {
-                    action(children.map { it.description.extras!!.getParcelable(MetadataKeys.Playback)!! })
+                    val mapped =
+                        children.map { it.description.extras!!.getParcelable<Loop>(MetadataKeys.Playback)!! }
+                    launch(Dispatchers.Main) {
+                        action(mapped)
+                    }
+
                     if (previousOnChanged != null)
                         subscribe(BrowserTree.SONG_ROOT, previousOnChanged)
                 }
@@ -326,7 +341,12 @@ class MediaController {
                     parentId: String,
                     children: MutableList<MediaBrowserCompat.MediaItem>
                 ) {
-                    action(children.map { it.description.extras!!.getParcelable(MetadataKeys.Playback)!! })
+                    val mapped =
+                        children.map { it.description.extras!!.getParcelable<Playlist>(MetadataKeys.Playback)!! }
+                    launch(Dispatchers.Main) {
+                        action(mapped)
+                    }
+
                     if (previousOnChanged != null)
                         subscribe(BrowserTree.SONG_ROOT, previousOnChanged)
                 }
@@ -365,8 +385,8 @@ class MediaController {
                 firstPlaybackUpdateDone = null
 
                 // Finish building the UI
-                Handler(Looper.getMainLooper()).post {
-                    onConnected?.invoke()
+                launch(Dispatchers.Main) {
+                    eventListener?.onConnected()
                 }
             }
 
@@ -391,16 +411,14 @@ class MediaController {
                     _playback = extras.getParcelable(MediaAction.Playback)
                     firstPlaybackUpdateDone?.countDown()
 
-                    Handler(Looper.getMainLooper()).post {
-                        onPlaybackChanged?.invoke()
+                    launch(Dispatchers.Main) {
+                        eventListener?.onSetPlayback()
                     }
                 }
                 MediaAction.OnPlaybackStateChangedEvent -> {
-                    Handler(Looper.getMainLooper()).post {
-                        onPlaybackStateChanged?.invoke(
-                            extras.getBoolean(
-                                MediaAction.IsPlaying
-                            )
+                    launch(Dispatchers.Main) {
+                        eventListener?.onPlaybackStateChanged(
+                            extras.getBoolean(MediaAction.IsPlaying)
                         )
                     }
                 }
@@ -411,7 +429,21 @@ class MediaController {
             Log.d("Mucify", "MediaControllerActivity session destroyed")
             browser.disconnect()
             // maybe schedule a reconnection using a new MediaBrowser instance
-            onDisconnected?.invoke()
+            eventListener?.onDisconnected()
         }
+    }
+
+    interface IEventListener {
+        fun onConnected()
+        fun onDisconnected()
+        fun onSetPlayback()
+        fun onPlaybackStateChanged(isPlaying: Boolean)
+    }
+
+    class EventListener : IEventListener {
+        override fun onConnected() {}
+        override fun onDisconnected() {}
+        override fun onSetPlayback() {}
+        override fun onPlaybackStateChanged(isPlaying: Boolean) {}
     }
 }

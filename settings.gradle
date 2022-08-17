@@ -16,3 +16,4 @@ rootProject.name = "Mucify"
 include ':app'
 include ':media'
 include ':user'
+include ':util'

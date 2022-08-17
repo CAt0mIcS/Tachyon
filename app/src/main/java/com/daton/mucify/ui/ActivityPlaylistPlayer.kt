@@ -19,7 +19,8 @@ import com.daton.mucify.databinding.ActivityPlaylistPlayerBinding
 import com.daton.user.User
 
 
-class ActivityPlaylistPlayer : AppCompatActivity() {
+class ActivityPlaylistPlayer : AppCompatActivity(),
+    MediaController.IEventListener by MediaController.EventListener() {
 
     private lateinit var binding: ActivityPlaylistPlayerBinding
     private val controller = MediaController()
@@ -35,6 +36,27 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
         setContentView(binding.root)
 
         controller.create(this)
+        controller.registerEventListener(this)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        controller.connect(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        controller.disconnect()
+    }
+
+    override fun onConnected() {
+        playbackStrings.addAll((controller.playback!! as Playlist).playbacks.map {
+            when (it) {
+                is Song -> "*song*" + it.title + " - " + it.artist
+                is Loop -> "*loop*" + it.name + " - " + it.title + " - " + it.artist
+                else -> TODO("Invalid playback type in playlist")
+            }
+        })
 
         binding.rvPlaylistItems.adapter = ArrayAdapter(
             this,
@@ -46,52 +68,6 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
             (controller.playback as Playlist).currentPlaylistIndex = i
             controller.play()
         }
-
-        // TODO: A lot of unnecessary calls
-        controller.onPlaybackChanged = {
-            val playlist = controller.playback as Playlist?
-            if (playlist?.current != null) {
-                binding.txtPlaylistTitle.text = playlist.name
-                binding.txtTitle.text = playlist.current!!.title
-
-                binding.sbPos.max =
-                    (playlist.current!!.duration / User.metadata.audioUpdateInterval).toInt()
-            }
-        }
-
-        controller.onPlaybackStateChanged = { isPlaying ->
-            binding.btnPlayPause.setImageResource(if (isPlaying) R.drawable.pause else R.drawable.play)
-        }
-
-        controller.onConnected = {
-            playbackStrings.addAll((controller.playback!! as Playlist).playbacks.map {
-                when (it) {
-                    is Song -> "*song*" + it.title + " - " + it.artist
-                    is Loop -> "*loop*" + it.name + " - " + it.title + " - " + it.artist
-                    else -> TODO("Invalid playback type in playlist")
-                }
-            })
-
-            runOnUiThread(object : Runnable {
-                override fun run() {
-                    if (controller.isCreated && controller.isPlaying && !isSeeking) {
-                        val currentPos: Int =
-                            (controller.currentPosition / User.metadata.audioUpdateInterval).toInt()
-                        binding.sbPos.progress = currentPos
-                    }
-                    if (!isDestroyed)
-                        handler.postDelayed(
-                            this,
-                            User.metadata.audioUpdateInterval.toLong()
-                        )
-                }
-            })
-
-            (binding.rvPlaylistItems.adapter as ArrayAdapter<*>).notifyDataSetChanged()
-            controller.onPlaybackStateChanged!!(controller.isPlaying)
-            controller.onPlaybackChanged!!()
-        }
-
 
         binding.sbPos.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onStopTrackingTouch(seekBar: SeekBar) {
@@ -117,16 +93,40 @@ class ActivityPlaylistPlayer : AppCompatActivity() {
 
         binding.btnNext.setOnClickListener { controller.next() }
         binding.btnPrevious.setOnClickListener { controller.previous() }
+
+        runOnUiThread(object : Runnable {
+            override fun run() {
+                if (controller.isCreated && controller.isPlaying && !isSeeking) {
+                    val currentPos: Int =
+                        (controller.currentPosition / User.metadata.audioUpdateInterval).toInt()
+                    binding.sbPos.progress = currentPos
+                }
+                if (!isDestroyed)
+                    handler.postDelayed(
+                        this,
+                        User.metadata.audioUpdateInterval.toLong()
+                    )
+            }
+        })
+
+        (binding.rvPlaylistItems.adapter as ArrayAdapter<*>).notifyDataSetChanged()
+        onPlaybackStateChanged(controller.isPlaying)
+        onSetPlayback()
     }
 
-    override fun onStart() {
-        super.onStart()
-        controller.connect(this)
+    override fun onSetPlayback() {
+        val playlist = controller.playback as Playlist?
+        if (playlist?.current != null) {
+            binding.txtPlaylistTitle.text = playlist.name
+            binding.txtTitle.text = playlist.current!!.title
+
+            binding.sbPos.max =
+                (playlist.current!!.duration / User.metadata.audioUpdateInterval).toInt()
+        }
     }
 
-    override fun onStop() {
-        super.onStop()
-        controller.disconnect()
+    override fun onPlaybackStateChanged(isPlaying: Boolean) {
+        binding.btnPlayPause.setImageResource(if (isPlaying) R.drawable.pause else R.drawable.play)
     }
 
 }

@@ -4,6 +4,7 @@ import android.os.Environment
 import android.util.Log
 import com.daton.media.data.MediaId
 import com.daton.media.ext.*
+import com.daton.util.launch
 import kotlinx.coroutines.*
 import java.io.BufferedWriter
 import java.io.File
@@ -83,15 +84,13 @@ class MediaSource {
             }
         }
 
-    private var songLock = Any()
-
     val songs = mutableListOf<Song>()
 
     private var _loops: MutableList<Loop>? = null
         set(value) {
             field = value
             field!!.sortBy { it.name }
-            onChangedListener?.invoke(BrowserTree.LOOP_ROOT, null)
+            eventListener?.onMediaSourceChanged(BrowserTree.LOOP_ROOT, null)
             state = STATE_INITIALIZED
         }
 
@@ -106,7 +105,7 @@ class MediaSource {
         set(value) {
             field = value
             field!!.sortBy { it.name }
-            onChangedListener?.invoke(BrowserTree.PLAYLIST_ROOT, null)
+            eventListener?.onMediaSourceChanged(BrowserTree.PLAYLIST_ROOT, null)
             state = STATE_INITIALIZED
         }
 
@@ -118,20 +117,7 @@ class MediaSource {
 
     private var onReadyListeners = mutableListOf<(Boolean) -> Unit>()
 
-    /**
-     * Called whenever an item is added/removed from [loops]/[playlists]
-     * * The first argument specifies either [BrowserTree.SONG_ROOT], [BrowserTree.LOOP_ROOT]
-     *   or [BrowserTree.PLAYLIST_ROOT]
-     * * The second argument is null
-     *
-     * Called whenever an item changes (item added to playlist, for example) and if the
-     * [MediaSource] is already loaded
-     * * The first argument specifies either [BrowserTree.LOOP_ROOT] or [BrowserTree.PLAYLIST_ROOT]
-     *   depending on what changed
-     * * The second argument specifies the serialized media id of the playlist that was changed
-     *   which can be deserialized using [MediaId.deserialize]
-     */
-    var onChangedListener: ((String, String?) -> Unit)? = null
+    private var eventListener: IEventListener? = null
         get() = if (state == STATE_INITIALIZED) field else null
 
     init {
@@ -150,6 +136,10 @@ class MediaSource {
         }
     }
 
+    fun registerEventListener(listener: IEventListener?) {
+        eventListener = listener
+    }
+
     /**
      * Should be called after storage permission is granted to load music that is stored in the phone's
      * external storage (TODO: Suspend function?)
@@ -161,7 +151,7 @@ class MediaSource {
         songs.clear()
         // TODO: Search subdirectories of [musicDirectory]
         val files = musicDirectory.listFiles()!!
-        CoroutineScope(Dispatchers.IO).launch {
+        launch(Dispatchers.IO) {
 
             MutableList(files.size) { i ->
                 launch {
@@ -178,7 +168,7 @@ class MediaSource {
             // Order alphabetically by song title
             songs.sortBy { it.title + it.artist }
 
-            onChangedListener?.invoke(BrowserTree.SONG_ROOT, null)
+            eventListener?.onMediaSourceChanged(BrowserTree.SONG_ROOT, null)
             songsLoaded = true
             state = STATE_INITIALIZED
         }
@@ -212,7 +202,7 @@ class MediaSource {
         val shouldInvokeOnChanged = songs.size != 0
         songs.clear()
         if (shouldInvokeOnChanged)
-            onChangedListener?.invoke(BrowserTree.SONG_ROOT, null)
+            eventListener?.onMediaSourceChanged(BrowserTree.SONG_ROOT, null)
     }
 
     fun findById(mediaId: MediaId): Playback? {
@@ -249,5 +239,26 @@ class MediaSource {
             e.printStackTrace()
             TODO()
         }
+    }
+
+    interface IEventListener {
+        fun onMediaSourceChanged(root: String, mediaId: String?)
+    }
+
+    class EventListener : IEventListener {
+        /**
+         * Called whenever an item is added/removed from [loops]/[playlists]
+         * * The first argument specifies either [BrowserTree.SONG_ROOT], [BrowserTree.LOOP_ROOT]
+         *   or [BrowserTree.PLAYLIST_ROOT]
+         * * The second argument is null
+         *
+         * Called whenever an item changes (item added to playlist, for example) and if the
+         * [MediaSource] is already loaded
+         * * The first argument specifies either [BrowserTree.LOOP_ROOT] or [BrowserTree.PLAYLIST_ROOT]
+         *   depending on what changed
+         * * The second argument specifies the serialized media id of the playlist that was changed
+         *   which can be deserialized using [MediaId.deserialize]
+         */
+        override fun onMediaSourceChanged(root: String, mediaId: String?) {}
     }
 }

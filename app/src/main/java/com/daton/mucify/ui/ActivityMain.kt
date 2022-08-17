@@ -16,12 +16,14 @@ import com.daton.mucify.databinding.ActivityMainBinding
 import com.daton.mucify.permission.Permission
 import com.daton.mucify.permission.PermissionManager
 import com.daton.user.User
+import com.daton.util.launch
 import kotlinx.coroutines.*
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
 
 
-class ActivityMain : AppCompatActivity() {
+class ActivityMain : AppCompatActivity(),
+    MediaController.IEventListener by MediaController.EventListener() {
     companion object {
         const val TAG = "ActivityMain"
         private var mediaLoaded = false
@@ -60,9 +62,9 @@ class ActivityMain : AppCompatActivity() {
         }
 
         mediaController.create(this)
-        mediaController.onConnected = { onConnected() }
+        mediaController.registerEventListener(this)
 
-        CoroutineScope(Dispatchers.IO).launch { User.create(this@ActivityMain) }
+        launch(Dispatchers.IO) { User.create(this@ActivityMain) }
 
         /**
          * Send loops and playlists to service
@@ -86,7 +88,7 @@ class ActivityMain : AppCompatActivity() {
         mediaController.disconnect()
     }
 
-    fun onConnected() {
+    override fun onConnected() {
         thread {
             // Wait for permission dialog to be accepted or denied
             permissionResultAvailable.await()
@@ -176,12 +178,14 @@ class ActivityMain : AppCompatActivity() {
      * Sends basic things like [User.metadata.combineDifferentPlaybackTypes] to the [MediaBrowserCompat]
      */
     private fun sendInformation() {
-        val bundle = Bundle()
-        bundle.putBoolean(
-            MediaAction.CombinePlaybackTypes,
-            User.metadata.combineDifferentPlaybackTypes
-        )
-        mediaController.sendCustomAction(MediaAction.CombinePlaybackTypesChangedEvent, bundle)
+        mediaController.sendCustomAction(
+            MediaAction.CombinePlaybackTypesChangedEvent,
+            Bundle().apply {
+                putBoolean(
+                    MediaAction.CombinePlaybackTypes,
+                    User.metadata.combineDifferentPlaybackTypes
+                )
+            })
     }
 
     private fun loadHistoryStrings() {
