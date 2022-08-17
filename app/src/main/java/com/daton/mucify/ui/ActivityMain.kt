@@ -18,6 +18,7 @@ import com.daton.mucify.permission.PermissionManager
 import com.daton.user.User
 import com.daton.util.launch
 import kotlinx.coroutines.*
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
 
@@ -34,12 +35,9 @@ class ActivityMain : AppCompatActivity(),
     private lateinit var binding: ActivityMainBinding
     private val mediaController = MediaController()
 
-    private val historyStrings = mutableListOf<String>()
+    private val permissionResultAvailable = CompletableDeferred<Unit?>()
 
-    /**
-     * Counts down when the storage permission was either accepted or denied
-     */
-    private var permissionResultAvailable = CountDownLatch(1)
+    private val historyStrings = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +55,7 @@ class ActivityMain : AppCompatActivity(),
                     Log.i(TAG, "Storage permission granted")
                 } else
                     Log.i(TAG, "Storage permission NOT granted")
-                permissionResultAvailable.countDown()
+                permissionResultAvailable.complete(null)
             }
         }
 
@@ -89,7 +87,7 @@ class ActivityMain : AppCompatActivity(),
     }
 
     override fun onConnected() {
-        thread {
+        launch(Dispatchers.IO) {
             // Wait for permission dialog to be accepted or denied
             permissionResultAvailable.await()
 
@@ -107,7 +105,7 @@ class ActivityMain : AppCompatActivity(),
                 }
 
                 mediaController.subscribe(BrowserTree.ROOT) { items ->
-                    Handler(Looper.getMainLooper()).post { setupUI(items) }
+                    setupUI(items)
                 }
             }
         }

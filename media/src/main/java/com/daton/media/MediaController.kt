@@ -16,6 +16,7 @@ import com.daton.media.device.*
 import com.daton.media.ext.*
 import com.daton.media.service.MediaPlaybackService
 import com.daton.util.launch
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
@@ -35,7 +36,7 @@ class MediaController {
     private val subscribedIds = mutableMapOf<String, (List<Playback>) -> Unit>()
 
     // TODO: Why is [playback] not updating when the controller is connected
-    private var firstPlaybackUpdateDone: CountDownLatch? = null
+    private var playbackUpdateDone = CompletableDeferred<Unit?>()
 
     private var activity: Activity? = null
 
@@ -376,18 +377,15 @@ class MediaController {
             // Save the controller
             MediaControllerCompat.setMediaController(activity!!, mediaController)
 
-            firstPlaybackUpdateDone = CountDownLatch(1)
             // Request [playback] to be updated
             sendCustomAction(MediaAction.RequestPlaybackUpdateEvent)
             // TODO TODO TODO TODO
-            thread {
-                firstPlaybackUpdateDone!!.await()
-                firstPlaybackUpdateDone = null
+            launch(Dispatchers.Main) {
+                playbackUpdateDone.await()
+                playbackUpdateDone = CompletableDeferred()
 
                 // Finish building the UI
-                launch(Dispatchers.Main) {
-                    eventListener?.onConnected()
-                }
+                eventListener?.onConnected()
             }
 
             Log.d("Mucify", "MediaBrowserController connection established")
@@ -409,7 +407,7 @@ class MediaController {
             when (event) {
                 MediaAction.SetPlaybackEvent -> {
                     _playback = extras.getParcelable(MediaAction.Playback)
-                    firstPlaybackUpdateDone?.countDown()
+                    playbackUpdateDone.complete(null)
 
                     launch(Dispatchers.Main) {
                         eventListener?.onSetPlayback()

@@ -20,6 +20,7 @@ import com.daton.media.data.MediaAction
 import com.daton.media.data.MetadataKeys
 import com.daton.media.device.*
 import com.daton.media.ext.*
+import com.daton.util.launch
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -27,9 +28,7 @@ import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.ui.PlayerNotificationManager
 import com.google.android.exoplayer2.util.EventLogger
 import com.google.android.exoplayer2.util.Util.constrainValue
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 
 class MediaPlaybackService : MediaBrowserServiceCompat(),
