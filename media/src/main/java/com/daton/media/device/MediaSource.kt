@@ -3,15 +3,19 @@ package com.daton.media.device
 import android.os.Environment
 import android.util.Log
 import com.daton.media.data.MediaId
-import com.daton.media.ext.*
+import com.daton.media.ext.isSongFile
+import com.daton.media.playback.Loop
+import com.daton.media.playback.Playback
+import com.daton.media.playback.Playlist
+import com.daton.media.playback.Song
 import com.daton.util.launch
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
-import java.util.*
-import kotlin.system.measureTimeMillis
 
 
 /**
@@ -188,16 +192,6 @@ class MediaSource {
         }
     }
 
-    private fun loadSongs(path: File?) {
-        if (path == null || !path.exists()) return
-        val files = path.listFiles() ?: return
-        for (file in files) {
-            if (file.isSongFile) {
-                songs += Song(file)
-            }
-        }
-    }
-
     fun clearSongs() {
         val shouldInvokeOnChanged = songs.size != 0
         songs.clear()
@@ -216,29 +210,6 @@ class MediaSource {
             if (playlist.mediaId == mediaId)
                 return playlist
         return null
-    }
-
-    private fun appendLog(text: String?) {
-        val logFile =
-            File(Environment.getExternalStorageDirectory().absolutePath + "/Documents/mucifylog.txt")
-        if (!logFile.exists()) {
-            try {
-                logFile.createNewFile()
-            } catch (e: IOException) {
-                e.printStackTrace()
-                TODO()
-            }
-        }
-        try {
-            // BufferedWriter for performance, true to set append to file flag
-            val buf = BufferedWriter(FileWriter(logFile, true))
-            buf.append(text)
-            buf.newLine()
-            buf.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
-            TODO()
-        }
     }
 
     interface IEventListener {

@@ -1,4 +1,4 @@
-package com.daton.media.device
+package com.daton.media.playback
 
 import android.graphics.Bitmap
 import android.net.Uri
@@ -12,12 +12,7 @@ import com.daton.media.data.MediaId
 import com.daton.media.data.MetadataKeys
 import com.daton.media.ext.*
 import com.google.android.exoplayer2.MediaItem
-import kotlinx.serialization.*
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.Serializable
 import java.io.File
 
 
@@ -87,7 +82,10 @@ class Loop(
         }.build()
 
     override fun toMediaBrowserMediaItem(): MediaBrowserCompat.MediaItem =
-        MediaBrowserCompat.MediaItem(toMediaDescriptionCompat(), 0)
+        MediaBrowserCompat.MediaItem(
+            toMediaDescriptionCompat(),
+            MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
+        )
 
     override fun toMediaDescriptionCompat(): MediaDescriptionCompat =
         MediaDescriptionCompat.Builder().also { desc ->

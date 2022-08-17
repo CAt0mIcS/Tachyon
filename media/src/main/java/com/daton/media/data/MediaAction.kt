@@ -27,12 +27,12 @@ object MediaAction {
     const val RequestMediaSourceReloadEvent = "com.daton.mucify.REQUEST_MEDIA_SOURCE_RELOAD"
 
     const val CombinePlaybackTypesChangedEvent = "com.daton.mucify.COMBINE_PLAYBACK_TYPES_CHANGED"
-    const val CombinePlaybackTypes = "CombinePlaybackTypes" // use putBoolean
+    const val CombinePlaybackTypes = "CombinePlaybackTypes" // use Bundle.putBoolean
 
     const val RequestPlaybackUpdateEvent = "com.daton.mucify.REQUEST_PLAYBACK_UPDATE"
 
     const val CurrentPlaylistIndexChangedEvent = "com.daton.mucify.CURRENT_PLAYLIST_INDEX_CHANGED"
-    const val CurrentPlaylistIndex = "CurrentPlaylistIndex"
+    const val CurrentPlaylistIndex = "CurrentPlaylistIndex" // use Bundle.putInt
 
 
     /**
@@ -42,5 +42,5 @@ object MediaAction {
     const val IsPlaying = "IsPlaying"  // use Bundle.putBoolean
 
     //    const val SetPlaybackEvent = "com.daton.mucify.SET_PLAYBACK"
-//    const val Playback = "Playback"  // use Bundle.putParcelable
+    //    const val Playback = "Playback"  // use Bundle.putParcelable
 }

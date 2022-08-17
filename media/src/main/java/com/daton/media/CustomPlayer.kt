@@ -1,7 +1,5 @@
 package com.daton.media
 
-import com.daton.media.data.MetadataKeys
-import com.daton.media.device.Playback
 import com.daton.media.ext.startTime
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.ForwardingPlayer

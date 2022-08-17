@@ -1,7 +1,5 @@
 package com.daton.user
 
-import com.daton.media.device.Loop
-
 /**
  * Manages synchronization of metadata and conflict resolution
  */

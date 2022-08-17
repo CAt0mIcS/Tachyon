@@ -8,11 +8,9 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.appcompat.app.AppCompatActivity
 import com.daton.media.MediaController
-import com.daton.media.device.Loop
-import com.daton.media.device.Playlist
-import com.daton.media.device.SinglePlayback
-import com.daton.media.device.Song
-import com.daton.media.ext.*
+import com.daton.media.playback.Loop
+import com.daton.media.playback.Playlist
+import com.daton.media.playback.Song
 import com.daton.mucify.R
 import com.daton.mucify.Util
 import com.daton.mucify.databinding.ActivityPlaylistPlayerBinding
@@ -64,7 +62,7 @@ class ActivityPlaylistPlayer : AppCompatActivity(),
             playbackStrings
         )
 
-        binding.rvPlaylistItems.setOnItemClickListener { adapterView, _, i, _ ->
+        binding.rvPlaylistItems.setOnItemClickListener { _, _, i, _ ->
             (controller.playback as Playlist).currentPlaylistIndex = i
             controller.play()
         }

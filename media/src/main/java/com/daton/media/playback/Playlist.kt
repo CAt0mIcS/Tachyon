@@ -1,4 +1,4 @@
-package com.daton.media.device
+package com.daton.media.playback
 
 import android.os.Bundle
 import android.os.Parcel
@@ -12,7 +12,6 @@ import com.daton.media.ext.mediaId
 import com.google.android.exoplayer2.MediaItem
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.serializer
 import java.io.File
 
 @Serializable
@@ -75,7 +74,10 @@ data class Playlist(
             .also { metadata -> metadata.mediaId = mediaId.toString() }.build()
 
     override fun toMediaBrowserMediaItem(): MediaBrowserCompat.MediaItem =
-        MediaBrowserCompat.MediaItem(toMediaDescriptionCompat(), 0)
+        MediaBrowserCompat.MediaItem(
+            toMediaDescriptionCompat(),
+            MediaBrowserCompat.MediaItem.FLAG_PLAYABLE or MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
+        )
 
     override fun toMediaDescriptionCompat(): MediaDescriptionCompat =
         MediaDescriptionCompat.Builder().also { desc ->

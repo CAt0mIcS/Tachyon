@@ -17,10 +17,14 @@ import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.daton.media.CustomPlayer
 import com.daton.media.data.MediaAction
+import com.daton.media.data.MediaId
 import com.daton.media.data.MetadataKeys
 import com.daton.media.device.*
 import com.daton.media.ext.*
-import com.daton.util.launch
+import com.daton.media.playback.Loop
+import com.daton.media.playback.Playback
+import com.daton.media.playback.Playlist
+import com.daton.media.playback.Song
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -89,7 +93,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
             addListener(PlayerEventListener())
 
             // TODO: Debug only
-            addAnalyticsListener(EventLogger(null))
+            addAnalyticsListener(EventLogger())
             repeatMode = Player.REPEAT_MODE_ONE
         })
     }
@@ -125,10 +129,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
         mediaSession = MediaSessionCompat(this, "com.daton.mucify")
             .apply {
                 setSessionActivity(sessionActivityPendingIntent)
-                setFlags(
-                    MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
-                            MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS
-                )
                 isActive = true
             }
 
@@ -378,9 +378,16 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                 "PlaybackPreparer.onPrepareFromMediaId with mediaId = $mediaId and playWhenReady = $playWhenReady"
             )
 
-            TODO()
-//            onSetPlayback(mediaId.toMediaId())
-            onPrepare(playWhenReady)
+            mediaSource.whenReady { successfullyInitialized ->
+                if (successfullyInitialized) {
+                    onSetPlayback(
+                        mediaSource.findById(MediaId.deserialize(mediaId))
+                            ?: TODO("Playback for media id $mediaId not found")
+                    )
+                    onPrepare(playWhenReady)
+                } else
+                    TODO("MediaSource initialization unsuccessful")
+            }
         }
 
         override fun onPrepareFromSearch(query: String, playWhenReady: Boolean, extras: Bundle?) {
@@ -400,6 +407,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
 
         override fun onSetPlayback(playback: Playback) {
             mediaSource.whenReady { successfullyInitialized ->
+                if (!successfullyInitialized)
+                    TODO("MediaSource initialization unsuccessful")
+
                 /**
                  * All songs/loops will be set as the internal playlist when playing song/loop
                  * When playing an actual playlist, all songs/loops in the playlist will be set as
@@ -503,7 +513,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
              */
             Log.d(MediaPlaybackService.TAG, "Loading MediaSource")
             mediaSource.loadSharedDeviceFiles()
-            val i = 0
         }
 
         override fun onCombinePlaybackTypesChanged(combine: Boolean) {
@@ -617,8 +626,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                         playback.endTime
                     )
 
-                    // TODO: Check if [playback.current is Loop] is true if playback.current is null
-                } else if (playback is Playlist && playback.current!! is Loop) {
+                } else if (playback is Playlist && playback.current != null && playback.current!! is Loop) {
                     // Loop in playlist
                     // TODO: Loops in playlist not seeking to beginning
                     val loop = playback.current!! as Loop

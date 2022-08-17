@@ -1,4 +1,4 @@
-package com.daton.media.device
+package com.daton.media.playback
 
 import android.graphics.Bitmap
 import android.net.Uri
@@ -101,7 +101,6 @@ class Song : SinglePlayback {
     override fun toMediaMetadata(): MediaMetadataCompat =
         MediaMetadataCompat.Builder().also { metadata ->
             metadata.mediaId = mediaId.toString()
-            metadata.path = path
             metadata.title = title
             metadata.artist = artist
             metadata.duration = duration
@@ -109,7 +108,10 @@ class Song : SinglePlayback {
         }.build()
 
     override fun toMediaBrowserMediaItem(): MediaBrowserCompat.MediaItem =
-        MediaBrowserCompat.MediaItem(toMediaDescriptionCompat(), 0)
+        MediaBrowserCompat.MediaItem(
+            toMediaDescriptionCompat(),
+            MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
+        )
 
     override fun toMediaDescriptionCompat(): MediaDescriptionCompat =
         MediaDescriptionCompat.Builder().also { desc ->
@@ -137,8 +139,6 @@ class Song : SinglePlayback {
 
     companion object {
 
-        const val SONG_SOURCE_SHARED_STORAGE = "*song-shared*"
-
         @JvmField
         val CREATOR = object : Parcelable.Creator<Song> {
             override fun createFromParcel(parcel: Parcel): Song = Song(parcel)
@@ -152,7 +152,7 @@ class Song : SinglePlayback {
 
         override fun serialize(encoder: Encoder, value: Song) {
             encoder.encodeSerializableValue(
-                kotlinx.serialization.serializer<MediaId>(),
+                kotlinx.serialization.serializer(),
                 value.mediaId
             )
         }

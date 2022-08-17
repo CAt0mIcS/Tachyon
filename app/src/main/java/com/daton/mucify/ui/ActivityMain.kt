@@ -2,8 +2,6 @@ package com.daton.mucify.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.support.v4.media.MediaBrowserCompat
 import android.util.Log
 import android.widget.ArrayAdapter
@@ -11,6 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.daton.media.MediaController
 import com.daton.media.data.MediaAction
 import com.daton.media.device.*
+import com.daton.media.playback.Loop
+import com.daton.media.playback.Playback
+import com.daton.media.playback.Playlist
+import com.daton.media.playback.Song
 import com.daton.mucify.R
 import com.daton.mucify.databinding.ActivityMainBinding
 import com.daton.mucify.permission.Permission
@@ -18,9 +20,6 @@ import com.daton.mucify.permission.PermissionManager
 import com.daton.user.User
 import com.daton.util.launch
 import kotlinx.coroutines.*
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.CountDownLatch
-import kotlin.concurrent.thread
 
 
 class ActivityMain : AppCompatActivity(),

@@ -7,8 +7,8 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import androidx.annotation.Nullable
 import androidx.fragment.app.Fragment
-import com.daton.media.device.Playlist
-import com.daton.media.device.SinglePlayback
+import com.daton.media.playback.Playlist
+import com.daton.media.playback.SinglePlayback
 import com.daton.mucify.databinding.FragmentAddToPlaylistBinding
 
 

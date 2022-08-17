@@ -2,8 +2,7 @@ package com.daton.media.ext
 
 import android.os.Bundle
 import com.daton.media.data.MetadataKeys
-import com.daton.media.device.Playback
-import com.daton.media.device.SinglePlayback
+import com.daton.media.playback.SinglePlayback
 import com.google.android.exoplayer2.MediaMetadata
 
 val MediaMetadata.duration: Long

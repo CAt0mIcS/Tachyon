@@ -5,9 +5,9 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import com.daton.media.R
 import com.daton.media.data.MediaAction
-import com.daton.media.device.Loop
-import com.daton.media.device.Playback
-import com.daton.media.device.Playlist
+import com.daton.media.playback.Loop
+import com.daton.media.playback.Playback
+import com.daton.media.playback.Playlist
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 

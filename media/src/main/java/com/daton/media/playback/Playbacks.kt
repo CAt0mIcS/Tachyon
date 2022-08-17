@@ -1,4 +1,4 @@
-package com.daton.media.device
+package com.daton.media.playback
 
 import android.graphics.Bitmap
 import android.os.Parcelable

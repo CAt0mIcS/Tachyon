@@ -1,12 +1,8 @@
 package com.daton.media.ext
 
 import android.graphics.Bitmap
-import android.net.Uri
-import android.os.Bundle
-import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import com.daton.media.data.MetadataKeys
-import com.google.android.exoplayer2.MediaItem
 import java.io.File
 
 /**
@@ -61,11 +57,3 @@ inline var MediaMetadataCompat.Builder.duration: Long
         putLong(MetadataKeys.Duration, value)
     }
 
-inline val MediaMetadataCompat.path: File
-    get() = File(getString(MetadataKeys.MediaUri))
-
-inline var MediaMetadataCompat.Builder.path: File
-    get() = throw IllegalAccessException("Cannot get from MediaMetadataCompat.Builder")
-    set(value) {
-        putString(MetadataKeys.MediaUri, value.absolutePath)
-    }

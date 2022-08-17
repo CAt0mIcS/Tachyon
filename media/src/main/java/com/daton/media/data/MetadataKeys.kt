@@ -9,10 +9,7 @@ object MetadataKeys {
     const val Artist = MediaMetadataCompat.METADATA_KEY_ARTIST
     const val AlbumArt = MediaMetadataCompat.METADATA_KEY_ALBUM_ART
     const val Playback = "com.daton.mucify.PLAYBACK"
-    const val StartTime = "com.daton.mucify.START_POS"
-    const val EndTime = "com.daton.mucify.END_POS"
+    const val StartTime = "com.daton.mucify.START_TIME"
+    const val EndTime = "com.daton.mucify.END_TIME"
     const val MediaId = MediaMetadataCompat.METADATA_KEY_MEDIA_ID
-    const val LoopName: String = "com.daton.mucify.LOOP_NAME"
-    const val PlaylistPlaybacks = "com.daton.mucify.PLAYLIST_PLAYBACKS"
-    const val CurrentPlaylistPlaybackIndex = "com.daton.mucify.CURRENT_PLAYLIST_PLAYBACK_INDEX"
 }

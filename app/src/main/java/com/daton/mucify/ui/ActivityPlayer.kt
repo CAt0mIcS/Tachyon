@@ -1,6 +1,5 @@
 package com.daton.mucify.ui
 
-import com.daton.mucify.R
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,10 +9,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.daton.media.MediaController
-import com.daton.media.device.Loop
-import com.daton.media.device.Playlist
-import com.daton.media.device.SinglePlayback
-import com.daton.media.device.Song
+import com.daton.media.playback.Loop
+import com.daton.media.playback.Playlist
+import com.daton.media.playback.SinglePlayback
+import com.daton.media.playback.Song
+import com.daton.mucify.R
 import com.daton.mucify.Util
 import com.daton.mucify.databinding.ActivityPlayerBinding
 import com.daton.user.User

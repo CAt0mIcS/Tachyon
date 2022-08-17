@@ -1,15 +1,14 @@
 package com.daton.media.data
 
 import android.os.Environment
-import com.daton.media.device.Loop
-import com.daton.media.device.Playlist
-import com.daton.media.device.Song
+import com.daton.media.playback.Loop
+import com.daton.media.playback.Playlist
+import com.daton.media.playback.Song
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.lang.Exception
 
 @Serializable
 class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
@@ -18,6 +17,8 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
         const val SONG_SOURCE_SHARED_STORAGE = "*song-shared-storage"
         const val LOOP_SOURCE = "*loop*"
         const val PLAYLIST_SOURCE = "*playlist*"
+
+        fun deserialize(value: String): MediaId = Json.decodeFromString(value)
 
         fun deserializeIfValid(value: String): MediaId? =
             try {
