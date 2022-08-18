@@ -131,7 +131,7 @@
 
                 <TextView
                     android:id="@+id/txtPos"
-                    style="@style/Theme.TachyonMusic"
+                    style="@style/Theme.Mucify"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:paddingStart="16dp"

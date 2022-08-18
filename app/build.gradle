@@ -9,7 +9,7 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "com.daton.tachyonmusic"
+        applicationId "com.daton.mucify"
         minSdk 21
         targetSdk 32
         versionCode 45
@@ -52,7 +52,7 @@ android {
         viewBinding = true
     }
 
-    namespace 'com.daton.tachyonmusic'
+    namespace 'com.daton.mucify'
 }
 
 dependencies {

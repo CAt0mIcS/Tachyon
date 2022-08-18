@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Tachyon</string>
+    <string name="app_name">Mucify</string>
     <string name="dialog_permission_title">Permission required</string>
     <string name="dialog_permission_default_message">Permission is required to run requested operation</string>
     <string name="dialog_permission_button_positive">OK</string>
