@@ -109,8 +109,26 @@ class Loop(
 
     override fun describeContents(): Int = 0
 
-    companion object CREATOR : Parcelable.Creator<Loop> {
-        override fun createFromParcel(parcel: Parcel): Loop = Loop(parcel)
-        override fun newArray(size: Int): Array<Loop?> = arrayOfNulls(size)
+    override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
+        "type" to TYPE_LOOP,
+        "name" to name,
+        "startTime" to startTime,
+        "endTime" to endTime,
+        "songPath" to path.absolutePath
+    )
+
+    companion object {
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<Loop> {
+            override fun createFromParcel(parcel: Parcel): Loop = Loop(parcel)
+            override fun newArray(size: Int): Array<Loop?> = arrayOfNulls(size)
+        }
+
+        fun createFromHashMap(map: HashMap<String, Any?>) = Loop(
+            map["name"]!! as String,
+            map["startTime"]!! as Long,
+            map["endTime"]!! as Long,
+            Song(File(map["songPath"]!! as String))
+        )
     }
 }

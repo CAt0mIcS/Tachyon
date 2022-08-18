@@ -137,6 +137,11 @@ class Song : SinglePlayback {
         return 0
     }
 
+    override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
+        "path" to path.absolutePath,
+        "type" to TYPE_SONG
+    )
+
     companion object {
 
         @JvmField
@@ -144,6 +149,8 @@ class Song : SinglePlayback {
             override fun createFromParcel(parcel: Parcel): Song = Song(parcel)
             override fun newArray(size: Int): Array<Song?> = arrayOfNulls(size)
         }
+
+        fun createFromHashMap(map: HashMap<String, Any?>) = Song(File(map["path"]!! as String))
     }
 //
 //    class Serializer : KSerializer<Song> {

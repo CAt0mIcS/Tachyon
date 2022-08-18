@@ -23,8 +23,6 @@ class ActivityPlaylistPlayer : AppCompatActivity(),
     private lateinit var binding: ActivityPlaylistPlayerBinding
     private val controller = MediaController()
 
-    private var audioUpdateInterval = 100
-
     private var playbackStrings = mutableListOf<String>()
 
     private var isSeeking = false
@@ -72,7 +70,7 @@ class ActivityPlaylistPlayer : AppCompatActivity(),
         binding.sbPos.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
             override fun onStopTrackingTouch(seekBar: SeekBar) {
                 isSeeking = false
-                controller.seekTo((seekBar.progress * audioUpdateInterval).toLong())
+                controller.seekTo((seekBar.progress * User.metadata.audioUpdateInterval).toLong())
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
@@ -85,7 +83,7 @@ class ActivityPlaylistPlayer : AppCompatActivity(),
                 fromUser: Boolean
             ) {
                 binding.txtPos.text =
-                    Util.millisecondsToReadableString(progress * audioUpdateInterval)
+                    Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
             }
         })
 
@@ -98,13 +96,13 @@ class ActivityPlaylistPlayer : AppCompatActivity(),
             override fun run() {
                 if (controller.isCreated && controller.isPlaying && !isSeeking) {
                     val currentPos: Int =
-                        (controller.currentPosition / audioUpdateInterval).toInt()
+                        (controller.currentPosition / User.metadata.audioUpdateInterval).toInt()
                     binding.sbPos.progress = currentPos
                 }
                 if (!isDestroyed)
                     handler.postDelayed(
                         this,
-                        audioUpdateInterval.toLong()
+                        User.metadata.audioUpdateInterval.toLong()
                     )
             }
         })
@@ -121,7 +119,7 @@ class ActivityPlaylistPlayer : AppCompatActivity(),
             binding.txtTitle.text = playlist.current!!.title
 
             binding.sbPos.max =
-                (playlist.current!!.duration / audioUpdateInterval).toInt()
+                (playlist.current!!.duration / User.metadata.audioUpdateInterval).toInt()
         }
     }
 

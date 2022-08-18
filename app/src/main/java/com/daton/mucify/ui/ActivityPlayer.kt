@@ -24,9 +24,6 @@ class ActivityPlayer : AppCompatActivity(),
     private val controller = MediaController()
     private lateinit var binding: ActivityPlayerBinding
 
-    private val audioUpdateInterval = 100
-    private val songIncDecInterval = 100
-
     private val handler = Handler(Looper.getMainLooper())
 
     private var isSeeking = false
@@ -55,13 +52,13 @@ class ActivityPlayer : AppCompatActivity(),
             override fun run() {
                 if (controller.isCreated && controller.isPlaying && !isSeeking) {
                     val currentPos: Int =
-                        (controller.currentPosition / audioUpdateInterval).toInt()
+                        (controller.currentPosition / User.metadata.audioUpdateInterval).toInt()
                     binding.sbPos.progress = currentPos
                 }
                 if (!isDestroyed)
                     handler.postDelayed(
                         this,
-                        audioUpdateInterval.toLong()
+                        User.metadata.audioUpdateInterval.toLong()
                     )
             }
         })
@@ -69,7 +66,7 @@ class ActivityPlayer : AppCompatActivity(),
         binding.sbPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
                 binding.txtPos.text =
-                    Util.millisecondsToReadableString(progress * audioUpdateInterval)
+                    Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
             }
 
             override fun onStartTrackingTouch(p0: SeekBar?) {
@@ -78,21 +75,21 @@ class ActivityPlayer : AppCompatActivity(),
 
             override fun onStopTrackingTouch(sb: SeekBar) {
                 isSeeking = false
-                controller.seekTo(sb.progress * audioUpdateInterval.toLong())
+                controller.seekTo(sb.progress * User.metadata.audioUpdateInterval.toLong())
             }
         })
 
         binding.sbStartPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
                 binding.txtStartPos.text =
-                    Util.millisecondsToReadableString(progress * audioUpdateInterval)
+                    Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
             }
 
             override fun onStartTrackingTouch(p0: SeekBar?) {}
 
             override fun onStopTrackingTouch(sb: SeekBar) {
                 controller.playback?.startTime =
-                    (sb.progress * audioUpdateInterval).toLong()
+                    (sb.progress * User.metadata.audioUpdateInterval).toLong()
             }
 
         })
@@ -100,14 +97,14 @@ class ActivityPlayer : AppCompatActivity(),
         binding.sbEndPos.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(p0: SeekBar?, progress: Int, p2: Boolean) {
                 binding.txtEndPos.text =
-                    Util.millisecondsToReadableString(progress * audioUpdateInterval)
+                    Util.millisecondsToReadableString(progress * User.metadata.audioUpdateInterval)
             }
 
             override fun onStartTrackingTouch(p0: SeekBar?) {}
 
             override fun onStopTrackingTouch(sb: SeekBar) {
                 controller.playback?.endTime =
-                    (sb.progress * audioUpdateInterval).toLong()
+                    (sb.progress * User.metadata.audioUpdateInterval).toLong()
             }
 
         })
@@ -115,51 +112,51 @@ class ActivityPlayer : AppCompatActivity(),
         binding.btnStartPosDec.setOnClickListener {
             val playback = controller.playback as SinglePlayback
             var time: Long =
-                playback.startTime - songIncDecInterval
+                playback.startTime - User.metadata.songIncDecInterval
             if (time < 0) time = 0
             playback.startTime = time
             binding.sbStartPos.progress =
-                (time / audioUpdateInterval).toInt()
+                (time / User.metadata.audioUpdateInterval).toInt()
         }
         binding.btnStartPosInc.setOnClickListener {
             val playback = controller.playback as SinglePlayback
             var time: Long =
-                playback.startTime + songIncDecInterval
+                playback.startTime + User.metadata.songIncDecInterval
             if (time > playback.duration) time = playback.duration
             playback.startTime = time
             binding.sbStartPos.progress =
-                (time / audioUpdateInterval).toInt()
+                (time / User.metadata.audioUpdateInterval).toInt()
         }
         binding.btnEndPosDec.setOnClickListener {
             val playback = controller.playback as SinglePlayback
             var time: Long =
-                playback.endTime - songIncDecInterval
+                playback.endTime - User.metadata.songIncDecInterval
             if (time < 0) time = 0
             playback.endTime = time
             binding.sbEndPos.progress =
-                (time / audioUpdateInterval).toInt()
+                (time / User.metadata.audioUpdateInterval).toInt()
         }
         binding.btnEndPosInc.setOnClickListener {
             val playback = controller.playback as SinglePlayback
             var time: Long =
-                playback.endTime + songIncDecInterval
+                playback.endTime + User.metadata.songIncDecInterval
             if (time > playback.duration) time = playback.duration
             playback.endTime = time
             binding.sbEndPos.progress =
-                (time / audioUpdateInterval).toInt()
+                (time / User.metadata.audioUpdateInterval).toInt()
         }
 
         binding.linearLayoutStartPos.setOnClickListener {
             val playback = controller.playback as SinglePlayback
             playback.startTime = controller.currentPosition
             binding.sbStartPos.progress =
-                (playback.startTime / audioUpdateInterval).toInt()
+                (playback.startTime / User.metadata.audioUpdateInterval).toInt()
         }
         binding.linearLayoutEndPos.setOnClickListener {
             val playback = controller.playback as SinglePlayback
             playback.endTime = controller.currentPosition
             binding.sbEndPos.progress =
-                (playback.endTime / audioUpdateInterval).toInt()
+                (playback.endTime / User.metadata.audioUpdateInterval).toInt()
         }
 
         binding.btnPlayPause.setOnClickListener { if (controller.isPaused) controller.play() else controller.pause() }
@@ -179,15 +176,15 @@ class ActivityPlayer : AppCompatActivity(),
             binding.txtArtist.text = playback.artist
 
             val duration =
-                (playback.duration / audioUpdateInterval).toInt()
+                (playback.duration / User.metadata.audioUpdateInterval).toInt()
             binding.sbPos.max = duration
             binding.sbStartPos.max = duration
             binding.sbEndPos.max = duration
 
             binding.sbStartPos.progress =
-                (playback.startTime / audioUpdateInterval).toInt()
+                (playback.startTime / User.metadata.audioUpdateInterval).toInt()
             binding.sbEndPos.progress =
-                (playback.endTime / audioUpdateInterval).toInt()
+                (playback.endTime / User.metadata.audioUpdateInterval).toInt()
         }
     }
 
@@ -196,65 +193,62 @@ class ActivityPlayer : AppCompatActivity(),
     }
 
     private fun displaySaveLoopDialog() {
-//        val editLoopName = EditText(this)
-//        AlertDialog.Builder(this)
-//            .setMessage("Enter loop name")
-//            .setView(editLoopName)
-//            .setPositiveButton("Save") { _, _ ->
-//                val loopName = editLoopName.text.toString()
-//                if (loopName.isEmpty()) {
-//                    Toast.makeText(
-//                        this,
-//                        "Failed to save loop: Name mustn't be empty",
-//                        Toast.LENGTH_LONG
-//                    ).show()
-//                    return@setPositiveButton
-//                }
-//
-//                User.metadata += Loop(
-//                    loopName,
-//                    (binding.sbStartPos.progress * audioUpdateInterval).toLong(),
-//                    (binding.sbEndPos.progress * audioUpdateInterval).toLong(),
-//                    // Already a loop but modified
-//                    if (controller.playback is Loop) (controller.playback as Loop).song else controller.playback as Song
-//                )
-//                controller.sendLoops(loops)
-//                saveToLocal()
-//                User.uploadMetadata()
-//
-//            }
-//            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-//            .create().show()
+        val editLoopName = EditText(this)
+        AlertDialog.Builder(this)
+            .setMessage("Enter loop name")
+            .setView(editLoopName)
+            .setPositiveButton("Save") { _, _ ->
+                val loopName = editLoopName.text.toString()
+                if (loopName.isEmpty()) {
+                    Toast.makeText(
+                        this,
+                        "Failed to save loop: Name mustn't be empty",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@setPositiveButton
+                }
+
+                User.metadata += Loop(
+                    loopName,
+                    (binding.sbStartPos.progress * User.metadata.audioUpdateInterval).toLong(),
+                    (binding.sbEndPos.progress * User.metadata.audioUpdateInterval).toLong(),
+                    // Already a loop but modified
+                    if (controller.playback is Loop) (controller.playback as Loop).song else controller.playback as Song
+                )
+                controller.sendLoops(User.metadata.loops)
+                User.upload()
+
+            }
+            .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .create().show()
     }
 
     private fun displaySavePlaylistDialog() {
-//        FragmentAddToPlaylist(
-//            controller.playback!! as SinglePlayback,
-//            playlists
-//        ).apply {
-//            onCreateNewPlaylist = { name ->
-//                User.metadata += Playlist(name)
-//                saveToLocal()
-//                User.uploadMetadata()
-//                controller.sendPlaylists(playlists)
-//            }
-//
-//            onChanged = { toAdd, playlistToAddTo ->
-//
-//                if (playlistToAddTo.playbacks.contains(toAdd))
-//                    playlistToAddTo.playbacks.remove(toAdd)
-//                else
-//                    playlistToAddTo.playbacks.add(toAdd)
-//
-//                saveToLocal()
-//                User.uploadMetadata()
-//                controller.sendPlaylists(playlists)
-//            }
-//
-//            supportFragmentManager.beginTransaction()
-//                .addToBackStack(null)
-//                .add(R.id.fragment_container_view, this)
-//                .commit()
-//        }
+        FragmentAddToPlaylist(
+            controller.playback!! as SinglePlayback,
+            User.metadata.playlists
+        ).apply {
+            onCreateNewPlaylist = { name ->
+                User.metadata += Playlist(name)
+                User.upload()
+                controller.sendPlaylists(User.metadata.playlists)
+            }
+
+            onChanged = { toAdd, playlistToAddTo ->
+
+                if (playlistToAddTo.playbacks.contains(toAdd))
+                    playlistToAddTo.playbacks.remove(toAdd)
+                else
+                    playlistToAddTo.playbacks.add(toAdd)
+
+                User.upload()
+                controller.sendPlaylists(User.metadata.playlists)
+            }
+
+            supportFragmentManager.beginTransaction()
+                .addToBackStack(null)
+                .add(R.id.fragment_container_view, this)
+                .commit()
+        }
     }
 }

@@ -67,10 +67,10 @@ class ActivityMain : AppCompatActivity(),
          * Send loops and playlists to service
          * TODO: Optimize this as [MediaSource] updates multiple times
          */
-//        User.onLogin {
-//            mediaController.sendLoops(User.metadata.loops)
-//            mediaController.sendPlaylists(User.metadata.playlists)
-//        }
+        User.onSignIn {
+            mediaController.sendLoops(User.metadata.loops)
+            mediaController.sendPlaylists(User.metadata.playlists)
+        }
 
         Log.d(TAG, "onCreate finished")
     }
@@ -123,6 +123,7 @@ class ActivityMain : AppCompatActivity(),
                     ActivitySignIn::class.java
                 )
             )
+            mediaLoaded = false
         }
         binding.btnLogout.setOnClickListener { User.signOut() }
 

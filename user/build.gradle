@@ -11,8 +11,8 @@ android {
     defaultConfig {
         minSdk 21
         targetSdk 32
-        versionCode 8
-        versionName "Dev 8"
+        versionCode 9
+        versionName "Dev 9"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -46,7 +46,13 @@ android {
 
 dependencies {
     implementation platform('com.google.firebase:firebase-bom:30.3.2')
-    implementation 'com.google.firebase:firebase-core:21.1.0'
-    implementation 'com.google.firebase:firebase-auth-ktx:21.0.7'
-    implementation 'com.google.firebase:firebase-analytics-ktx:21.1.0'
+    implementation 'com.google.firebase:firebase-core'
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.1'
+
+    implementation project(path: ':media')
+    implementation project(path: ':util')
 }

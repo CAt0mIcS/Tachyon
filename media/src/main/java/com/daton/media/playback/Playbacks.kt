@@ -21,6 +21,7 @@ abstract class Playback : Parcelable {
     abstract val mediaId: MediaId
     abstract val path: File?
 
+
     companion object {
 //        private val module = SerializersModule {
 //            polymorphic(Playback::class) {
@@ -37,6 +38,18 @@ abstract class Playback : Parcelable {
 //            useArrayPolymorphism = true
 //            serializersModule = module
 //        }
+
+        const val TYPE_SONG = 0
+        const val TYPE_LOOP = 1
+        const val TYPE_PLAYLIST = 2
+
+        fun createFromHashMap(map: HashMap<String, Any?>) =
+            when ((map["type"]!! as Long).toInt()) {
+                TYPE_SONG -> Song.createFromHashMap(map)
+                TYPE_LOOP -> Loop.createFromHashMap(map)
+                TYPE_PLAYLIST -> Playlist.createFromHashMap(map)
+                else -> TODO("Maybe use enums?")
+            }
     }
 
     @Transient
@@ -51,6 +64,8 @@ abstract class Playback : Parcelable {
     abstract fun toMediaMetadata(): MediaMetadataCompat
     abstract fun toMediaBrowserMediaItem(): MediaBrowserCompat.MediaItem
     abstract fun toMediaDescriptionCompat(): MediaDescriptionCompat
+
+    abstract fun toHashMap(): HashMap<String, Any?>
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

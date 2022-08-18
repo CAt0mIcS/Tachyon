@@ -51,6 +51,14 @@ data class Playlist(
     val current: SinglePlayback?
         get() = if (currentPlaylistIndex == -1) null else playbacks[currentPlaylistIndex]
 
+    constructor(
+        name: String,
+        playbacks: MutableList<SinglePlayback>,
+        currentPlaylistIndex: Int
+    ) : this(name, playbacks) {
+        this.currentPlaylistIndex = currentPlaylistIndex
+    }
+
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         // TODO: More efficient way to convert Array<Parcelable> to MutableList<SinglePlayback>
@@ -97,8 +105,31 @@ data class Playlist(
 
     override fun toString(): String = mediaId.toString()
 
-    companion object CREATOR : Parcelable.Creator<Playlist> {
-        override fun createFromParcel(parcel: Parcel): Playlist = Playlist(parcel)
-        override fun newArray(size: Int): Array<Playlist?> = arrayOfNulls(size)
+    override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
+        "type" to TYPE_PLAYLIST,
+        "name" to name,
+        "currPlIdx" to currentPlaylistIndex,
+        "playbacks" to playbacks.map { it.toHashMap() }
+    )
+
+    companion object {
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<Playlist> {
+            override fun createFromParcel(parcel: Parcel): Playlist = Playlist(parcel)
+            override fun newArray(size: Int): Array<Playlist?> = arrayOfNulls(size)
+        }
+
+        fun createFromHashMap(map: HashMap<String, Any?>): Playlist {
+            val name = map["name"]!! as String
+            val idx = (map["currPlIdx"] as Long).toInt()
+
+            val playbacksMaps = map["playbacks"]!! as ArrayList<HashMap<String, Any?>>
+
+            val playbacks = playbacksMaps.map {
+                Playback.createFromHashMap(it) as SinglePlayback
+            } as MutableList<SinglePlayback>
+
+            return Playlist(name, playbacks, idx)
+        }
     }
 }
