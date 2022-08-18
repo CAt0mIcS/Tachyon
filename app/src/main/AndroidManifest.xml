@@ -18,10 +18,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Mucify">
 
-        <profileable android:shell="true"/>
+        <profileable android:shell="true" />
 
         <activity
-            android:name="com.daton.mucify.ui.ActivityMain"
+            android:name=".ui.ActivityMain"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,15 +31,23 @@
         </activity>
 
         <activity
-            android:name="com.daton.mucify.ui.ActivitySettings"
+            android:name=".ui.ActivitySettings"
             android:exported="true" />
 
         <activity
-            android:name="com.daton.mucify.ui.ActivityPlayer"
+            android:name=".ui.ActivityPlayer"
             android:exported="true" />
 
         <activity
-            android:name="com.daton.mucify.ui.ActivityPlaylistPlayer"
+            android:name=".ui.ActivityPlaylistPlayer"
+            android:exported="true" />
+
+        <activity
+            android:name=".ui.ActivitySignIn"
+            android:exported="true" />
+
+        <activity
+            android:name=".ui.ActivityRegister"
             android:exported="true" />
 
 

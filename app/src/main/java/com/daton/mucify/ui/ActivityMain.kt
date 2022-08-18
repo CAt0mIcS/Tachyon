@@ -61,16 +61,16 @@ class ActivityMain : AppCompatActivity(),
         mediaController.create(this)
         mediaController.registerEventListener(this)
 
-        launch(Dispatchers.IO) { User.create(this@ActivityMain) }
+//        launch(Dispatchers.IO) { User.create(this@ActivityMain) }
 
         /**
          * Send loops and playlists to service
          * TODO: Optimize this as [MediaSource] updates multiple times
          */
-        User.onLogin {
+//        User.onLogin {
 //            mediaController.sendLoops(User.metadata.loops)
 //            mediaController.sendPlaylists(User.metadata.playlists)
-        }
+//        }
 
         Log.d(TAG, "onCreate finished")
     }
@@ -94,10 +94,13 @@ class ActivityMain : AppCompatActivity(),
             if (hasStoragePermission) {
 
                 if (!mediaLoaded) {
-                    if (!User.loggedIn) {
-                        mediaController.sendLoops(User.metadata.loops)
-                        mediaController.sendPlaylists(User.metadata.playlists)
-                    }
+//                    if (!User.loggedIn) {
+//                        mediaController.sendLoops(User.metadata.loops)
+//                        mediaController.sendPlaylists(User.metadata.playlists)
+//                    }
+
+                    mediaController.sendLoops(arrayListOf())
+                    mediaController.sendPlaylists(arrayListOf())
 
                     mediaController.loadMediaSource()
                     mediaLoaded = true
@@ -113,8 +116,15 @@ class ActivityMain : AppCompatActivity(),
     private fun setupUI(playbacks: List<Playback>) {
         Log.d(TAG, "Setting up ui")
 
-        binding.btnLogin.setOnClickListener { User.login(this) }
-        binding.btnLogout.setOnClickListener { User.logout(this) }
+        binding.btnLogin.setOnClickListener {
+            startActivity(
+                Intent(
+                    this,
+                    ActivitySignIn::class.java
+                )
+            )
+        }
+        binding.btnLogout.setOnClickListener { User.signOut() }
 
         loadHistoryStrings()
         sendInformation()
@@ -133,8 +143,8 @@ class ActivityMain : AppCompatActivity(),
                 mediaController.play()
 
 //            User.metadata.addHistory(mediaId)
-            User.metadata.saveToLocal()
-            User.uploadMetadata()
+//            User.metadata.saveToLocal()
+//            User.uploadMetadata()
 
             if (playback is Playlist) {
                 val intent = Intent(this@ActivityMain, ActivityPlaylistPlayer::class.java)
@@ -146,14 +156,14 @@ class ActivityMain : AppCompatActivity(),
 
         }
 
-        binding.rvHistory.setOnItemClickListener { _, _, i, _ ->
-            playMedia(User.metadata.history[i])
-        }
-
-        User.metadata.onHistoryChanged = {
-            loadHistoryStrings()
-            (binding.rvHistory.adapter as ArrayAdapter<*>).notifyDataSetChanged()
-        }
+//        binding.rvHistory.setOnItemClickListener { _, _, i, _ ->
+//            playMedia(User.metadata.history[i])
+//        }
+//
+//        User.metadata.onHistoryChanged = {
+//            loadHistoryStrings()
+//            (binding.rvHistory.adapter as ArrayAdapter<*>).notifyDataSetChanged()
+//        }
 
         binding.relLayoutSongs.setOnClickListener {
             val fragment = FragmentSelectAudio(playbacks)
@@ -175,28 +185,28 @@ class ActivityMain : AppCompatActivity(),
      * Sends basic things like [User.metadata.combineDifferentPlaybackTypes] to the [MediaBrowserCompat]
      */
     private fun sendInformation() {
-        mediaController.sendCustomAction(
-            MediaAction.CombinePlaybackTypesChangedEvent,
-            Bundle().apply {
-                putBoolean(
-                    MediaAction.CombinePlaybackTypes,
-                    User.metadata.combineDifferentPlaybackTypes
-                )
-            })
+//        mediaController.sendCustomAction(
+//            MediaAction.CombinePlaybackTypesChangedEvent,
+//            Bundle().apply {
+//                putBoolean(
+//                    MediaAction.CombinePlaybackTypes,
+//                    User.metadata.combineDifferentPlaybackTypes
+//                )
+//            })
     }
 
     private fun loadHistoryStrings() {
         historyStrings.clear()
-        historyStrings.addAll(User.metadata.history.map {
-            when (it) {
-                is Song -> {
-                    "*song*" + it.title + " - " + it.artist
-                }
-                is Loop -> {
-                    "*loop*" + it.name + " - " + it.song.title + " - " + it.song.artist
-                }
-                else -> it.mediaId.source
-            }
-        })
+//        historyStrings.addAll(User.metadata.history.map {
+//            when (it) {
+//                is Song -> {
+//                    "*song*" + it.title + " - " + it.artist
+//                }
+//                is Loop -> {
+//                    "*loop*" + it.name + " - " + it.song.title + " - " + it.song.artist
+//                }
+//                else -> it.mediaId.source
+//            }
+//        })
     }
 }

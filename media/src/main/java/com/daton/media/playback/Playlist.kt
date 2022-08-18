@@ -14,7 +14,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import java.io.File
 
-@Serializable
+//@Serializable
 data class Playlist(
     val name: String,
     val playbacks: MutableList<SinglePlayback> = mutableListOf()

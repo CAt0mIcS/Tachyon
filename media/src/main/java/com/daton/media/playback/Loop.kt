@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
 import java.io.File
 
 
-@Serializable
+//@Serializable
 class Loop(
     val name: String,
     val song: Song
