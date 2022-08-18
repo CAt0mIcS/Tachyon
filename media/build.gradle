@@ -43,7 +43,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
-    namespace 'com.daton.media'
+    namespace 'com.daton.tachyonmusic.media'
 }
 
 dependencies {
