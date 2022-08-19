@@ -114,7 +114,7 @@ class Loop(
         "name" to name,
         "startTime" to startTime,
         "endTime" to endTime,
-        "songPath" to path.absolutePath
+        "songMediaId" to song.mediaId.source
     )
 
     companion object {
@@ -128,7 +128,7 @@ class Loop(
             map["name"]!! as String,
             map["startTime"]!! as Long,
             map["endTime"]!! as Long,
-            Song(File(map["songPath"]!! as String))
+            Song(MediaId(map["songMediaId"]!! as String))
         )
     }
 }

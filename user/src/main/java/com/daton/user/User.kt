@@ -10,16 +10,33 @@ import kotlinx.coroutines.Dispatchers
 
 
 object User {
+
     var metadata: Metadata = Metadata()
 
-    private var onSignInCallback: (() -> Unit)? = null
+    private var eventListener: IEventListener? = null
+    private var isCreated = false
+
+    fun create() {
+        if (isCreated)
+            return
+        isCreated = true
+        initialize { metadataUpdated ->
+            if (metadataUpdated)
+                eventListener?.onMetadataChanged()
+        }
+    }
+
+    fun registerEventListener(listener: IEventListener) {
+        eventListener = listener
+    }
 
     fun signIn(email: String, password: String, onComplete: (Result<AuthResult>) -> Unit) {
         Firebase.auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener {
                 onComplete(Result(it))
-                initialize {
-                    onSignInCallback?.invoke()
+                initialize { metadataUpdated ->
+                    if (metadataUpdated)
+                        eventListener?.onMetadataChanged()
                 }
             }
     }
@@ -28,37 +45,52 @@ object User {
         Firebase.auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener {
                 onComplete(Result(it))
-                initialize {
-
-                }
-            }
-            .addOnCanceledListener {
-                TODO("Handle Firebase register cancelled")
-            }
-            .addOnFailureListener {
-                TODO("Handle Firebase failure")
+                initialize { }
             }
     }
 
     fun signOut() = Firebase.auth.signOut()
 
-    fun onSignIn(action: () -> Unit) {
-        onSignInCallback = action
-    }
+    val signedIn: Boolean
+        get() = Firebase.auth.currentUser != null
 
-    private fun initialize(onDone: () -> Unit) {
-        Firebase.firestore.collection("users")
-            .document(Firebase.auth.currentUser!!.uid)
-            .get()
-            .addOnCompleteListener { task ->
-                if (task.result.data != null)
-                    launch(Dispatchers.IO) {
-                        metadata = Metadata(task.result.data!!)
-                        onDone()
+    private fun initialize(onDone: (Boolean /*metadataUpdated*/) -> Unit) {
+        if (signedIn) {
+            Firebase.firestore.collection("users")
+                .document(Firebase.auth.currentUser!!.uid)
+                .get()
+                .addOnCompleteListener { task ->
+                    if (task.result.data != null)
+                        launch(Dispatchers.IO) {
+                            val previous = metadata
+                            metadata = Metadata(task.result.data!!)
+                            onDone(previous != metadata)
+                        }
+                    else
+                        onDone(false)
+                }
+
+        } else {
+            Firebase.firestore.disableNetwork().addOnCompleteListener {
+                Firebase.firestore.collection("users")
+                    .get()
+                    .addOnCompleteListener { task ->
+                        if (task.result.documents.isNotEmpty() && task.result.documents[0].data != null)
+                            launch(Dispatchers.IO) {
+                                val previous = metadata
+                                metadata = Metadata(task.result.documents[0].data!!)
+                                onDone(previous != metadata)
+                            }
+                        else
+                        /**
+                         * This means that the user has never signed in before. Thus we set [metadataUpdated]
+                         * to true to indicate that the default metadata will be used
+                         */
+                            onDone(true)
                     }
-                else
-                    onDone()
+                Firebase.firestore.enableNetwork()
             }
+        }
     }
 
     // TODO: Use [Firebase.firestore.update] (https://firebase.google.com/docs/firestore/manage-data/add-data#update-data) && (https://firebase.google.com/docs/firestore/manage-data/add-data#update_elements_in_an_array)
@@ -73,5 +105,13 @@ object User {
     class Result<T>(task: Task<T>) {
         val isSuccessful = task.isSuccessful
         val exception = task.exception
+    }
+
+    interface IEventListener {
+        fun onMetadataChanged()
+    }
+
+    class EventListener : IEventListener {
+        override fun onMetadataChanged() {}
     }
 }

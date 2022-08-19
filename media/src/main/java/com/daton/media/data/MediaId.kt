@@ -14,7 +14,7 @@ import java.io.File
 class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
 
     companion object {
-        const val SONG_SOURCE_SHARED_STORAGE = "*song-shared-storage"
+        const val SONG_SOURCE_SHARED_STORAGE = "*song-shared-storage*"
         const val LOOP_SOURCE = "*loop*"
         const val PLAYLIST_SOURCE = "*playlist*"
 

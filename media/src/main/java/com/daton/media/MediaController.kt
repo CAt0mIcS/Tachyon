@@ -20,8 +20,7 @@ import com.daton.media.playback.Playlist
 import com.daton.media.playback.Song
 import com.daton.media.service.MediaPlaybackService
 import com.daton.util.launch
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 
 
 class MediaController {
@@ -38,7 +37,8 @@ class MediaController {
     private val subscribedIds = mutableMapOf<String, (List<Playback>) -> Unit>()
 
     // TODO: Why is [playback] not updating when the controller is connected
-    private var playbackUpdateDone = CompletableDeferred<Unit?>()
+    private var playbackUpdateDone = Job()
+    private var browserConnected = Job()
 
     private var activity: Activity? = null
 
@@ -89,6 +89,15 @@ class MediaController {
     fun registerEventListener(listener: IEventListener?) {
         eventListener = listener
     }
+
+    /**
+     * Suspends until the [browser] is connected to the [MediaBrowserServiceCompat]
+     */
+    suspend fun awaitConnection() =
+        withContext(Dispatchers.IO) {
+            browserConnected.join()
+            browserConnected = Job()
+        }
 
     /**
      * Pauses the currently playing audio. Crashes if the Playback hasn't been started yet.
@@ -379,12 +388,14 @@ class MediaController {
             // Save the controller
             MediaControllerCompat.setMediaController(activity!!, mediaController)
 
+            browserConnected.complete()
+
             // Request [playback] to be updated
             sendCustomAction(MediaAction.RequestPlaybackUpdateEvent)
             // TODO TODO TODO TODO
             launch(Dispatchers.Main) {
-                playbackUpdateDone.await()
-                playbackUpdateDone = CompletableDeferred()
+                playbackUpdateDone.join()
+                playbackUpdateDone = Job()
 
                 // Finish building the UI
                 eventListener?.onConnected()
@@ -409,7 +420,7 @@ class MediaController {
             when (event) {
                 MediaAction.SetPlaybackEvent -> {
                     _playback = extras.getParcelable(MediaAction.Playback)
-                    playbackUpdateDone.complete(null)
+                    playbackUpdateDone.complete()
 
                     launch(Dispatchers.Main) {
                         eventListener?.onSetPlayback()

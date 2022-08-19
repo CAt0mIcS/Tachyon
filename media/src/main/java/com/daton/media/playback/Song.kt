@@ -138,7 +138,7 @@ class Song : SinglePlayback {
     }
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
-        "path" to path.absolutePath,
+        "mediaId" to mediaId.source,
         "type" to TYPE_SONG
     )
 
@@ -150,7 +150,8 @@ class Song : SinglePlayback {
             override fun newArray(size: Int): Array<Song?> = arrayOfNulls(size)
         }
 
-        fun createFromHashMap(map: HashMap<String, Any?>) = Song(File(map["path"]!! as String))
+        fun createFromHashMap(map: HashMap<String, Any?>) =
+            Song(MediaId(map["mediaId"]!! as String))
     }
 //
 //    class Serializer : KSerializer<Song> {

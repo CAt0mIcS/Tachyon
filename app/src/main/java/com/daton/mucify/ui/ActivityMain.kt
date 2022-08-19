@@ -23,9 +23,12 @@ import kotlinx.coroutines.*
 
 
 class ActivityMain : AppCompatActivity(),
-    MediaController.IEventListener by MediaController.EventListener() {
+    MediaController.IEventListener by MediaController.EventListener(),
+    User.IEventListener by User.EventListener() {
     companion object {
         const val TAG = "ActivityMain"
+
+        // TODO: ViewBinding
         private var mediaLoaded = false
     }
 
@@ -34,7 +37,7 @@ class ActivityMain : AppCompatActivity(),
     private lateinit var binding: ActivityMainBinding
     private val mediaController = MediaController()
 
-    private val permissionResultAvailable = CompletableDeferred<Unit?>()
+    private val permissionResultAvailable = Job()
 
     private val historyStrings = mutableListOf<String>()
 
@@ -54,23 +57,15 @@ class ActivityMain : AppCompatActivity(),
                     Log.i(TAG, "Storage permission granted")
                 } else
                     Log.i(TAG, "Storage permission NOT granted")
-                permissionResultAvailable.complete(null)
+                permissionResultAvailable.complete()
             }
         }
 
         mediaController.create(this)
         mediaController.registerEventListener(this)
 
-//        launch(Dispatchers.IO) { User.create(this@ActivityMain) }
-
-        /**
-         * Send loops and playlists to service
-         * TODO: Optimize this as [MediaSource] updates multiple times
-         */
-        User.onSignIn {
-            mediaController.sendLoops(User.metadata.loops)
-            mediaController.sendPlaylists(User.metadata.playlists)
-        }
+        User.create()
+        User.registerEventListener(this)
 
         Log.d(TAG, "onCreate finished")
     }
@@ -88,20 +83,12 @@ class ActivityMain : AppCompatActivity(),
     override fun onConnected() {
         launch(Dispatchers.IO) {
             // Wait for permission dialog to be accepted or denied
-            permissionResultAvailable.await()
+            permissionResultAvailable.join()
 
             // Notify service to load local device files
             if (hasStoragePermission) {
 
                 if (!mediaLoaded) {
-//                    if (!User.loggedIn) {
-//                        mediaController.sendLoops(User.metadata.loops)
-//                        mediaController.sendPlaylists(User.metadata.playlists)
-//                    }
-
-                    mediaController.sendLoops(arrayListOf())
-                    mediaController.sendPlaylists(arrayListOf())
-
                     mediaController.loadMediaSource()
                     mediaLoaded = true
                 }
@@ -110,6 +97,18 @@ class ActivityMain : AppCompatActivity(),
                     setupUI(items)
                 }
             }
+        }
+    }
+
+    // TODO: When first opening a freshly installed app the [MediaSource] loads and sets the state to
+    // TODO: STATE_INITIALIZED, but [setupUI] is never called after that
+
+    override fun onMetadataChanged() {
+        launch(Dispatchers.IO) {
+            mediaController.awaitConnection()
+            Log.d(TAG, "Sending new loops and playlist to the MediaBrowserServiceCompat")
+            mediaController.sendLoops(User.metadata.loops)
+            mediaController.sendPlaylists(User.metadata.playlists)
         }
     }
 
@@ -123,7 +122,6 @@ class ActivityMain : AppCompatActivity(),
                     ActivitySignIn::class.java
                 )
             )
-            mediaLoaded = false
         }
         binding.btnLogout.setOnClickListener { User.signOut() }
 
@@ -186,14 +184,14 @@ class ActivityMain : AppCompatActivity(),
      * Sends basic things like [User.metadata.combineDifferentPlaybackTypes] to the [MediaBrowserCompat]
      */
     private fun sendInformation() {
-//        mediaController.sendCustomAction(
-//            MediaAction.CombinePlaybackTypesChangedEvent,
-//            Bundle().apply {
-//                putBoolean(
-//                    MediaAction.CombinePlaybackTypes,
-//                    User.metadata.combineDifferentPlaybackTypes
-//                )
-//            })
+        mediaController.sendCustomAction(
+            MediaAction.CombinePlaybackTypesChangedEvent,
+            Bundle().apply {
+                putBoolean(
+                    MediaAction.CombinePlaybackTypes,
+                    User.metadata.combineDifferentPlaybackTypes
+                )
+            })
     }
 
     private fun loadHistoryStrings() {

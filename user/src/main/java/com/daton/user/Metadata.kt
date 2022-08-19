@@ -51,4 +51,19 @@ class Metadata() {
     operator fun plusAssign(playlist: Playlist) {
         playlists += playlist
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Metadata) return false
+
+        if (ignoreAudioFocus != other.ignoreAudioFocus) return false
+        if (combineDifferentPlaybackTypes != other.combineDifferentPlaybackTypes) return false
+        if (songIncDecInterval != other.songIncDecInterval) return false
+        if (audioUpdateInterval != other.audioUpdateInterval) return false
+        if (maxPlaybacksInHistory != other.maxPlaybacksInHistory) return false
+        if (loops != other.loops) return false
+        if (playlists != other.playlists) return false
+
+        return true
+    }
 }
