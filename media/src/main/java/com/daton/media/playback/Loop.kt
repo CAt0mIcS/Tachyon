@@ -57,6 +57,13 @@ class Loop(
         this.endTime = endTime
     }
 
+    constructor(mediaId: MediaId, startTime: Long, endTime: Long) : this(
+        mediaId.source.replace(Type.Loop.toString(), ""),
+        startTime,
+        endTime,
+        Song(mediaId.underlyingMediaId!!)
+    )
+
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readLong(),
@@ -110,11 +117,9 @@ class Loop(
     override fun describeContents(): Int = 0
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
-        "type" to TYPE_LOOP,
-        "name" to name,
+        "mediaId" to mediaId.toString(),
         "startTime" to startTime,
-        "endTime" to endTime,
-        "songMediaId" to song.mediaId.source
+        "endTime" to endTime
     )
 
     companion object {
@@ -124,11 +129,13 @@ class Loop(
             override fun newArray(size: Int): Array<Loop?> = arrayOfNulls(size)
         }
 
-        fun createFromHashMap(map: HashMap<String, Any?>) = Loop(
-            map["name"]!! as String,
-            map["startTime"]!! as Long,
-            map["endTime"]!! as Long,
-            Song(MediaId(map["songMediaId"]!! as String))
-        )
+        fun createFromHashMap(map: HashMap<String, Any?>): Loop {
+            val mediaId = MediaId.deserialize(map["mediaId"]!! as String)
+            return Loop(
+                mediaId,
+                map["startTime"]!! as Long,
+                map["endTime"]!! as Long,
+            )
+        }
     }
 }

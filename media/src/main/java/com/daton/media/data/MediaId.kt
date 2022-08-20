@@ -2,6 +2,7 @@ package com.daton.media.data
 
 import android.os.Environment
 import com.daton.media.playback.Loop
+import com.daton.media.playback.Playback
 import com.daton.media.playback.Playlist
 import com.daton.media.playback.Song
 import kotlinx.serialization.Serializable
@@ -14,10 +15,6 @@ import java.io.File
 class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
 
     companion object {
-        const val SONG_SOURCE_SHARED_STORAGE = "*song-shared-storage*"
-        const val LOOP_SOURCE = "*loop*"
-        const val PLAYLIST_SOURCE = "*playlist*"
-
         fun deserialize(value: String): MediaId = Json.decodeFromString(value)
 
         fun deserializeIfValid(value: String): MediaId? =
@@ -33,7 +30,7 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
     }
 
     constructor(song: Song) : this(
-        SONG_SOURCE_SHARED_STORAGE +
+        Playback.Type.SongSharedStorage.toString() +
                 song.path.absolutePath.substring(
                     song.path.absolutePath.indexOf(
                         EXTERNAL_STORAGE_DIRECTORY
@@ -41,18 +38,18 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
                 )
     )
 
-    constructor(loop: Loop) : this(LOOP_SOURCE + loop.name, loop.song.mediaId)
+    constructor(loop: Loop) : this(Playback.Type.Loop.toString() + loop.name, loop.song.mediaId)
 
-    constructor(playlist: Playlist) : this(PLAYLIST_SOURCE + playlist.name)
+    constructor(playlist: Playlist) : this(Playback.Type.Playlist.toString() + playlist.name)
 
     val isSong: Boolean
-        get() = source.contains(SONG_SOURCE_SHARED_STORAGE)
+        get() = source.contains(Playback.Type.SongSharedStorage.toString())
 
     val isLoop: Boolean
-        get() = source.contains(LOOP_SOURCE) && underlyingMediaId != null
+        get() = source.contains(Playback.Type.Loop.toString()) && underlyingMediaId != null
 
     val isPlaylist: Boolean
-        get() = source.contains(PLAYLIST_SOURCE)
+        get() = source.contains(Playback.Type.Playlist.toString())
 
     val path: File
         get() {
@@ -61,7 +58,7 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
                 return File(
                     "$EXTERNAL_STORAGE_DIRECTORY/${
                         source.replaceFirst(
-                            SONG_SOURCE_SHARED_STORAGE, ""
+                            Playback.Type.SongSharedStorage.toString(), ""
                         )
                     }"
                 )

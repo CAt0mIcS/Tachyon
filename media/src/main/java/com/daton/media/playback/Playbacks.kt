@@ -7,12 +7,7 @@ import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import com.daton.media.data.MediaId
 import com.google.android.exoplayer2.MediaItem
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.serializer
 import java.io.File
 
 
@@ -21,6 +16,15 @@ abstract class Playback : Parcelable {
     abstract val mediaId: MediaId
     abstract val path: File?
 
+    enum class Type(val value: Int) {
+        SongSharedStorage(0), Loop(1), Playlist(2);
+
+        companion object {
+            fun fromLong(value: Long) = values().first { it.value.toLong() == value }
+        }
+
+        override fun toString() = "*$value*"
+    }
 
     companion object {
 //        private val module = SerializersModule {
@@ -39,16 +43,11 @@ abstract class Playback : Parcelable {
 //            serializersModule = module
 //        }
 
-        const val TYPE_SONG = 0
-        const val TYPE_LOOP = 1
-        const val TYPE_PLAYLIST = 2
-
         fun createFromHashMap(map: HashMap<String, Any?>) =
-            when ((map["type"]!! as Long).toInt()) {
-                TYPE_SONG -> Song.createFromHashMap(map)
-                TYPE_LOOP -> Loop.createFromHashMap(map)
-                TYPE_PLAYLIST -> Playlist.createFromHashMap(map)
-                else -> TODO("Maybe use enums?")
+            when (Type.fromLong(map["type"]!! as Long)) {
+                Type.SongSharedStorage -> Song.createFromHashMap(map)
+                Type.Loop -> Loop.createFromHashMap(map)
+                Type.Playlist -> Playlist.createFromHashMap(map)
             }
     }
 

@@ -59,6 +59,14 @@ data class Playlist(
         this.currentPlaylistIndex = currentPlaylistIndex
     }
 
+    constructor(
+        mediaId: MediaId,
+        playbacks: MutableList<SinglePlayback>,
+        currentPlaylistIndex: Int
+    ) : this(
+        mediaId.source.replace(Type.Playlist.toString(), ""), playbacks, currentPlaylistIndex
+    )
+
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         // TODO: More efficient way to convert Array<Parcelable> to MutableList<SinglePlayback>
@@ -106,8 +114,7 @@ data class Playlist(
     override fun toString(): String = mediaId.toString()
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
-        "type" to TYPE_PLAYLIST,
-        "name" to name,
+        "mediaId" to mediaId.source,
         "currPlIdx" to currentPlaylistIndex,
         "playbacks" to playbacks.map { it.toHashMap() }
     )
@@ -120,7 +127,7 @@ data class Playlist(
         }
 
         fun createFromHashMap(map: HashMap<String, Any?>): Playlist {
-            val name = map["name"]!! as String
+            val mediaId = MediaId(map["mediaId"]!! as String)
             val idx = (map["currPlIdx"] as Long).toInt()
 
             val playbacksMaps = map["playbacks"]!! as ArrayList<HashMap<String, Any?>>
@@ -129,7 +136,7 @@ data class Playlist(
                 Playback.createFromHashMap(it) as SinglePlayback
             } as MutableList<SinglePlayback>
 
-            return Playlist(name, playbacks, idx)
+            return Playlist(mediaId, playbacks, idx)
         }
     }
 }

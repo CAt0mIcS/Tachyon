@@ -13,13 +13,6 @@ import com.daton.media.data.MetadataKeys
 import com.daton.media.data.SongMetadata
 import com.daton.media.ext.*
 import com.google.android.exoplayer2.MediaItem
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import java.io.File
 
 //@Serializable(with = Song.Serializer::class)
@@ -138,8 +131,7 @@ class Song : SinglePlayback {
     }
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
-        "mediaId" to mediaId.source,
-        "type" to TYPE_SONG
+        "mediaId" to mediaId.source
     )
 
     companion object {
