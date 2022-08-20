@@ -16,7 +16,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Mucify">
+        android:theme="@style/Theme.Tachyon">
 
         <profileable android:shell="true" />
 
@@ -25,7 +25,7 @@
             android:value="true" />
 
         <activity
-            android:name=".ui.ActivityMain"
+            android:name="com.tachyonmusic.ui.ActivityMain"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,23 +35,23 @@
         </activity>
 
         <activity
-            android:name=".ui.ActivitySettings"
+            android:name="com.tachyonmusic.ui.ActivitySettings"
             android:exported="true" />
 
         <activity
-            android:name=".ui.ActivityPlayer"
+            android:name="com.tachyonmusic.ui.ActivityPlayer"
             android:exported="true" />
 
         <activity
-            android:name=".ui.ActivityPlaylistPlayer"
+            android:name="com.tachyonmusic.ui.ActivityPlaylistPlayer"
             android:exported="true" />
 
         <activity
-            android:name=".ui.ActivitySignIn"
+            android:name="com.tachyonmusic.ui.ActivitySignIn"
             android:exported="true" />
 
         <activity
-            android:name=".ui.ActivityRegister"
+            android:name="com.tachyonmusic.ui.ActivityRegister"
             android:exported="true" />
 
 
@@ -60,7 +60,7 @@
        with the Android Auto app.
        -->
         <service
-            android:name="com.daton.media.service.MediaPlaybackService"
+            android:name="com.tachyonmusic.media.service.MediaPlaybackService"
             android:enabled="true"
             android:exported="false">
 

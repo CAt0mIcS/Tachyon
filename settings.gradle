@@ -12,7 +12,7 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "Mucify"
+rootProject.name = "Tachyon"
 include ':app'
 include ':media'
 include ':user'

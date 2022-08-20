@@ -12,11 +12,11 @@ android {
     compileSdk 32
 
     defaultConfig {
-        applicationId "com.daton.mucify"
+        applicationId "com.tachyonmusic"
         minSdk 21
         targetSdk 32
-        versionCode 50
-        versionName "Dev 50"
+        versionCode 51
+        versionName "Dev 51"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -55,7 +55,7 @@ android {
         viewBinding = true
     }
 
-    namespace 'com.daton.mucify'
+    namespace 'com.tachyonmusic.app'
 }
 
 dependencies {
