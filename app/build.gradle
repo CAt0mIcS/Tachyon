@@ -4,8 +4,9 @@ plugins {
 
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.21'
 
-    id 'com.google.firebase.crashlytics'
+    id 'com.google.gms.google-services'
     id 'com.google.firebase.firebase-perf'
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -15,8 +16,8 @@ android {
         applicationId "com.tachyonmusic"
         minSdk 21
         targetSdk 32
-        versionCode 51
-        versionName "Dev 51"
+        versionCode 52
+        versionName "Dev 52"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -35,8 +36,8 @@ android {
     buildTypes {
         release {
             debuggable false
-//            shrinkResources true
-            minifyEnabled false
+            shrinkResources true
+            minifyEnabled true
 
             // TODO: Some serialization class is missing when [minifyEnabled] = true, use (-keep class ... { *; }) in proguard file
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
