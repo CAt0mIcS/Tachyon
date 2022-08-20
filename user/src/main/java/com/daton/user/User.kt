@@ -96,9 +96,13 @@ object User {
     // TODO: Use [Firebase.firestore.update] (https://firebase.google.com/docs/firestore/manage-data/add-data#update-data) && (https://firebase.google.com/docs/firestore/manage-data/add-data#update_elements_in_an_array)
 
     fun upload() {
-        Firebase.firestore.collection("users")
-            .document(Firebase.auth.currentUser!!.uid)
-            .set(metadata.toHashMap())
+        if (signedIn) {
+            Firebase.firestore.collection("users")
+                .document(Firebase.auth.currentUser!!.uid)
+                .set(metadata.toHashMap())
+        }
+        // TODO: If user never signed in before: Store locally
+        // TODO: If user currently not signed in: Tell firebase to upload once online and signed in
     }
 
 

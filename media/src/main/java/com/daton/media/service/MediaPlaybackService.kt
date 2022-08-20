@@ -304,9 +304,13 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
     }
 
     override fun onMediaSourceChanged(root: String, mediaId: String?) {
+        Log.d(TAG, "onMediaSourceChanged with root $root and mediaId $mediaId")
         browserTree = BrowserTree(mediaSource)
+        // TODO: Performance of that?
         if (root != BrowserTree.ROOT)
             notifyChildrenChanged(BrowserTree.ROOT)
+        // END-TODO
+
         notifyChildrenChanged(root)
 
         if (mediaId != null) {

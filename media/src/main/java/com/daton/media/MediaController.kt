@@ -274,7 +274,6 @@ class MediaController {
                 parentId: String,
                 children: MutableList<MediaBrowserCompat.MediaItem>
             ) {
-                Log.d(TAG, "Media source changed")
                 val mapped = children.map {
                     it.description.extras!!.getParcelable<Playback>(MetadataKeys.Playback)!!
                 }

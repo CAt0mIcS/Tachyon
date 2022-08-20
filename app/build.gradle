@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.21'
+    id 'com.google.firebase.crashlytics'
 }
 
 android {
@@ -12,8 +13,8 @@ android {
         applicationId "com.daton.mucify"
         minSdk 21
         targetSdk 32
-        versionCode 48
-        versionName "Dev 48"
+        versionCode 49
+        versionName "Dev 49"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 

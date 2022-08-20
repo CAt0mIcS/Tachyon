@@ -63,8 +63,6 @@ class MediaSource {
         )
     }
 
-    private var songsLoaded = false
-
     /**
      * Path to the external storage music directory
      */
@@ -75,7 +73,7 @@ class MediaSource {
     var state: Int = STATE_CREATED
         private set(value) {
             Log.d(TAG, "Setting state to $value")
-            if (songsLoaded && _loops != null && _playlists != null && value == STATE_INITIALIZED || value == STATE_ERROR) {
+            if (value == STATE_INITIALIZED || value == STATE_ERROR) {
                 synchronized(onReadyListeners) {
                     field = value
                     onReadyListeners.forEach { listener ->
@@ -90,34 +88,20 @@ class MediaSource {
 
     val songs = mutableListOf<Song>()
 
-    private var _loops: MutableList<Loop>? = null
+    var loops: MutableList<Loop> = mutableListOf()
         set(value) {
             field = value
-            field!!.sortBy { it.name }
+            field.sortBy { it.name }
             eventListener?.onMediaSourceChanged(BrowserTree.LOOP_ROOT, null)
-            state = STATE_INITIALIZED
         }
 
-    var loops: MutableList<Loop>
-        set(value) {
-            _loops = value
-        }
-        get() = _loops!!
 
-
-    private var _playlists: MutableList<Playlist>? = null
+    var playlists: MutableList<Playlist> = mutableListOf()
         set(value) {
             field = value
-            field!!.sortBy { it.name }
+            field.sortBy { it.name }
             eventListener?.onMediaSourceChanged(BrowserTree.PLAYLIST_ROOT, null)
-            state = STATE_INITIALIZED
         }
-
-    var playlists: MutableList<Playlist>
-        set(value) {
-            _playlists = value
-        }
-        get() = _playlists!!
 
     private var onReadyListeners = mutableListOf<(Boolean) -> Unit>()
 
@@ -125,6 +109,7 @@ class MediaSource {
         get() = if (state == STATE_INITIALIZED) field else null
 
     init {
+
         /**
          * Music directory may not be available, if so we'll set the state to STATE_ERROR
          */
@@ -150,7 +135,6 @@ class MediaSource {
      */
     fun loadSharedDeviceFiles() {
         state = STATE_INITIALIZING
-        songsLoaded = false
 
         songs.clear()
         // TODO: Search subdirectories of [musicDirectory]
@@ -173,7 +157,6 @@ class MediaSource {
             songs.sortBy { it.title + it.artist }
 
             eventListener?.onMediaSourceChanged(BrowserTree.SONG_ROOT, null)
-            songsLoaded = true
             state = STATE_INITIALIZED
         }
     }

@@ -93,8 +93,8 @@ class ActivityMain : AppCompatActivity(),
                     mediaLoaded = true
                 }
 
-                mediaController.subscribe(BrowserTree.ROOT) { items ->
-                    setupUI(items)
+                withContext(Dispatchers.Main) {
+                    setupUI()
                 }
             }
         }
@@ -112,7 +112,7 @@ class ActivityMain : AppCompatActivity(),
         }
     }
 
-    private fun setupUI(playbacks: List<Playback>) {
+    private fun setupUI() {
         Log.d(TAG, "Setting up ui")
 
         binding.btnLogin.setOnClickListener {
@@ -165,7 +165,7 @@ class ActivityMain : AppCompatActivity(),
 //        }
 
         binding.relLayoutSongs.setOnClickListener {
-            val fragment = FragmentSelectAudio(playbacks)
+            val fragment = FragmentSelectAudio(mediaController)
             supportFragmentManager.beginTransaction()
                 .addToBackStack(null)
                 .add(R.id.fragment_container_view, fragment)
