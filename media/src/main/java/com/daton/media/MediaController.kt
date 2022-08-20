@@ -367,9 +367,8 @@ class MediaController {
     /**
      * Removes the callback which was previously subscribed to with [subscribe]
      */
-    fun unsubscribe(id: String) {
-        Log.d(TAG, "Unsubscribing id $id")
-
+    fun unsubscribe(vararg ids: String) = ids.forEach { id ->
+        Log.d(TAG, "Unsubscribing from $id")
         browser.unsubscribe(id)
         subscribedIds -= id
     }

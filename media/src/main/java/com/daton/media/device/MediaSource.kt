@@ -155,8 +155,6 @@ class MediaSource {
 
             // Order alphabetically by song title
             songs.sortBy { it.title + it.artist }
-
-            eventListener?.onMediaSourceChanged(BrowserTree.SONG_ROOT, null)
             state = STATE_INITIALIZED
         }
     }

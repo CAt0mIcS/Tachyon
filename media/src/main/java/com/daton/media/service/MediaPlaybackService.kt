@@ -40,15 +40,24 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
 
     companion object {
         const val TAG = "MediaPlaybackService"
+
+        // Doesn't start loading files yet as we need to wait on storage permission to be granted
+        // TODO: Make not static:
+        // TODO:   When going into another activity that doesn't require a connection to
+        // TODO:   the [MediaBrowserController] and then switching back to the Activity that does,
+        // TODO:   e.g. ActivityMain will recreate the [MediaPlaybackService] which will have been destroyed
+        // TODO:   because there were no more browsers connected to it. This might be solvable using ViewBinding
+        // TODO:   The problem is that the [mediaSource] will be recreated, too and would need to be reloaded
+        // TODO:   unnecessarily. Thus we make the [mediaSource] static for now, because we're not using ViewBinding yet.
+        // TODO:   Once we are we can store [ActivityMain.mediaLoaded] in the ViewBinding, meaning the MediaSource
+        // TODO:   will be reloaded if the Activity completely restarts (Would still be an unnecessary reload of MediaSource)
+        private val mediaSource = MediaSource()
     }
 
     // The current player will either be an ExoPlayer (for local playback) or a CastPlayer (for
     // remote playback through a Cast device).
     private lateinit var currentPlayer: CustomPlayer
     private var playerMessage: PlayerMessage? = null
-
-    // Doesn't start loading files yet as we need to wait on storage permission to be granted
-    private val mediaSource = MediaSource()
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mediaSessionConnector: MediaSessionConnector
@@ -235,15 +244,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
         val resultsSent = mediaSource.whenReady { successfullyInitialized ->
             if (successfullyInitialized) {
                 val children = browserTree[parentId]
-                try {
-                    result.sendResult(children)
-                } catch (_: IllegalStateException) {
-                    Log.e(
-                        TAG,
-                        "java.lang.IllegalStateException: sendResult() called when either sendResult() or sendError() had already been called for: /"
-                    )
-                }
-
+                result.sendResult(children)
             } else {
                 TODO("Handle error that MediaSource wasn't initialized properly")
             }

@@ -5,17 +5,29 @@ import com.daton.media.playback.Loop
 import com.daton.media.playback.Playback
 import com.daton.media.playback.Playlist
 import com.daton.media.playback.Song
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import java.io.File
 
-@Serializable
+@Serializable(with = MediaId.Serializer::class)
 class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
 
     companion object {
-        fun deserialize(value: String): MediaId = Json.decodeFromString(value)
+        fun deserialize(value: String): MediaId {
+            val strings = value.split("|||", ignoreCase = false, limit = 2)
+            return if (strings.size == 1)
+                MediaId(strings[0])
+            else
+                MediaId(strings[0], deserialize(strings[1]))
+        }
 
         fun deserializeIfValid(value: String): MediaId? =
             try {
@@ -76,5 +88,20 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
         return true
     }
 
-    override fun toString(): String = Json.encodeToString(this)
+    override fun toString(): String {
+        return if (underlyingMediaId != null)
+            "${source}|||${underlyingMediaId}"
+        else
+            source
+    }
+
+    class Serializer : KSerializer<MediaId> {
+        override fun deserialize(decoder: Decoder): MediaId =
+            deserialize(decoder.decodeString())
+
+        override val descriptor: SerialDescriptor =
+            PrimitiveSerialDescriptor("mediaId", PrimitiveKind.STRING)
+
+        override fun serialize(encoder: Encoder, value: MediaId) = encoder.encodeString(toString())
+    }
 }

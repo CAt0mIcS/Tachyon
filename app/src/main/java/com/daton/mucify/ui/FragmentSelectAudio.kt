@@ -45,6 +45,11 @@ class FragmentSelectAudio(private val controller: MediaController?) : Fragment()
 
     override fun onDestroyView() {
         super.onDestroyView()
+        controller?.unsubscribe(
+            BrowserTree.SONG_ROOT,
+            BrowserTree.LOOP_ROOT,
+            BrowserTree.PLAYLIST_ROOT
+        )
         _binding = null
     }
 
