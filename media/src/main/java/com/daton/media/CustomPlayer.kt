@@ -1,5 +1,6 @@
 package com.daton.media
 
+import android.os.Looper
 import com.daton.media.ext.startTime
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.ForwardingPlayer
@@ -10,6 +11,9 @@ import com.google.android.exoplayer2.PlayerMessage
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands
  */
 class CustomPlayer(player: Player) : ForwardingPlayer(player) {
+
+    private var loopMessage: PlayerMessage? = null
+
 
     override fun getAvailableCommands(): Player.Commands {
         return with(wrappedPlayer.availableCommands) {
@@ -65,6 +69,37 @@ class CustomPlayer(player: Player) : ForwardingPlayer(player) {
             // If the player position is less than [maxSeekToPreviousPosition], we'll seek to
             // the beginning of the song
             seekTo(mediaMetadata.startTime)
+        }
+    }
+
+    fun cancelLoopMessage() = loopMessage?.cancel()
+
+    fun postLoopMessage(startTime: Long, endTime: Long) {
+        // Cancel any previous messages
+        loopMessage?.cancel()
+
+        loopMessage = createMessage { _, payload ->
+            seekTo(payload as Long)
+        }.apply {
+            looper = Looper.getMainLooper()
+            deleteAfterDelivery = false
+            payload = startTime
+            setPosition(endTime)
+            send()
+        }
+    }
+
+    fun postLoopMessageForPlaylist(endTime: Long) {
+        // Cancel any previous messages
+        loopMessage?.cancel()
+
+        loopMessage = createMessage { _, _ ->
+            seekToNext()
+        }.apply {
+            looper = Looper.getMainLooper()
+            deleteAfterDelivery = true
+            setPosition(endTime)
+            send()
         }
     }
 }

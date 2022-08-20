@@ -52,12 +52,17 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
         // TODO:   Once we are we can store [ActivityMain.mediaLoaded] in the ViewBinding, meaning the MediaSource
         // TODO:   will be reloaded if the Activity completely restarts (Would still be an unnecessary reload of MediaSource)
         private val mediaSource = MediaSource()
+
+        /**
+         * Checks if we need to stop the foreground service when the playback is paused to make
+         * the notification swipeable
+         */
+        private val REQUIRES_OLD_NOTIFICATION_HANDLING: Boolean = Build.VERSION.SDK_INT <= 26
     }
 
     // The current player will either be an ExoPlayer (for local playback) or a CastPlayer (for
     // remote playback through a Cast device).
     private lateinit var currentPlayer: CustomPlayer
-    private var playerMessage: PlayerMessage? = null
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var mediaSessionConnector: MediaSessionConnector
@@ -175,7 +180,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
             /**
              * When updating e.g. the endTime in [PlaybackPreparer.onSetEndTime] the metadata of the [MediaController]
              * needs to be updated with the new one
-             * TODO: We now need to maintain [MediaMetadata.toMediaMetadataCompat] and update it when [MediaMetadataCompat] changes
              * TODO: What to return if [player.currentMediaItem] == null
              */
             setMediaMetadataProvider { player ->
@@ -212,10 +216,17 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
             registerCustomCommandReceiver(preparer)
             setCustomActionProviders(*preparer.getCustomActions())
 
+            /**
+             * Required because when connecting phone via Bluetooth and playing the next
+             * media item through the Bluetooth interface (e.g. pressing next button on headphones)
+             * the next item won't be played if we're at the end of the playlist
+             */
             setMediaButtonEventHandler(MediaButtonEventHandler())
 
-            // If not next playback is present in queue we still want to dispatch ACTION_SKIP_TO_NEXT
-            // to loop back to the beginning of the playlist (Logic in CustomPlayer)
+            /**
+             * If no next playback is present in queue we still want to dispatch ACTION_SKIP_TO_NEXT
+             * to loop back to the beginning of the playlist (Logic in CustomPlayer)
+             */
             setDispatchUnsupportedActionsEnabled(true)
         }
 
@@ -250,9 +261,11 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
             }
         }
 
-        // If the results are not ready, the service must "detach" the results before
-        // the method returns. After the source is ready, the lambda above will run,
-        // and the caller will be notified that the results are ready.
+        /**
+         * If the results are not ready, the service must "detach" the results before
+         * the method returns. After the source is ready, the lambda above will run,
+         * and the caller will be notified that the results are ready.
+         */
         if (!resultsSent) {
             Log.d(TAG, "MediaPlaybackService.onLoadChildren: results not sent")
             result.detach()
@@ -272,7 +285,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
         // TODO: Notification not swipeable on some devices if foreground service is still attached to it
         // TODO: Figure out the exact build numbers where this is the case and only call
         // TODO: hideNotification if necessary
-        if (!currentPlayer.isPlaying && requiresOldNotificationHandling())
+        if (!currentPlayer.isPlaying && REQUIRES_OLD_NOTIFICATION_HANDLING)
             notificationManager.hideNotification()
     }
 
@@ -311,7 +324,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
         if (root != BrowserTree.ROOT)
             notifyChildrenChanged(BrowserTree.ROOT)
         // END-TODO
-
         notifyChildrenChanged(root)
 
         if (mediaId != null) {
@@ -341,6 +353,10 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
         }
     }
 
+
+    /***********************************************************************************************
+     ***************************** PLAYBACK PREPARER ***********************************************
+     **********************************************************************************************/
     private inner class PlaybackPreparer : MediaSessionConnectorPlaybackPreparer() {
         override fun onCommand(
             player: Player,
@@ -483,13 +499,13 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
 
             // Start time and end time are back to default: Delete message
             if (startTime == 0L && endTime == currentPlayer.duration) {
-                playerMessage?.cancel()
+                currentPlayer.cancelLoopMessage()
                 return
             }
 
             if (currentPlayer.currentPosition < startTime || currentPlayer.currentPosition > endTime)
                 currentPlayer.seekTo(startTime)
-            postLoopMessage(startTime, endTime)
+            currentPlayer.postLoopMessage(startTime, endTime)
 
             playback.startTime = startTime
         }
@@ -501,13 +517,13 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
 
             // Start time and end time are back to default: Delete message
             if (startTime == 0L && endTime == currentPlayer.duration) {
-                playerMessage?.cancel()
+                currentPlayer.cancelLoopMessage()
                 return
             }
 
             if (currentPlayer.currentPosition < startTime || currentPlayer.currentPosition > endTime)
                 currentPlayer.seekTo(startTime)
-            postLoopMessage(startTime, endTime)
+            currentPlayer.postLoopMessage(startTime, endTime)
 
             playback.endTime = endTime
         }
@@ -545,9 +561,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
         }
     }
 
-    /**
-     * Listen for notification events.
-     */
+    /***********************************************************************************************
+     ************************ PLAYER NOTIFICATION LISTENER *****************************************
+     **********************************************************************************************/
     private inner class PlayerNotificationListener :
         PlayerNotificationManager.NotificationListener {
         override fun onNotificationPosted(
@@ -574,9 +590,9 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
     }
 
 
-    /**
-     * Listen for events from ExoPlayer.
-     */
+    /***********************************************************************************************
+     **************************** PLAYER EVENT LISTENER ********************************************
+     **********************************************************************************************/
     private inner class PlayerEventListener : Player.Listener {
 
         @Deprecated("Deprecated in Java")
@@ -590,7 +606,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                         // TODO: Figure out the exact build numbers where this is the case and limit it
 
                         //TODO: Maybe introduce a close button whenever [requiresOldNotificationHandling] is true
-                        if (!playWhenReady && requiresOldNotificationHandling()) {
+                        if (!playWhenReady && REQUIRES_OLD_NOTIFICATION_HANDLING) {
                             // If playback is paused we remove the foreground state which allows the
                             // notification to be dismissed.
                             stopForeground(false)
@@ -626,10 +642,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                 if (playback is Loop) {
                     // Single loop
                     currentPlayer.seekTo(playback.startTime)
-                    postLoopMessage(
-                        playback.startTime,
-                        playback.endTime
-                    )
+                    currentPlayer.postLoopMessage(playback.startTime, playback.endTime)
 
                 } else if (playback is Playlist && playback.current != null && playback.current!! is Loop) {
                     // Loop in playlist
@@ -637,7 +650,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                     val loop = playback.current!! as Loop
 
                     currentPlayer.seekTo(loop.startTime)
-                    postLoopMessageForPlaylist(loop.endTime)
+                    currentPlayer.postLoopMessageForPlaylist(loop.endTime)
                 }
             }
         }
@@ -694,42 +707,6 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                 }
             }
             return false
-        }
-    }
-
-
-    /**
-     * Checks if we need to stop the foreground service when the playback is paused to make
-     * the notification swipeable
-     */
-    private fun requiresOldNotificationHandling(): Boolean = Build.VERSION.SDK_INT <= 26
-
-    private fun postLoopMessage(startTime: Long, endTime: Long) {
-        // Cancel any previous messages
-        playerMessage?.cancel()
-
-        playerMessage = currentPlayer.createMessage { _, payload ->
-            currentPlayer.seekTo(payload as Long)
-        }.apply {
-            looper = Looper.getMainLooper()
-            deleteAfterDelivery = false
-            payload = startTime
-            setPosition(endTime)
-            send()
-        }
-    }
-
-    private fun postLoopMessageForPlaylist(endTime: Long) {
-        // Cancel any previous messages
-        playerMessage?.cancel()
-
-        playerMessage = currentPlayer.createMessage { _, _ ->
-            currentPlayer.seekToNext()
-        }.apply {
-            looper = Looper.getMainLooper()
-            deleteAfterDelivery = true
-            setPosition(endTime)
-            send()
         }
     }
 }
