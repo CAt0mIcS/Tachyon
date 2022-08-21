@@ -63,7 +63,7 @@ object User {
                     if (task.result.data != null)
                         launch(Dispatchers.IO) {
                             val previous = metadata
-                            metadata = Metadata(task.result.data!!)
+                            metadata = Metadata(task.result.data!!, previous.onHistoryChanged)
                             onDone(previous != metadata)
                         }
                     else
@@ -78,7 +78,10 @@ object User {
                         if (task.result.documents.isNotEmpty() && task.result.documents[0].data != null)
                             launch(Dispatchers.IO) {
                                 val previous = metadata
-                                metadata = Metadata(task.result.documents[0].data!!)
+                                metadata = Metadata(
+                                    task.result.documents[0].data!!,
+                                    previous.onHistoryChanged
+                                )
                                 onDone(previous != metadata)
                             }
                         else
@@ -96,6 +99,10 @@ object User {
     // TODO: Use [Firebase.firestore.update] (https://firebase.google.com/docs/firestore/manage-data/add-data#update-data) && (https://firebase.google.com/docs/firestore/manage-data/add-data#update_elements_in_an_array)
 
     fun upload() {
+        // TODO: When not signed in and history changes, signing in will only download
+        // TODO: history from firebase and not keep local changes. Should be fixed once we figure
+        // TODO: out how to remove this check and query the upload if the user is not signed in
+
         if (signedIn) {
             Firebase.firestore.collection("users")
                 .document(Firebase.auth.currentUser!!.uid)

@@ -13,6 +13,8 @@ import com.tachyonmusic.media.playback.Playback
 import com.tachyonmusic.media.playback.Playlist
 import com.tachyonmusic.app.R
 import com.tachyonmusic.app.databinding.ActivityMainBinding
+import com.tachyonmusic.media.playback.Loop
+import com.tachyonmusic.media.playback.Song
 import com.tachyonmusic.permission.Permission
 import com.tachyonmusic.permission.PermissionManager
 import com.tachyonmusic.user.User
@@ -123,7 +125,6 @@ class ActivityMain : AppCompatActivity(),
         }
         binding.btnLogout.setOnClickListener { User.signOut() }
 
-        loadHistoryStrings()
         sendInformation()
 
         binding.rvHistory.adapter = ArrayAdapter(
@@ -139,10 +140,6 @@ class ActivityMain : AppCompatActivity(),
             if (playback !is Playlist || playback.currentPlaylistIndex != -1)
                 mediaController.play()
 
-//            User.metadata.addHistory(mediaId)
-//            User.metadata.saveToLocal()
-//            User.uploadMetadata()
-
             if (playback is Playlist) {
                 val intent = Intent(this@ActivityMain, ActivityPlaylistPlayer::class.java)
                 startActivity(intent)
@@ -153,14 +150,16 @@ class ActivityMain : AppCompatActivity(),
 
         }
 
-//        binding.rvHistory.setOnItemClickListener { _, _, i, _ ->
-//            playMedia(User.metadata.history[i])
-//        }
-//
-//        User.metadata.onHistoryChanged = {
-//            loadHistoryStrings()
-//            (binding.rvHistory.adapter as ArrayAdapter<*>).notifyDataSetChanged()
-//        }
+        binding.rvHistory.setOnItemClickListener { _, _, i, _ ->
+            playMedia(User.metadata.history[i])
+        }
+
+        // TODO: Use [User.onMetadataChanged] and specify which part of metadata changed
+        User.metadata.onHistoryChanged = {
+            Log.d(TAG, "onHistoryChanged called in ActivityMain")
+            loadHistoryStrings(it)
+            (binding.rvHistory.adapter as ArrayAdapter<*>).notifyDataSetChanged()
+        }
 
         binding.relLayoutSongs.setOnClickListener {
             val fragment = FragmentSelectAudio(mediaController)
@@ -178,6 +177,14 @@ class ActivityMain : AppCompatActivity(),
         }
     }
 
+    // TODO: Called like 4 times when pressing next in notification
+    override fun onSetPlayback() {
+        if (mediaController.playback != null) {
+            User.metadata.addHistory(mediaController.playback!!)
+            User.upload()
+        }
+    }
+
     /**
      * Sends basic things like [User.metadata.combineDifferentPlaybackTypes] to the [MediaBrowserCompat]
      */
@@ -192,18 +199,19 @@ class ActivityMain : AppCompatActivity(),
             })
     }
 
-    private fun loadHistoryStrings() {
+    private fun loadHistoryStrings(history: MutableList<Playback>) {
+        Log.d(TAG, "Loading history strings for ${history.size} items")
         historyStrings.clear()
-//        historyStrings.addAll(User.metadata.history.map {
-//            when (it) {
-//                is Song -> {
-//                    "*song*" + it.title + " - " + it.artist
-//                }
-//                is Loop -> {
-//                    "*loop*" + it.name + " - " + it.song.title + " - " + it.song.artist
-//                }
-//                else -> it.mediaId.source
-//            }
-//        })
+        historyStrings.addAll(history.map {
+            when (it) {
+                is Song -> {
+                    "*song*" + it.title + " - " + it.artist
+                }
+                is Loop -> {
+                    "*loop*" + it.name + " - " + it.title + " - " + it.artist
+                }
+                else -> it.mediaId.source
+            }
+        })
     }
 }

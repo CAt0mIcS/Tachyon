@@ -185,6 +185,9 @@ class ActivityPlayer : AppCompatActivity(),
                 (playback.startTime / User.metadata.audioUpdateInterval).toInt()
             binding.sbEndPos.progress =
                 (playback.endTime / User.metadata.audioUpdateInterval).toInt()
+
+            User.metadata.addHistory(playback)
+            User.upload()
         }
     }
 
