@@ -23,7 +23,7 @@ class Metadata() {
     var loops: ArrayList<Loop> = arrayListOf()
     var playlists: ArrayList<Playlist> = arrayListOf()
 
-    var history: MutableList<Playback> = mutableListOf()
+    val history: MutableList<Playback> = mutableListOf()
 
     var onHistoryChanged: ((MutableList<Playback> /*history*/) -> Unit)? = null
 
@@ -48,16 +48,17 @@ class Metadata() {
         } as ArrayList<Playlist>?)
             ?: arrayListOf()
 
-        history = ((data["history"] as List<String?>?)?.map { mediaIdStr ->
+
+        // TODO: Unable to find loop the first time history loads on release builds only
+        (data["history"] as List<String?>?)?.forEach { mediaIdStr ->
             val mediaId = MediaId.deserialize(mediaIdStr!!)
             if (mediaId.isSong)
-                Song(mediaId)
+                history.add(Song(mediaId))
             else if (mediaId.isLoop)
-                loops.find { it.mediaId == mediaId } ?: TODO("Loop not found")
+                loops.find { it.mediaId == mediaId }?.let { history.add(it) }
             else
-                playlists.find { it.mediaId == mediaId } ?: TODO("Playlist not found")
-
-        } as MutableList<Playback>?) ?: mutableListOf()
+                playlists.find { it.mediaId == mediaId }?.let { history.add(it) }
+        }
 
         Log.d(TAG, "Finished loading metadata")
 
