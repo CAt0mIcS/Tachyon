@@ -4,6 +4,4 @@
     <string name="dialog_permission_default_message">Permission is required to run requested operation</string>
     <string name="dialog_permission_button_positive">OK</string>
     <string name="storage_permission_rationale">We need to access your external storage to play your local device files. Denying this permission will disable local audio playback</string>
-    <string name="title_activity_main">ActivityMain</string>
-    <string name="title_activity_authentication">ActivityAuthentication</string>
 </resources>

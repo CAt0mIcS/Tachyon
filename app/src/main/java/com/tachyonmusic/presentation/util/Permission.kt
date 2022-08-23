@@ -1,4 +1,4 @@
-package com.tachyonmusic.feature.main.util
+package com.tachyonmusic.presentation.util
 
 import android.Manifest.permission.*
 

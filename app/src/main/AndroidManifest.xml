@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 
     <application
+        android:name="com.tachyonmusic.TachyonApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -17,9 +18,8 @@
         android:supportsRtl="true">
 
         <activity
-            android:name="com.tachyonmusic.feature.main.ActivityMain"
-            android:exported="true"
-            android:label="@string/title_activity_main">
+            android:name="com.tachyonmusic.presentation.ActivityMain"
+            android:exported="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,11 +27,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name="com.tachyonmusic.feature.authentication.ActivityAuthentication"
-            android:exported="false"
-            android:label="@string/title_activity_authentication" />
 
 
         <profileable android:shell="true" />

@@ -1,21 +1,27 @@
-package com.tachyonmusic.feature.main
+package com.tachyonmusic.presentation
 
+import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.ramcosta.composedestinations.DestinationsNavHost
+import com.ramcosta.composedestinations.annotation.Destination
+import com.ramcosta.composedestinations.navigation.*
 import com.tachyonmusic.app.R
-import com.tachyonmusic.feature.main.util.Permission
-import com.tachyonmusic.feature.main.util.PermissionManager
+import com.tachyonmusic.presentation.destinations.LoginScreenDestination
+import com.tachyonmusic.presentation.util.Permission
+import com.tachyonmusic.presentation.util.PermissionManager
 import com.tachyonmusic.ui.theme.TachyonTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class ActivityMain : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +32,7 @@ class ActivityMain : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting("Android")
+                    DestinationsNavHost(navGraph = NavGraphs.root)
                 }
             }
         }
@@ -44,15 +50,14 @@ class ActivityMain : ComponentActivity() {
     }
 }
 
+@Destination(start = true)
 @Composable
-fun Greeting(name: String) {
-    Text(text = "Hello $name!")
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    TachyonTheme {
-        Greeting("Android")
+fun TestScreen(
+    navigator: DestinationsNavigator
+) {
+    Button(onClick = {
+        navigator.navigate(LoginScreenDestination())
+    }) {
+        Text(text = "Authenticate")
     }
 }
