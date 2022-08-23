@@ -4,7 +4,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
@@ -15,18 +14,13 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.Tachyon">
-
-        <profileable android:shell="true" />
-
-        <meta-data
-            android:name="firebase_performance_logcat_enabled"
-            android:value="true" />
+        android:supportsRtl="true">
 
         <activity
-            android:name="com.tachyonmusic.ui.ActivityMain"
-            android:exported="true">
+            android:name="com.tachyonmusic.feature.main.ActivityMain"
+            android:exported="true"
+            android:label="@string/title_activity_main">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -35,40 +29,28 @@
         </activity>
 
         <activity
-            android:name="com.tachyonmusic.ui.ActivitySettings"
-            android:exported="true" />
-
-        <activity
-            android:name="com.tachyonmusic.ui.ActivityPlayer"
-            android:exported="true" />
-
-        <activity
-            android:name="com.tachyonmusic.ui.ActivityPlaylistPlayer"
-            android:exported="true" />
-
-        <activity
-            android:name="com.tachyonmusic.ui.ActivitySignIn"
-            android:exported="true" />
-
-        <activity
-            android:name="com.tachyonmusic.ui.ActivityRegister"
-            android:exported="true" />
+            android:name="com.tachyonmusic.feature.authentication.ActivityAuthentication"
+            android:exported="false"
+            android:label="@string/title_activity_authentication" />
 
 
+        <profileable android:shell="true" />
+
+        <meta-data
+            android:name="firebase_performance_logcat_enabled"
+            android:value="true" />
         <!--
        Declare the common MediaBrowserService for use in the mobile app, including
        with the Android Auto app.
-       -->
+        -->
         <service
             android:name="com.tachyonmusic.media.service.MediaPlaybackService"
             android:enabled="true"
             android:exported="false">
-
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
-
     </application>
 
 </manifest>

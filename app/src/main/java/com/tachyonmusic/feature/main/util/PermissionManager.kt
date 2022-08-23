@@ -1,4 +1,4 @@
-package com.tachyonmusic.permission
+package com.tachyonmusic.feature.main.util
 
 import android.app.AlertDialog
 import android.content.pm.PackageManager
