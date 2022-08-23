@@ -1,21 +1,12 @@
 package com.tachyonmusic.presentation
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import com.ramcosta.composedestinations.DestinationsNavHost
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.*
+import androidx.compose.material.Scaffold
+import androidx.navigation.compose.rememberNavController
 import com.tachyonmusic.app.R
-import com.tachyonmusic.presentation.destinations.LoginScreenDestination
+import com.tachyonmusic.presentation.main.component.BottomNavigation
 import com.tachyonmusic.presentation.util.Permission
 import com.tachyonmusic.presentation.util.PermissionManager
 import com.tachyonmusic.ui.theme.TachyonTheme
@@ -27,12 +18,11 @@ class ActivityMain : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             TachyonTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
+                val navController = rememberNavController()
+                Scaffold(
+                    bottomBar = { BottomNavigation(navController) }
                 ) {
-                    DestinationsNavHost(navGraph = NavGraphs.root)
+                    NavigationGraph(navController)
                 }
             }
         }
@@ -47,17 +37,5 @@ class ActivityMain : ComponentActivity() {
                     println("Storage permission NOT granted")
             }
         }
-    }
-}
-
-@Destination(start = true)
-@Composable
-fun TestScreen(
-    navigator: DestinationsNavigator
-) {
-    Button(onClick = {
-        navigator.navigate(LoginScreenDestination())
-    }) {
-        Text(text = "Authenticate")
     }
 }

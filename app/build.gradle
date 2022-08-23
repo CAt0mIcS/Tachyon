@@ -4,8 +4,6 @@ plugins {
 
     id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.21'
 
-    id 'com.google.devtools.ksp' version '1.7.10-1.0.6'
-
     id 'com.google.gms.google-services'
     id 'com.google.firebase.firebase-perf'
     id 'com.google.firebase.crashlytics'
@@ -104,12 +102,8 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 
-    implementation 'io.github.raamcosta.compose-destinations:core:1.1.2-beta'
-    ksp 'io.github.raamcosta.compose-destinations:ksp:1.1.2-beta'
-
     implementation 'com.google.dagger:hilt-android:2.43.2'
     kapt 'com.google.dagger:hilt-compiler:2.43.2'
-
 
     implementation 'androidx.media:media:1.6.0'
     implementation project(path: ':media')
