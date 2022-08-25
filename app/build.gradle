@@ -108,6 +108,7 @@ dependencies {
     implementation 'androidx.media:media:1.6.0'
     implementation project(path: ':media')
 
+    implementation project(path: ':core')
     implementation project(path: ':user')
     implementation project(path: ':util')
 }

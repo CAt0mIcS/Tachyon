@@ -1,23 +1,23 @@
 package com.tachyonmusic.user.domain
 
+import com.tachyonmusic.core.Resource
 import com.tachyonmusic.user.Metadata
+import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
     val metadata: Metadata
 
     val signedIn: Boolean
 
-    fun signIn(
+    suspend fun signIn(
         email: String,
-        password: String,
-        onComplete: (Boolean /*isSuccessful*/, String? /*errorMsg*/) -> Unit
-    )
+        password: String
+    ): Resource<Unit>
 
-    fun register(
+    suspend fun register(
         email: String,
-        password: String,
-        onComplete: (Boolean /*isSuccessful*/, String? /*errorMsg*/) -> Unit
-    )
+        password: String
+    ): Resource<Unit>
 
     fun signOut()
 

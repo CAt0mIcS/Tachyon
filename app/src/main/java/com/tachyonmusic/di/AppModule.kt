@@ -2,7 +2,6 @@ package com.tachyonmusic.di
 
 import com.tachyonmusic.domain.use_case.RegisterUser
 import com.tachyonmusic.domain.use_case.SignInUser
-import com.tachyonmusic.domain.use_case.UseCases
 import com.tachyonmusic.user.data.FirebaseRepository
 import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
@@ -21,9 +20,9 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUseCases(repository: UserRepository): UseCases =
-        UseCases(
-            SignInUser(repository),
-            RegisterUser(repository)
-        )
+    fun provideRegisterUserUseCase(repository: UserRepository) = RegisterUser(repository)
+
+    @Provides
+    @Singleton
+    fun provideSignInUserUseCase(repository: UserRepository) = SignInUser(repository)
 }

@@ -3,10 +3,18 @@ package com.tachyonmusic.user.data
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.tachyonmusic.core.Resource
+import com.tachyonmusic.core.UiText
 import com.tachyonmusic.user.Metadata
+import com.tachyonmusic.user.R
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.launch
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 
 class FirebaseRepository : UserRepository {
     override var metadata: Metadata = Metadata()
@@ -14,32 +22,54 @@ class FirebaseRepository : UserRepository {
 
     private var eventListener: UserRepository.EventListener? = null
 
-    override fun signIn(
+    override suspend fun signIn(
         email: String,
-        password: String,
-        onComplete: (Boolean /*isSuccessful*/, String? /*errorMsg*/) -> Unit
-    ) {
+        password: String
+    ) = withContext(Dispatchers.IO) {
+        val job = CompletableDeferred<Resource<Unit>>()
+        job.start()
+
         Firebase.auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener {
-                onComplete(it.isSuccessful, it.exception?.message)
-                initialize { metadataUpdated ->
-                    if (metadataUpdated)
-                        eventListener?.onMetadataChanged()
+                if (it.isSuccessful) {
+                    job.complete(Resource.Success())
+                    initialize { metadataUpdated ->
+                        if (metadataUpdated)
+                            eventListener?.onMetadataChanged()
+                    }
+                } else {
+                    if (it.exception?.localizedMessage != null)
+                        job.complete(Resource.Error(UiText.DynamicString(it.exception!!.localizedMessage!!)))
+                    else
+                        job.complete(Resource.Error(UiText.StringResource(R.string.unknown_error)))
                 }
+
                 println("User $email and $password signed in: ${it.isSuccessful}")
             }
+        return@withContext job.await()
     }
 
-    override fun register(
+    override suspend fun register(
         email: String,
-        password: String,
-        onComplete: (Boolean /*isSuccessful*/, String? /*errorMsg*/) -> Unit
-    ) {
+        password: String
+    ) = withContext(Dispatchers.IO) {
+        val job = CompletableDeferred<Resource<Unit>>()
+        job.start()
+
         Firebase.auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener {
-                onComplete(it.isSuccessful, it.exception?.message)
-                initialize()
+                if (it.isSuccessful) {
+                    job.complete(Resource.Success())
+                    initialize()
+                } else {
+                    if (it.exception?.localizedMessage != null)
+                        job.complete(Resource.Error(UiText.DynamicString(it.exception!!.localizedMessage!!)))
+                    else
+                        job.complete(Resource.Error(UiText.StringResource(R.string.unknown_error)))
+                }
+
             }
+        return@withContext job.await()
     }
 
     override fun signOut() = Firebase.auth.signOut()

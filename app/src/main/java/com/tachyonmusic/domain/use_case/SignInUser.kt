@@ -1,23 +1,24 @@
 package com.tachyonmusic.domain.use_case
 
+import com.tachyonmusic.app.R
+import com.tachyonmusic.core.Resource
+import com.tachyonmusic.core.UiText
 import com.tachyonmusic.domain.util.AccountVerificator
-import com.tachyonmusic.domain.util.AuthenticationException
 import com.tachyonmusic.user.domain.UserRepository
-import kotlin.jvm.Throws
+import kotlinx.coroutines.flow.flow
 
 class SignInUser(
     private val repository: UserRepository
 ) {
-    @Throws(AuthenticationException::class)
-    operator fun invoke(email: String, password: String) {
-        if (!AccountVerificator.verifyEmail(email))
-            throw AuthenticationException("")
-        if (!AccountVerificator.verifyPassword(password))
-            throw AuthenticationException("")
+    operator fun invoke(emailIn: String, password: String) = flow {
+        emit(Resource.Loading())
 
-        repository.signIn(email, password) { isSuccessful, errorMsg ->
-            if (!isSuccessful)
-                throw AuthenticationException(errorMsg ?: "")
-        }
+        val email = emailIn.trim()
+        if (!AccountVerificator.verifyEmail(email))
+            emit(Resource.Error(UiText.StringResource(R.string.invalid_email_error)))
+        if (!AccountVerificator.verifyPassword(password))
+            emit(Resource.Error(UiText.StringResource(R.string.invalid_password_error)))
+
+        emit(repository.signIn(email, password))
     }
 }
