@@ -37,14 +37,14 @@ class FirebaseRepository : UserRepository {
                         if (metadataUpdated)
                             eventListener?.onMetadataChanged()
                     }
-                } else {
-                    if (it.exception?.localizedMessage != null)
-                        job.complete(Resource.Error(UiText.DynamicString(it.exception!!.localizedMessage!!)))
-                    else
-                        job.complete(Resource.Error(UiText.StringResource(R.string.unknown_error)))
-                }
-
-                println("User $email and $password signed in: ${it.isSuccessful}")
+                } else
+                    job.complete(
+                        Resource.Error(
+                            if (it.exception?.localizedMessage != null)
+                                UiText.DynamicString(it.exception!!.localizedMessage!!)
+                            else UiText.StringResource(R.string.unknown_error)
+                        )
+                    )
             }
         return@withContext job.await()
     }
@@ -61,13 +61,14 @@ class FirebaseRepository : UserRepository {
                 if (it.isSuccessful) {
                     job.complete(Resource.Success())
                     initialize()
-                } else {
-                    if (it.exception?.localizedMessage != null)
-                        job.complete(Resource.Error(UiText.DynamicString(it.exception!!.localizedMessage!!)))
-                    else
-                        job.complete(Resource.Error(UiText.StringResource(R.string.unknown_error)))
-                }
-
+                } else
+                    job.complete(
+                        Resource.Error(
+                            if (it.exception?.localizedMessage != null)
+                                UiText.DynamicString(it.exception!!.localizedMessage!!)
+                            else UiText.StringResource(R.string.unknown_error)
+                        )
+                    )
             }
         return@withContext job.await()
     }

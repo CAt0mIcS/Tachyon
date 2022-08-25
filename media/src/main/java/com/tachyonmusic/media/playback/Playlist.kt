@@ -1,5 +1,6 @@
 package com.tachyonmusic.media.playback
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
@@ -26,6 +27,14 @@ data class Playlist(
 
     override val path: File?
         get() = current?.path
+    override val title: String?
+        get() = current?.title
+    override val artist: String?
+        get() = current?.artist
+    override val duration: Long?
+        get() = current?.duration
+    override val albumArt: Bitmap?
+        get() = current?.albumArt
 
     override var startTime: Long
         get() = current?.startTime ?: 0L

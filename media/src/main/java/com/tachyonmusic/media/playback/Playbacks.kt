@@ -12,9 +12,14 @@ import java.io.File
 
 
 //@Serializable
-abstract class Playback : Parcelable {
+sealed class Playback : Parcelable {
     abstract val mediaId: MediaId
     abstract val path: File?
+
+    abstract val title: String?
+    abstract val artist: String?
+    abstract val duration: Long?
+    abstract val albumArt: Bitmap?
 
     enum class Type(val value: Int) {
         SongSharedStorage(0), Loop(1), Playlist(2);
@@ -77,11 +82,8 @@ abstract class Playback : Parcelable {
 }
 
 //@Serializable
-abstract class SinglePlayback : Playback() {
-    abstract val title: String?
-    abstract val artist: String?
-    abstract val duration: Long
-    abstract val albumArt: Bitmap?
+sealed class SinglePlayback : Playback() {
+    abstract override val duration: Long
 
     abstract fun toExoPlayerMediaItem(): MediaItem
 }

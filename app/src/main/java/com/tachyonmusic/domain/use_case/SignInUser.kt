@@ -16,9 +16,9 @@ class SignInUser(
         val email = emailIn.trim()
         if (!AccountVerificator.verifyEmail(email))
             emit(Resource.Error(UiText.StringResource(R.string.invalid_email_error)))
-        if (!AccountVerificator.verifyPassword(password))
+        else if (!AccountVerificator.verifyPassword(password))
             emit(Resource.Error(UiText.StringResource(R.string.invalid_password_error)))
-
-        emit(repository.signIn(email, password))
+        else
+            emit(repository.signIn(email, password))
     }
 }
