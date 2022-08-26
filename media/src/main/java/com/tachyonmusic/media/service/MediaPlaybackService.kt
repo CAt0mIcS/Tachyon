@@ -16,15 +16,15 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.media.MediaBrowserServiceCompat
 import com.tachyonmusic.media.CustomPlayer
-import com.tachyonmusic.media.data.MediaAction
-import com.tachyonmusic.media.data.MediaId
-import com.tachyonmusic.media.data.MetadataKeys
+import com.tachyonmusic.core.constants.MediaAction
+import com.tachyonmusic.core.domain.model.MediaId
+import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.media.device.*
 import com.tachyonmusic.media.ext.*
-import com.tachyonmusic.media.playback.Loop
-import com.tachyonmusic.media.playback.Playback
-import com.tachyonmusic.media.playback.Playlist
-import com.tachyonmusic.media.playback.Song
+import com.tachyonmusic.core.domain.model.Loop
+import com.tachyonmusic.core.domain.model.Playback
+import com.tachyonmusic.core.domain.model.Playlist
+import com.tachyonmusic.core.domain.model.Song
 import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
@@ -70,13 +70,13 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
     private lateinit var notificationManager: NotificationManager
 
     private var currentMediaItems = listOf<com.google.android.exoplayer2.MediaItem>()
-    private var currentPlayback: Playback? = null
+    private var currentPlayback: com.tachyonmusic.core.domain.model.Playback? = null
         set(value) {
             field = value
             mediaSession.sendSessionEvent(
-                MediaAction.SetPlaybackEvent,
+                com.tachyonmusic.core.constants.MediaAction.SetPlaybackEvent,
                 Bundle().apply {
-                    putParcelable(MediaAction.Playback, field)
+                    putParcelable(com.tachyonmusic.core.constants.MediaAction.Playback, field)
                 })
         }
 
@@ -190,22 +190,23 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                     val playback = currentPlayback!!
 
                     mediaSession.sendSessionEvent(
-                        MediaAction.SetPlaybackEvent,
+                        com.tachyonmusic.core.constants.MediaAction.SetPlaybackEvent,
                         Bundle().apply {
-                            putParcelable(MediaAction.Playback, playback)
+                            putParcelable(com.tachyonmusic.core.constants.MediaAction.Playback, playback)
                         })
 
                     return@setMediaMetadataProvider playback.toMediaMetadata()
                 }
 
                 val playback =
-                    player.mediaMetadata.extras?.getParcelable<Playback>(MetadataKeys.Playback)
+                    player.mediaMetadata.extras?.getParcelable<com.tachyonmusic.core.domain.model.Playback>(
+                        com.tachyonmusic.core.constants.MetadataKeys.Playback)
 
                 if (playback != null) {
                     mediaSession.sendSessionEvent(
-                        MediaAction.SetPlaybackEvent,
+                        com.tachyonmusic.core.constants.MediaAction.SetPlaybackEvent,
                         Bundle().apply {
-                            putParcelable(MediaAction.Playback, playback)
+                            putParcelable(com.tachyonmusic.core.constants.MediaAction.Playback, playback)
                         })
 
                     return@setMediaMetadataProvider playback.toMediaMetadata()
@@ -345,8 +346,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
         mediaSession: MediaSessionCompat
     ) : TimelineQueueNavigator(mediaSession) {
         override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
-            if (currentPlayback is Playlist && windowIndex < (currentPlayback as Playlist).playbacks.size)
-                return (currentPlayback as Playlist).playbacks[windowIndex].toMediaDescriptionCompat()
+            if (currentPlayback is com.tachyonmusic.core.domain.model.Playlist && windowIndex < (currentPlayback as com.tachyonmusic.core.domain.model.Playlist).playbacks.size)
+                return (currentPlayback as com.tachyonmusic.core.domain.model.Playlist).playbacks[windowIndex].toMediaDescriptionCompat()
 
             return currentPlayback?.toMediaDescriptionCompat() ?: MediaDescriptionCompat.Builder()
                 .build()
@@ -383,8 +384,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                 currentPlayer.playWhenReady
                 currentPlayer.prepare()
 
-                if (currentPlayback is Loop) {
-                    currentPlayer.seekTo((currentPlayback as Loop).startTime)
+                if (currentPlayback is com.tachyonmusic.core.domain.model.Loop) {
+                    currentPlayer.seekTo((currentPlayback as com.tachyonmusic.core.domain.model.Loop).startTime)
                 }
             }
         }
@@ -402,7 +403,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
             mediaSource.whenReady { successfullyInitialized ->
                 if (successfullyInitialized) {
                     onSetPlayback(
-                        mediaSource.findById(MediaId.deserialize(mediaId))
+                        mediaSource.findById(com.tachyonmusic.core.domain.model.MediaId.deserialize(mediaId))
                             ?: TODO("Playback for media id $mediaId not found")
                     )
                     onPrepare(playWhenReady)
@@ -426,7 +427,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
         }
 
 
-        override fun onSetPlayback(playback: Playback) {
+        override fun onSetPlayback(playback: com.tachyonmusic.core.domain.model.Playback) {
             mediaSource.whenReady { successfullyInitialized ->
                 if (!successfullyInitialized)
                     TODO("MediaSource initialization unsuccessful")
@@ -437,7 +438,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                  * the internal playlist
                  */
                 when (playback) {
-                    is Song -> {
+                    is com.tachyonmusic.core.domain.model.Song -> {
                         currentPlayer.stop()
 
                         val initialWindowIndex = mediaSource.songs.indexOf(playback)
@@ -455,7 +456,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                         )
                         currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                     }
-                    is Loop -> {
+                    is com.tachyonmusic.core.domain.model.Loop -> {
                         currentPlayer.stop()
                         val initialWindowIndex = mediaSource.loops.indexOf(playback)
                         if (initialWindowIndex == -1)
@@ -472,7 +473,7 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                         )
                         currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
                     }
-                    is Playlist -> {
+                    is com.tachyonmusic.core.domain.model.Playlist -> {
                         // Request for a specific song in playlist
                         isPlayingPlaylist = true
                         currentPlayback = playback
@@ -541,17 +542,17 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
             // TODO: Immediately reload player to have instant results (maybe not because this is called quite often)
         }
 
-        override fun onLoopsReceived(loops: MutableList<Loop>) {
+        override fun onLoopsReceived(loops: MutableList<com.tachyonmusic.core.domain.model.Loop>) {
             mediaSource.loops = loops
         }
 
-        override fun onPlaylistsReceived(playlists: MutableList<Playlist>) {
+        override fun onPlaylistsReceived(playlists: MutableList<com.tachyonmusic.core.domain.model.Playlist>) {
             mediaSource.playlists = playlists
         }
 
         override fun onRequestPlaybackUpdate() {
-            mediaSession.sendSessionEvent(MediaAction.SetPlaybackEvent, Bundle().apply {
-                putParcelable(MediaAction.Playback, currentPlayback)
+            mediaSession.sendSessionEvent(com.tachyonmusic.core.constants.MediaAction.SetPlaybackEvent, Bundle().apply {
+                putParcelable(com.tachyonmusic.core.constants.MediaAction.Playback, currentPlayback)
             })
         }
 
@@ -621,8 +622,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            mediaSession.sendSessionEvent(MediaAction.OnPlaybackStateChangedEvent, Bundle().apply {
-                putBoolean(MediaAction.IsPlaying, isPlaying)
+            mediaSession.sendSessionEvent(com.tachyonmusic.core.constants.MediaAction.OnPlaybackStateChangedEvent, Bundle().apply {
+                putBoolean(com.tachyonmusic.core.constants.MediaAction.IsPlaying, isPlaying)
             })
         }
 
@@ -632,22 +633,22 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
         ) {
             // TODO: Loops for [CastPlayer]
             if (isPlayingPlaylist)
-                (currentPlayback as Playlist).currentPlaylistIndex =
+                (currentPlayback as com.tachyonmusic.core.domain.model.Playlist).currentPlaylistIndex =
                     currentPlayer.currentMediaItemIndex
             else
                 currentPlayback = mediaItem!!.mediaMetadata.playback
             val playback = currentPlayback
 
             if (playback != null) {
-                if (playback is Loop) {
+                if (playback is com.tachyonmusic.core.domain.model.Loop) {
                     // Single loop
                     currentPlayer.seekTo(playback.startTime)
                     currentPlayer.postLoopMessage(playback.startTime, playback.endTime)
 
-                } else if (playback is Playlist && playback.current != null && playback.current!! is Loop) {
+                } else if (playback is com.tachyonmusic.core.domain.model.Playlist && playback.current != null && playback.current!! is com.tachyonmusic.core.domain.model.Loop) {
                     // Loop in playlist
                     // TODO: Loops in playlist not seeking to beginning
-                    val loop = playback.current!! as Loop
+                    val loop = playback.current!! as com.tachyonmusic.core.domain.model.Loop
 
                     currentPlayer.seekTo(loop.startTime)
                     currentPlayer.postLoopMessageForPlaylist(loop.endTime)
@@ -662,8 +663,8 @@ class MediaPlaybackService : MediaBrowserServiceCompat(),
                 || events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)
                 || events.contains(Player.EVENT_PLAY_WHEN_READY_CHANGED)
             ) {
-                if (currentPlayback is Playlist) {
-                    (currentPlayback as Playlist).currentPlaylistIndex =
+                if (currentPlayback is com.tachyonmusic.core.domain.model.Playlist) {
+                    (currentPlayback as com.tachyonmusic.core.domain.model.Playlist).currentPlaylistIndex =
                         if (currentMediaItems.isNotEmpty()) {
                             constrainValue(
                                 player.currentMediaItemIndex,

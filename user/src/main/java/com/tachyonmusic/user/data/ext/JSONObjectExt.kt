@@ -1,4 +1,4 @@
-package com.tachyonmusic.user.ext
+package com.tachyonmusic.user.data.ext
 
 import org.json.JSONArray
 import org.json.JSONObject

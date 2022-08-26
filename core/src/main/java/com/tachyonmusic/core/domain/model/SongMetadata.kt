@@ -1,4 +1,4 @@
-package com.tachyonmusic.media.data
+package com.tachyonmusic.core.domain.model
 
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever

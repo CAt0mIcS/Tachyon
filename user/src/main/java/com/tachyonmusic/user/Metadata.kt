@@ -1,11 +1,11 @@
 package com.tachyonmusic.user
 
 import android.util.Log
-import com.tachyonmusic.media.data.MediaId
-import com.tachyonmusic.media.playback.Loop
-import com.tachyonmusic.media.playback.Playback
-import com.tachyonmusic.media.playback.Playlist
-import com.tachyonmusic.media.playback.Song
+import com.tachyonmusic.core.domain.model.MediaId
+import com.tachyonmusic.core.domain.model.Loop
+import com.tachyonmusic.core.domain.model.Playback
+import com.tachyonmusic.core.domain.model.Playlist
+import com.tachyonmusic.core.domain.model.Song
 import com.tachyonmusic.util.launch
 import kotlinx.coroutines.Dispatchers
 

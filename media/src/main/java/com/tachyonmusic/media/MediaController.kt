@@ -10,14 +10,14 @@ import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
-import com.tachyonmusic.media.data.MediaAction
-import com.tachyonmusic.media.data.MetadataKeys
+import com.tachyonmusic.core.constants.MediaAction
+import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.media.device.*
 import com.tachyonmusic.media.ext.*
-import com.tachyonmusic.media.playback.Loop
-import com.tachyonmusic.media.playback.Playback
-import com.tachyonmusic.media.playback.Playlist
-import com.tachyonmusic.media.playback.Song
+import com.tachyonmusic.core.domain.model.Loop
+import com.tachyonmusic.core.domain.model.Playback
+import com.tachyonmusic.core.domain.model.Playlist
+import com.tachyonmusic.core.domain.model.Song
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.util.launch
 import kotlinx.coroutines.*
@@ -34,7 +34,7 @@ class MediaController {
     private val controllerCallback: MediaControllerCallback = MediaControllerCallback()
     private var eventListener: IEventListener? = null
 
-    private val subscribedIds = mutableMapOf<String, (List<Playback>) -> Unit>()
+    private val subscribedIds = mutableMapOf<String, (List<com.tachyonmusic.core.domain.model.Playback>) -> Unit>()
 
     // TODO: Why is [playback] not updating when the controller is connected
     private var playbackUpdateDone = Job()
@@ -116,38 +116,38 @@ class MediaController {
     /**
      * @return media id of current playback (song/loop/playlist)
      */
-    var playback: Playback?
+    var playback: com.tachyonmusic.core.domain.model.Playback?
         get() = _playback
         set(value) {
-            sendCustomAction(MediaAction.SetPlaybackEvent, Bundle().apply {
-                putParcelable(MediaAction.Playback, value)
+            sendCustomAction(com.tachyonmusic.core.constants.MediaAction.SetPlaybackEvent, Bundle().apply {
+                putParcelable(com.tachyonmusic.core.constants.MediaAction.Playback, value)
             })
         }
 
-    private var _playback: Playback? = null
+    private var _playback: com.tachyonmusic.core.domain.model.Playback? = null
         set(value) {
             field = value
 
             // Event to [MediaPlaybackService] to update start/end time
             field?.onStartTimeChanged = { startTime ->
                 sendCustomAction(
-                    MediaAction.SetStartTimeEvent,
-                    Bundle().apply { putLong(MediaAction.StartTime, startTime) })
+                    com.tachyonmusic.core.constants.MediaAction.SetStartTimeEvent,
+                    Bundle().apply { putLong(com.tachyonmusic.core.constants.MediaAction.StartTime, startTime) })
                 field?.startTime = startTime
             }
             field?.onEndTimeChanged = { endTime ->
                 sendCustomAction(
-                    MediaAction.SetEndTimeEvent,
-                    Bundle().apply { putLong(MediaAction.EndTime, endTime) })
+                    com.tachyonmusic.core.constants.MediaAction.SetEndTimeEvent,
+                    Bundle().apply { putLong(com.tachyonmusic.core.constants.MediaAction.EndTime, endTime) })
                 field?.endTime = endTime
             }
-            if (field is Playlist?)
-                (field as Playlist?)?.onCurrentPlaylistIndexChanged = { i ->
+            if (field is com.tachyonmusic.core.domain.model.Playlist?)
+                (field as com.tachyonmusic.core.domain.model.Playlist?)?.onCurrentPlaylistIndexChanged = { i ->
                     sendCustomAction(
-                        MediaAction.CurrentPlaylistIndexChangedEvent,
-                        Bundle().apply { putInt(MediaAction.CurrentPlaylistIndex, i) }
+                        com.tachyonmusic.core.constants.MediaAction.CurrentPlaylistIndexChangedEvent,
+                        Bundle().apply { putInt(com.tachyonmusic.core.constants.MediaAction.CurrentPlaylistIndex, i) }
                     )
-                    (field as Playlist?)?.currentPlaylistIndex = i
+                    (field as com.tachyonmusic.core.domain.model.Playlist?)?.currentPlaylistIndex = i
                 }
         }
 
@@ -211,16 +211,16 @@ class MediaController {
      * Requests that the [MediaSource] is (re)loaded. Requires storage permission
      */
     fun loadMediaSource() {
-        sendCustomAction(MediaAction.RequestMediaSourceReloadEvent, null)
+        sendCustomAction(com.tachyonmusic.core.constants.MediaAction.RequestMediaSourceReloadEvent, null)
     }
 
     /**
      * Updates the [MediaSource] with [loops]. Overwrites previous loops
      */
-    fun sendLoops(loops: ArrayList<Loop>) {
-        sendCustomAction(MediaAction.SendLoopsEvent, Bundle().apply {
+    fun sendLoops(loops: ArrayList<com.tachyonmusic.core.domain.model.Loop>) {
+        sendCustomAction(com.tachyonmusic.core.constants.MediaAction.SendLoopsEvent, Bundle().apply {
             putParcelableArrayList(
-                MediaAction.Loops,
+                com.tachyonmusic.core.constants.MediaAction.Loops,
                 loops as ArrayList<out Parcelable>
             )
         })
@@ -229,10 +229,10 @@ class MediaController {
     /**
      * Updates the [MediaSource] with [playlists]. Overwrites previous playlists
      */
-    fun sendPlaylists(playlists: ArrayList<Playlist>) {
-        sendCustomAction(MediaAction.SendPlaylistsEvent, Bundle().apply {
+    fun sendPlaylists(playlists: ArrayList<com.tachyonmusic.core.domain.model.Playlist>) {
+        sendCustomAction(com.tachyonmusic.core.constants.MediaAction.SendPlaylistsEvent, Bundle().apply {
             putParcelableArrayList(
-                MediaAction.Playlists,
+                com.tachyonmusic.core.constants.MediaAction.Playlists,
                 playlists as ArrayList<out Parcelable>
             )
         })
@@ -264,7 +264,7 @@ class MediaController {
      * * subscribe(BrowserTree.ExampleAlbum) { ... } will be called whenever the songs in the specified
      *   album change or songs are added/removed
      */
-    fun subscribe(id: String, onChanged: (List<Playback>) -> Unit) {
+    fun subscribe(id: String, onChanged: (List<com.tachyonmusic.core.domain.model.Playback>) -> Unit) {
         Log.d(TAG, "Subscribing to $id")
 
         subscribedIds += Pair(id, onChanged)
@@ -275,7 +275,8 @@ class MediaController {
                 children: MutableList<MediaBrowserCompat.MediaItem>
             ) {
                 val mapped = children.map {
-                    it.description.extras!!.getParcelable<Playback>(MetadataKeys.Playback)!!
+                    it.description.extras!!.getParcelable<com.tachyonmusic.core.domain.model.Playback>(
+                        com.tachyonmusic.core.constants.MetadataKeys.Playback)!!
                 }
 
                 launch(Dispatchers.Main) {
@@ -290,7 +291,7 @@ class MediaController {
      * Quick way to call [subscribe] with [BrowserTree.SONG_ROOT] and once the results are there call
      * [unsubscribe]. The previously subscribed callback will be restored once [action] is done
      */
-    fun songs(action: (List<Song>) -> Unit) {
+    fun songs(action: (List<com.tachyonmusic.core.domain.model.Song>) -> Unit) {
         val previousOnChanged = subscribedIds[BrowserTree.SONG_ROOT]
 
         browser.subscribe(
@@ -301,7 +302,8 @@ class MediaController {
                     children: MutableList<MediaBrowserCompat.MediaItem>
                 ) {
                     val mapped =
-                        children.map { it.description.extras!!.getParcelable<Song>(MetadataKeys.Playback)!! }
+                        children.map { it.description.extras!!.getParcelable<com.tachyonmusic.core.domain.model.Song>(
+                            com.tachyonmusic.core.constants.MetadataKeys.Playback)!! }
                     launch(Dispatchers.Main) {
                         action(mapped)
                     }
@@ -316,7 +318,7 @@ class MediaController {
      * Quick way to call [subscribe] with [BrowserTree.LOOP_ROOT] and once the results are there call
      * [unsubscribe]. The previously subscribed callback will be restored once [action] is done
      */
-    fun loops(action: (List<Loop>) -> Unit) {
+    fun loops(action: (List<com.tachyonmusic.core.domain.model.Loop>) -> Unit) {
         val previousOnChanged = subscribedIds[BrowserTree.LOOP_ROOT]
 
         browser.subscribe(
@@ -327,7 +329,8 @@ class MediaController {
                     children: MutableList<MediaBrowserCompat.MediaItem>
                 ) {
                     val mapped =
-                        children.map { it.description.extras!!.getParcelable<Loop>(MetadataKeys.Playback)!! }
+                        children.map { it.description.extras!!.getParcelable<com.tachyonmusic.core.domain.model.Loop>(
+                            com.tachyonmusic.core.constants.MetadataKeys.Playback)!! }
                     launch(Dispatchers.Main) {
                         action(mapped)
                     }
@@ -342,7 +345,7 @@ class MediaController {
      * Quick way to call [subscribe] with [BrowserTree.PLAYLIST_ROOT] and once the results are there call
      * [unsubscribe]. The previously subscribed callback will be restored once [action] is done
      */
-    fun playlists(action: (List<Playlist>) -> Unit) {
+    fun playlists(action: (List<com.tachyonmusic.core.domain.model.Playlist>) -> Unit) {
         val previousOnChanged = subscribedIds[BrowserTree.PLAYLIST_ROOT]
 
         browser.subscribe(
@@ -353,7 +356,8 @@ class MediaController {
                     children: MutableList<MediaBrowserCompat.MediaItem>
                 ) {
                     val mapped =
-                        children.map { it.description.extras!!.getParcelable<Playlist>(MetadataKeys.Playback)!! }
+                        children.map { it.description.extras!!.getParcelable<com.tachyonmusic.core.domain.model.Playlist>(
+                            com.tachyonmusic.core.constants.MetadataKeys.Playback)!! }
                     launch(Dispatchers.Main) {
                         action(mapped)
                     }
@@ -389,7 +393,7 @@ class MediaController {
             browserConnected.complete()
 
             // Request [playback] to be updated
-            sendCustomAction(MediaAction.RequestPlaybackUpdateEvent)
+            sendCustomAction(com.tachyonmusic.core.constants.MediaAction.RequestPlaybackUpdateEvent)
             // TODO TODO TODO TODO
             launch(Dispatchers.Main) {
                 playbackUpdateDone.join()
@@ -416,18 +420,18 @@ class MediaController {
     private inner class MediaControllerCallback : MediaControllerCompat.Callback() {
         override fun onSessionEvent(event: String, extras: Bundle) {
             when (event) {
-                MediaAction.SetPlaybackEvent -> {
-                    _playback = extras.getParcelable(MediaAction.Playback)
+                com.tachyonmusic.core.constants.MediaAction.SetPlaybackEvent -> {
+                    _playback = extras.getParcelable(com.tachyonmusic.core.constants.MediaAction.Playback)
                     playbackUpdateDone.complete()
 
                     launch(Dispatchers.Main) {
                         eventListener?.onSetPlayback()
                     }
                 }
-                MediaAction.OnPlaybackStateChangedEvent -> {
+                com.tachyonmusic.core.constants.MediaAction.OnPlaybackStateChangedEvent -> {
                     launch(Dispatchers.Main) {
                         eventListener?.onPlaybackStateChanged(
-                            extras.getBoolean(MediaAction.IsPlaying)
+                            extras.getBoolean(com.tachyonmusic.core.constants.MediaAction.IsPlaying)
                         )
                     }
                 }

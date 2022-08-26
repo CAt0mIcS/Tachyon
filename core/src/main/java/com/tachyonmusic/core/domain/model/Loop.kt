@@ -1,21 +1,15 @@
-package com.tachyonmusic.media.playback
+package com.tachyonmusic.core.domain.model
 
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
-import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaDescriptionCompat
-import android.support.v4.media.MediaMetadataCompat
-import com.tachyonmusic.media.data.MediaId
-import com.tachyonmusic.media.data.MetadataKeys
-import com.tachyonmusic.media.ext.*
-import com.google.android.exoplayer2.MediaItem
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import com.tachyonmusic.core.constants.MetadataKeys
 import java.io.File
 
 
-//@Serializable
 class Loop(
     val name: String,
     val song: Song
@@ -34,20 +28,7 @@ class Loop(
         get() = song.albumArt
 
     override var startTime: Long = 0L
-        set(value) {
-            val oldStart = field
-            field = value
-            if (field != oldStart)
-                onStartTimeChanged?.invoke(field)
-        }
-
     override var endTime: Long = song.duration
-        set(value) {
-            val oldEnd = field
-            field = value
-            if (field != oldEnd)
-                onEndTimeChanged?.invoke(field)
-        }
 
     override val mediaId: MediaId = MediaId(this)
 
@@ -77,40 +58,23 @@ class Loop(
         parcel.writeParcelable(song, flags)
     }
 
-    override fun toMediaMetadata(): MediaMetadataCompat =
-        MediaMetadataCompat.Builder().also { metadata ->
-            metadata.mediaId = mediaId.toString()
 
-            metadata.title = song.title
-            metadata.artist = song.artist
-            metadata.albumArt = song.albumArt
-            metadata.duration = song.duration
-        }.build()
+    override fun toMediaItem() = MediaItem.Builder().apply {
+        setMediaId(mediaId.toString())
+        setMediaMetadata(toMediaMetadata())
+    }.build()
 
-    override fun toMediaBrowserMediaItem(): MediaBrowserCompat.MediaItem =
-        MediaBrowserCompat.MediaItem(
-            toMediaDescriptionCompat(),
-            MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
-        )
-
-    override fun toMediaDescriptionCompat(): MediaDescriptionCompat =
-        MediaDescriptionCompat.Builder().also { desc ->
-            desc.setMediaId(mediaId.toString())
-            desc.setExtras(Bundle().apply { putParcelable(MetadataKeys.Playback, this@Loop) })
-        }.build()
-
-    override fun toExoPlayerMediaItem(): MediaItem =
-        MediaItem.Builder().apply {
-            setMediaId(mediaId.toString())
-            setUri(Uri.parse(path.absolutePath))
-
-            setMediaMetadata(com.google.android.exoplayer2.MediaMetadata.Builder().apply {
-                setTitle(title)
-                setArtist(artist)
-
-                setExtras(duration, startTime, endTime, this@Loop)
-            }.build())
-        }.build()
+    override fun toMediaMetadata() = MediaMetadata.Builder().apply {
+        setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
+        setIsPlayable(true)
+        setTitle(title)
+        setArtist(artist)
+        setExtras(Bundle().apply {
+            putLong(MetadataKeys.Duration, duration)
+            putLong(MetadataKeys.StartTime, startTime)
+            putLong(MetadataKeys.EndTime, endTime)
+        })
+    }.build()
 
 
     override fun describeContents(): Int = 0

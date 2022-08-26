@@ -1,4 +1,4 @@
-package com.tachyonmusic.media.data
+package com.tachyonmusic.core.constants
 
 /**
  * Defines custom actions sent to the MediaPlaybackService. The first item is the event name the ones

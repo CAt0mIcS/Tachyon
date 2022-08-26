@@ -1,12 +1,7 @@
-package com.tachyonmusic.media.data
+package com.tachyonmusic.core.domain.model
 
 import android.os.Environment
-import com.tachyonmusic.media.playback.Loop
-import com.tachyonmusic.media.playback.Playback
-import com.tachyonmusic.media.playback.Playlist
-import com.tachyonmusic.media.playback.Song
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -96,7 +91,7 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
 
     class Serializer : KSerializer<MediaId> {
         override fun deserialize(decoder: Decoder): MediaId =
-            deserialize(decoder.decodeString())
+            Companion.deserialize(decoder.decodeString())
 
         override val descriptor: SerialDescriptor =
             PrimitiveSerialDescriptor("mediaId", PrimitiveKind.STRING)

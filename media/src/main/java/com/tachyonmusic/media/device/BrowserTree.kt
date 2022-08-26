@@ -1,8 +1,8 @@
 package com.tachyonmusic.media.device
 
 import android.support.v4.media.MediaBrowserCompat
-import com.tachyonmusic.media.data.MediaId
-import com.tachyonmusic.media.playback.Playlist
+import com.tachyonmusic.core.domain.model.MediaId
+import com.tachyonmusic.core.domain.model.Playlist
 
 
 class BrowserTree(
@@ -51,10 +51,10 @@ class BrowserTree(
          * Assume that [parentId] is the id of a [Playback].
          * If the id points to a [Playlist], return the items in the playlist
          */
-        val mediaId = MediaId.deserializeIfValid(parentId)
+        val mediaId = com.tachyonmusic.core.domain.model.MediaId.deserializeIfValid(parentId)
         if (mediaId != null) {
             val playback = mediaSource.findById(mediaId)
-            if (playback is Playlist)
+            if (playback is com.tachyonmusic.core.domain.model.Playlist)
                 return playback.toMediaBrowserMediaItemList()
         }
 

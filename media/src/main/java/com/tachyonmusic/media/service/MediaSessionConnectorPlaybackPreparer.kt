@@ -4,10 +4,10 @@ import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
 import com.tachyonmusic.media.R
-import com.tachyonmusic.media.data.MediaAction
-import com.tachyonmusic.media.playback.Loop
-import com.tachyonmusic.media.playback.Playback
-import com.tachyonmusic.media.playback.Playlist
+import com.tachyonmusic.core.constants.MediaAction
+import com.tachyonmusic.core.domain.model.Loop
+import com.tachyonmusic.core.domain.model.Playback
+import com.tachyonmusic.core.domain.model.Playlist
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
 
@@ -17,7 +17,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
         const val TAG: String = "PlaybackPreparerBase"
     }
 
-    open fun onSetPlayback(playback: Playback) {}
+    open fun onSetPlayback(playback: com.tachyonmusic.core.domain.model.Playback) {}
 
     open fun onSetStartTime(startTime: Long) {}
 
@@ -25,9 +25,9 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
     open fun onRequestMediaSourceReload() {}
 
-    open fun onLoopsReceived(loops: MutableList<Loop>) {}
+    open fun onLoopsReceived(loops: MutableList<com.tachyonmusic.core.domain.model.Loop>) {}
 
-    open fun onPlaylistsReceived(playlists: MutableList<Playlist>) {}
+    open fun onPlaylistsReceived(playlists: MutableList<com.tachyonmusic.core.domain.model.Playlist>) {}
 
     open fun onCombinePlaybackTypesChanged(combine: Boolean) {}
 
@@ -55,12 +55,12 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 TAG,
                 "CustomActionSetMediaId.onCustomAction with action $action"
             )
-            onSetPlayback(extras!!.getParcelable(MediaAction.Playback)!!)
+            onSetPlayback(extras!!.getParcelable(com.tachyonmusic.core.constants.MediaAction.Playback)!!)
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.SetPlaybackEvent,
+                com.tachyonmusic.core.constants.MediaAction.SetPlaybackEvent,
                 javaClass.name,
                 R.drawable.music_note // TODO: WHY????
             ).build()
@@ -72,12 +72,12 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 TAG,
                 "CustomActionSetStartTime.onCustomAction with action $action"
             )
-            onSetStartTime(extras!!.getLong(MediaAction.StartTime))
+            onSetStartTime(extras!!.getLong(com.tachyonmusic.core.constants.MediaAction.StartTime))
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.SetStartTimeEvent,
+                com.tachyonmusic.core.constants.MediaAction.SetStartTimeEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -89,12 +89,12 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 TAG,
                 "CustomActionSetEndTime.onCustomAction with action $action"
             )
-            onSetEndTime(extras!!.getLong(MediaAction.EndTime))
+            onSetEndTime(extras!!.getLong(com.tachyonmusic.core.constants.MediaAction.EndTime))
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.SetEndTimeEvent,
+                com.tachyonmusic.core.constants.MediaAction.SetEndTimeEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -111,7 +111,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.RequestMediaSourceReloadEvent,
+                com.tachyonmusic.core.constants.MediaAction.RequestMediaSourceReloadEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -124,12 +124,12 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 "CustomActionSetEndTime.onCustomAction with action $action"
             )
 
-            onLoopsReceived(extras!!.getParcelableArrayList(MediaAction.Loops)!!)
+            onLoopsReceived(extras!!.getParcelableArrayList(com.tachyonmusic.core.constants.MediaAction.Loops)!!)
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.SendLoopsEvent,
+                com.tachyonmusic.core.constants.MediaAction.SendLoopsEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -142,12 +142,12 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 "CustomActionSetEndTime.onCustomAction with action $action"
             )
 
-            onPlaylistsReceived(extras!!.getParcelableArrayList(MediaAction.Playlists)!!)
+            onPlaylistsReceived(extras!!.getParcelableArrayList(com.tachyonmusic.core.constants.MediaAction.Playlists)!!)
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.SendPlaylistsEvent,
+                com.tachyonmusic.core.constants.MediaAction.SendPlaylistsEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -161,12 +161,12 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 "CustomActionSetEndTime.onCustomAction with action $action"
             )
 
-            onCombinePlaybackTypesChanged(extras!!.getBoolean(MediaAction.CombinePlaybackTypes))
+            onCombinePlaybackTypesChanged(extras!!.getBoolean(com.tachyonmusic.core.constants.MediaAction.CombinePlaybackTypes))
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.CombinePlaybackTypesChangedEvent,
+                com.tachyonmusic.core.constants.MediaAction.CombinePlaybackTypesChangedEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -185,7 +185,7 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.RequestPlaybackUpdateEvent,
+                com.tachyonmusic.core.constants.MediaAction.RequestPlaybackUpdateEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()
@@ -199,12 +199,12 @@ abstract class MediaSessionConnectorPlaybackPreparer : MediaSessionConnector.Pla
                 "CustomActionSetEndTime.onCustomAction with action $action"
             )
 
-            onCurrentPlaylistIndexChanged(extras!!.getInt(MediaAction.CurrentPlaylistIndex))
+            onCurrentPlaylistIndexChanged(extras!!.getInt(com.tachyonmusic.core.constants.MediaAction.CurrentPlaylistIndex))
         }
 
         override fun getCustomAction(player: Player): PlaybackStateCompat.CustomAction? =
             PlaybackStateCompat.CustomAction.Builder(
-                MediaAction.CurrentPlaylistIndexChangedEvent,
+                com.tachyonmusic.core.constants.MediaAction.CurrentPlaylistIndexChangedEvent,
                 javaClass.name,
                 R.drawable.music_note
             ).build()

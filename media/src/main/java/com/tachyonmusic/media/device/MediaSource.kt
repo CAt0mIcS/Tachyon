@@ -2,12 +2,12 @@ package com.tachyonmusic.media.device
 
 import android.os.Environment
 import android.util.Log
-import com.tachyonmusic.media.data.MediaId
+import com.tachyonmusic.core.domain.model.MediaId
 import com.tachyonmusic.media.ext.isSongFile
-import com.tachyonmusic.media.playback.Loop
-import com.tachyonmusic.media.playback.Playback
-import com.tachyonmusic.media.playback.Playlist
-import com.tachyonmusic.media.playback.Song
+import com.tachyonmusic.core.domain.model.Loop
+import com.tachyonmusic.core.domain.model.Playback
+import com.tachyonmusic.core.domain.model.Playlist
+import com.tachyonmusic.core.domain.model.Song
 import com.tachyonmusic.util.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.joinAll
@@ -83,9 +83,9 @@ class MediaSource {
             }
         }
 
-    val songs = mutableListOf<Song>()
+    val songs = mutableListOf<com.tachyonmusic.core.domain.model.Song>()
 
-    var loops: MutableList<Loop> = mutableListOf()
+    var loops: MutableList<com.tachyonmusic.core.domain.model.Loop> = mutableListOf()
         set(value) {
             field = value
             field.sortBy { it.name }
@@ -93,7 +93,7 @@ class MediaSource {
         }
 
 
-    var playlists: MutableList<Playlist> = mutableListOf()
+    var playlists: MutableList<com.tachyonmusic.core.domain.model.Playlist> = mutableListOf()
         set(value) {
             field = value
             field.sortBy { it.name }
@@ -141,7 +141,7 @@ class MediaSource {
             MutableList(files.size) { i ->
                 launch {
                     if (files[i].isSongFile) {
-                        val song = Song(files[i])
+                        val song = com.tachyonmusic.core.domain.model.Song(files[i])
                         synchronized(songs) {
                             songs += song
                         }
@@ -177,7 +177,7 @@ class MediaSource {
             eventListener?.onMediaSourceChanged(BrowserTree.SONG_ROOT, null)
     }
 
-    fun findById(mediaId: MediaId): Playback? {
+    fun findById(mediaId: com.tachyonmusic.core.domain.model.MediaId): com.tachyonmusic.core.domain.model.Playback? {
         for (song in songs)
             if (song.mediaId == mediaId)
                 return song

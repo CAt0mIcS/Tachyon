@@ -1,15 +1,10 @@
 package com.tachyonmusic.presentation.main
 
-import android.os.Environment
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.tachyonmusic.media.playback.Loop
-import com.tachyonmusic.media.playback.Playback
-import com.tachyonmusic.media.playback.Playlist
-import com.tachyonmusic.media.playback.Song
+import com.tachyonmusic.core.domain.model.Playback
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel

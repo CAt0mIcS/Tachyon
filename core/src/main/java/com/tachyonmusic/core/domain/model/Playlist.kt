@@ -1,27 +1,18 @@
-package com.tachyonmusic.media.playback
+package com.tachyonmusic.core.domain.model
 
 import android.graphics.Bitmap
-import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
-import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.MediaDescriptionCompat
-import android.support.v4.media.MediaMetadataCompat
-import com.tachyonmusic.media.data.MediaId
-import com.tachyonmusic.media.data.MetadataKeys
-import com.tachyonmusic.media.ext.mediaId
-import com.google.android.exoplayer2.MediaItem
-import kotlinx.serialization.Transient
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import com.google.common.collect.ImmutableList
 import java.io.File
 
-//@Serializable
+
 data class Playlist(
     val name: String,
     val playbacks: MutableList<SinglePlayback> = mutableListOf()
 ) : Playback() {
-
-    @Transient
-    var onCurrentPlaylistIndexChanged: ((Int /*currentPlaylistIndex*/) -> Unit)? = null
 
     override val mediaId: MediaId = MediaId(this)
 
@@ -49,12 +40,6 @@ data class Playlist(
         }
 
     var currentPlaylistIndex: Int = 0
-        set(value) {
-            val prevIdx = field
-            field = value
-            if (prevIdx != field)
-                onCurrentPlaylistIndexChanged?.invoke(field)
-        }
 
     val current: SinglePlayback?
         get() = if (currentPlaylistIndex == -1) null else playbacks[currentPlaylistIndex]
@@ -93,27 +78,18 @@ data class Playlist(
         parcel.writeInt(currentPlaylistIndex)
     }
 
-    override fun toMediaMetadata(): MediaMetadataCompat =
-        current?.toMediaMetadata() ?: MediaMetadataCompat.Builder()
-            .also { metadata -> metadata.mediaId = mediaId.toString() }.build()
+    override fun toMediaItem() = MediaItem.Builder().apply {
+        setMediaId(mediaId.toString())
+        setMediaMetadata(toMediaMetadata())
+    }.build()
 
-    override fun toMediaBrowserMediaItem(): MediaBrowserCompat.MediaItem =
-        MediaBrowserCompat.MediaItem(
-            toMediaDescriptionCompat(),
-            MediaBrowserCompat.MediaItem.FLAG_PLAYABLE or MediaBrowserCompat.MediaItem.FLAG_BROWSABLE
-        )
+    override fun toMediaMetadata() = MediaMetadata.Builder().apply {
+        setFolderType(MediaMetadata.FOLDER_TYPE_MIXED)
+        setIsPlayable(true)
+    }.build()
 
-    override fun toMediaDescriptionCompat(): MediaDescriptionCompat =
-        MediaDescriptionCompat.Builder().also { desc ->
-            desc.setMediaId(mediaId.toString())
-            desc.setExtras(Bundle().apply { putParcelable(MetadataKeys.Playback, this@Playlist) })
-        }.build()
-
-    fun toMediaBrowserMediaItemList(): List<MediaBrowserCompat.MediaItem> =
-        List(playbacks.size) { i -> playbacks[i].toMediaBrowserMediaItem() }
-
-    fun toExoPlayerMediaItemList(): List<MediaItem> =
-        List(playbacks.size) { i -> playbacks[i].toExoPlayerMediaItem() }
+    fun toMediaItemList(): ImmutableList<MediaItem> =
+        ImmutableList.copyOf(playbacks.map { it.toMediaItem() })
 
     override fun describeContents(): Int = 0
 
