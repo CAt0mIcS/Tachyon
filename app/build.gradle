@@ -2,8 +2,6 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.6.21'
-
     id 'com.google.gms.google-services'
     id 'com.google.firebase.firebase-perf'
     id 'com.google.firebase.crashlytics'
@@ -102,10 +100,12 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
 
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.6.1'
+
     implementation 'com.google.dagger:hilt-android:2.43.2'
     kapt 'com.google.dagger:hilt-compiler:2.43.2'
 
-    implementation 'androidx.media:media:1.6.0'
+    implementation "androidx.media3:media3-session:$media3_version"
     implementation project(path: ':media')
 
     implementation project(path: ':core')
