@@ -1,7 +1,8 @@
 package com.tachyonmusic.user.domain
 
 import com.tachyonmusic.core.Resource
-import com.tachyonmusic.core.domain.model.*
+import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.playback.*
 import kotlinx.coroutines.Deferred
 
 interface UserRepository {
@@ -23,7 +24,15 @@ interface UserRepository {
 
     fun signOut()
 
-    suspend fun find(mediaId: MediaId): Playback?
+    suspend fun find(mediaId: MediaId): Playback? {
+        val s = songs.await().find { it.mediaId == mediaId }
+        if (s != null)
+            return s
+        val l = loops.await().find { it.mediaId == mediaId }
+        if (l != null)
+            return l
+        return playlists.await().find { it.mediaId == mediaId }
+    }
 
     fun upload()
 

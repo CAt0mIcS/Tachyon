@@ -2,12 +2,8 @@ package com.tachyonmusic.presentation.main
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.core.Resource
-import com.tachyonmusic.core.domain.model.Playback
+import com.tachyonmusic.core.domain.playback.Playback
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @HiltViewModel

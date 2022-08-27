@@ -7,7 +7,10 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.tachyonmusic.core.Resource
 import com.tachyonmusic.core.UiText
-import com.tachyonmusic.core.domain.model.*
+import com.tachyonmusic.core.data.playback.LocalSong
+import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.user.R
 import com.tachyonmusic.user.data.Metadata
 import com.tachyonmusic.user.domain.UserRepository
@@ -40,7 +43,7 @@ class FirebaseRepository : UserRepository {
         val songs = arrayListOf<Song>()
         for (file in files) {
             if (file.extension == "mp3") {
-                songs += Song(file)
+                songs += LocalSong.build(file)
             }
         }
         Log.d("FirebaseRepository", "Finished loading songs")
@@ -167,15 +170,5 @@ class FirebaseRepository : UserRepository {
     suspend operator fun plusAssign(playlist: Playlist) {
         metadata.playlists.await().add(playlist)
         eventListener?.onPlaylistListChanged(playlist)
-    }
-
-    override suspend fun find(mediaId: MediaId): Playback? {
-        val s = songs.await().find { it.mediaId == mediaId }
-        if (s != null)
-            return s
-        val l = loops.await().find { it.mediaId == mediaId }
-        if (l != null)
-            return l
-        return playlists.await().find { it.mediaId == mediaId }
     }
 }

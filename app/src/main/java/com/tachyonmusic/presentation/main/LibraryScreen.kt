@@ -15,9 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.app.R
-import com.tachyonmusic.core.domain.model.Loop
-import com.tachyonmusic.core.domain.model.Playlist
-import com.tachyonmusic.core.domain.model.Song
+import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.presentation.authentication.SignInScreen
 import com.tachyonmusic.presentation.main.component.BottomNavigationItem
 

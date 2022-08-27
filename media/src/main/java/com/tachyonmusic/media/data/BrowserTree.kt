@@ -3,16 +3,15 @@ package com.tachyonmusic.media.data
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.google.common.collect.ImmutableList
-import com.tachyonmusic.core.domain.model.MediaId
-import com.tachyonmusic.core.domain.model.Playback
-import com.tachyonmusic.core.domain.model.Playlist
+import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.user.domain.UserRepository
 import kotlinx.coroutines.*
-import kotlin.math.max
 
 
 class BrowserTree(
-    private var repository: UserRepository
+    private val repository: UserRepository
 ) {
     companion object {
         /**

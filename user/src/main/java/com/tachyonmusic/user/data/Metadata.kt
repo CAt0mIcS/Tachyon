@@ -1,13 +1,12 @@
 package com.tachyonmusic.user.data
 
 import android.util.Log
-import com.tachyonmusic.core.domain.model.MediaId
-import com.tachyonmusic.core.domain.model.Loop
-import com.tachyonmusic.core.domain.model.Playback
-import com.tachyonmusic.core.domain.model.Playlist
-import com.tachyonmusic.core.domain.model.Song
+import com.tachyonmusic.core.data.playback.RemoteLoop
+import com.tachyonmusic.core.data.playback.RemotePlaylist
+import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.runBlocking
 
 class Metadata() {
@@ -43,27 +42,27 @@ class Metadata() {
 
         val loadedLoops =
             ((data["loops"] as List<HashMap<String, Any?>?>?)?.map {
-                Loop.createFromHashMap(it!!)
+                RemoteLoop.build(it!!)
             } as ArrayList<Loop>?)
                 ?: arrayListOf()
         loops.complete(loadedLoops)
 
         val loadedPlaylists = ((data["playlists"] as List<HashMap<String, Any?>?>?)?.map {
-            Playlist.createFromHashMap(it!!)
+            RemotePlaylist.build(it!!)
         } as ArrayList<Playlist>?)
             ?: arrayListOf()
         playlists.complete(loadedPlaylists)
 
         // TODO: Unable to find loop the first time history loads on release builds only
-        (data["history"] as List<String?>?)?.forEach { mediaIdStr ->
-            val mediaId = MediaId.deserialize(mediaIdStr!!)
-            if (mediaId.isSong)
-                history.add(Song(mediaId))
-            else if (mediaId.isLoop)
-                loadedLoops.find { it.mediaId == mediaId }?.let { history.add(it) }
-            else
-                loadedPlaylists.find { it.mediaId == mediaId }?.let { history.add(it) }
-        }
+//        (data["history"] as List<String?>?)?.forEach { mediaIdStr ->
+//            val mediaId = MediaId.deserialize(mediaIdStr!!)
+//            if (mediaId.isSong)
+//                history.add(Song(mediaId))
+//            else if (mediaId.isLoop)
+//                loadedLoops.find { it.mediaId == mediaId }?.let { history.add(it) }
+//            else
+//                loadedPlaylists.find { it.mediaId == mediaId }?.let { history.add(it) }
+//        }
 
         Log.d(TAG, "Finished loading metadata")
 

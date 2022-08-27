@@ -1,6 +1,10 @@
-package com.tachyonmusic.core.domain.model
+package com.tachyonmusic.core.domain
 
 import android.os.Environment
+import com.tachyonmusic.core.constants.PlaybackType
+import com.tachyonmusic.core.data.playback.LocalSong
+import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Song
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -34,44 +38,44 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
         // Stored for performance reasons
         val EXTERNAL_STORAGE_DIRECTORY: String =
             Environment.getExternalStorageDirectory().absolutePath
-    }
 
-    constructor(song: Song) : this(
-        Playback.Type.SongSharedStorage.toString() +
-                song.path.absolutePath.substring(
-                    song.path.absolutePath.indexOf(
+        fun ofLocalSong(path: File) =
+            MediaId(
+                PlaybackType.Song.Local().toString() + path.absolutePath.substring(
+                    path.absolutePath.indexOf(
                         EXTERNAL_STORAGE_DIRECTORY
                     ) + EXTERNAL_STORAGE_DIRECTORY.length
                 )
-    )
+            )
 
-    constructor(loop: Loop) : this(Playback.Type.Loop.toString() + loop.name, loop.song.mediaId)
+        fun ofRemoteLoop(name: String, songMediaId: MediaId) =
+            MediaId(PlaybackType.Loop.Remote().toString() + name, songMediaId)
 
-    constructor(playlist: Playlist) : this(Playback.Type.Playlist.toString() + playlist.name)
+        fun ofRemotePlaylist(name: String) =
+            MediaId(PlaybackType.Playlist.Remote().toString() + name)
+    }
 
-    val isSong: Boolean
-        get() = source.contains(Playback.Type.SongSharedStorage.toString())
+    val isLocalSong: Boolean
+        get() = source.contains(PlaybackType.Song.Local().toString())
 
-    val isLoop: Boolean
-        get() = source.contains(Playback.Type.Loop.toString()) && underlyingMediaId != null
+    val isRemoteLoop: Boolean
+        get() = source.contains(PlaybackType.Loop.Remote().toString()) && underlyingMediaId != null
 
-    val isPlaylist: Boolean
-        get() = source.contains(Playback.Type.Playlist.toString())
+    val isRemotePlaylist: Boolean
+        get() = source.contains(PlaybackType.Playlist.Remote().toString())
 
-    val path: File
+    val path: File?
         get() {
-            assert(!isPlaylist || underlyingMediaId != null) { "Cannot get path from playlist" }
-            if (isSong)
+            if (isLocalSong)
                 return File(
                     "$EXTERNAL_STORAGE_DIRECTORY/${
                         source.replaceFirst(
-                            Playback.Type.SongSharedStorage.toString(), ""
+                            PlaybackType.Song.Local().toString(), ""
                         )
                     }"
                 )
-            return underlyingMediaId!!.path
+            return underlyingMediaId?.path
         }
-
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -92,11 +96,12 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
 
     class Serializer : KSerializer<MediaId> {
         override fun deserialize(decoder: Decoder): MediaId =
-            Companion.deserialize(decoder.decodeString())
+            deserialize(decoder.decodeString())
 
         override val descriptor: SerialDescriptor =
             PrimitiveSerialDescriptor("mediaId", PrimitiveKind.STRING)
 
-        override fun serialize(encoder: Encoder, value: MediaId) = encoder.encodeString(toString())
+        override fun serialize(encoder: Encoder, value: MediaId) =
+            encoder.encodeString(toString())
     }
 }
