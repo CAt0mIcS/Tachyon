@@ -1,11 +1,13 @@
 package com.tachyonmusic.user.domain
 
 import com.tachyonmusic.core.Resource
-import com.tachyonmusic.user.Metadata
-import kotlinx.coroutines.flow.Flow
+import com.tachyonmusic.core.domain.model.*
+import kotlinx.coroutines.Deferred
 
 interface UserRepository {
-    val metadata: Metadata
+    val songs: Deferred<List<Song>>
+    val loops: Deferred<List<Loop>>
+    val playlists: Deferred<List<Playlist>>
 
     val signedIn: Boolean
 
@@ -21,11 +23,17 @@ interface UserRepository {
 
     fun signOut()
 
+    suspend fun find(mediaId: MediaId): Playback?
+
     fun upload()
 
     fun registerEventListener(listener: EventListener?)
 
     interface EventListener {
-        fun onMetadataChanged() {}
+        fun onSongListChanged(song: Song) {}
+        fun onLoopListChanged(loop: Loop) {}
+        fun onPlaylistListChanged(playlist: Playlist) {}
+
+        fun onPlaylistChanged(playlist: Playlist)
     }
 }

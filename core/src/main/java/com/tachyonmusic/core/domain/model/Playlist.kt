@@ -1,11 +1,12 @@
 package com.tachyonmusic.core.domain.model
 
 import android.graphics.Bitmap
+import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.google.common.collect.ImmutableList
+import com.tachyonmusic.core.constants.MetadataKeys
 import java.io.File
 
 
@@ -86,10 +87,12 @@ data class Playlist(
     override fun toMediaMetadata() = MediaMetadata.Builder().apply {
         setFolderType(MediaMetadata.FOLDER_TYPE_MIXED)
         setIsPlayable(true)
+        setExtras(Bundle().apply {
+            putParcelable(MetadataKeys.Playback, this@Playlist)
+        })
     }.build()
 
-    fun toMediaItemList(): ImmutableList<MediaItem> =
-        ImmutableList.copyOf(playbacks.map { it.toMediaItem() })
+    fun toMediaItemList(): List<MediaItem> = playbacks.map { it.toMediaItem() }
 
     override fun describeContents(): Int = 0
 

@@ -1,41 +1,64 @@
-package com.tachyonmusic.user.data
+package com.tachyonmusic.user.data.repository
 
+import android.os.Environment
+import android.util.Log
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.tachyonmusic.core.Resource
 import com.tachyonmusic.core.UiText
-import com.tachyonmusic.user.Metadata
+import com.tachyonmusic.core.domain.model.*
 import com.tachyonmusic.user.R
+import com.tachyonmusic.user.data.Metadata
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.launch
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
+import java.io.File
 
 class FirebaseRepository : UserRepository {
-    override var metadata: Metadata = Metadata()
-        private set
+
+    override val songs: Deferred<List<Song>>
+        get() = _songs
+    override val loops: Deferred<List<Loop>>
+        get() = metadata.loops
+    override val playlists: Deferred<List<Playlist>>
+        get() = metadata.playlists
+
+    private val _songs = CompletableDeferred<ArrayList<Song>>()
+
+    private var metadata: Metadata = Metadata()
+
+    override val signedIn: Boolean
+        get() = Firebase.auth.currentUser != null
 
     private var eventListener: UserRepository.EventListener? = null
+
+    init {
+        val files =
+            File(Environment.getExternalStorageDirectory().absolutePath + "/Music/").listFiles()!!
+        Log.d("FirebaseRepository", "Started loading songs")
+        val songs = arrayListOf<Song>()
+        for (file in files) {
+            if (file.extension == "mp3") {
+                songs += Song(file)
+            }
+        }
+        Log.d("FirebaseRepository", "Finished loading songs")
+        _songs.complete(songs)
+    }
 
     override suspend fun signIn(
         email: String,
         password: String
     ) = withContext(Dispatchers.IO) {
         val job = CompletableDeferred<Resource<Unit>>()
-        job.start()
 
         Firebase.auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
-                    job.complete(Resource.Success())
-                    initialize { metadataUpdated ->
-                        if (metadataUpdated)
-                            eventListener?.onMetadataChanged()
+                    launch(Dispatchers.IO) {
+                        initialize()
+                        job.complete(Resource.Success())
                     }
                 } else
                     job.complete(
@@ -59,8 +82,10 @@ class FirebaseRepository : UserRepository {
         Firebase.auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
-                    job.complete(Resource.Success())
-                    initialize()
+                    launch(Dispatchers.IO) {
+                        initialize()
+                        job.complete(Resource.Success())
+                    }
                 } else
                     job.complete(
                         Resource.Error(
@@ -74,9 +99,6 @@ class FirebaseRepository : UserRepository {
     }
 
     override fun signOut() = Firebase.auth.signOut()
-
-    override val signedIn: Boolean
-        get() = Firebase.auth.currentUser != null
 
     // TODO: Use [Firebase.firestore.update] (https://firebase.google.com/docs/firestore/manage-data/add-data#update-data) && (https://firebase.google.com/docs/firestore/manage-data/add-data#update_elements_in_an_array)
 
@@ -98,7 +120,9 @@ class FirebaseRepository : UserRepository {
         eventListener = listener
     }
 
-    private fun initialize(onDone: ((Boolean /*metadataUpdated*/) -> Unit)? = null) {
+    private suspend fun initialize() {
+        val job = Job()
+
         if (signedIn) {
             Firebase.firestore.collection("users")
                 .document(Firebase.auth.currentUser!!.uid)
@@ -106,12 +130,9 @@ class FirebaseRepository : UserRepository {
                 .addOnCompleteListener { task ->
                     if (task.result.data != null)
                         launch(Dispatchers.IO) {
-                            val previous = metadata
-                            metadata = Metadata(task.result.data!!, previous.onHistoryChanged)
-                            onDone?.invoke(previous != metadata)
+                            metadata = Metadata(task.result.data!!)
+                            job.complete()
                         }
-                    else
-                        onDone?.invoke(false)
                 }
 
         } else {
@@ -121,22 +142,40 @@ class FirebaseRepository : UserRepository {
                     .addOnCompleteListener { task ->
                         if (task.result.documents.isNotEmpty() && task.result.documents[0].data != null)
                             launch(Dispatchers.IO) {
-                                val previous = metadata
-                                metadata = Metadata(
-                                    task.result.documents[0].data!!,
-                                    previous.onHistoryChanged
-                                )
-                                onDone?.invoke(previous != metadata)
+                                metadata = Metadata(task.result.documents[0].data!!)
+                                job.complete()
                             }
-                        else
-                        /**
-                         * This means that the user has never signed in before. Thus we set [metadataUpdated]
-                         * to true to indicate that the default metadata will be used
-                         */
-                            onDone?.invoke(true)
                     }
                 Firebase.firestore.enableNetwork()
             }
         }
+
+        job.join()
+    }
+
+    suspend operator fun plusAssign(song: Song) {
+        _songs.await().add(song)
+        _songs.await().sortBy { it.title + it.artist }
+        eventListener?.onSongListChanged(song)
+    }
+
+    suspend operator fun plusAssign(loop: Loop) {
+        metadata.loops.await().add(loop)
+        eventListener?.onLoopListChanged(loop)
+    }
+
+    suspend operator fun plusAssign(playlist: Playlist) {
+        metadata.playlists.await().add(playlist)
+        eventListener?.onPlaylistListChanged(playlist)
+    }
+
+    override suspend fun find(mediaId: MediaId): Playback? {
+        val s = songs.await().find { it.mediaId == mediaId }
+        if (s != null)
+            return s
+        val l = loops.await().find { it.mediaId == mediaId }
+        if (l != null)
+            return l
+        return playlists.await().find { it.mediaId == mediaId }
     }
 }

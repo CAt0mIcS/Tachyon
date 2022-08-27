@@ -6,10 +6,10 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
-import com.tachyonmusic.media.CustomPlayer
+import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
-import com.tachyonmusic.user.domain.FileRepository
+import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,7 +22,7 @@ class MediaPlaybackServiceModule {
 
     @Provides
     @ServiceScoped
-    fun provideBrowserTree(repository: FileRepository): BrowserTree = BrowserTree(repository)
+    fun provideBrowserTree(repository: UserRepository): BrowserTree = BrowserTree(repository)
 
     @Provides
     @ServiceScoped

@@ -6,7 +6,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
 import com.tachyonmusic.core.constants.MetadataKeys
-import com.tachyonmusic.media.CustomPlayer
+import com.tachyonmusic.media.domain.CustomPlayer
 
 /**
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands

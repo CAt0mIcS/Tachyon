@@ -1,7 +1,7 @@
 package com.tachyonmusic.user.di
 
-import com.tachyonmusic.user.data.FileRepositoryImpl
-import com.tachyonmusic.user.domain.FileRepository
+import com.tachyonmusic.user.data.repository.FirebaseRepository
+import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,5 +14,5 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFileRepository(): FileRepository = FileRepositoryImpl()
+    fun provideUserRepository(): UserRepository = FirebaseRepository()
 }

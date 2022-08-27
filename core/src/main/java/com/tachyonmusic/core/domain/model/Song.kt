@@ -85,6 +85,7 @@ class Song : SinglePlayback {
         setArtist(artist)
         setExtras(Bundle().apply {
             putLong(MetadataKeys.Duration, duration)
+            putParcelable(MetadataKeys.Playback, this@Song)
         })
     }.build()
 

@@ -1,4 +1,4 @@
-package com.tachyonmusic.media
+package com.tachyonmusic.media.domain
 
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.PlayerMessage

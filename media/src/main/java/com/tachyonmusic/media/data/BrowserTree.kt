@@ -1,14 +1,18 @@
 package com.tachyonmusic.media.data
 
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.domain.model.MediaId
+import com.tachyonmusic.core.domain.model.Playback
 import com.tachyonmusic.core.domain.model.Playlist
-import com.tachyonmusic.user.domain.FileRepository
+import com.tachyonmusic.user.domain.UserRepository
+import kotlinx.coroutines.*
+import kotlin.math.max
 
 
 class BrowserTree(
-    private var repository: FileRepository
+    private var repository: UserRepository
 ) {
     companion object {
         /**
@@ -23,30 +27,41 @@ class BrowserTree(
         const val LOOP_ROOT = ROOT + "Loop/"
     }
 
-    operator fun get(parentId: String): ImmutableList<MediaItem>? {
-        return when (parentId) {
-            ROOT -> {
-                return ImmutableList.copyOf(getSongs() + getLoops() + getPlaylists())
-            }
-            SONG_ROOT -> ImmutableList.copyOf(getSongs())
-            PLAYLIST_ROOT -> ImmutableList.copyOf(getLoops())
-            LOOP_ROOT -> ImmutableList.copyOf(getPlaylists())
-            else -> {
-                /**
-                 * Assume that [parentId] is the id of a [Playback].
-                 * If the id points to a [Playlist], return the items in the playlist
-                 */
-                val mediaId = MediaId.deserializeIfValid(parentId)
-                if (mediaId != null) {
-                    val playback = repository.find(mediaId)
-                    if (playback != null && playback is Playlist)
-                        return playback.toMediaItemList()
-                }
+    val root: MediaItem = MediaItem.Builder().apply {
+        setMediaId(ROOT)
+        setMediaMetadata(MediaMetadata.Builder().apply {
+            setFolderType(MediaMetadata.FOLDER_TYPE_MIXED)
+            setIsPlayable(false)
+        }.build())
+    }.build()
 
-                return null
+    suspend fun get(parentId: String, page: Int, pageSize: Int): ImmutableList<MediaItem>? =
+        withContext(Dispatchers.IO) {
+            when (parentId) {
+                ROOT -> constraintItems(getSongs() + getLoops() + getPlaylists(), page, pageSize)
+                SONG_ROOT -> constraintItems(getSongs(), page, pageSize)
+                LOOP_ROOT -> constraintItems(getLoops(), page, pageSize)
+                PLAYLIST_ROOT -> constraintItems(getPlaylists(), page, pageSize)
+                else -> {
+                    /**
+                     * Assume that [parentId] is the id of a [Playback].
+                     * If the id points to a [Playlist], return the items in the playlist
+                     */
+                    val mediaId = MediaId.deserializeIfValid(parentId)
+                    if (mediaId != null) {
+                        val playback = repository.find(mediaId)
+                        if (playback != null && playback is Playlist)
+                            return@withContext constraintItems(
+                                playback.toMediaItemList(),
+                                page,
+                                pageSize
+                            )
+                    }
+
+                    null
+                }
             }
         }
-    }
 
     // TODO
     /** Type for a folder containing only playable media.  */
@@ -57,7 +72,23 @@ class BrowserTree(
     /** Type for a folder containing media categorized by year.  */
 
 
-    private fun getSongs() = repository.songs.map { it.toMediaItem() }
-    private fun getLoops() = repository.loops.map { it.toMediaItem() }
-    private fun getPlaylists() = repository.playlists.map { it.toMediaItem() }
+    private suspend fun getSongs() = repository.songs.await().map { it.toMediaItem() }
+    private suspend fun getLoops() = repository.loops.await().map { it.toMediaItem() }
+    private suspend fun getPlaylists() = repository.playlists.await().map { it.toMediaItem() }
+
+    private fun constraintItems(
+        playbacks: List<MediaItem>,
+        page: Int,
+        pageSize: Int
+    ): ImmutableList<MediaItem> {
+        val maxIdx = page * pageSize + pageSize - 1
+        val range =
+            if (maxIdx > playbacks.size - 1) (page * pageSize until playbacks.size)
+            else (page * pageSize until maxIdx + 1)
+
+        return ImmutableList.Builder<MediaItem>().apply {
+            for (i in range)
+                add(playbacks[i])
+        }.build()
+    }
 }

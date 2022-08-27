@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
@@ -29,7 +30,9 @@ object LibraryScreen :
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
         ) {
             item {
                 Button(
@@ -38,7 +41,7 @@ object LibraryScreen :
                     Text("Sign In")
                 }
             }
-            items(viewModel.playbacks.value) { playback ->
+            items(viewModel.playbacks) { playback ->
                 Text(
                     text = when (playback) {
                         is Playlist -> playback.name

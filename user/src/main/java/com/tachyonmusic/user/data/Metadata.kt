@@ -1,4 +1,4 @@
-package com.tachyonmusic.user
+package com.tachyonmusic.user.data
 
 import android.util.Log
 import com.tachyonmusic.core.domain.model.MediaId
@@ -6,8 +6,9 @@ import com.tachyonmusic.core.domain.model.Loop
 import com.tachyonmusic.core.domain.model.Playback
 import com.tachyonmusic.core.domain.model.Playlist
 import com.tachyonmusic.core.domain.model.Song
-import com.tachyonmusic.util.launch
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.runBlocking
 
 class Metadata() {
     companion object {
@@ -20,16 +21,19 @@ class Metadata() {
     var audioUpdateInterval = 100
     var maxPlaybacksInHistory = 25
 
-    var loops: ArrayList<Loop> = arrayListOf()
-    var playlists: ArrayList<Playlist> = arrayListOf()
+    var loops: CompletableDeferred<ArrayList<Loop>> = CompletableDeferred()
+    var playlists: CompletableDeferred<ArrayList<Playlist>> = CompletableDeferred()
 
     val history: MutableList<Playback> = mutableListOf()
 
-    var onHistoryChanged: ((MutableList<Playback> /*history*/) -> Unit)? = null
+    init {
+        loops.complete(arrayListOf())
+        playlists.complete(arrayListOf())
+    }
 
     constructor(
         data: Map<String, Any?>,
-        onHistoryChanged: ((MutableList<Playback>) -> Unit)?
+//        onHistoryChanged: ((MutableList<Playback>) -> Unit)?
     ) : this() {
         ignoreAudioFocus = data["ignoreAudioFocus"] as Boolean? ?: false
         combineDifferentPlaybackTypes = data["combineDifferentPlaybackTypes"] as Boolean? ?: false
@@ -37,17 +41,18 @@ class Metadata() {
         audioUpdateInterval = (data["audioUpdateInterval"] as Long? ?: 100L).toInt()
         maxPlaybacksInHistory = (data["maxPlaybacksInHistory"] as Long? ?: 25L).toInt()
 
-        loops =
+        val loadedLoops =
             ((data["loops"] as List<HashMap<String, Any?>?>?)?.map {
                 Loop.createFromHashMap(it!!)
             } as ArrayList<Loop>?)
                 ?: arrayListOf()
+        loops.complete(loadedLoops)
 
-        playlists = ((data["playlists"] as List<HashMap<String, Any?>?>?)?.map {
+        val loadedPlaylists = ((data["playlists"] as List<HashMap<String, Any?>?>?)?.map {
             Playlist.createFromHashMap(it!!)
         } as ArrayList<Playlist>?)
             ?: arrayListOf()
-
+        playlists.complete(loadedPlaylists)
 
         // TODO: Unable to find loop the first time history loads on release builds only
         (data["history"] as List<String?>?)?.forEach { mediaIdStr ->
@@ -55,16 +60,16 @@ class Metadata() {
             if (mediaId.isSong)
                 history.add(Song(mediaId))
             else if (mediaId.isLoop)
-                loops.find { it.mediaId == mediaId }?.let { history.add(it) }
+                loadedLoops.find { it.mediaId == mediaId }?.let { history.add(it) }
             else
-                playlists.find { it.mediaId == mediaId }?.let { history.add(it) }
+                loadedPlaylists.find { it.mediaId == mediaId }?.let { history.add(it) }
         }
 
         Log.d(TAG, "Finished loading metadata")
 
-        this.onHistoryChanged = onHistoryChanged
-        if (history.isNotEmpty())
-            launch(Dispatchers.Main) { this@Metadata.onHistoryChanged?.invoke(history) }
+//        this.onHistoryChanged = onHistoryChanged
+//        if (history.isNotEmpty())
+//            launch(Dispatchers.Main) { this@Metadata.onHistoryChanged?.invoke(history) }
     }
 
     fun toHashMap() = hashMapOf(
@@ -73,44 +78,39 @@ class Metadata() {
         "songIncDecInterval" to songIncDecInterval,
         "audioUpdateInterval" to audioUpdateInterval,
         "maxPlaybacksInHistory" to maxPlaybacksInHistory,
-
-        "loops" to loops.map { it.toHashMap() },
-        "playlists" to playlists.map { it.toHashMap() },
+        runBlocking {
+            "loops" to loops.await().map { it.toHashMap() }
+        },
+        runBlocking {
+            "playlists" to playlists.await().map { it.toHashMap() }
+        },
         "history" to history.map { it.mediaId.toString() }
     )
 
-    fun addHistory(playback: Playback) {
-        if (history.contains(playback)) {
-            history.remove(playback)
-            history.add(0, playback)
-        } else {
-            history.add(0, playback)
-            if (history.size > maxPlaybacksInHistory)
-                shrinkHistory()
-        }
-        onHistoryChanged?.invoke(history)
-    }
-
-    fun clearHistory() {
-        if (history.isNotEmpty()) {
-            history.clear()
-            onHistoryChanged?.invoke(history)
-        }
-    }
+//    fun addHistory(playback: Playback) {
+//        if (history.contains(playback)) {
+//            history.remove(playback)
+//            history.add(0, playback)
+//        } else {
+//            history.add(0, playback)
+//            if (history.size > maxPlaybacksInHistory)
+//                shrinkHistory()
+//        }
+//        onHistoryChanged?.invoke(history)
+//    }
+//
+//    fun clearHistory() {
+//        if (history.isNotEmpty()) {
+//            history.clear()
+//            onHistoryChanged?.invoke(history)
+//        }
+//    }
 
     /**
      * Shrinks length of [history] to [maxPlaybacksInHistory]
      */
     private fun shrinkHistory() {
         history.subList(0, history.size - maxPlaybacksInHistory).clear()
-    }
-
-    operator fun plusAssign(loop: Loop) {
-        loops += loop
-    }
-
-    operator fun plusAssign(playlist: Playlist) {
-        playlists += playlist
     }
 
     override fun equals(other: Any?): Boolean {

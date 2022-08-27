@@ -2,6 +2,7 @@ package com.tachyonmusic.presentation
 
 import android.content.ComponentName
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.Scaffold
@@ -10,6 +11,7 @@ import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import androidx.navigation.compose.rememberNavController
 import com.tachyonmusic.app.R
+import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.presentation.main.component.BottomNavigation
 import com.tachyonmusic.presentation.util.Permission
@@ -21,6 +23,9 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class ActivityMain : ComponentActivity() {
+
+    private lateinit var mediaBrowser: MediaBrowser
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -46,17 +51,21 @@ class ActivityMain : ComponentActivity() {
         }
 
         lifecycleScope.launch {
-            val sessionToken =
-                SessionToken(
-                    this@ActivityMain,
-                    ComponentName(this@ActivityMain, MediaPlaybackService::class.java)
-                )
-            val browser = MediaBrowser.Builder(this@ActivityMain, sessionToken)
+            val sessionToken = SessionToken(
+                this@ActivityMain,
+                ComponentName(this@ActivityMain, MediaPlaybackService::class.java)
+            )
+
+            mediaBrowser = MediaBrowser.Builder(this@ActivityMain, sessionToken)
                 .buildAsync()
                 .await()
 
-            // Get the library root to start browsing the library.
-            val root = browser.getLibraryRoot(null).await()
+            val items =
+                mediaBrowser.getChildren(BrowserTree.ROOT, 3, 20, null).await().value!!
+            Log.d("ActivityMain", "Finished onGetChildren")
+            for (item in items) {
+                println("Item ${item.mediaId}")
+            }
         }
     }
 }

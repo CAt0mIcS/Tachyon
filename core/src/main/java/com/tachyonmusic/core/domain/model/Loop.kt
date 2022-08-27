@@ -73,6 +73,7 @@ class Loop(
             putLong(MetadataKeys.Duration, duration)
             putLong(MetadataKeys.StartTime, startTime)
             putLong(MetadataKeys.EndTime, endTime)
+            putParcelable(MetadataKeys.Playback, this@Loop)
         })
     }.build()
 
