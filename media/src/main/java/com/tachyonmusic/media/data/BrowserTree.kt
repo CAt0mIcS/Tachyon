@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.media.domain.use_case.getItemsOnPageWithPageSize
 import com.tachyonmusic.user.domain.UserRepository
 import kotlinx.coroutines.*
 
@@ -79,15 +80,5 @@ class BrowserTree(
         playbacks: List<MediaItem>,
         page: Int,
         pageSize: Int
-    ): ImmutableList<MediaItem> {
-        val maxIdx = page * pageSize + pageSize - 1
-        val range =
-            if (maxIdx > playbacks.size - 1) (page * pageSize until playbacks.size)
-            else (page * pageSize until maxIdx + 1)
-
-        return ImmutableList.Builder<MediaItem>().apply {
-            for (i in range)
-                add(playbacks[i])
-        }.build()
-    }
+    ): ImmutableList<MediaItem> = getItemsOnPageWithPageSize(playbacks, page, pageSize)
 }

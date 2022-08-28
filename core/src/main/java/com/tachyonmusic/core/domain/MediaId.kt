@@ -1,6 +1,7 @@
 package com.tachyonmusic.core.domain
 
 import android.os.Environment
+import com.tachyonmusic.core.constants.Constants
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.domain.playback.Loop
@@ -35,16 +36,12 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
                 null
             }
 
-        // Stored for performance reasons
-        val EXTERNAL_STORAGE_DIRECTORY: String =
-            Environment.getExternalStorageDirectory().absolutePath
-
         fun ofLocalSong(path: File) =
             MediaId(
                 PlaybackType.Song.Local().toString() + path.absolutePath.substring(
                     path.absolutePath.indexOf(
-                        EXTERNAL_STORAGE_DIRECTORY
-                    ) + EXTERNAL_STORAGE_DIRECTORY.length
+                        Constants.EXTERNAL_STORAGE_DIRECTORY
+                    ) + Constants.EXTERNAL_STORAGE_DIRECTORY.length
                 )
             )
 
@@ -68,7 +65,7 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
         get() {
             if (isLocalSong)
                 return File(
-                    "$EXTERNAL_STORAGE_DIRECTORY/${
+                    "$Constants.EXTERNAL_STORAGE_DIRECTORY/${
                         source.replaceFirst(
                             PlaybackType.Song.Local().toString(), ""
                         )
