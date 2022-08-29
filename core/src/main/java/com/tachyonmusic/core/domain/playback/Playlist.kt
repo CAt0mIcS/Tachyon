@@ -1,5 +1,6 @@
 package com.tachyonmusic.core.domain.playback
 
+import android.net.Uri
 import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
@@ -28,6 +29,9 @@ abstract class Playlist(
         get() = current?.artist
     override val duration: Long?
         get() = current?.duration
+
+    override val uri: Uri?
+        get() = current?.uri
 
     override var startTime: Long
         get() = current?.startTime ?: 0L

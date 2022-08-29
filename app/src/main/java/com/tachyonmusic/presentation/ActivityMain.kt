@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.Scaffold
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.C
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import androidx.navigation.compose.rememberNavController
@@ -66,6 +67,11 @@ class ActivityMain : ComponentActivity() {
             for (item in items) {
                 println("Item ${item.mediaId}")
             }
+
+            mediaBrowser.setMediaItems(items)
+            mediaBrowser.seekTo(0, C.TIME_UNSET)
+            mediaBrowser.playWhenReady = true
+            mediaBrowser.prepare()
         }
     }
 }

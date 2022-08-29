@@ -16,9 +16,9 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer 
 
 
     override fun getAvailableCommands(): Player.Commands {
-        return with(wrappedPlayer.availableCommands) {
+        return wrappedPlayer.availableCommands.run {
             if (mediaItemCount > 1) {
-                buildUpon()
+                return@run buildUpon()
                     .add(COMMAND_SEEK_TO_NEXT)
                     .add(COMMAND_SEEK_TO_PREVIOUS)
                     .build()

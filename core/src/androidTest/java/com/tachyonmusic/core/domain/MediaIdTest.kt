@@ -17,5 +17,7 @@ class MediaIdTest {
         val expectedSource = "*0*${path.absolutePath}"
         assertThat(mediaId.source == expectedSource)
         assertThat(mediaId.isLocalSong)
+        assertThat(mediaId.path != null)
+        assertThat(mediaId.path!!.absolutePath == path.absolutePath)
     }
 }

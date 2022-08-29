@@ -26,6 +26,7 @@ abstract class Song(
 
     override fun toMediaItem() = MediaItem.Builder().apply {
         setMediaId(mediaId.toString())
+        setUri(uri)
         setMediaMetadata(toMediaMetadata())
     }.build()
 

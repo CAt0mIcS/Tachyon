@@ -1,5 +1,6 @@
 package com.tachyonmusic.core.data.playback
 
+import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 import com.tachyonmusic.core.constants.PlaybackType
@@ -22,6 +23,9 @@ class LocalSong(
 
     val path: File
         get() = mediaId.path!!
+
+    override val uri: Uri
+        get() = Uri.fromFile(path)
 
     constructor(parcel: Parcel) : this(
         MediaId(parcel.readString()!!),

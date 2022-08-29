@@ -1,5 +1,6 @@
 package com.tachyonmusic.core.domain.playback
 
+import android.net.Uri
 import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
@@ -23,6 +24,9 @@ abstract class Loop(
     override val duration: Long
         get() = song.duration
 
+    override val uri: Uri
+        get() = song.uri
+
     abstract override val playbackType: PlaybackType.Loop
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
@@ -33,6 +37,7 @@ abstract class Loop(
 
     override fun toMediaItem() = MediaItem.Builder().apply {
         setMediaId(mediaId.toString())
+        setUri(uri)
         setMediaMetadata(toMediaMetadata())
     }.build()
 

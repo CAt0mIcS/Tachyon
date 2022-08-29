@@ -61,7 +61,7 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
         get() {
             if (isLocalSong)
                 return File(
-                    "$Constants.EXTERNAL_STORAGE_DIRECTORY/${
+                    "${Constants.EXTERNAL_STORAGE_DIRECTORY}/${
                         source.replaceFirst(
                             PlaybackType.Song.Local().toString(), ""
                         )

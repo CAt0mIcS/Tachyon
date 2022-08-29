@@ -1,14 +1,14 @@
 package com.tachyonmusic.media.service
 
+import android.os.Bundle
 import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.session.LibraryResult
-import androidx.media3.session.MediaLibraryService
-import androidx.media3.session.MediaSession
+import androidx.media3.session.*
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
@@ -98,10 +98,25 @@ class MediaPlaybackService : MediaLibraryService() {
                 return@future LibraryResult.ofItemList(items, null)
             LibraryResult.ofError(404)
         }
+
+        override fun onAddMediaItems(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            mediaItems: MutableList<MediaItem>
+        ): ListenableFuture<MutableList<MediaItem>> = future(Dispatchers.IO) {
+
+            val list = mutableListOf<MediaItem>()
+            for (item in mediaItems) {
+                val playback = repository.find(MediaId.deserialize(item.mediaId))
+                    ?: TODO("Playback ${item.mediaId} not found")
+                list.add(playback.toMediaItem())
+            }
+
+            list
+        }
     }
 
 
     private inner class PlayerListener : Player.Listener {
-
     }
 }
