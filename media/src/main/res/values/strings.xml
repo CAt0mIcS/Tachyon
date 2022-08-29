@@ -2,4 +2,9 @@
 <resources>
     <string name="notification_channel">Now Playing</string>
     <string name="notification_channel_description">Shows what music is currently playing in Tachyon Music</string>
+
+    <string name="seek_to_previous_description">Seek to previous media item</string>
+    <string name="play_description">Play current media item</string>
+    <string name="pause_description">Pause current media item</string>
+    <string name="seek_to_next_description">Seek to next media item</string>
 </resources>

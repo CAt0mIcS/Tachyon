@@ -13,6 +13,7 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.media.data.BrowserTree
+import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.future
@@ -40,6 +41,8 @@ class MediaPlaybackService : MediaLibraryService() {
 
         repository.registerEventListener(UserEventListener())
         player.addListener(PlayerListener())
+
+        setMediaNotificationProvider(MediaNotificationProvider(this))
 
         mediaSession =
             MediaLibrarySession.Builder(this, player, MediaLibrarySessionCallback()).build()
@@ -118,5 +121,6 @@ class MediaPlaybackService : MediaLibraryService() {
 
 
     private inner class PlayerListener : Player.Listener {
+
     }
 }

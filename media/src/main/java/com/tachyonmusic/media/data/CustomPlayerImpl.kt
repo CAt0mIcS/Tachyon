@@ -5,6 +5,7 @@ import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
+import androidx.media3.session.CommandButton
 import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.media.domain.CustomPlayer
 
@@ -16,6 +17,10 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer 
 
 
     override fun getAvailableCommands(): Player.Commands {
+        CommandButton.Builder().apply {
+            setPlayerCommand(COMMAND_SEEK_TO_NEXT)
+        }.build()
+
         return wrappedPlayer.availableCommands.run {
             if (mediaItemCount > 1) {
                 return@run buildUpon()
