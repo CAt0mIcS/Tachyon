@@ -66,6 +66,7 @@ abstract class Playlist(
         setFolderType(MediaMetadata.FOLDER_TYPE_MIXED)
         setIsPlayable(true)
         setExtras(Bundle().apply {
+            putString(MetadataKeys.Name, name)
             putParcelable(MetadataKeys.Playback, this@Playlist)
         })
     }.build()

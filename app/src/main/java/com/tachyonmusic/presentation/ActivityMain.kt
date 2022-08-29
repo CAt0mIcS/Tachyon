@@ -21,6 +21,7 @@ import com.tachyonmusic.ui.theme.TachyonTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 @AndroidEntryPoint
 class ActivityMain : ComponentActivity() {
@@ -29,17 +30,6 @@ class ActivityMain : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            TachyonTheme {
-                val navController = rememberNavController()
-                Scaffold(
-                    bottomBar = { BottomNavigation(navController) }
-                ) {
-                    NavigationGraph(navController)
-                }
-            }
-        }
-
         PermissionManager.from(this).apply {
             request(Permission.ReadStorage)
             rationale(getString(R.string.storage_permission_rationale))
@@ -51,27 +41,26 @@ class ActivityMain : ComponentActivity() {
             }
         }
 
-        lifecycleScope.launch {
-            val sessionToken = SessionToken(
-                this@ActivityMain,
-                ComponentName(this@ActivityMain, MediaPlaybackService::class.java)
-            )
+        val sessionToken = SessionToken(
+            this@ActivityMain,
+            ComponentName(this@ActivityMain, MediaPlaybackService::class.java)
+        )
 
+        lifecycleScope.launch {
             mediaBrowser = MediaBrowser.Builder(this@ActivityMain, sessionToken)
                 .buildAsync()
                 .await()
 
-            val items =
-                mediaBrowser.getChildren(BrowserTree.ROOT, 3, 20, null).await().value!!
-            Log.d("ActivityMain", "Finished onGetChildren")
-            for (item in items) {
-                println("Item ${item.mediaId}")
+            setContent {
+                TachyonTheme {
+                    val navController = rememberNavController()
+                    Scaffold(
+                        bottomBar = { BottomNavigation(navController) }
+                    ) {
+                        NavigationGraph(navController, mediaBrowser)
+                    }
+                }
             }
-
-            mediaBrowser.setMediaItems(items)
-            mediaBrowser.seekTo(0, C.TIME_UNSET)
-            mediaBrowser.playWhenReady = true
-            mediaBrowser.prepare()
         }
     }
 }

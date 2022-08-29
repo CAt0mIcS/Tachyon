@@ -27,13 +27,14 @@ class BrowserTree(
         const val LOOP_ROOT = ROOT + "Loop/"
     }
 
-    val root: MediaItem = MediaItem.Builder().apply {
-        setMediaId(ROOT)
-        setMediaMetadata(MediaMetadata.Builder().apply {
-            setFolderType(MediaMetadata.FOLDER_TYPE_MIXED)
-            setIsPlayable(false)
-        }.build())
-    }.build()
+    val root: MediaItem
+        get() = MediaItem.Builder().apply {
+            setMediaId(ROOT)
+            setMediaMetadata(MediaMetadata.Builder().apply {
+                setFolderType(MediaMetadata.FOLDER_TYPE_MIXED)
+                setIsPlayable(false)
+            }.build())
+        }.build()
 
     suspend fun get(parentId: String, page: Int, pageSize: Int): ImmutableList<MediaItem>? =
         withContext(Dispatchers.IO) {

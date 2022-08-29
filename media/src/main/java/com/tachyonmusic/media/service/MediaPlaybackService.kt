@@ -1,10 +1,11 @@
 package com.tachyonmusic.media.service
 
-import android.os.Bundle
 import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.session.*
+import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaSession
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -111,8 +112,8 @@ class MediaPlaybackService : MediaLibraryService() {
             val list = mutableListOf<MediaItem>()
             for (item in mediaItems) {
                 val playback = repository.find(MediaId.deserialize(item.mediaId))
-                    ?: TODO("Playback ${item.mediaId} not found")
-                list.add(playback.toMediaItem())
+                if (playback != null)
+                    list.add(playback.toMediaItem())
             }
 
             list

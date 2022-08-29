@@ -50,6 +50,7 @@ abstract class Loop(
             putLong(MetadataKeys.Duration, duration)
             putLong(MetadataKeys.StartTime, startTime)
             putLong(MetadataKeys.EndTime, endTime)
+            putString(MetadataKeys.Name, name)
             putParcelable(MetadataKeys.Playback, this@Loop)
         })
     }.build()
