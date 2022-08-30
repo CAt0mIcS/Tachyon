@@ -1,16 +1,19 @@
 package com.tachyonmusic.media.service
 
+import android.os.Bundle
 import android.util.Log
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.session.LibraryResult
-import androidx.media3.session.MediaLibraryService
-import androidx.media3.session.MediaSession
+import androidx.media3.session.*
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.tachyonmusic.core.constants.MediaAction
+import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.media.data.BrowserTree
@@ -20,6 +23,7 @@ import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.future
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -81,6 +85,20 @@ class MediaPlaybackService : MediaLibraryService() {
 
 
     private inner class MediaLibrarySessionCallback : MediaLibrarySession.Callback {
+        override fun onConnect(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo
+        ): MediaSession.ConnectionResult {
+            val superResult = super.onConnect(session, controller)
+            val sessionCommands =
+                superResult.availableSessionCommands.buildUpon().add(MediaAction.setPlaybackCommand)
+                    .build()
+            return MediaSession.ConnectionResult.accept(
+                sessionCommands,
+                superResult.availablePlayerCommands
+            )
+        }
+
         override fun onGetLibraryRoot(
             session: MediaLibrarySession,
             browser: MediaSession.ControllerInfo,
@@ -118,10 +136,51 @@ class MediaPlaybackService : MediaLibraryService() {
 
             list
         }
+
+        override fun onCustomCommand(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            customCommand: SessionCommand,
+            args: Bundle
+        ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
+            preparePlaylist(args.getParcelable(MetadataKeys.Playback)!!)
+            SessionResult(SessionResult.RESULT_SUCCESS)
+        }
     }
 
 
     private inner class PlayerListener : Player.Listener {
 
+    }
+
+
+    private suspend fun preparePlaylist(playback: Playback) = withContext(Dispatchers.IO) {
+        var initialWindowIndex: Int? = null
+        var items: List<MediaItem>? = null
+
+        when (playback) {
+            is Song -> {
+                initialWindowIndex = repository.songs.await().indexOf(playback)
+                items = repository.songs.await().map { it.toMediaItem() }
+            }
+            is Loop -> {
+                initialWindowIndex = repository.loops.await().indexOf(playback)
+                items = repository.loops.await().map { it.toMediaItem() }
+            }
+            is Playlist -> {
+                items = playback.toMediaItemList()
+                initialWindowIndex = playback.currentPlaylistIndex
+            }
+        }
+
+        withContext(Dispatchers.Main) {
+            preparePlayer(items, initialWindowIndex)
+        }
+    }
+
+    private fun preparePlayer(items: List<MediaItem>, initialWindowIndex: Int) {
+        player.setMediaItems(items)
+        player.seekTo(initialWindowIndex, C.TIME_UNSET)
+        player.prepare()
     }
 }

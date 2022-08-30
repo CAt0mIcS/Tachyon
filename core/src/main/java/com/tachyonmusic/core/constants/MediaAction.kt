@@ -1,6 +1,7 @@
 package com.tachyonmusic.core.constants
 
 import android.os.Bundle
+import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionCommand
 import com.tachyonmusic.core.domain.playback.Playback
 
@@ -12,18 +13,24 @@ object MediaAction {
     /**
      * Events sent to the MediaPlaybackService by the MediaBrowserController
      */
-    fun setPlaybackEvent(playback: Playback?) =
-        SessionCommand("com.tachyonmusic.SET_PLAYBACK", Bundle().apply {
+    val setPlaybackCommand = SessionCommand("com.tachyonmusic.SET_PLAYBACK", Bundle.EMPTY)
+
+    fun setPlaybackEvent(browser: MediaBrowser, playback: Playback?) =
+        browser.sendCustomCommand(setPlaybackCommand, Bundle().apply {
             putParcelable(MetadataKeys.Playback, playback)
         })
 
-    fun setStartTimeEvent(startTime: Long) =
-        SessionCommand("com.tachyonmusic.SET_START_TIME", Bundle().apply {
-            putLong(MetadataKeys.StartTime, startTime)
-        })
+    fun setStartTimeEvent(browser: MediaBrowser, startTime: Long) =
+        browser.sendCustomCommand(
+            SessionCommand("com.tachyonmusic.SET_START_TIME", Bundle.EMPTY),
+            Bundle().apply {
+                putLong(MetadataKeys.StartTime, startTime)
+            })
 
-    fun setEndTimeEvent(endTime: Long) =
-        SessionCommand("com.tachyonmusic.SET_END_TIME", Bundle().apply {
-            putLong(MetadataKeys.EndTime, endTime)
-        })
+    fun setEndTimeEvent(browser: MediaBrowser, endTime: Long) =
+        browser.sendCustomCommand(
+            SessionCommand("com.tachyonmusic.SET_END_TIME", Bundle.EMPTY),
+            Bundle().apply {
+                putLong(MetadataKeys.EndTime, endTime)
+            })
 }

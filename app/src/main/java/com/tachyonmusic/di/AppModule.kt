@@ -1,5 +1,7 @@
 package com.tachyonmusic.di
 
+import com.tachyonmusic.domain.MediaBrowserController
+import com.tachyonmusic.domain.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.domain.use_case.RegisterUser
 import com.tachyonmusic.domain.use_case.SignInUser
 import com.tachyonmusic.user.domain.UserRepository
@@ -21,4 +23,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSignInUserUseCase(repository: UserRepository) = SignInUser(repository)
+
+    @Provides
+    @Singleton
+    fun provideMediaBrowserController(repository: UserRepository): MediaBrowserController =
+        MediaPlaybackServiceMediaBrowserController(repository)
 }
+

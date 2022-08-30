@@ -19,10 +19,12 @@ import androidx.media3.common.C
 import androidx.media3.session.MediaBrowser
 import androidx.navigation.NavController
 import com.tachyonmusic.app.R
+import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.domain.MediaBrowserController
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.ext.name
 import com.tachyonmusic.presentation.authentication.SignInScreen
@@ -38,7 +40,7 @@ object LibraryScreen :
     @Composable
     operator fun invoke(
         navController: NavController,
-        browser: MediaBrowser,
+        browser: MediaBrowserController,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
         LazyColumn(
@@ -55,23 +57,19 @@ object LibraryScreen :
             }
 
             runBlocking {
-                val children =
-                    browser.getChildren(BrowserTree.ROOT, 0, Int.MAX_VALUE, null).await().value!!
+                val children = browser.getPlaybacks(BrowserTree.ROOT, 0, Int.MAX_VALUE)
 
-                items(children) { mediaItem ->
-                    val mediaId = MediaId.deserialize(mediaItem.mediaId)
-
+                items(children) { playback ->
                     Text(
                         text =
-                        if (mediaId.isLocalSong) "${mediaItem.mediaMetadata.title} - ${mediaItem.mediaMetadata.artist}"
-                        else if (mediaId.isRemoteLoop) "${mediaItem.mediaMetadata.name!!} - ${mediaItem.mediaMetadata.title} - ${mediaItem.mediaMetadata.artist}"
-                        else mediaItem.mediaMetadata.name!!,
+                        when (playback) {
+                            is Song -> "${playback.title} - ${playback.artist}"
+                            is Loop -> "${playback.name} - ${playback.title} - ${playback.artist}"
+                            else -> (playback as Playlist).name
+                        },
                         modifier = Modifier.clickable {
-                            browser.setMediaItem(mediaItem)
-                            browser.seekTo(0, C.TIME_UNSET)
                             browser.playWhenReady = true
-                            browser.prepare()
-
+                            browser.playback = playback
                             navController.navigate(PlayerScreen.route)
                         }
                     )

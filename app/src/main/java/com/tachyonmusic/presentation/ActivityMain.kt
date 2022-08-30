@@ -1,19 +1,14 @@
 package com.tachyonmusic.presentation
 
-import android.content.ComponentName
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.Scaffold
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.C
-import androidx.media3.session.MediaBrowser
-import androidx.media3.session.SessionToken
 import androidx.navigation.compose.rememberNavController
 import com.tachyonmusic.app.R
-import com.tachyonmusic.media.data.BrowserTree
-import com.tachyonmusic.media.service.MediaPlaybackService
+import com.tachyonmusic.domain.MediaBrowserController
+import com.tachyonmusic.domain.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.presentation.main.component.BottomNavigation
 import com.tachyonmusic.presentation.util.Permission
 import com.tachyonmusic.presentation.util.PermissionManager
@@ -21,12 +16,13 @@ import com.tachyonmusic.ui.theme.TachyonTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class ActivityMain : ComponentActivity() {
 
-    private lateinit var mediaBrowser: MediaBrowser
+    @Inject
+    lateinit var mediaBrowser: MediaBrowserController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,15 +37,13 @@ class ActivityMain : ComponentActivity() {
             }
         }
 
-        val sessionToken = SessionToken(
-            this@ActivityMain,
-            ComponentName(this@ActivityMain, MediaPlaybackService::class.java)
-        )
-
+        // TODO: Shouldn't need to cast here
+//        lifecycle.addObserver(mediaBrowser as MediaPlaybackServiceMediaBrowserController)
         lifecycleScope.launch {
-            mediaBrowser = MediaBrowser.Builder(this@ActivityMain, sessionToken)
-                .buildAsync()
-                .await()
+            (mediaBrowser as MediaPlaybackServiceMediaBrowserController).set(
+                (mediaBrowser as MediaPlaybackServiceMediaBrowserController).onCreate(this@ActivityMain)
+                    .await()
+            )
 
             setContent {
                 TachyonTheme {
