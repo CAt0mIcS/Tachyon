@@ -99,7 +99,7 @@ class MediaPlaybackServiceMediaBrowserController(
 
     override fun getPlaybacks(parentId: String, page: Int, pageSize: Int): List<Playback> =
         runBlocking {
-            val children = getChildren(parentId, page, pageSize).await().value!!
+            val children = getChildren(parentId, page, pageSize).await().value ?: emptyList()
             List(children.size) { i ->
                 children[i].mediaMetadata.playback!!
             }

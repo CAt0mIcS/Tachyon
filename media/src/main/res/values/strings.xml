@@ -7,4 +7,7 @@
     <string name="play_description">Play current media item</string>
     <string name="pause_description">Pause current media item</string>
     <string name="seek_to_next_description">Seek to next media item</string>
+
+    <string name="invalid_playback">Service detected an invalid playback</string>
+    <string name="invalid_arguments">Invalid arguments supplied to the service</string>
 </resources>

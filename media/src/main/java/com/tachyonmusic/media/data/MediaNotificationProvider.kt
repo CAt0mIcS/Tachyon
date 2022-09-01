@@ -53,7 +53,6 @@ class MediaNotificationProvider(val context: Context) : DefaultMediaNotification
             )
         }
         // Skip to next action.
-        // Skip to next action.
         if (playerCommands.containsAny(
                 Player.COMMAND_SEEK_TO_NEXT,
                 Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM
