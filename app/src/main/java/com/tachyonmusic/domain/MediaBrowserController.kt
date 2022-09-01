@@ -4,6 +4,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.session.LibraryResult
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListenableFuture
+import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
 
 interface MediaBrowserController {
@@ -26,8 +27,7 @@ interface MediaBrowserController {
     val artist: String?
     val name: String?
     val duration: Long?
-    val startTime: Long?
-    val endTime: Long?
+    val timingData: ArrayList<TimingData>?
     val currentPosition: Long?
 
     fun stop()

@@ -7,6 +7,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
 import androidx.media3.session.CommandButton
 import com.tachyonmusic.core.constants.MetadataKeys
+import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.domain.CustomPlayer
 
 /**
@@ -60,7 +61,9 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer 
             return
         }
 
-        val startTime = mediaMetadata.extras?.getLong(MetadataKeys.StartTime) ?: 0L
+        // Only the first start time matters when choosing if we play the previous playback
+        // or seek back to the beginning of the current one
+        val startTime = mediaMetadata.timingData?.get(0)?.startTime ?: 0
 
         // Seek to either the previous song or to the last one if we don't have a previous one
         if (isCurrentMediaItemLive && !isCurrentMediaItemSeekable || currentPosition <= maxSeekToPreviousPosition + startTime) {

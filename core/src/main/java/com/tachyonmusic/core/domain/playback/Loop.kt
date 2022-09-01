@@ -8,12 +8,12 @@ import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.TimingData
 
 abstract class Loop(
     mediaId: MediaId,
     val name: String,
-    final override var startTime: Long,
-    final override var endTime: Long,
+    final override var timingData: ArrayList<TimingData>,
     val song: Song
 ) : SinglePlayback(mediaId) {
 
@@ -31,8 +31,7 @@ abstract class Loop(
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
         "mediaId" to mediaId.toString(),
-        "startTime" to startTime,
-        "endTime" to endTime
+        "timingData" to timingData
     )
 
     override fun toMediaItem() = MediaItem.Builder().apply {
@@ -48,8 +47,7 @@ abstract class Loop(
         setArtist(artist)
         setExtras(Bundle().apply {
             putLong(MetadataKeys.Duration, duration)
-            putLong(MetadataKeys.StartTime, startTime)
-            putLong(MetadataKeys.EndTime, endTime)
+            putStringArray(MetadataKeys.TimingData, TimingData.toStringArray(timingData))
             putString(MetadataKeys.Name, name)
             putParcelable(MetadataKeys.Playback, this@Loop)
         })
@@ -57,8 +55,7 @@ abstract class Loop(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
-        parcel.writeLong(startTime)
-        parcel.writeLong(endTime)
+        parcel.writeStringArray(TimingData.toStringArray(timingData))
         parcel.writeParcelable(song, flags)
     }
 

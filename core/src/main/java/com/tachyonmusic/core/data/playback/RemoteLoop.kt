@@ -4,16 +4,16 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Song
 
 class RemoteLoop(
     mediaId: MediaId,
     name: String,
-    startTime: Long,
-    endTime: Long,
+    timingData: ArrayList<TimingData>,
     song: Song
-) : Loop(mediaId, name, startTime, endTime, song) {
+) : Loop(mediaId, name, timingData, song) {
 
     override val playbackType = PlaybackType.Loop.Remote()
 
@@ -22,14 +22,14 @@ class RemoteLoop(
         val CREATOR = object : Parcelable.Creator<RemoteLoop> {
             override fun createFromParcel(parcel: Parcel): RemoteLoop {
                 val name = parcel.readString()!!
-                val startTime = parcel.readLong()
-                val endTime = parcel.readLong()
+
+                val timingData = TimingData.fromStringArray(parcel.createStringArray()!!)
+
                 val song: Song = parcel.readParcelable(Song::class.java.classLoader)!!
                 return RemoteLoop(
                     MediaId.ofRemoteLoop(name, song.mediaId),
                     name,
-                    startTime,
-                    endTime,
+                    timingData,
                     song
                 )
             }
@@ -43,8 +43,7 @@ class RemoteLoop(
             return RemoteLoop(
                 mediaId,
                 name,
-                map["startTime"]!! as Long,
-                map["endTime"]!! as Long,
+                map["timingData"]!! as ArrayList<TimingData>,
                 LocalSong.build(mediaId.underlyingMediaId!!)
             )
         }

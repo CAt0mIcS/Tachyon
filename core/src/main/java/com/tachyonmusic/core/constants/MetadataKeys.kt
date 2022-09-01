@@ -3,8 +3,7 @@ package com.tachyonmusic.core.constants
 object MetadataKeys {
     const val Duration = "com.tachyonmusic.DURATION"
     const val Playback = "com.tachyonmusic.PLAYBACK"
-    const val StartTime = "com.tachyonmusic.START_TIME"
-    const val EndTime = "com.tachyonmusic.END_TIME"
+    const val TimingData = "com.tachyonmusic.TIMING_DATA"
 
     /**
      * Name of loop or playlist

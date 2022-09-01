@@ -8,6 +8,7 @@ import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.TimingData
 
 abstract class Playlist(
     mediaId: MediaId,
@@ -33,17 +34,8 @@ abstract class Playlist(
     override val uri: Uri?
         get() = current?.uri
 
-    override var startTime: Long
-        get() = current?.startTime ?: 0L
-        set(value) {
-            current?.startTime = value
-        }
-
-    override var endTime: Long
-        get() = current?.endTime ?: 0L
-        set(value) {
-            current?.endTime = value
-        }
+    override val timingData: ArrayList<TimingData>?
+        get() = current?.timingData
 
     abstract override val playbackType: PlaybackType.Playlist
 

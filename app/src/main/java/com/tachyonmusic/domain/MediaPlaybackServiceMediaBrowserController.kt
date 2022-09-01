@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.constants.MediaAction
+import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.media.data.ext.*
 import com.tachyonmusic.media.service.MediaPlaybackService
@@ -115,10 +116,8 @@ class MediaPlaybackServiceMediaBrowserController(
         get() = browser?.mediaMetadata?.name
     override val duration: Long?
         get() = browser?.mediaMetadata?.duration
-    override val startTime: Long?
-        get() = browser?.mediaMetadata?.startTime
-    override val endTime: Long?
-        get() = browser?.mediaMetadata?.endTime
+    override val timingData: ArrayList<TimingData>?
+        get() = browser?.mediaMetadata?.timingData
     override val currentPosition: Long?
         get() = browser?.currentPosition
 

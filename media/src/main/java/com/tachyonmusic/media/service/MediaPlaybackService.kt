@@ -2,6 +2,7 @@ package com.tachyonmusic.media.service
 
 import android.os.Bundle
 import android.util.Log
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.session.*
 import com.google.common.collect.ImmutableList
@@ -99,21 +100,28 @@ class MediaPlaybackService : MediaLibraryService() {
         ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
             if (customCommand == MediaAction.setPlaybackCommand) {
                 val loadingRes = useCases.loadPlaylistForPlayback(
-                    args.getParcelable(MetadataKeys.Playback, Playback::class.java)
+                    args.getParcelable(MetadataKeys.Playback)
                 )
 
                 if (loadingRes is Resource.Error)
                     return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
 
                 return@future withContext(Dispatchers.Main) {
-                    val prepareRes =
-                        useCases.preparePlayer(loadingRes.data?.first, loadingRes.data?.second)
-                    if (prepareRes is Resource.Error)
-                        return@withContext SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
+//                    val prepareRes =
+//                        useCases.preparePlayer(loadingRes.data?.first, loadingRes.data?.second)
+//                    if (prepareRes is Resource.Error)
+//                        return@withContext SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
+                    prepare(loadingRes.data!!.first, loadingRes.data!!.second)
                     SessionResult(SessionResult.RESULT_SUCCESS)
                 }
             }
             SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED)
         }
+    }
+
+    fun prepare(items: List<MediaItem>, index: Int) {
+        player.setMediaItems(items)
+        player.seekTo(index, C.TIME_UNSET)
+        player.prepare()
     }
 }
