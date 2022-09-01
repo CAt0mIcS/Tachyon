@@ -1,6 +1,5 @@
 package com.tachyonmusic.domain
 
-import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.media3.common.MediaItem
 import androidx.media3.session.LibraryResult
 import com.google.common.collect.ImmutableList
@@ -21,5 +20,24 @@ interface MediaBrowserController {
 
     fun getPlaybacks(parentId: String, page: Int = 0, pageSize: Int = Int.MAX_VALUE): List<Playback>
 
+    val isPlaying: Boolean
+
+    val title: String?
+    val artist: String?
+    val name: String?
+    val duration: Long?
+    val startTime: Long?
+    val endTime: Long?
+    val currentPosition: Long?
+
     fun stop()
+    fun play()
+    fun pause()
+
+    fun addListener(listener: EventListener)
+    fun removeListener(listener: EventListener)
+
+    interface EventListener {
+        fun onPlaybackTransition(playback: Playback?) {}
+    }
 }

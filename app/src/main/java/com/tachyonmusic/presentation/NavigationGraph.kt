@@ -32,7 +32,7 @@ fun NavigationGraph(navController: NavHostController, browser: MediaBrowserContr
             RegisterScreen(navController)
         }
         composable(PlayerScreen.route) {
-            PlayerScreen(navController, browser)
+            PlayerScreen(navController)
         }
     }
 }

@@ -7,6 +7,15 @@ import com.tachyonmusic.core.domain.playback.Playback
 val MediaMetadata.name: String?
     get() = extras?.getString(MetadataKeys.Name)
 
+val MediaMetadata.duration: Long?
+    get() = extras?.getLong(MetadataKeys.Duration)
+
+val MediaMetadata.startTime: Long?
+    get() = extras?.getLong(MetadataKeys.StartTime)
+
+val MediaMetadata.endTime: Long?
+    get() = extras?.getLong(MetadataKeys.EndTime, duration ?: 0L)
+
 val MediaMetadata.playback: Playback?
     get() {
         // TODO: WHY??!?!??!?!!?

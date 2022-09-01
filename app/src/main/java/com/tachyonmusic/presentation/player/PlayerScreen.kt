@@ -1,17 +1,29 @@
 package com.tachyonmusic.presentation.player
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.media3.session.MediaBrowser
+import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.core.NavigationItem
-import com.tachyonmusic.domain.MediaBrowserController
 
 object PlayerScreen : NavigationItem("player_screen") {
 
     @Composable
     operator fun invoke(
         navController: NavController,
-        browser: MediaBrowserController
+        viewModel: PlayerViewModel = hiltViewModel()
     ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text(text = viewModel.playbackState.value.title)
+            Text(text = viewModel.playbackState.value.artist)
+            Text(text = viewModel.playbackState.value.duration)
+            Text(text = viewModel.currentPosition.value)
+        }
+
     }
 }

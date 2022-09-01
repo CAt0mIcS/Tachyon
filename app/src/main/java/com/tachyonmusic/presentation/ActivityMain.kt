@@ -37,14 +37,8 @@ class ActivityMain : ComponentActivity() {
             }
         }
 
-        // TODO: Shouldn't need to cast here
-//        lifecycle.addObserver(mediaBrowser as MediaPlaybackServiceMediaBrowserController)
-        lifecycleScope.launch {
-            (mediaBrowser as MediaPlaybackServiceMediaBrowserController).set(
-                (mediaBrowser as MediaPlaybackServiceMediaBrowserController).onCreate(this@ActivityMain)
-                    .await()
-            )
-
+        // TODO: Temporary, setContent for now needs to be called after MediaBrowserController initialization
+        (mediaBrowser as MediaPlaybackServiceMediaBrowserController).onConnected = {
             setContent {
                 TachyonTheme {
                     val navController = rememberNavController()
@@ -56,5 +50,8 @@ class ActivityMain : ComponentActivity() {
                 }
             }
         }
+
+        // TODO: Shouldn't need to cast here
+        lifecycle.addObserver(mediaBrowser as MediaPlaybackServiceMediaBrowserController)
     }
 }
