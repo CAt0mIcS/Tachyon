@@ -61,16 +61,33 @@ class PlayerViewModel @Inject constructor(
         _playbackState.value.duration = millisecondsToString(playback?.duration)
 
         val timingData = browser.timingData
+//        timingData?.addAll(
+//            listOf(
+//                TimingData(10000, 20000), //10s - 20s
+//                TimingData(25000, 40000), // 25s - 40s
+//                TimingData(45000, 55000), // 45s - 55s
+//                TimingData(80000, 90000), // 1:20 - 1:30
+//                TimingData(60000, 70000), // 1min - 1:10
+//                TimingData(100000, 120000), // 1:40 - 2min
+//                TimingData(140000, 155000) // 2:20 - 2:35
+//            )
+//        )
+
         timingData?.addAll(
             listOf(
-                TimingData(10000, 20000), //10s - 20s
-                TimingData(25000, 40000), // 25s - 40s
-                TimingData(45000, 55000), // 45s - 55s
-                TimingData(80000, 90000), // 1:20 - 1:30
-                TimingData(60000, 70000), // 1min - 1:10
-                TimingData(100000, 120000), // 1:40 - 2min
-                TimingData(140000, 155000) // 2:20 - 2:35
+                TimingData(10000, 20000), // 10s - 20s
+                TimingData(18000, 40000), // 18s - 40s
+                TimingData(36000, 55000), // 36s - 55s
+                TimingData(180000, 5000), // 3min - 5s
             )
         )
+
+//        timingData?.addAll(
+//            listOf(
+//                TimingData(18000, 40000), // 18s - 40s
+//                TimingData(36000, 55000), // 36s - 55s
+//                TimingData(10000, 20000), // 10s - 20s
+//            )
+//        )
     }
 }

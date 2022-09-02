@@ -1,6 +1,5 @@
 package com.tachyonmusic.presentation.authentication
 
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
@@ -15,15 +14,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.tachyonmusic.core.NavigationItem
 import com.tachyonmusic.app.R
+import com.tachyonmusic.core.NavigationItem
 
 object SignInScreen : NavigationItem("sign_in") {
 
     @Composable
     operator fun invoke(
         navController: NavController,
-        viewModel: LoginViewModel = hiltViewModel()
+        viewModel: SignInViewModel = hiltViewModel()
     ) {
         val email = viewModel.email.value
         val password = viewModel.password.value

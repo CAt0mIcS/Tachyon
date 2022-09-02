@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(
+class SignInViewModel @Inject constructor(
     private val signInUser: SignInUser
 ) : ViewModel() {
 

@@ -12,9 +12,13 @@ import com.tachyonmusic.media.domain.CustomPlayer
 /**
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands
  */
-class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer {
-    private val loopMessages = mutableListOf<PlayerMessage>()
+class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer, Player.Listener {
+    private var loopMessage: PlayerMessage? = null
+    private var currentTimingDataIndex: Int = -1
 
+    init {
+        addListener(this)
+    }
 
     override fun getAvailableCommands(): Player.Commands {
         return wrappedPlayer.availableCommands.run {
@@ -78,43 +82,92 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer 
         }
     }
 
+    override fun onPositionDiscontinuity(
+        oldPosition: Player.PositionInfo,
+        newPosition: Player.PositionInfo,
+        reason: Int
+    ) {
+        /**
+         * When seeking we need to update the [currentTimingDataIndex] depending on the seek position
+         */
+        val timingData = currentMediaItem!!.mediaMetadata.timingData
+        if (timingData != null && reason == Player.DISCONTINUITY_REASON_SEEK)
+            updateTimingDataInternal(timingData)
+    }
+
 
     override fun updateTimingData(newTimingData: ArrayList<TimingData>) {
         currentMediaItem!!.mediaMetadata.timingData = newTimingData
+        updateTimingDataInternal(newTimingData)
+        seekWithoutCallback(newTimingData[currentTimingDataIndex].startTime)
+    }
 
-        loopMessages.forEach { it.cancel() }
-        loopMessages.clear()
+    private fun updateTimingDataInternal(newTimingData: ArrayList<TimingData>) {
+        if (newTimingData.size == 0)
+            return
 
-        /**
-         * All timing data except the last one need to seek to the next start time in the array
-         */
-        for (i in newTimingData.subList(0, newTimingData.size - 1).indices) {
-            loopMessages.add(
-                createMessage { _, payload ->
-                    seekTo(payload as Long)
-                }.apply {
-                    looper = Looper.getMainLooper()
-                    deleteAfterDelivery = false
-                    payload = newTimingData[i + 1].startTime
-                    setPosition(newTimingData[i].endTime)
-                    send()
-                }
-            )
-        }
-
-        /**
-         * The last timing data needs to seek to the first startTime in the array
-         */
-        loopMessages.add(
-            createMessage { _, payload ->
-                seekTo(payload as Long)
-            }.apply {
-                looper = Looper.getMainLooper()
-                deleteAfterDelivery = false
-                payload = newTimingData.first().startTime
-                setPosition(newTimingData.last().endTime)
-                send()
-            }
+        currentTimingDataIndex = getCurrentPositionTimingDataIndex(newTimingData)
+        postLoopMessage(
+            nextTimingData(newTimingData).startTime,
+            newTimingData[currentTimingDataIndex].endTime
         )
+    }
+
+    private fun getCurrentPositionTimingDataIndex(timingDataArray: ArrayList<TimingData>): Int {
+        for (i in timingDataArray.indices) {
+            if (timingDataArray[i].surrounds(currentPosition))
+                return i
+        }
+        return 0
+    }
+
+    private fun postLoopMessage(startTime: Long, endTime: Long) {
+        // Cancel any previous messages
+        loopMessage?.cancel()
+
+        loopMessage = createMessage { _, payload ->
+            seekWithoutCallback(payload as Long)
+            val timingData = advanceToNextTimingData()
+            postLoopMessage(
+                nextTimingData(timingData).startTime,
+                timingData[currentTimingDataIndex].endTime
+            )
+        }.apply {
+            looper = Looper.getMainLooper()
+            deleteAfterDelivery = false
+            payload = startTime
+            setPosition(endTime)
+            send()
+        }
+    }
+
+    private fun advanceToNextTimingData(): ArrayList<TimingData> {
+        currentTimingDataIndex++
+        val timingData = currentMediaItem!!.mediaMetadata.timingData!!
+        if (currentTimingDataIndex >= timingData.size)
+            currentTimingDataIndex = 0
+        return timingData
+    }
+
+    private fun nextTimingData(timingData: ArrayList<TimingData>): TimingData {
+        var nextIdx = currentTimingDataIndex + 1
+        if (nextIdx >= timingData.size)
+            nextIdx = 0
+        return timingData[nextIdx]
+    }
+
+    private fun seekWithoutCallback(positionMs: Long) {
+        removeListener(this)
+        addListener(object : Player.Listener {
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int
+            ) {
+                removeListener(this)
+                addListener(this@CustomPlayerImpl)
+            }
+        })
+        seekTo(positionMs)
     }
 }

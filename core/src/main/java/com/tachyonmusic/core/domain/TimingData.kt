@@ -21,6 +21,8 @@ data class TimingData(
     var startTime: Long,
     var endTime: Long
 ) {
+    fun surrounds(playerPosition: Long) = playerPosition in startTime..endTime
+
     class Serializer : KSerializer<TimingData> {
         override fun deserialize(decoder: Decoder): TimingData {
             val strings = decoder.decodeString().split('|')
