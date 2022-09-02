@@ -19,6 +19,13 @@ val MediaMetadata.timingData: ArrayList<TimingData>?
         else TimingData.fromStringArray(strArr)
     }
 
+fun MediaMetadata.addTimingData(timingData: List<TimingData>) {
+    extras?.putStringArray(
+        MetadataKeys.TimingData,
+        TimingData.toStringArray(this.timingData?.apply { addAll(timingData) } ?: timingData)
+    )
+}
+
 val MediaMetadata.playback: Playback?
     get() {
         // TODO: WHY??!?!??!?!!?

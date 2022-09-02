@@ -2,7 +2,6 @@ package com.tachyonmusic.domain
 
 import android.app.Activity
 import android.content.ComponentName
-import androidx.activity.ComponentActivity
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -14,6 +13,7 @@ import androidx.media3.session.SessionToken
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.tachyonmusic.core.ListenableMutableList
 import com.tachyonmusic.core.constants.MediaAction
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
@@ -26,7 +26,8 @@ import kotlinx.coroutines.runBlocking
 
 class MediaPlaybackServiceMediaBrowserController(
     private val userRepository: UserRepository
-) : MediaBrowserController, DefaultLifecycleObserver, Player.Listener {
+) : MediaBrowserController, DefaultLifecycleObserver, Player.Listener,
+    ListenableMutableList.EventListener<TimingData> {
 
     private var browser: MediaBrowser? = null
 
@@ -116,8 +117,14 @@ class MediaPlaybackServiceMediaBrowserController(
         get() = browser?.mediaMetadata?.name
     override val duration: Long?
         get() = browser?.mediaMetadata?.duration
-    override val timingData: ArrayList<TimingData>?
-        get() = browser?.mediaMetadata?.timingData
+    override val timingData: ListenableMutableList<TimingData>?
+        get() {
+            val data = browser?.mediaMetadata?.timingData
+            return if (data == null) null
+            else ListenableMutableList(data).apply {
+                addListener(this@MediaPlaybackServiceMediaBrowserController)
+            }
+        }
     override val currentPosition: Long?
         get() = browser?.currentPosition
 
@@ -126,6 +133,18 @@ class MediaPlaybackServiceMediaBrowserController(
         val playback = mediaItem?.mediaMetadata?.playback
         for (listener in eventListeners)
             listener.onPlaybackTransition(playback)
+    }
+
+    override fun onItemAdded(index: Int, items: Collection<TimingData>) {
+        if (browser == null)
+            return
+        MediaAction.addTimingDataEvent(browser!!, items.toList())
+    }
+
+    override fun onItemRemoved(items: Collection<TimingData?>) {
+        if (browser == null)
+            return
+        MediaAction.removeTimingDataEvent(browser!!, items.filterNotNull())
     }
 }
 

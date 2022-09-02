@@ -49,6 +49,7 @@ class MediaPlaybackServiceModule {
         LoadPlaylistForPlayback(repository),
         ConfirmAddedMediaItems(repository),
         PreparePlayer(player),
-        GetSupportedCommands()
+        GetSupportedCommands(),
+        AddTimingDataToCurrentPlayback(player)
     )
 }

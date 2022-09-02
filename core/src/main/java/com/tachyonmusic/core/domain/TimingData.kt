@@ -37,8 +37,32 @@ data class TimingData(
 
     override fun toString(): String = Json.encodeToString(this)
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is TimingData) return false
+
+        if (startTime != other.startTime) return false
+        if (endTime != other.endTime) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = startTime.hashCode()
+        result = 31 * result + endTime.hashCode()
+        return result
+    }
+
+
     companion object {
         fun deserialize(value: String): TimingData = Json.decodeFromString(value)
+        fun deserializeIfValid(value: String?): TimingData? {
+            return try {
+                Json.decodeFromString(value ?: "")
+            } catch (e: Exception) {
+                null
+            }
+        }
 
         fun fromStringArray(array: Array<String>) = array.map { deserialize(it) } as ArrayList
 

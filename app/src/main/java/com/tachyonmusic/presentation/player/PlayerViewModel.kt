@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.MediaBrowserController
 import com.tachyonmusic.domain.use_case.MillisecondsToReadableString
@@ -58,5 +59,18 @@ class PlayerViewModel @Inject constructor(
         _playbackState.value.title = playback?.title ?: ""
         _playbackState.value.artist = playback?.artist ?: ""
         _playbackState.value.duration = millisecondsToString(playback?.duration)
+
+        val timingData = browser.timingData
+        timingData?.addAll(
+            listOf(
+                TimingData(10000, 20000),
+                TimingData(25000, 40000),
+                TimingData(45000, 55000),
+                TimingData(60000, 70000),
+                TimingData(80000, 90000),
+                TimingData(100000, 120000),
+                TimingData(140000, 155000)
+            )
+        )
     }
 }

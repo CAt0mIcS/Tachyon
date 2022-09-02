@@ -7,6 +7,11 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
 import androidx.media3.session.CommandButton
 import com.tachyonmusic.core.constants.MetadataKeys
+import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.media.data.ext.addTimingData
+import com.tachyonmusic.media.data.ext.playback
 import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.domain.CustomPlayer
 
@@ -14,7 +19,7 @@ import com.tachyonmusic.media.domain.CustomPlayer
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands
  */
 class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer {
-    private var loopMessage: PlayerMessage? = null
+    private val loopMessages = mutableListOf<PlayerMessage>()
 
 
     override fun getAvailableCommands(): Player.Commands {
@@ -79,34 +84,44 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer 
         }
     }
 
-    override fun cancelLoopMessage() = loopMessage?.cancel()
 
-    override fun postLoopMessage(startTime: Long, endTime: Long) {
-        // Cancel any previous messages
-        loopMessage?.cancel()
+    override fun addTimingData(newTimingData: List<TimingData>) {
+        currentMediaItem!!.mediaMetadata.addTimingData(newTimingData)
+        val timingDataArray = currentMediaItem!!.mediaMetadata.timingData!!
 
-        loopMessage = createMessage { _, payload ->
-            seekTo(payload as Long)
-        }.apply {
-            looper = Looper.getMainLooper()
-            deleteAfterDelivery = false
-            payload = startTime
-            setPosition(endTime)
-            send()
+        loopMessages.forEach { it.cancel() }
+        loopMessages.clear()
+
+        /**
+         * All timing data except the last one need to seek to the next start time in the array
+         */
+        for (i in timingDataArray.subList(0, timingDataArray.size - 1).indices) {
+            loopMessages.add(
+                createMessage { _, payload ->
+                    seekTo(payload as Long)
+                }.apply {
+                    looper = Looper.getMainLooper()
+                    deleteAfterDelivery = false
+                    payload = timingDataArray[i + 1].startTime
+                    setPosition(timingDataArray[i].endTime)
+                    send()
+                }
+            )
         }
-    }
 
-    override fun postLoopMessageForPlaylist(endTime: Long) {
-        // Cancel any previous messages
-        loopMessage?.cancel()
-
-        loopMessage = createMessage { _, _ ->
-            seekToNext()
-        }.apply {
-            looper = Looper.getMainLooper()
-            deleteAfterDelivery = true
-            setPosition(endTime)
-            send()
-        }
+        /**
+         * The last timing data needs to seek to the first startTime in the array
+         */
+        loopMessages.add(
+            createMessage { _, payload ->
+                seekTo(payload as Long)
+            }.apply {
+                looper = Looper.getMainLooper()
+                deleteAfterDelivery = false
+                payload = timingDataArray.first().startTime
+                setPosition(timingDataArray.last().endTime)
+                send()
+            }
+        )
     }
 }

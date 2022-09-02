@@ -3,6 +3,7 @@ package com.tachyonmusic.core.constants
 import android.os.Bundle
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionCommand
+import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
 
 /**
@@ -14,23 +15,22 @@ object MediaAction {
      * Events sent to the MediaPlaybackService by the MediaBrowserController
      */
     val setPlaybackCommand = SessionCommand("com.tachyonmusic.SET_PLAYBACK", Bundle.EMPTY)
+    val addTimingDataCommand = SessionCommand("com.tachyonmusic.ADD_TIMING_DATA", Bundle.EMPTY)
+    val removeTimingDataCommand =
+        SessionCommand("com.tachyonmusic.REMOVE_TIMING_DATA", Bundle.EMPTY)
 
     fun setPlaybackEvent(browser: MediaBrowser, playback: Playback?) =
         browser.sendCustomCommand(setPlaybackCommand, Bundle().apply {
             putParcelable(MetadataKeys.Playback, playback)
         })
 
-    fun setStartTimeEvent(browser: MediaBrowser, startTime: Long) =
-        browser.sendCustomCommand(
-            SessionCommand("com.tachyonmusic.SET_START_TIME", Bundle.EMPTY),
-            Bundle().apply {
-                putLong(MetadataKeys.StartTime, startTime)
-            })
+    fun addTimingDataEvent(browser: MediaBrowser, timingData: List<TimingData>) =
+        browser.sendCustomCommand(addTimingDataCommand, Bundle().apply {
+            putStringArray(MetadataKeys.TimingData, TimingData.toStringArray(timingData))
+        })
 
-    fun setEndTimeEvent(browser: MediaBrowser, endTime: Long) =
-        browser.sendCustomCommand(
-            SessionCommand("com.tachyonmusic.SET_END_TIME", Bundle.EMPTY),
-            Bundle().apply {
-                putLong(MetadataKeys.EndTime, endTime)
-            })
+    fun removeTimingDataEvent(browser: MediaBrowser, timingData: List<TimingData>) =
+        browser.sendCustomCommand(removeTimingDataCommand, Bundle().apply {
+            putStringArray(MetadataKeys.TimingData, TimingData.toStringArray(timingData))
+        })
 }

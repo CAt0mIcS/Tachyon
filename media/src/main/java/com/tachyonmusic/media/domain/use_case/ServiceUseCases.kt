@@ -4,5 +4,6 @@ data class ServiceUseCases(
     val loadPlaylistForPlayback: LoadPlaylistForPlayback,
     val confirmAddedMediaItems: ConfirmAddedMediaItems,
     val preparePlayer: PreparePlayer,
-    val getSupportedCommands: GetSupportedCommands
+    val getSupportedCommands: GetSupportedCommands,
+    val addTimingDataToCurrentPlayback: AddTimingDataToCurrentPlayback
 )

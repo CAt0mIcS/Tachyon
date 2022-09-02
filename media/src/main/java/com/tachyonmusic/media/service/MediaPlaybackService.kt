@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.Resource
 import com.tachyonmusic.core.constants.MediaAction
 import com.tachyonmusic.core.constants.MetadataKeys
+import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.MediaNotificationProvider
@@ -98,30 +99,41 @@ class MediaPlaybackService : MediaLibraryService() {
             customCommand: SessionCommand,
             args: Bundle
         ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
-            if (customCommand == MediaAction.setPlaybackCommand) {
-                val loadingRes = useCases.loadPlaylistForPlayback(
-                    args.getParcelable(MetadataKeys.Playback)
-                )
+            return@future when (customCommand) {
+                MediaAction.setPlaybackCommand -> {
+                    val loadingRes = useCases.loadPlaylistForPlayback(
+                        args.getParcelable(MetadataKeys.Playback)
+                    )
 
-                if (loadingRes is Resource.Error)
-                    return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
+                    if (loadingRes is Resource.Error)
+                        return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
 
-                return@future withContext(Dispatchers.Main) {
-//                    val prepareRes =
-//                        useCases.preparePlayer(loadingRes.data?.first, loadingRes.data?.second)
-//                    if (prepareRes is Resource.Error)
-//                        return@withContext SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
-                    prepare(loadingRes.data!!.first, loadingRes.data!!.second)
+                    withContext(Dispatchers.Main) {
+                        val prepareRes =
+                            useCases.preparePlayer(loadingRes.data?.first, loadingRes.data?.second)
+                        if (prepareRes is Resource.Error)
+                            return@withContext SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
+                        SessionResult(SessionResult.RESULT_SUCCESS)
+                    }
+                }
+                MediaAction.addTimingDataCommand -> {
+                    val res = withContext(Dispatchers.Main) {
+                        useCases.addTimingDataToCurrentPlayback(
+                            TimingData.fromStringArray(
+                                args.getStringArray(MetadataKeys.TimingData) ?: emptyArray()
+                            )
+                        )
+                    }
+
+                    if (res is Resource.Error)
+                        return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
                     SessionResult(SessionResult.RESULT_SUCCESS)
                 }
+                MediaAction.removeTimingDataCommand -> {
+                    SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED)
+                }
+                else -> SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED)
             }
-            SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED)
         }
-    }
-
-    fun prepare(items: List<MediaItem>, index: Int) {
-        player.setMediaItems(items)
-        player.seekTo(index, C.TIME_UNSET)
-        player.prepare()
     }
 }
