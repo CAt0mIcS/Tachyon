@@ -7,18 +7,14 @@ import com.tachyonmusic.media.R
 import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.domain.CustomPlayer
 
-class AddTimingDataToCurrentPlayback(
+class UpdateTimingDataOfCurrentPlayback(
     private val player: CustomPlayer
 ) {
     operator fun invoke(timingData: List<TimingData>): Resource<Unit> {
         if (player.currentMediaItem?.mediaMetadata?.timingData == null)
             return Resource.Error(UiText.StringResource(R.string.invalid_playback))
 
-        player.addTimingData(timingData.filter {
-            player.currentMediaItem?.mediaMetadata?.timingData?.contains(
-                it
-            ) == false
-        })
+        player.updateTimingData(timingData as ArrayList<TimingData>)
         return Resource.Success()
     }
 }

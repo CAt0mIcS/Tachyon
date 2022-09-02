@@ -135,16 +135,16 @@ class MediaPlaybackServiceMediaBrowserController(
             listener.onPlaybackTransition(playback)
     }
 
-    override fun onItemAdded(index: Int, items: Collection<TimingData>) {
+    override fun onItemAdded(index: Int, list: List<TimingData>) {
         if (browser == null)
             return
-        MediaAction.addTimingDataEvent(browser!!, items.toList())
+        MediaAction.updateTimingDataEvent(browser!!, list)
     }
 
-    override fun onItemRemoved(items: Collection<TimingData?>) {
+    override fun onItemRemoved(list: List<TimingData>) {
         if (browser == null)
             return
-        MediaAction.removeTimingDataEvent(browser!!, items.filterNotNull())
+        MediaAction.updateTimingDataEvent(browser!!, list)
     }
 }
 

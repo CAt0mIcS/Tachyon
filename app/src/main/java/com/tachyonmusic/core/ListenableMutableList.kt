@@ -21,14 +21,14 @@ class ListenableMutableList<T>(collection: Collection<T>) : ArrayList<T>() {
     override fun add(element: T): Boolean {
         return super.add(element).also {
             for (listener in eventListeners)
-                listener.onItemAdded(size - 1, listOf(element))
+                listener.onItemAdded(size - 1, this)
         }
     }
 
     override fun add(index: Int, element: T) {
         super.add(index, element).also {
             for (listener in eventListeners)
-                listener.onItemAdded(index, listOf(element))
+                listener.onItemAdded(index, this)
         }
     }
 
@@ -36,35 +36,34 @@ class ListenableMutableList<T>(collection: Collection<T>) : ArrayList<T>() {
         val startIdx = size
         return super.addAll(elements).also {
             for (listener in eventListeners)
-                listener.onItemAdded(startIdx, elements)
+                listener.onItemAdded(startIdx, this)
         }
     }
 
     override fun addAll(index: Int, elements: Collection<T>): Boolean {
         return super.addAll(index, elements).also {
             for (listener in eventListeners)
-                listener.onItemAdded(index, elements)
+                listener.onItemAdded(index, this)
         }
     }
 
     override fun clear() {
-        val items = mutableListOf<T>().apply { addAll(this) }
         super.clear()
         for (listener in eventListeners)
-            listener.onItemRemoved(items)
+            listener.onItemRemoved(this)
     }
 
     override fun remove(element: T): Boolean {
         return super.remove(element).also {
             for (listener in eventListeners)
-                listener.onItemRemoved(listOf(element))
+                listener.onItemRemoved(this)
         }
     }
 
     override fun removeAll(elements: Collection<T>): Boolean {
         return super.removeAll(elements.toSet()).also {
             for (listener in eventListeners)
-                listener.onItemRemoved(elements)
+                listener.onItemRemoved(this)
         }
     }
 
@@ -76,7 +75,7 @@ class ListenableMutableList<T>(collection: Collection<T>) : ArrayList<T>() {
         val elem = getOrNull(index)
         return super.removeAt(index).also {
             for (listener in eventListeners)
-                listener.onItemRemoved(listOf(elem))
+                listener.onItemRemoved(this)
         }
     }
 
@@ -94,7 +93,7 @@ class ListenableMutableList<T>(collection: Collection<T>) : ArrayList<T>() {
 
 
     interface EventListener<T> {
-        fun onItemAdded(index: Int, items: Collection<T>) {}
-        fun onItemRemoved(items: Collection<T?>) {}
+        fun onItemAdded(index: Int, list: List<T>) {}
+        fun onItemRemoved(list: List<T>) {}
     }
 }

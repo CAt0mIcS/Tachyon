@@ -2,7 +2,6 @@ package com.tachyonmusic.media.service
 
 import android.os.Bundle
 import android.util.Log
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.session.*
 import com.google.common.collect.ImmutableList
@@ -12,7 +11,6 @@ import com.tachyonmusic.core.Resource
 import com.tachyonmusic.core.constants.MediaAction
 import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.domain.TimingData
-import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.domain.CustomPlayer
@@ -116,9 +114,9 @@ class MediaPlaybackService : MediaLibraryService() {
                         SessionResult(SessionResult.RESULT_SUCCESS)
                     }
                 }
-                MediaAction.addTimingDataCommand -> {
+                MediaAction.updateTimingDataCommand -> {
                     val res = withContext(Dispatchers.Main) {
-                        useCases.addTimingDataToCurrentPlayback(
+                        useCases.updateTimingDataOfCurrentPlayback(
                             TimingData.fromStringArray(
                                 args.getStringArray(MetadataKeys.TimingData) ?: emptyArray()
                             )
@@ -128,9 +126,6 @@ class MediaPlaybackService : MediaLibraryService() {
                     if (res is Resource.Error)
                         return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
                     SessionResult(SessionResult.RESULT_SUCCESS)
-                }
-                MediaAction.removeTimingDataCommand -> {
-                    SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED)
                 }
                 else -> SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED)
             }

@@ -28,8 +28,8 @@ android {
         applicationId "com.tachyonmusic"
         minSdk 21
         targetSdk 32
-        versionCode 58
-        versionName "Dev 58"
+        versionCode 59
+        versionName "Dev 59"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 

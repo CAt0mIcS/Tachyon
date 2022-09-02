@@ -15,22 +15,16 @@ object MediaAction {
      * Events sent to the MediaPlaybackService by the MediaBrowserController
      */
     val setPlaybackCommand = SessionCommand("com.tachyonmusic.SET_PLAYBACK", Bundle.EMPTY)
-    val addTimingDataCommand = SessionCommand("com.tachyonmusic.ADD_TIMING_DATA", Bundle.EMPTY)
-    val removeTimingDataCommand =
-        SessionCommand("com.tachyonmusic.REMOVE_TIMING_DATA", Bundle.EMPTY)
+    val updateTimingDataCommand =
+        SessionCommand("com.tachyonmusic.UPDATE_TIMING_DATA", Bundle.EMPTY)
 
     fun setPlaybackEvent(browser: MediaBrowser, playback: Playback?) =
         browser.sendCustomCommand(setPlaybackCommand, Bundle().apply {
             putParcelable(MetadataKeys.Playback, playback)
         })
 
-    fun addTimingDataEvent(browser: MediaBrowser, timingData: List<TimingData>) =
-        browser.sendCustomCommand(addTimingDataCommand, Bundle().apply {
-            putStringArray(MetadataKeys.TimingData, TimingData.toStringArray(timingData))
-        })
-
-    fun removeTimingDataEvent(browser: MediaBrowser, timingData: List<TimingData>) =
-        browser.sendCustomCommand(removeTimingDataCommand, Bundle().apply {
+    fun updateTimingDataEvent(browser: MediaBrowser, timingData: List<TimingData>) =
+        browser.sendCustomCommand(updateTimingDataCommand, Bundle().apply {
             putStringArray(MetadataKeys.TimingData, TimingData.toStringArray(timingData))
         })
 }

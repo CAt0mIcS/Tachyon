@@ -6,5 +6,5 @@ import com.tachyonmusic.core.domain.TimingData
 
 
 interface CustomPlayer : Player {
-    fun addTimingData(newTimingData: List<TimingData>)
+    fun updateTimingData(newTimingData: ArrayList<TimingData>)
 }

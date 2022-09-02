@@ -12,19 +12,19 @@ val MediaMetadata.duration: Long?
     get() = extras?.getLong(MetadataKeys.Duration)
 
 
-val MediaMetadata.timingData: ArrayList<TimingData>?
+var MediaMetadata.timingData: ArrayList<TimingData>?
     get() {
         val strArr = extras?.getStringArray(MetadataKeys.TimingData)
         return if (strArr == null) null
         else TimingData.fromStringArray(strArr)
     }
+    set(value) {
+        extras?.putStringArray(
+            MetadataKeys.TimingData,
+            TimingData.toStringArray(value ?: emptyList())
+        )
+    }
 
-fun MediaMetadata.addTimingData(timingData: List<TimingData>) {
-    extras?.putStringArray(
-        MetadataKeys.TimingData,
-        TimingData.toStringArray(this.timingData?.apply { addAll(timingData) } ?: timingData)
-    )
-}
 
 val MediaMetadata.playback: Playback?
     get() {

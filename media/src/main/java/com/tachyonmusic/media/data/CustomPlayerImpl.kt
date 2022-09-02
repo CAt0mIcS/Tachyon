@@ -5,13 +5,7 @@ import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
-import androidx.media3.session.CommandButton
-import com.tachyonmusic.core.constants.MetadataKeys
-import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.media.data.ext.addTimingData
-import com.tachyonmusic.media.data.ext.playback
 import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.domain.CustomPlayer
 
@@ -85,9 +79,8 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer 
     }
 
 
-    override fun addTimingData(newTimingData: List<TimingData>) {
-        currentMediaItem!!.mediaMetadata.addTimingData(newTimingData)
-        val timingDataArray = currentMediaItem!!.mediaMetadata.timingData!!
+    override fun updateTimingData(newTimingData: ArrayList<TimingData>) {
+        currentMediaItem!!.mediaMetadata.timingData = newTimingData
 
         loopMessages.forEach { it.cancel() }
         loopMessages.clear()
@@ -95,15 +88,15 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer 
         /**
          * All timing data except the last one need to seek to the next start time in the array
          */
-        for (i in timingDataArray.subList(0, timingDataArray.size - 1).indices) {
+        for (i in newTimingData.subList(0, newTimingData.size - 1).indices) {
             loopMessages.add(
                 createMessage { _, payload ->
                     seekTo(payload as Long)
                 }.apply {
                     looper = Looper.getMainLooper()
                     deleteAfterDelivery = false
-                    payload = timingDataArray[i + 1].startTime
-                    setPosition(timingDataArray[i].endTime)
+                    payload = newTimingData[i + 1].startTime
+                    setPosition(newTimingData[i].endTime)
                     send()
                 }
             )
@@ -118,8 +111,8 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer 
             }.apply {
                 looper = Looper.getMainLooper()
                 deleteAfterDelivery = false
-                payload = timingDataArray.first().startTime
-                setPosition(timingDataArray.last().endTime)
+                payload = newTimingData.first().startTime
+                setPosition(newTimingData.last().endTime)
                 send()
             }
         )
