@@ -21,7 +21,7 @@ abstract class Song(
     abstract override val playbackType: PlaybackType.Song
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
-        "mediaId" to mediaId.source
+        "mediaId" to mediaId.toString()
     )
 
     override fun toMediaItem() = MediaItem.Builder().apply {
@@ -50,5 +50,4 @@ abstract class Song(
     }
 
     override fun describeContents() = 0
-
 }

@@ -7,6 +7,8 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Song
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 class RemoteLoop(
     mediaId: MediaId,
@@ -47,5 +49,14 @@ class RemoteLoop(
                 LocalSong.build(mediaId.underlyingMediaId!!)
             )
         }
+
+        fun build(mediaId: MediaId, timingData: ArrayList<TimingData>) = RemoteLoop(
+            mediaId,
+            mediaId.source.replace(PlaybackType.Loop.Remote().toString(), ""),
+            timingData,
+            if (mediaId.underlyingMediaId?.isLocalSong == true) LocalSong.build(mediaId.underlyingMediaId) else TODO(
+                "Unknown song type when deserializing loop"
+            )
+        )
     }
 }

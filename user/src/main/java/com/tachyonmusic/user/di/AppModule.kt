@@ -1,5 +1,7 @@
 package com.tachyonmusic.user.di
 
+import android.app.Application
+import com.tachyonmusic.user.data.LocalCache
 import com.tachyonmusic.user.data.repository.FileRepositoryImpl
 import com.tachyonmusic.user.data.repository.FirebaseRepository
 import com.tachyonmusic.user.domain.FileRepository
@@ -16,10 +18,17 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserRepository(fileRepository: FileRepository): UserRepository =
-        FirebaseRepository(fileRepository)
+    fun provideUserRepository(
+        fileRepository: FileRepository,
+        localCache: LocalCache
+    ): UserRepository =
+        FirebaseRepository(fileRepository, localCache)
 
     @Provides
     @Singleton
     fun provideFileRepository(): FileRepository = FileRepositoryImpl()
+
+    @Provides
+    @Singleton
+    fun provideLocalCache(app: Application): LocalCache = LocalCache(app)
 }

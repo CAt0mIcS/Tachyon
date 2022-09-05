@@ -13,6 +13,17 @@ sealed class PlaybackType(val value: Int) {
         class Remote : Playlist(2)
     }
 
+    companion object {
+        fun build(value: String): PlaybackType {
+            when (value) {
+                "*0*" -> Song.Local()
+                "*1*" -> Loop.Remote()
+                "*2*" -> Playlist.Remote()
+            }
+            TODO("Unsupported value $value for playback type")
+        }
+    }
+
     override fun toString() = "*$value*"
 
     override fun equals(other: Any?): Boolean {

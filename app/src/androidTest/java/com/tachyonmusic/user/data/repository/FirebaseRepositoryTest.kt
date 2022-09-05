@@ -2,6 +2,7 @@ package com.tachyonmusic.user.data.repository
 
 import android.annotation.SuppressLint
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.firebase.ktx.Firebase
 import com.tachyonmusic.core.Resource
 import com.tachyonmusic.core.data.playback.RemoteLoop
 import com.tachyonmusic.core.data.playback.RemotePlaylist
@@ -10,17 +11,20 @@ import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.user.data.Metadata
 import com.tachyonmusic.user.di.AppModule
 import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.util.assertEquals
+import com.tachyonmusic.util.assertResource
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
-import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import java.lang.IllegalStateException
 import javax.inject.Inject
 
 @SuppressLint("CheckResult")
@@ -43,15 +47,17 @@ class FirebaseRepositoryTest {
 
     @Before
     fun setUp() {
-        hiltRule.inject()
+        tryInject()
 
         runBlocking {
             loops = MutableList(3) { i ->
+                val song = repository.songs.await()[i]
+
                 RemoteLoop(
-                    MediaId.ofRemoteLoop(i.toString(), MediaId(i.toString())),
+                    MediaId.ofRemoteLoop(i.toString(), song.mediaId),
                     i.toString(),
                     arrayListOf(TimingData(1, 10), TimingData(100, 1000)),
-                    repository.songs.await().find { it.title == "Title:$i" }!!
+                    song
                 ) as Loop
             } as ArrayList
 
@@ -60,36 +66,47 @@ class FirebaseRepositoryTest {
                     MediaId.ofRemotePlaylist(i.toString()),
                     i.toString(),
                     repository.songs.await().filter {
-                        it.title == "Title:0" || it.title == "Title:3" || it.title == "Title:7"
+                        it.title == "Cosmic Storm" || it.title == "Awake" || it.title == "Last Time"
                     } as MutableList<SinglePlayback>
                 ) as Playlist
             } as ArrayList
+
+            cleanUp()
         }
     }
 
     @After
     fun cleanUp() = runBlocking {
+        tryInject()
         if (repository.signedIn) {
+            (repository as FirebaseRepository).localCache.set(Metadata())
             assertResource(repository.delete())
         }
     }
 
+    /**
+     * Completely new user first uploads loops and playlists, while not being registered yet.
+     * Then registers new user
+     * --> Check that the repository-stored loops and playlists match the ones previously uploaded
+     */
     @Test
-    fun test(): Unit = runBlocking {
-        for (loop in loops)
-            repository += loop
-        for (playlist in playlists)
-            repository += playlist
+    fun unregisteredUploadRegisteredDownload(): Unit =
+        runBlocking {
+            for (loop in loops)
+                repository += loop
+            for (playlist in playlists)
+                repository += playlist
 
-        assertResource(repository.upload())
+            assertResource(repository.upload())
 
-        assertResource(repository.register(TEST_EMAIL, TEST_PASSWORD))
+            assertResource(repository.register(TEST_EMAIL, TEST_PASSWORD))
 
-        assertEquals(repository.loops.await(), loops)
-        assertEquals(repository.playlists.await(), playlists)
-    }
+            assertEquals(repository.loops.await(), loops)
+            assertEquals(repository.playlists.await(), playlists)
+        }
 
-    private fun <T> assertResource(res: Resource<T>) {
-        assert(res is Resource.Success) { "${res.message?.asString(InstrumentationRegistry.getInstrumentation().targetContext)}" }
+    private fun tryInject() = try {
+        hiltRule.inject()
+    } catch (e: IllegalStateException) {
     }
 }

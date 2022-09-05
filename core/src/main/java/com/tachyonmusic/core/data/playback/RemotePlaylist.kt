@@ -53,13 +53,25 @@ class RemotePlaylist(
             val playbacksMaps = map["playbacks"]!! as ArrayList<HashMap<String, Any?>>
 
             val playbacks = playbacksMaps.map { map ->
-                val tag = map["type"]!! as Int
-                if (tag == PlaybackType.Song.Local().value)
+                val singleMediaId = MediaId.deserialize(map["mediaId"]!! as String)
+                if (singleMediaId.isLocalSong)
                     return@map LocalSong.build(map)
                 RemoteLoop.build(map)
             } as MutableList<SinglePlayback>
 
             return RemotePlaylist(mediaId, name, playbacks, idx)
         }
+
+        fun build(
+            mediaId: MediaId,
+            playbacks: MutableList<SinglePlayback>,
+            currentPlaylistIndex: Int
+        ) =
+            RemotePlaylist(
+                mediaId,
+                mediaId.source.replace(PlaybackType.Playlist.Remote().toString(), ""),
+                playbacks,
+                currentPlaylistIndex
+            )
     }
 }

@@ -60,5 +60,4 @@ abstract class Loop(
     }
 
     override fun describeContents() = 0
-
 }

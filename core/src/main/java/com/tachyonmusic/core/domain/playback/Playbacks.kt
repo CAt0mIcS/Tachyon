@@ -32,6 +32,8 @@ sealed class Playback(val mediaId: MediaId) : Parcelable {
 
         return true
     }
+
+    override fun toString() = mediaId.toString()
 }
 
 sealed class SinglePlayback(mediaId: MediaId) : Playback(mediaId) {

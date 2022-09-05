@@ -48,6 +48,13 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
             MediaId(PlaybackType.Playlist.Remote().toString() + name)
     }
 
+    val playbackType: PlaybackType
+        get() =
+            if (isLocalSong) PlaybackType.Song.Local()
+            else if (isRemoteLoop) PlaybackType.Loop.Remote()
+            else if (isRemotePlaylist) PlaybackType.Playlist.Remote()
+            else TODO("Invalid media id ${toString()}")
+
     val isLocalSong: Boolean
         get() = source.contains(PlaybackType.Song.Local().toString())
 

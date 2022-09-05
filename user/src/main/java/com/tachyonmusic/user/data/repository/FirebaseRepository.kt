@@ -11,6 +11,7 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.user.R
+import com.tachyonmusic.user.data.LocalCache
 import com.tachyonmusic.user.data.Metadata
 import com.tachyonmusic.user.domain.FileRepository
 import com.tachyonmusic.user.domain.UserRepository
@@ -19,6 +20,7 @@ import kotlinx.coroutines.*
 
 class FirebaseRepository(
     private var fileRepository: FileRepository,
+    val localCache: LocalCache,
     private val auth: FirebaseAuth = Firebase.auth,
     private val firestore: FirebaseFirestore = Firebase.firestore
 ) : UserRepository {
@@ -30,7 +32,7 @@ class FirebaseRepository(
     override val playlists: Deferred<List<Playlist>>
         get() = metadata.playlists
 
-    private var metadata: Metadata = Metadata()
+    private var metadata: Metadata = localCache.get()
 
     override val signedIn: Boolean
         get() = auth.currentUser != null
@@ -72,6 +74,7 @@ class FirebaseRepository(
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     launch(Dispatchers.IO) {
+                        upload()
                         initialize()
                         job.complete(Resource.Success())
                     }
@@ -131,7 +134,7 @@ class FirebaseRepository(
                     )
                 }
         } else
-            job.complete(Resource.Error(UiText.DynamicString("Not signed in")))
+            job.complete(localCache.set(metadata))
         // TODO: If user never signed in before: Store locally
         // TODO: If user currently not signed in: Tell firebase to upload once online and signed in
         job.await()
@@ -154,6 +157,8 @@ class FirebaseRepository(
                             metadata = Metadata(task.result.data!!)
                             job.complete()
                         }
+                    else
+                        job.complete()
                 }
 
         } else {
@@ -166,6 +171,8 @@ class FirebaseRepository(
                                 metadata = Metadata(task.result.documents[0].data!!)
                                 job.complete()
                             }
+                        else
+                            job.complete()
                     }
                 firestore.enableNetwork()
             }
