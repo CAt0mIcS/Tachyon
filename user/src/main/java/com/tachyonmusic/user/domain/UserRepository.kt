@@ -24,6 +24,8 @@ interface UserRepository {
 
     fun signOut()
 
+    suspend fun delete(): Resource<Unit>
+
     suspend fun find(mediaId: MediaId): Playback? {
         val s = songs.await().find { it.mediaId == mediaId }
         if (s != null)
@@ -34,9 +36,13 @@ interface UserRepository {
         return playlists.await().find { it.mediaId == mediaId }
     }
 
-    fun upload()
+    suspend fun upload(): Resource<Unit>
 
     fun registerEventListener(listener: EventListener?)
+
+    suspend operator fun plusAssign(song: Song)
+    suspend operator fun plusAssign(loop: Loop)
+    suspend operator fun plusAssign(playlist: Playlist)
 
     interface EventListener {
         fun onSongListChanged(song: Song) {}

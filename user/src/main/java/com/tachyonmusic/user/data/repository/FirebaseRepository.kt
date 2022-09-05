@@ -1,54 +1,41 @@
 package com.tachyonmusic.user.data.repository
 
-import android.os.Environment
-import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.tachyonmusic.core.Resource
 import com.tachyonmusic.core.UiText
-import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.user.R
 import com.tachyonmusic.user.data.Metadata
+import com.tachyonmusic.user.domain.FileRepository
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.launch
 import kotlinx.coroutines.*
-import java.io.File
 
-class FirebaseRepository : UserRepository {
+class FirebaseRepository(
+    private var fileRepository: FileRepository,
+    private val auth: FirebaseAuth = Firebase.auth,
+    private val firestore: FirebaseFirestore = Firebase.firestore
+) : UserRepository {
 
     override val songs: Deferred<List<Song>>
-        get() = _songs
+        get() = fileRepository.songs
     override val loops: Deferred<List<Loop>>
         get() = metadata.loops
     override val playlists: Deferred<List<Playlist>>
         get() = metadata.playlists
 
-    private val _songs = CompletableDeferred<ArrayList<Song>>()
-
     private var metadata: Metadata = Metadata()
 
     override val signedIn: Boolean
-        get() = Firebase.auth.currentUser != null
+        get() = auth.currentUser != null
 
     private var eventListener: UserRepository.EventListener? = null
-
-    init {
-        val files =
-            File(Environment.getExternalStorageDirectory().absolutePath + "/Music/").listFiles()!!
-        Log.d("FirebaseRepository", "Started loading songs")
-        val songs = arrayListOf<Song>()
-        for (file in files) {
-            if (file.extension == "mp3") {
-                songs += LocalSong.build(file)
-            }
-        }
-        Log.d("FirebaseRepository", "Finished loading songs")
-        _songs.complete(songs)
-    }
 
     override suspend fun signIn(
         email: String,
@@ -56,7 +43,7 @@ class FirebaseRepository : UserRepository {
     ) = withContext(Dispatchers.IO) {
         val job = CompletableDeferred<Resource<Unit>>()
 
-        Firebase.auth.signInWithEmailAndPassword(email, password)
+        auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     launch(Dispatchers.IO) {
@@ -80,9 +67,8 @@ class FirebaseRepository : UserRepository {
         password: String
     ) = withContext(Dispatchers.IO) {
         val job = CompletableDeferred<Resource<Unit>>()
-        job.start()
 
-        Firebase.auth.createUserWithEmailAndPassword(email, password)
+        auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     launch(Dispatchers.IO) {
@@ -101,22 +87,54 @@ class FirebaseRepository : UserRepository {
         return@withContext job.await()
     }
 
-    override fun signOut() = Firebase.auth.signOut()
+    override fun signOut() = auth.signOut()
 
-    // TODO: Use [Firebase.firestore.update] (https://firebase.google.com/docs/firestore/manage-data/add-data#update-data) && (https://firebase.google.com/docs/firestore/manage-data/add-data#update_elements_in_an_array)
+    override suspend fun delete() = withContext(Dispatchers.IO) {
+        val job = CompletableDeferred<Resource<Unit>>()
 
-    override fun upload() {
+        auth.currentUser?.delete()?.addOnCompleteListener {
+            if (it.isSuccessful)
+                job.complete(Resource.Success())
+            else
+                job.complete(
+                    Resource.Error(
+                        if (it.exception?.localizedMessage != null)
+                            UiText.DynamicString(it.exception!!.localizedMessage!!)
+                        else UiText.StringResource(R.string.unknown_error)
+                    )
+                )
+        }
+
+        job.await()
+    }
+
+    // TODO: Use [Firebase.firestore.update] (https://firebase.google.com/docs/Firebase.firestore/manage-data/add-data#update-data) && (https://firebase.google.com/docs/Firebase.firestore/manage-data/add-data#update_elements_in_an_array)
+
+    override suspend fun upload() = withContext(Dispatchers.IO) {
         // TODO: When not signed in and history changes, signing in will only download
         // TODO: history from firebase and not keep local changes. Should be fixed once we figure
         // TODO: out how to remove this check and query the upload if the user is not signed in
 
+        val job = CompletableDeferred<Resource<Unit>>()
+
         if (signedIn) {
-            Firebase.firestore.collection("users")
-                .document(Firebase.auth.currentUser!!.uid)
+            firestore.collection("users")
+                .document(auth.currentUser!!.uid)
                 .set(metadata.toHashMap())
-        }
+                .addOnCompleteListener {
+                    job.complete(
+                        if (it.isSuccessful) Resource.Success()
+                        else Resource.Error(
+                            if (it.exception?.localizedMessage != null) UiText.DynamicString(it.exception!!.localizedMessage!!)
+                            else UiText.StringResource(R.string.unknown_error)
+                        )
+                    )
+                }
+        } else
+            job.complete(Resource.Error(UiText.DynamicString("Not signed in")))
         // TODO: If user never signed in before: Store locally
         // TODO: If user currently not signed in: Tell firebase to upload once online and signed in
+        job.await()
     }
 
     override fun registerEventListener(listener: UserRepository.EventListener?) {
@@ -127,8 +145,8 @@ class FirebaseRepository : UserRepository {
         val job = Job()
 
         if (signedIn) {
-            Firebase.firestore.collection("users")
-                .document(Firebase.auth.currentUser!!.uid)
+            firestore.collection("users")
+                .document(auth.currentUser!!.uid)
                 .get()
                 .addOnCompleteListener { task ->
                     if (task.result.data != null)
@@ -139,8 +157,8 @@ class FirebaseRepository : UserRepository {
                 }
 
         } else {
-            Firebase.firestore.disableNetwork().addOnCompleteListener {
-                Firebase.firestore.collection("users")
+            firestore.disableNetwork().addOnCompleteListener {
+                firestore.collection("users")
                     .get()
                     .addOnCompleteListener { task ->
                         if (task.result.documents.isNotEmpty() && task.result.documents[0].data != null)
@@ -149,25 +167,24 @@ class FirebaseRepository : UserRepository {
                                 job.complete()
                             }
                     }
-                Firebase.firestore.enableNetwork()
+                firestore.enableNetwork()
             }
         }
 
         job.join()
     }
 
-    suspend operator fun plusAssign(song: Song) {
-        _songs.await().add(song)
-        _songs.await().sortBy { it.title + it.artist }
+    override suspend operator fun plusAssign(song: Song) {
+        fileRepository += song
         eventListener?.onSongListChanged(song)
     }
 
-    suspend operator fun plusAssign(loop: Loop) {
+    override suspend operator fun plusAssign(loop: Loop) {
         metadata.loops.await().add(loop)
         eventListener?.onLoopListChanged(loop)
     }
 
-    suspend operator fun plusAssign(playlist: Playlist) {
+    override suspend operator fun plusAssign(playlist: Playlist) {
         metadata.playlists.await().add(playlist)
         eventListener?.onPlaylistListChanged(playlist)
     }
