@@ -66,7 +66,7 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer,
 
         // Only the first start time matters when choosing if we play the previous playback
         // or seek back to the beginning of the current one
-        val startTime = mediaMetadata.timingData?.get(0)?.startTime ?: 0
+        val startTime = mediaMetadata.timingData?.getOrNull(0)?.startTime ?: 0
 
         // Seek to either the previous song or to the last one if we don't have a previous one
         if (isCurrentMediaItemLive && !isCurrentMediaItemSeekable || currentPosition <= maxSeekToPreviousPosition + startTime) {
