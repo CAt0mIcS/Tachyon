@@ -3,6 +3,7 @@ package com.tachyonmusic.user.domain
 import com.tachyonmusic.core.Resource
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.*
+import com.tachyonmusic.user.data.Metadata
 import kotlinx.coroutines.Deferred
 
 interface UserRepository {
@@ -45,10 +46,12 @@ interface UserRepository {
     suspend operator fun plusAssign(playlist: Playlist)
 
     interface EventListener {
+        fun onUserChanged(uid: String?) {}
+
         fun onSongListChanged(song: Song) {}
         fun onLoopListChanged(loop: Loop) {}
         fun onPlaylistListChanged(playlist: Playlist) {}
 
-        fun onPlaylistChanged(playlist: Playlist)
+        fun onPlaylistChanged(playlist: Playlist) {}
     }
 }

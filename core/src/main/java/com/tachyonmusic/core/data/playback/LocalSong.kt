@@ -48,6 +48,6 @@ class LocalSong(
 
         fun build(mediaId: MediaId) = build(mediaId.path!!)
 
-        fun build(map: HashMap<String, Any?>) = build(MediaId(map["mediaId"]!! as String))
+        fun build(map: Map<String, Any?>) = build(MediaId(map["mediaId"]!! as String))
     }
 }

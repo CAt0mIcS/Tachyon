@@ -2,6 +2,7 @@ package com.tachyonmusic.core.data.playback
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.google.gson.internal.LinkedTreeMap
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
@@ -44,13 +45,13 @@ class RemotePlaylist(
             override fun newArray(size: Int): Array<RemotePlaylist?> = arrayOfNulls(size)
         }
 
-        fun build(map: HashMap<String, Any?>): RemotePlaylist {
+        fun build(map: Map<String, Any?>): RemotePlaylist {
             val mediaId = MediaId(map["mediaId"]!! as String)
             val idx = (map["currPlIdx"] as Long).toInt()
 
             val name = mediaId.source.replace(PlaybackType.Playlist.Remote().toString(), "")
 
-            val playbacksMaps = map["playbacks"]!! as ArrayList<HashMap<String, Any?>>
+            val playbacksMaps = map["playbacks"]!! as ArrayList<LinkedTreeMap<String, Any?>>
 
             val playbacks = playbacksMaps.map { map ->
                 val singleMediaId = MediaId.deserialize(map["mediaId"]!! as String)

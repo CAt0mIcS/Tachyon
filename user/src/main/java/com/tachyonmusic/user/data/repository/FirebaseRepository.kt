@@ -32,12 +32,16 @@ class FirebaseRepository(
     override val playlists: Deferred<List<Playlist>>
         get() = metadata.playlists
 
-    private var metadata: Metadata = localCache.get()
+    private var metadata: Metadata = if (localCache.exists) localCache.get() else Metadata()
 
     override val signedIn: Boolean
         get() = auth.currentUser != null
 
     private var eventListener: UserRepository.EventListener? = null
+
+    init {
+        registerEventListener(localCache)
+    }
 
     override suspend fun signIn(
         email: String,
@@ -90,7 +94,10 @@ class FirebaseRepository(
         return@withContext job.await()
     }
 
-    override fun signOut() = auth.signOut()
+    override fun signOut() {
+        auth.signOut()
+        eventListener?.onUserChanged(null)
+    }
 
     override suspend fun delete() = withContext(Dispatchers.IO) {
         val job = CompletableDeferred<Resource<Unit>>()
@@ -178,6 +185,7 @@ class FirebaseRepository(
             }
         }
 
+        eventListener?.onUserChanged(auth.currentUser?.uid)
         job.join()
     }
 

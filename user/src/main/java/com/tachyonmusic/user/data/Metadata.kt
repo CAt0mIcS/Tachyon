@@ -4,6 +4,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.ToNumberPolicy
+import com.google.gson.internal.LinkedTreeMap
 import com.google.gson.reflect.TypeToken
 import com.tachyonmusic.core.data.playback.RemoteLoop
 import com.tachyonmusic.core.data.playback.RemotePlaylist
@@ -11,10 +12,8 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.*
-import kotlinx.serialization.json.Json
 
-class Metadata() {
+class Metadata(autoComplete: Boolean = true) {
     companion object {
         const val TAG = "UserMetadata"
     }
@@ -31,14 +30,16 @@ class Metadata() {
 //    val history: MutableList<Playback> = mutableListOf()
 
     init {
-        loops.complete(arrayListOf())
-        playlists.complete(arrayListOf())
+        if(autoComplete) {
+            loops.complete(arrayListOf())
+            playlists.complete(arrayListOf())
+        }
     }
 
     constructor(
         data: Map<String, Any?>,
 //        onHistoryChanged: ((MutableList<Playback>) -> Unit)?
-    ) : this() {
+    ) : this(false) {
         ignoreAudioFocus = data["ignoreAudioFocus"] as Boolean? ?: false
         combineDifferentPlaybackTypes = data["combineDifferentPlaybackTypes"] as Boolean? ?: false
         songIncDecInterval = (data["songIncDecInterval"] as Long? ?: 100L).toInt()
@@ -46,13 +47,13 @@ class Metadata() {
         maxPlaybacksInHistory = (data["maxPlaybacksInHistory"] as Long? ?: 25L).toInt()
 
         val loadedLoops =
-            ((data["loops"] as List<HashMap<String, Any?>?>?)?.map {
+            ((data["loops"] as List<LinkedTreeMap<String, Any?>?>?)?.map {
                 RemoteLoop.build(it!!)
             } as ArrayList<Loop>?)
                 ?: arrayListOf()
         loops.complete(loadedLoops)
 
-        val loadedPlaylists = ((data["playlists"] as List<HashMap<String, Any?>?>?)?.map {
+        val loadedPlaylists =((data["playlists"] as List<LinkedTreeMap<String, Any?>?>?)?.map {
             RemotePlaylist.build(it!!)
         } as ArrayList<Playlist>?)
             ?: arrayListOf()
@@ -80,7 +81,7 @@ class Metadata() {
 
     constructor(map: String) : this(
         GsonBuilder().setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE).create()
-            .fromJson<HashMap<String, Any>>(map, HashMap::class.java)
+            .fromJson<LinkedTreeMap<String, Any>>(map, LinkedTreeMap::class.java)
     )
 
     fun toHashMap() = hashMapOf(

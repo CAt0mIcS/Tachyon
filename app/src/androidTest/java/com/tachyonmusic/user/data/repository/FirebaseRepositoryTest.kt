@@ -16,6 +16,7 @@ import com.tachyonmusic.user.di.AppModule
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.assertEquals
 import com.tachyonmusic.util.assertResource
+import com.tachyonmusic.util.tryInject
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
@@ -42,44 +43,21 @@ class FirebaseRepositoryTest {
     @Inject
     lateinit var repository: UserRepository
 
-    private lateinit var loops: ArrayList<Loop>
-    private lateinit var playlists: ArrayList<Playlist>
+    @Inject
+    lateinit var loops: MutableList<Loop>
+
+    @Inject
+    lateinit var playlists: MutableList<Playlist>
 
     @Before
     fun setUp() {
-        tryInject()
-
-        runBlocking {
-            loops = MutableList(3) { i ->
-                val song = repository.songs.await()[i]
-
-                RemoteLoop(
-                    MediaId.ofRemoteLoop(i.toString(), song.mediaId),
-                    i.toString(),
-                    arrayListOf(TimingData(1, 10), TimingData(100, 1000)),
-                    song
-                ) as Loop
-            } as ArrayList
-
-            playlists = MutableList(2) { i ->
-                RemotePlaylist(
-                    MediaId.ofRemotePlaylist(i.toString()),
-                    i.toString(),
-                    repository.songs.await().filter {
-                        it.title == "Cosmic Storm" || it.title == "Awake" || it.title == "Last Time"
-                    } as MutableList<SinglePlayback>
-                ) as Playlist
-            } as ArrayList
-
-            cleanUp()
-        }
+        cleanUp()
     }
 
     @After
     fun cleanUp() = runBlocking {
-        tryInject()
+        hiltRule.tryInject()
         if (repository.signedIn) {
-            (repository as FirebaseRepository).localCache.set(Metadata())
             assertResource(repository.delete())
         }
     }
@@ -104,9 +82,4 @@ class FirebaseRepositoryTest {
             assertEquals(repository.loops.await(), loops)
             assertEquals(repository.playlists.await(), playlists)
         }
-
-    private fun tryInject() = try {
-        hiltRule.inject()
-    } catch (e: IllegalStateException) {
-    }
 }

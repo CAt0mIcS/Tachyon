@@ -7,8 +7,6 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Song
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 
 class RemoteLoop(
     mediaId: MediaId,
@@ -39,7 +37,7 @@ class RemoteLoop(
             override fun newArray(size: Int): Array<RemoteLoop?> = arrayOfNulls(size)
         }
 
-        fun build(map: HashMap<String, Any?>): Loop {
+        fun build(map: Map<String, Any?>): Loop {
             val mediaId = MediaId.deserialize(map["mediaId"]!! as String)
             val name = mediaId.source.replace(PlaybackType.Loop.Remote().toString(), "")
             return RemoteLoop(

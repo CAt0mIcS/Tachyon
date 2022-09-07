@@ -4,16 +4,60 @@ import android.content.Context
 import com.tachyonmusic.core.Resource
 import com.tachyonmusic.core.UiText
 import com.tachyonmusic.user.R
+import com.tachyonmusic.user.domain.UserRepository
 import org.json.JSONException
 import java.io.*
 
-class LocalCache(context: Context) {
+class LocalCache(context: Context, uid: String? = null) : UserRepository.EventListener {
 
-    private val cache = File(context.filesDir.absolutePath.toString() + "/Cache.txt")
+    private val filesDir = context.filesDir.absolutePath
+
+    private val cache = File("$filesDir/Cache.txt")
+    private var uidFile =
+        if (uid != null) File("$filesDir/$uid") else null
+
+    init {
+        if (!cache.exists() && uid == null)
+            saveToLocal(Metadata())
+    }
 
     fun get() = loadFromLocal()
 
     fun set(metadata: Metadata) = saveToLocal(metadata)
+
+    /**
+     * LocalCache only exists if the user has never signed in before. [cache] will be deleted once
+     * the user signs in.
+     */
+    val exists: Boolean
+        get() = cache.exists() && uidFile == null
+
+    override fun onUserChanged(uid: String?) {
+        if (uid != null) {
+            /**
+             * User signed in, delete [cache] and create [uid] file
+             */
+            uidFile = File("$filesDir/$uid")
+            if (!uidFile!!.createNewFile())
+                TODO("UID file creation unsuccessful")
+            if (!cache.delete())
+                TODO("Cache file deletion unsuccessful")
+        } else {
+            /**
+             * User was removed, remove [uid] file, but don't recreate [cache] as firebase will handle
+             * this for us
+             */
+            if (uidFile?.delete() == true)
+                TODO("UID file deletion unsuccessful")
+        }
+    }
+
+    fun reset() {
+        if (uidFile == null)
+            saveToLocal(Metadata())
+        else
+            cache.delete()
+    }
 
     /**
      * Loads the settings from the local predefined settings file. If the file doesn't exist
