@@ -5,6 +5,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.gson.Gson
 import com.tachyonmusic.core.Resource
 import com.tachyonmusic.core.UiText
 import com.tachyonmusic.core.domain.playback.Loop
@@ -15,15 +16,18 @@ import com.tachyonmusic.user.data.LocalCache
 import com.tachyonmusic.user.data.Metadata
 import com.tachyonmusic.user.domain.FileRepository
 import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.util.IListenable
+import com.tachyonmusic.util.Listenable
 import com.tachyonmusic.util.launch
 import kotlinx.coroutines.*
 
 class FirebaseRepository(
     private var fileRepository: FileRepository,
     val localCache: LocalCache,
+    private val gson: Gson,
     private val auth: FirebaseAuth = Firebase.auth,
     private val firestore: FirebaseFirestore = Firebase.firestore
-) : UserRepository {
+) : UserRepository, IListenable<UserRepository.EventListener> by Listenable() {
 
     override val songs: Deferred<List<Song>>
         get() = fileRepository.songs
@@ -32,12 +36,10 @@ class FirebaseRepository(
     override val playlists: Deferred<List<Playlist>>
         get() = metadata.playlists
 
-    private var metadata: Metadata = if (localCache.exists) localCache.get() else Metadata()
+    private var metadata: Metadata = if (localCache.exists) localCache.get() else Metadata(gson)
 
     override val signedIn: Boolean
         get() = auth.currentUser != null
-
-    private var eventListener: UserRepository.EventListener? = null
 
     init {
         registerEventListener(localCache)
@@ -96,8 +98,10 @@ class FirebaseRepository(
 
     override fun signOut() {
         auth.signOut()
-        metadata = Metadata()
-        eventListener?.onUserChanged(null)
+        metadata = Metadata(gson)
+        invokeEvent {
+            it.onUserChanged(null)
+        }
     }
 
     override suspend fun delete() = withContext(Dispatchers.IO) {
@@ -107,16 +111,18 @@ class FirebaseRepository(
             firestore.collection("users")
                 .document(auth.currentUser!!.uid).delete()
 
-        auth.currentUser?.delete()?.addOnCompleteListener {
-            if (it.isSuccessful) {
-                metadata = Metadata()
-                eventListener?.onUserChanged(null)
+        auth.currentUser?.delete()?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                metadata = Metadata(gson)
+                invokeEvent {
+                    it.onUserChanged(null)
+                }
                 job.complete(Resource.Success())
             } else
                 job.complete(
                     Resource.Error(
-                        if (it.exception?.localizedMessage != null)
-                            UiText.DynamicString(it.exception!!.localizedMessage!!)
+                        if (task.exception?.localizedMessage != null)
+                            UiText.DynamicString(task.exception!!.localizedMessage!!)
                         else UiText.StringResource(R.string.unknown_error)
                     )
                 )
@@ -154,10 +160,6 @@ class FirebaseRepository(
         job.await()
     }
 
-    override fun registerEventListener(listener: UserRepository.EventListener?) {
-        eventListener = listener
-    }
-
     private suspend fun initialize() {
         val job = Job()
 
@@ -168,7 +170,7 @@ class FirebaseRepository(
                 .addOnCompleteListener { task ->
                     if (task.result.data != null)
                         launch(Dispatchers.IO) {
-                            metadata = Metadata(task.result.data!!)
+                            metadata = Metadata(gson, task.result.data!!)
                             job.complete()
                         }
                     else
@@ -182,7 +184,7 @@ class FirebaseRepository(
                     .addOnCompleteListener { task ->
                         if (task.result.documents.isNotEmpty() && task.result.documents[0].data != null)
                             launch(Dispatchers.IO) {
-                                metadata = Metadata(task.result.documents[0].data!!)
+                                metadata = Metadata(gson, task.result.documents[0].data!!)
                                 job.complete()
                             }
                         else
@@ -192,22 +194,30 @@ class FirebaseRepository(
             }
         }
 
-        eventListener?.onUserChanged(auth.currentUser?.uid)
+        invokeEvent {
+            it.onUserChanged(auth.currentUser?.uid)
+        }
         job.join()
     }
 
     override suspend operator fun plusAssign(song: Song) {
         fileRepository += song
-        eventListener?.onSongListChanged(song)
+        invokeEvent {
+            it.onSongListChanged(song)
+        }
     }
 
     override suspend operator fun plusAssign(loop: Loop) {
         metadata.loops.await().add(loop)
-        eventListener?.onLoopListChanged(loop)
+        invokeEvent {
+            it.onLoopListChanged(loop)
+        }
     }
 
     override suspend operator fun plusAssign(playlist: Playlist) {
         metadata.playlists.await().add(playlist)
-        eventListener?.onPlaylistListChanged(playlist)
+        invokeEvent {
+            it.onPlaylistListChanged(playlist)
+        }
     }
 }

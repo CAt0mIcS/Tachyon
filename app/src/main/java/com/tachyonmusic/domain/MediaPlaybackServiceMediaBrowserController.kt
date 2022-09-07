@@ -20,18 +20,21 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.media.data.ext.*
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.util.IListenable
+import com.tachyonmusic.util.Listenable
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class MediaPlaybackServiceMediaBrowserController(
     private val userRepository: UserRepository
-) : MediaBrowserController, DefaultLifecycleObserver, Player.Listener,
-    ListenableMutableList.EventListener<TimingData> {
+) : MediaBrowserController,
+    DefaultLifecycleObserver,
+    Player.Listener,
+    ListenableMutableList.EventListener<TimingData>,
+    IListenable<MediaBrowserController.EventListener> by Listenable() {
 
     private var browser: MediaBrowser? = null
-
-    private val eventListeners = mutableListOf<MediaBrowserController.EventListener>()
 
     var onConnected: (() -> Unit)? = null
 
@@ -82,14 +85,6 @@ class MediaPlaybackServiceMediaBrowserController(
         browser?.pause()
     }
 
-    override fun addListener(listener: MediaBrowserController.EventListener) {
-        eventListeners += listener
-    }
-
-    override fun removeListener(listener: MediaBrowserController.EventListener) {
-        eventListeners -= listener
-    }
-
     override fun getChildren(
         parentId: String,
         page: Int,
@@ -122,7 +117,7 @@ class MediaPlaybackServiceMediaBrowserController(
             val data = browser?.mediaMetadata?.timingData
             return if (data == null) null
             else ListenableMutableList(data).apply {
-                addListener(this@MediaPlaybackServiceMediaBrowserController)
+                registerEventListener(this@MediaPlaybackServiceMediaBrowserController)
             }
         }
     override val currentPosition: Long?
@@ -131,8 +126,9 @@ class MediaPlaybackServiceMediaBrowserController(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val playback = mediaItem?.mediaMetadata?.playback
-        for (listener in eventListeners)
-            listener.onPlaybackTransition(playback)
+        invokeEvent {
+            it.onPlaybackTransition(playback)
+        }
     }
 
     override fun onItemAdded(index: Int, list: List<TimingData>) {
@@ -147,17 +143,3 @@ class MediaPlaybackServiceMediaBrowserController(
         MediaAction.updateTimingDataEvent(browser!!, list)
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

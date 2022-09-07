@@ -41,7 +41,7 @@ class PlayerViewModel @Inject constructor(
             }
         })
 
-        browser.addListener(this)
+        browser.registerEventListener(this)
 
         /**
          * [onPlaybackTransition] already happened when [PlayerViewModel] is launched, thus invoke
@@ -51,7 +51,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     override fun onCleared() {
-        browser.removeListener(this)
+        browser.unregisterEventListener(this)
     }
 
     override fun onPlaybackTransition(playback: Playback?) {
@@ -73,14 +73,14 @@ class PlayerViewModel @Inject constructor(
 //            )
 //        )
 
-        timingData?.addAll(
-            listOf(
-                TimingData(10000, 20000), // 10s - 20s
-                TimingData(18000, 40000), // 18s - 40s
-                TimingData(36000, 55000), // 36s - 55s
-                TimingData(180000, 5000), // 3min - 5s
-            )
-        )
+//        timingData?.addAll(
+//            listOf(
+//                TimingData(10000, 20000), // 10s - 20s
+//                TimingData(18000, 40000), // 18s - 40s
+//                TimingData(36000, 55000), // 36s - 55s
+//                TimingData(180000, 5000), // 3min - 5s
+//            )
+//        )
 
 //        timingData?.addAll(
 //            listOf(

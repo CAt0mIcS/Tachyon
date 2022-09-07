@@ -1,6 +1,7 @@
 package com.tachyonmusic.di
 
 import android.app.Application
+import com.google.gson.Gson
 import com.tachyonmusic.core.data.playback.RemoteLoop
 import com.tachyonmusic.core.data.playback.RemotePlaylist
 import com.tachyonmusic.core.domain.MediaId
@@ -24,12 +25,12 @@ import javax.inject.Singleton
 object TestAppModule {
     @Provides
     @Singleton
-    fun provideUserRepository(localCache: LocalCache): UserRepository =
-        FirebaseRepository(FileRepositoryImpl(), localCache)
+    fun provideUserRepository(localCache: LocalCache, gson: Gson): UserRepository =
+        FirebaseRepository(FileRepositoryImpl(), localCache, gson)
 
     @Provides
     @Singleton
-    fun provideLocalCache(app: Application) = LocalCache(app)
+    fun provideLocalCache(app: Application, gson: Gson) = LocalCache(app, gson)
 
     @Provides
     @Singleton
@@ -42,7 +43,7 @@ object TestAppModule {
                 i.toString(),
                 arrayListOf(TimingData(1, 10), TimingData(100, 1000)),
                 song
-            ) as Loop
+            )
         }
     }
 
@@ -56,7 +57,7 @@ object TestAppModule {
                 repository.songs.await().filter {
                     it.title == "Cosmic Storm" || it.title == "Awake" || it.title == "Last Time"
                 } as MutableList<SinglePlayback>
-            ) as Playlist
+            )
         }
     }
 }

@@ -6,8 +6,9 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.util.IListenable
 
-interface MediaBrowserController {
+interface MediaBrowserController : IListenable<MediaBrowserController.EventListener> {
 
     var playback: Playback?
 
@@ -33,9 +34,6 @@ interface MediaBrowserController {
     fun stop()
     fun play()
     fun pause()
-
-    fun addListener(listener: EventListener)
-    fun removeListener(listener: EventListener)
 
     interface EventListener {
         fun onPlaybackTransition(playback: Playback?) {}

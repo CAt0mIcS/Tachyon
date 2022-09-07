@@ -1,6 +1,7 @@
 package com.tachyonmusic.user.data
 
 import android.content.Context
+import com.google.gson.Gson
 import com.tachyonmusic.core.Resource
 import com.tachyonmusic.core.UiText
 import com.tachyonmusic.user.R
@@ -8,7 +9,11 @@ import com.tachyonmusic.user.domain.UserRepository
 import org.json.JSONException
 import java.io.*
 
-class LocalCache(context: Context, uid: String? = null) : UserRepository.EventListener {
+class LocalCache(
+    context: Context,
+    private val gson: Gson,
+    uid: String? = null
+) : UserRepository.EventListener {
 
     private val filesDir = context.filesDir.absolutePath
 
@@ -18,7 +23,7 @@ class LocalCache(context: Context, uid: String? = null) : UserRepository.EventLi
 
     init {
         if (!cache.exists() && uid == null)
-            saveToLocal(Metadata())
+            saveToLocal(Metadata(gson))
     }
 
     fun get() = loadFromLocal()
@@ -51,7 +56,7 @@ class LocalCache(context: Context, uid: String? = null) : UserRepository.EventLi
 
     fun reset() {
         if (uidFile == null)
-            saveToLocal(Metadata())
+            saveToLocal(Metadata(gson))
         else
             cache.delete()
     }
@@ -72,13 +77,13 @@ class LocalCache(context: Context, uid: String? = null) : UserRepository.EventLi
             }
             reader.close()
 
-            return Metadata(jsonBuilder.toString())
+            return Metadata(gson, jsonBuilder.toString())
         } catch (e: IOException) {
-            saveToLocal(Metadata())
+            saveToLocal(Metadata(gson))
         } catch (e: JSONException) {
-            saveToLocal(Metadata())
+            saveToLocal(Metadata(gson))
         }
-        return Metadata()
+        return Metadata(gson)
     }
 
     /**

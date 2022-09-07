@@ -2,10 +2,7 @@ package com.tachyonmusic.user.data
 
 import android.util.Log
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.ToNumberPolicy
 import com.google.gson.internal.LinkedTreeMap
-import com.google.gson.reflect.TypeToken
 import com.tachyonmusic.core.data.playback.RemoteLoop
 import com.tachyonmusic.core.data.playback.RemotePlaylist
 import com.tachyonmusic.core.domain.playback.Loop
@@ -13,7 +10,7 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 
-class Metadata(autoComplete: Boolean = true) {
+class Metadata(private val gson: Gson, autoComplete: Boolean = true) {
     companion object {
         const val TAG = "UserMetadata"
     }
@@ -30,16 +27,17 @@ class Metadata(autoComplete: Boolean = true) {
 //    val history: MutableList<Playback> = mutableListOf()
 
     init {
-        if(autoComplete) {
+        if (autoComplete) {
             loops.complete(arrayListOf())
             playlists.complete(arrayListOf())
         }
     }
 
     constructor(
+        gson: Gson,
         data: Map<String, Any?>,
 //        onHistoryChanged: ((MutableList<Playback>) -> Unit)?
-    ) : this(false) {
+    ) : this(gson, false) {
         ignoreAudioFocus = data["ignoreAudioFocus"] as Boolean? ?: false
         combineDifferentPlaybackTypes = data["combineDifferentPlaybackTypes"] as Boolean? ?: false
         songIncDecInterval = (data["songIncDecInterval"] as Long? ?: 100L).toInt()
@@ -53,7 +51,7 @@ class Metadata(autoComplete: Boolean = true) {
                 ?: arrayListOf()
         loops.complete(loadedLoops)
 
-        val loadedPlaylists =((data["playlists"] as List<Map<String, Any?>?>?)?.map {
+        val loadedPlaylists = ((data["playlists"] as List<Map<String, Any?>?>?)?.map {
             RemotePlaylist.build(it!!)
         } as ArrayList<Playlist>?)
             ?: arrayListOf()
@@ -79,9 +77,8 @@ class Metadata(autoComplete: Boolean = true) {
 
     // TODO TODO TODO: Store Gson instance in Hilt
 
-    constructor(map: String) : this(
-        GsonBuilder().setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE).create()
-            .fromJson<LinkedTreeMap<String, Any>>(map, LinkedTreeMap::class.java)
+    constructor(gson: Gson, map: String) : this(
+        gson, gson.fromJson<LinkedTreeMap<String, Any>>(map, LinkedTreeMap::class.java)
     )
 
     fun toHashMap() = hashMapOf(
@@ -99,9 +96,7 @@ class Metadata(autoComplete: Boolean = true) {
 //        "history" to history.map { it.mediaId.toString() }
     )
 
-    override fun toString(): String =
-        GsonBuilder().setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE).create()
-            .toJson(toHashMap())
+    override fun toString(): String = gson.toJson(toHashMap())
 
 //    fun addHistory(playback: Playback) {
 //        if (history.contains(playback)) {

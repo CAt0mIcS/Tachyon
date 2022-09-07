@@ -1,19 +1,13 @@
 package com.tachyonmusic.core.domain
 
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
+import com.google.gson.stream.JsonWriter
 import com.tachyonmusic.core.constants.Constants
 import com.tachyonmusic.core.constants.PlaybackType
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
 import java.io.File
 
-@Serializable(with = MediaId.Serializer::class)
 class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
 
     companion object {
@@ -27,7 +21,7 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
 
         fun deserializeIfValid(value: String): MediaId? =
             try {
-                Json.decodeFromString(value)
+                deserialize(value)
             } catch (e: Exception) {
                 null
             }
@@ -94,14 +88,21 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
             source
     }
 
-    class Serializer : KSerializer<MediaId> {
-        override fun deserialize(decoder: Decoder): MediaId =
-            deserialize(decoder.decodeString())
+    class Serializer : TypeAdapter<MediaId>() {
+        override fun read(reader: JsonReader): MediaId? {
+            if (reader.peek() == JsonToken.NULL) {
+                reader.nextNull()
+                return null
+            }
+            return deserializeIfValid(reader.nextString())
+        }
 
-        override val descriptor: SerialDescriptor =
-            PrimitiveSerialDescriptor("mediaId", PrimitiveKind.STRING)
-
-        override fun serialize(encoder: Encoder, value: MediaId) =
-            encoder.encodeString(toString())
+        override fun write(writer: JsonWriter, value: MediaId?) {
+            if (value == null) {
+                writer.nullValue()
+                return
+            }
+            writer.value(value.toString())
+        }
     }
 }

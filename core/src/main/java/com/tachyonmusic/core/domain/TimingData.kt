@@ -1,43 +1,22 @@
 package com.tachyonmusic.core.domain
 
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
+import com.google.gson.stream.JsonWriter
 
 /**
  * Class which holds one start and end time of a loop
  * TODO: How much performance do we get out of providing our own serializer
  * TODO: Maybe make parcelable, depending on performance of above
  */
-@Serializable(with = TimingData.Serializer::class)
 data class TimingData(
     var startTime: Long,
     var endTime: Long
 ) {
     fun surrounds(playerPosition: Long) = playerPosition in startTime..endTime
 
-    class Serializer : KSerializer<TimingData> {
-        override fun deserialize(decoder: Decoder): TimingData {
-            val strings = decoder.decodeString().split('|')
-            return TimingData(strings[0].toLong(), strings[1].toLong())
-        }
-
-        override val descriptor: SerialDescriptor =
-            PrimitiveSerialDescriptor("timingData", PrimitiveKind.STRING)
-
-        override fun serialize(encoder: Encoder, value: TimingData) {
-            encoder.encodeString("${value.startTime}|${value.endTime}")
-        }
-    }
-
-    override fun toString(): String = Json.encodeToString(this)
+    override fun toString(): String = "${startTime}|${endTime}"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -57,10 +36,14 @@ data class TimingData(
 
 
     companion object {
-        fun deserialize(value: String): TimingData = Json.decodeFromString(value)
+        fun deserialize(value: String): TimingData {
+            val strings = value.split('|')
+            return TimingData(strings[0].toLong(), strings[1].toLong())
+        }
+
         fun deserializeIfValid(value: String?): TimingData? {
             return try {
-                Json.decodeFromString(value ?: "")
+                deserialize(value ?: "")
             } catch (e: Exception) {
                 null
             }
@@ -70,5 +53,23 @@ data class TimingData(
 
         fun toStringArray(array: List<TimingData>): Array<String> =
             array.map { it.toString() }.toTypedArray()
+    }
+
+    class Serializer : TypeAdapter<TimingData>() {
+        override fun read(reader: JsonReader): TimingData? {
+            if (reader.peek() == JsonToken.NULL) {
+                reader.nextNull()
+                return null
+            }
+            return deserializeIfValid(reader.nextString())
+        }
+
+        override fun write(writer: JsonWriter, value: TimingData?) {
+            if (value == null) {
+                writer.nullValue()
+                return
+            }
+            writer.value(value.toString())
+        }
     }
 }
