@@ -47,13 +47,13 @@ class Metadata(autoComplete: Boolean = true) {
         maxPlaybacksInHistory = (data["maxPlaybacksInHistory"] as Long? ?: 25L).toInt()
 
         val loadedLoops =
-            ((data["loops"] as List<LinkedTreeMap<String, Any?>?>?)?.map {
+            ((data["loops"] as List<Map<String, Any?>?>?)?.map {
                 RemoteLoop.build(it!!)
             } as ArrayList<Loop>?)
                 ?: arrayListOf()
         loops.complete(loadedLoops)
 
-        val loadedPlaylists =((data["playlists"] as List<LinkedTreeMap<String, Any?>?>?)?.map {
+        val loadedPlaylists =((data["playlists"] as List<Map<String, Any?>?>?)?.map {
             RemotePlaylist.build(it!!)
         } as ArrayList<Playlist>?)
             ?: arrayListOf()

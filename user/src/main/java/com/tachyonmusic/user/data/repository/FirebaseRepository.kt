@@ -96,16 +96,23 @@ class FirebaseRepository(
 
     override fun signOut() {
         auth.signOut()
+        metadata = Metadata()
         eventListener?.onUserChanged(null)
     }
 
     override suspend fun delete() = withContext(Dispatchers.IO) {
         val job = CompletableDeferred<Resource<Unit>>()
 
+        if (auth.currentUser != null)
+            firestore.collection("users")
+                .document(auth.currentUser!!.uid).delete()
+
         auth.currentUser?.delete()?.addOnCompleteListener {
-            if (it.isSuccessful)
+            if (it.isSuccessful) {
+                metadata = Metadata()
+                eventListener?.onUserChanged(null)
                 job.complete(Resource.Success())
-            else
+            } else
                 job.complete(
                     Resource.Error(
                         if (it.exception?.localizedMessage != null)

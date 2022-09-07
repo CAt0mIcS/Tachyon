@@ -12,9 +12,9 @@ class LocalCache(context: Context, uid: String? = null) : UserRepository.EventLi
 
     private val filesDir = context.filesDir.absolutePath
 
-    private val cache = File("$filesDir/Cache.txt")
-    private var uidFile =
-        if (uid != null) File("$filesDir/$uid") else null
+    val cache = File("$filesDir/Cache.txt")
+    var uidFile = if (uid != null) File("$filesDir/$uid") else null
+        private set
 
     init {
         if (!cache.exists() && uid == null)
@@ -38,17 +38,14 @@ class LocalCache(context: Context, uid: String? = null) : UserRepository.EventLi
              * User signed in, delete [cache] and create [uid] file
              */
             uidFile = File("$filesDir/$uid")
-            if (!uidFile!!.createNewFile())
-                TODO("UID file creation unsuccessful")
-            if (!cache.delete())
-                TODO("Cache file deletion unsuccessful")
+            uidFile!!.createNewFile()
+            cache.delete()
         } else {
             /**
              * User was removed, remove [uid] file, but don't recreate [cache] as firebase will handle
              * this for us
              */
-            if (uidFile?.delete() == true)
-                TODO("UID file deletion unsuccessful")
+            uidFile?.delete()
         }
     }
 

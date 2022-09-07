@@ -51,7 +51,7 @@ class RemotePlaylist(
 
             val name = mediaId.source.replace(PlaybackType.Playlist.Remote().toString(), "")
 
-            val playbacksMaps = map["playbacks"]!! as ArrayList<LinkedTreeMap<String, Any?>>
+            val playbacksMaps = map["playbacks"]!! as ArrayList<Map<String, Any?>>
 
             val playbacks = playbacksMaps.map { map ->
                 val singleMediaId = MediaId.deserialize(map["mediaId"]!! as String)

@@ -1,12 +1,7 @@
 package com.tachyonmusic.user.data
 
-import com.tachyonmusic.core.data.playback.RemoteLoop
-import com.tachyonmusic.core.data.playback.RemotePlaylist
-import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.user.di.AppModule
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.assertEquals
@@ -82,4 +77,5 @@ class LocalCacheTest {
         assertEquals(loadedLoops, loops)
         assertEquals(loadedPlaylists, playlists)
     }
+
 }
