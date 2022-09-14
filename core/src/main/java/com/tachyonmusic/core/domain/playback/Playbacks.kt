@@ -7,13 +7,14 @@ import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 
 sealed class Playback(val mediaId: MediaId) : Parcelable {
     abstract val title: String?
     abstract val artist: String?
     abstract val duration: Long?
 
-    abstract val timingData: ArrayList<TimingData>?
+    abstract val timingData: TimingDataController?
 
     abstract val uri: Uri?
 
@@ -41,7 +42,7 @@ sealed class SinglePlayback(mediaId: MediaId) : Playback(mediaId) {
     abstract override val artist: String
     abstract override val duration: Long
 
-    abstract override val timingData: ArrayList<TimingData>
+    abstract override val timingData: TimingDataController
 
     abstract override val uri: Uri
 }

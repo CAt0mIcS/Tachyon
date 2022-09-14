@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionCommand
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 
 /**
@@ -25,6 +26,6 @@ object MediaAction {
 
     fun updateTimingDataEvent(browser: MediaBrowser, timingData: List<TimingData>) =
         browser.sendCustomCommand(updateTimingDataCommand, Bundle().apply {
-            putStringArray(MetadataKeys.TimingData, TimingData.toStringArray(timingData))
+            putStringArray(MetadataKeys.TimingData, TimingDataController(timingData).toStringArray())
         })
 }

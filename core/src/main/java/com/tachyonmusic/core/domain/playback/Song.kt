@@ -8,6 +8,7 @@ import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 
 abstract class Song(
     mediaId: MediaId,
@@ -16,7 +17,7 @@ abstract class Song(
     final override val duration: Long
 ) : SinglePlayback(mediaId) {
 
-    final override val timingData: ArrayList<TimingData> = arrayListOf(TimingData(0L, duration))
+    final override val timingData = TimingDataController(arrayListOf(TimingData(0L, duration)))
 
     abstract override val playbackType: PlaybackType.Song
 

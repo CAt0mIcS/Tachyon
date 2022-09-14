@@ -6,6 +6,7 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.domain.CustomPlayer
 
@@ -14,7 +15,6 @@ import com.tachyonmusic.media.domain.CustomPlayer
  */
 class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer, Player.Listener {
     private var loopMessage: PlayerMessage? = null
-    private var currentTimingDataIndex: Int = -1
 
     init {
         addListener(this)
@@ -91,34 +91,26 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer,
          * When seeking we need to update the [currentTimingDataIndex] depending on the seek position
          */
         val timingData = currentMediaItem!!.mediaMetadata.timingData
-        if (timingData != null && reason == Player.DISCONTINUITY_REASON_SEEK)
+        if (timingData != null && timingData.isNotEmpty() && reason == Player.DISCONTINUITY_REASON_SEEK)
             updateTimingDataInternal(timingData)
     }
 
 
-    override fun updateTimingData(newTimingData: ArrayList<TimingData>) {
+    override fun updateTimingData(newTimingData: TimingDataController) {
         currentMediaItem!!.mediaMetadata.timingData = newTimingData
         updateTimingDataInternal(newTimingData)
-        seekWithoutCallback(newTimingData[currentTimingDataIndex].startTime)
     }
 
-    private fun updateTimingDataInternal(newTimingData: ArrayList<TimingData>) {
+    private fun updateTimingDataInternal(newTimingData: TimingDataController) {
         if (newTimingData.size == 0)
             return
 
-        currentTimingDataIndex = getCurrentPositionTimingDataIndex(newTimingData)
+        newTimingData.advanceToCurrentPosition(currentPosition)
         postLoopMessage(
-            nextTimingData(newTimingData).startTime,
-            newTimingData[currentTimingDataIndex].endTime
+            newTimingData.next.startTime,
+            newTimingData.current.endTime
         )
-    }
-
-    private fun getCurrentPositionTimingDataIndex(timingDataArray: ArrayList<TimingData>): Int {
-        for (i in timingDataArray.indices) {
-            if (timingDataArray[i].surrounds(currentPosition))
-                return i
-        }
-        return 0
+        seekWithoutCallback(newTimingData.current.startTime)
     }
 
     private fun postLoopMessage(startTime: Long, endTime: Long) {
@@ -127,11 +119,15 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer,
 
         loopMessage = createMessage { _, payload ->
             seekWithoutCallback(payload as Long)
-            val timingData = advanceToNextTimingData()
-            postLoopMessage(
-                nextTimingData(timingData).startTime,
-                timingData[currentTimingDataIndex].endTime
-            )
+            val timingData = mediaMetadata.timingData
+            if (timingData != null) {
+                timingData.advanceToNext()
+                postLoopMessage(
+                    timingData.next.startTime,
+                    timingData.current.endTime
+                )
+            }
+
         }.apply {
             looper = Looper.getMainLooper()
             deleteAfterDelivery = false
@@ -141,33 +137,20 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer,
         }
     }
 
-    private fun advanceToNextTimingData(): ArrayList<TimingData> {
-        currentTimingDataIndex++
-        val timingData = currentMediaItem!!.mediaMetadata.timingData!!
-        if (currentTimingDataIndex >= timingData.size)
-            currentTimingDataIndex = 0
-        return timingData
-    }
-
-    private fun nextTimingData(timingData: ArrayList<TimingData>): TimingData {
-        var nextIdx = currentTimingDataIndex + 1
-        if (nextIdx >= timingData.size)
-            nextIdx = 0
-        return timingData[nextIdx]
+    private val registerOldSeekHandlerCallback = object : Player.Listener {
+        override fun onPositionDiscontinuity(
+            oldPosition: Player.PositionInfo,
+            newPosition: Player.PositionInfo,
+            reason: Int
+        ) {
+            removeListener(this)
+            addListener(this@CustomPlayerImpl)
+        }
     }
 
     private fun seekWithoutCallback(positionMs: Long) {
         removeListener(this)
-        addListener(object : Player.Listener {
-            override fun onPositionDiscontinuity(
-                oldPosition: Player.PositionInfo,
-                newPosition: Player.PositionInfo,
-                reason: Int
-            ) {
-                removeListener(this)
-                addListener(this@CustomPlayerImpl)
-            }
-        })
+        addListener(registerOldSeekHandlerCallback)
         seekTo(positionMs)
     }
 }

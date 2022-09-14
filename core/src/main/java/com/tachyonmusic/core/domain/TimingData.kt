@@ -48,11 +48,6 @@ data class TimingData(
                 null
             }
         }
-
-        fun fromStringArray(array: Array<String>) = array.map { deserialize(it) } as ArrayList
-
-        fun toStringArray(array: List<TimingData>): Array<String> =
-            array.map { it.toString() }.toTypedArray()
     }
 
     class Serializer : TypeAdapter<TimingData>() {

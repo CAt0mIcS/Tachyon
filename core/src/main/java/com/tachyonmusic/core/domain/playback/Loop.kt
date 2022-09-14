@@ -9,11 +9,12 @@ import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 
 abstract class Loop(
     mediaId: MediaId,
     val name: String,
-    final override var timingData: ArrayList<TimingData>,
+    final override var timingData: TimingDataController,
     val song: Song
 ) : SinglePlayback(mediaId) {
 
@@ -47,7 +48,7 @@ abstract class Loop(
         setArtist(artist)
         setExtras(Bundle().apply {
             putLong(MetadataKeys.Duration, duration)
-            putStringArray(MetadataKeys.TimingData, TimingData.toStringArray(timingData))
+            putStringArray(MetadataKeys.TimingData, timingData.toStringArray())
             putString(MetadataKeys.Name, name)
             putParcelable(MetadataKeys.Playback, this@Loop)
         })
@@ -55,7 +56,7 @@ abstract class Loop(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
-        parcel.writeStringArray(TimingData.toStringArray(timingData))
+        parcel.writeStringArray(timingData.toStringArray())
         parcel.writeParcelable(song, flags)
     }
 

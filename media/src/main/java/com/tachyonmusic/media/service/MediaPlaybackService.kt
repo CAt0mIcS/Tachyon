@@ -11,6 +11,7 @@ import com.tachyonmusic.core.Resource
 import com.tachyonmusic.core.constants.MediaAction
 import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.domain.CustomPlayer
@@ -117,7 +118,7 @@ class MediaPlaybackService : MediaLibraryService() {
                 MediaAction.updateTimingDataCommand -> {
                     val res = withContext(Dispatchers.Main) {
                         useCases.updateTimingDataOfCurrentPlayback(
-                            TimingData.fromStringArray(
+                            TimingDataController.fromStringArray(
                                 args.getStringArray(MetadataKeys.TimingData) ?: emptyArray()
                             )
                         )

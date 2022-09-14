@@ -3,6 +3,7 @@ package com.tachyonmusic.media.data.ext
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 
 val MediaMetadata.name: String?
@@ -12,16 +13,16 @@ val MediaMetadata.duration: Long?
     get() = extras?.getLong(MetadataKeys.Duration)
 
 
-var MediaMetadata.timingData: ArrayList<TimingData>?
+var MediaMetadata.timingData: TimingDataController?
     get() {
         val strArr = extras?.getStringArray(MetadataKeys.TimingData)
         return if (strArr == null) null
-        else TimingData.fromStringArray(strArr)
+        else TimingDataController.fromStringArray(strArr)
     }
     set(value) {
         extras?.putStringArray(
             MetadataKeys.TimingData,
-            TimingData.toStringArray(value ?: emptyList())
+            value?.toStringArray() ?: emptyArray()
         )
     }
 

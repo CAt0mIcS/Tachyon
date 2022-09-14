@@ -9,6 +9,7 @@ import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 
 abstract class Playlist(
     mediaId: MediaId,
@@ -34,7 +35,7 @@ abstract class Playlist(
     override val uri: Uri?
         get() = current?.uri
 
-    override val timingData: ArrayList<TimingData>?
+    override val timingData: TimingDataController?
         get() = current?.timingData
 
     abstract override val playbackType: PlaybackType.Playlist
