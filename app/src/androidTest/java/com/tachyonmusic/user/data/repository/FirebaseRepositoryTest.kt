@@ -1,18 +1,12 @@
 package com.tachyonmusic.user.data.repository
 
 import android.annotation.SuppressLint
-import androidx.test.platform.app.InstrumentationRegistry
-import com.google.firebase.ktx.Firebase
-import com.tachyonmusic.core.Resource
-import com.tachyonmusic.core.data.playback.RemoteLoop
-import com.tachyonmusic.core.data.playback.RemotePlaylist
-import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.testutils.assertEquals
+import com.tachyonmusic.testutils.assertResource
+import com.tachyonmusic.testutils.tryInject
 import com.tachyonmusic.user.data.LocalCache
-import com.tachyonmusic.user.data.Metadata
 import com.tachyonmusic.user.di.AppModule
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.*
@@ -24,7 +18,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.lang.IllegalStateException
 import javax.inject.Inject
 
 @SuppressLint("CheckResult")
@@ -33,6 +26,11 @@ import javax.inject.Inject
 class FirebaseRepositoryTest {
     @get:Rule(order = 0)
     val hiltRule = HiltAndroidRule(this)
+
+    companion object {
+        const val TEST_EMAIL = "test1@test.com"
+        const val TEST_PASSWORD = "testPassword"
+    }
 
     @Inject
     lateinit var repository: UserRepository

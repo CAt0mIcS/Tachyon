@@ -1,8 +1,8 @@
 package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.app.R
-import com.tachyonmusic.core.Resource
-import com.tachyonmusic.core.UiText
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
 import com.tachyonmusic.domain.util.AccountVerificator
 import com.tachyonmusic.user.domain.UserRepository
 import kotlinx.coroutines.flow.flow

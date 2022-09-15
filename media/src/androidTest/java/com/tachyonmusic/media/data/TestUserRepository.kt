@@ -1,6 +1,6 @@
 package com.tachyonmusic.media.data
 
-import com.tachyonmusic.core.Resource
+import com.tachyonmusic.util.Resource
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song

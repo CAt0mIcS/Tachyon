@@ -2,8 +2,8 @@ package com.tachyonmusic.user.data
 
 import android.content.Context
 import com.google.gson.Gson
-import com.tachyonmusic.core.Resource
-import com.tachyonmusic.core.UiText
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
 import com.tachyonmusic.user.R
 import com.tachyonmusic.user.domain.UserRepository
 import org.json.JSONException

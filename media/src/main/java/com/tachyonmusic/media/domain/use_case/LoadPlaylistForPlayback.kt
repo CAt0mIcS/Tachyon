@@ -1,8 +1,8 @@
 package com.tachyonmusic.media.domain.use_case
 
 import androidx.media3.common.MediaItem
-import com.tachyonmusic.core.Resource
-import com.tachyonmusic.core.UiText
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist

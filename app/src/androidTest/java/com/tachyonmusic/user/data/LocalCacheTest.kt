@@ -2,10 +2,10 @@ package com.tachyonmusic.user.data
 
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.testutils.assertEquals
+import com.tachyonmusic.testutils.tryInject
 import com.tachyonmusic.user.di.AppModule
 import com.tachyonmusic.user.domain.UserRepository
-import com.tachyonmusic.util.assertEquals
-import com.tachyonmusic.util.tryInject
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules

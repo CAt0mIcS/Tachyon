@@ -1,8 +1,7 @@
 package com.tachyonmusic.media.domain.use_case
 
-import com.tachyonmusic.core.Resource
-import com.tachyonmusic.core.UiText
-import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.media.R
 import com.tachyonmusic.media.data.ext.timingData

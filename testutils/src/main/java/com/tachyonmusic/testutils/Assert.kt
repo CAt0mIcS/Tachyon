@@ -1,7 +1,7 @@
-package com.tachyonmusic.util
+package com.tachyonmusic.testutils
 
 import androidx.test.platform.app.InstrumentationRegistry
-import com.tachyonmusic.core.Resource
+import com.tachyonmusic.util.Resource
 
 fun <T> assertResource(res: Resource<T>) {
     assert(res is Resource.Success) {

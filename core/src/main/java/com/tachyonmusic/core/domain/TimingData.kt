@@ -14,7 +14,9 @@ data class TimingData(
     var startTime: Long,
     var endTime: Long
 ) {
-    fun surrounds(playerPosition: Long) = playerPosition in startTime..endTime
+    fun surrounds(playerPosition: Long) =
+        if (startTime < endTime) playerPosition in startTime..endTime
+        else playerPosition >= startTime || playerPosition <= endTime // TODO: <= or just < ||| >= or just >
 
     override fun toString(): String = "${startTime}|${endTime}"
 

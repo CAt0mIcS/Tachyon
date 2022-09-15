@@ -3,7 +3,8 @@ package com.tachyonmusic.core.domain
 class TimingDataController(
     timingData: List<TimingData> = emptyList()
 ) : ArrayList<TimingData>() {
-    private var currentTimingDataIndex: Int = 0
+    var currentIndex: Int = 0
+        private set
 
     val next: TimingData
         get() = nextTimingData()
@@ -16,13 +17,13 @@ class TimingDataController(
     }
 
     fun advanceToCurrentPosition(positionMs: Long) {
-        currentTimingDataIndex = getIndexOfCurrentPosition(positionMs)
+        currentIndex = getIndexOfCurrentPosition(positionMs)
     }
 
     fun advanceToNext() {
-        currentTimingDataIndex++
-        if (currentTimingDataIndex >= size)
-            currentTimingDataIndex = 0
+        currentIndex++
+        if (currentIndex >= size)
+            currentIndex = 0
     }
 
     fun getIndexOfCurrentPosition(positionMs: Long): Int {
@@ -50,13 +51,13 @@ class TimingDataController(
     }
 
     private fun nextTimingData(): TimingData {
-        var nextIdx = currentTimingDataIndex + 1
+        var nextIdx = currentIndex + 1
         if (nextIdx >= size)
             nextIdx = 0
         return this[nextIdx]
     }
 
-    private fun currentTimingData() = this[currentTimingDataIndex]
+    private fun currentTimingData() = this[currentIndex]
 
     fun toStringArray(): Array<String> = map { it.toString() }.toTypedArray()
 

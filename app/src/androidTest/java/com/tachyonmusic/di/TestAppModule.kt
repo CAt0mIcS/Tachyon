@@ -6,6 +6,7 @@ import com.tachyonmusic.core.data.playback.RemoteLoop
 import com.tachyonmusic.core.data.playback.RemotePlaylist
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
@@ -41,7 +42,7 @@ object TestAppModule {
             RemoteLoop(
                 MediaId.ofRemoteLoop(i.toString(), song.mediaId),
                 i.toString(),
-                arrayListOf(TimingData(1, 10), TimingData(100, 1000)),
+                TimingDataController(listOf(TimingData(1, 10), TimingData(100, 1000))),
                 song
             )
         }
