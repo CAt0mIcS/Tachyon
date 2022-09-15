@@ -33,11 +33,24 @@ class TimingDataControllerTest {
     @Test
     fun `getIndexOfCurrentPosition gets the correct index in intersecting list`() {
         val timingData = loadIntersectingTimingData()
+        assertEquals(timingData.getIndexOfCurrentPosition(0), 2)
         assertEquals(timingData.getIndexOfCurrentPosition(19), 1)
         assertEquals(timingData.getIndexOfCurrentPosition(24), 1)
         assertEquals(timingData.getIndexOfCurrentPosition(31), 0)
         assertEquals(timingData.getIndexOfCurrentPosition(40), 4)
         assertEquals(timingData.getIndexOfCurrentPosition(70), 2)
+    }
+
+    @Test
+    fun `getIndexOfCurrentPosition gets the correct index when position is 0 and there's no timing data surrounding 0`() {
+        val timingData = TimingDataController(
+            listOf(
+                TimingData(48, 90),
+                TimingData(10, 20),
+            )
+        )
+
+        assertEquals(timingData.getIndexOfCurrentPosition(0), 1)
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.tachyonmusic.media.data
 
 import android.os.Looper
+import android.util.Log
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -90,27 +91,28 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer,
         /**
          * When seeking we need to update the [currentTimingDataIndex] depending on the seek position
          */
-        val timingData = currentMediaItem!!.mediaMetadata.timingData
+        val timingData = currentMediaItem?.mediaMetadata?.timingData
         if (timingData != null && timingData.isNotEmpty() && reason == Player.DISCONTINUITY_REASON_SEEK)
-            updateTimingDataInternal(timingData)
+            updateTimingData(timingData)
     }
 
 
     override fun updateTimingData(newTimingData: TimingDataController) {
-        currentMediaItem!!.mediaMetadata.timingData = newTimingData
-        updateTimingDataInternal(newTimingData)
-    }
-
-    private fun updateTimingDataInternal(newTimingData: TimingDataController) {
-        if (newTimingData.size == 0)
+        if (newTimingData.size == 0) {
+            currentMediaItem?.mediaMetadata?.timingData = newTimingData
             return
+        }
 
         newTimingData.advanceToCurrentPosition(currentPosition)
         postLoopMessage(
             newTimingData.next.startTime,
             newTimingData.current.endTime
         )
-        seekWithoutCallback(newTimingData.current.startTime)
+        // Only seek if we're not in any timing data interval
+        if (!newTimingData.anySurrounds(currentPosition))
+            seekWithoutCallback(newTimingData.current.startTime)
+
+        currentMediaItem?.mediaMetadata?.timingData = newTimingData
     }
 
     private fun postLoopMessage(startTime: Long, endTime: Long) {
@@ -119,15 +121,18 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer,
 
         loopMessage = createMessage { _, payload ->
             seekWithoutCallback(payload as Long)
-            val timingData = mediaMetadata.timingData
+            val timingData = currentMediaItem?.mediaMetadata?.timingData
             if (timingData != null) {
                 timingData.advanceToNext()
                 postLoopMessage(
                     timingData.next.startTime,
                     timingData.current.endTime
                 )
+                Log.d(
+                    "CustomPlayer",
+                    "The next timing data will be loaded at ${timingData.current.endTime}ms and will seek to ${timingData.next.startTime}ms"
+                )
             }
-
         }.apply {
             looper = Looper.getMainLooper()
             deleteAfterDelivery = false

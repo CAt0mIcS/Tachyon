@@ -4,7 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material.Scaffold
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.domain.MediaBrowserController
@@ -12,10 +11,8 @@ import com.tachyonmusic.domain.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.presentation.main.component.BottomNavigation
 import com.tachyonmusic.presentation.util.Permission
 import com.tachyonmusic.presentation.util.PermissionManager
-import com.tachyonmusic.ui.theme.TachyonTheme
+import com.tachyonmusic.presentation.theme.TachyonTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.guava.await
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint

@@ -24,8 +24,8 @@ object MediaAction {
             putParcelable(MetadataKeys.Playback, playback)
         })
 
-    fun updateTimingDataEvent(browser: MediaBrowser, timingData: List<TimingData>) =
+    fun updateTimingDataEvent(browser: MediaBrowser, timingData: TimingDataController) =
         browser.sendCustomCommand(updateTimingDataCommand, Bundle().apply {
-            putStringArray(MetadataKeys.TimingData, TimingDataController(timingData).toStringArray())
+            putParcelable(MetadataKeys.TimingData, timingData)
         })
 }

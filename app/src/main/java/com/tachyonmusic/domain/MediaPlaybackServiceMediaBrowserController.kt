@@ -16,6 +16,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.ListenableMutableList
 import com.tachyonmusic.core.constants.MediaAction
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.media.data.ext.*
 import com.tachyonmusic.media.service.MediaPlaybackService
@@ -134,12 +135,12 @@ class MediaPlaybackServiceMediaBrowserController(
     override fun onItemAdded(index: Int, list: List<TimingData>) {
         if (browser == null)
             return
-        MediaAction.updateTimingDataEvent(browser!!, list)
+        MediaAction.updateTimingDataEvent(browser!!, TimingDataController(list))
     }
 
     override fun onItemRemoved(list: List<TimingData>) {
         if (browser == null)
             return
-        MediaAction.updateTimingDataEvent(browser!!, list)
+        MediaAction.updateTimingDataEvent(browser!!, TimingDataController(list))
     }
 }

@@ -63,7 +63,7 @@ class PlayerViewModel @Inject constructor(
         val timingData = browser.timingData
 //        timingData?.addAll(
 //            listOf(
-//                TimingData(10000, 20000), //10s - 20s
+//                TimingData(10000, 20000), // 10s - 20s
 //                TimingData(25000, 40000), // 25s - 40s
 //                TimingData(45000, 55000), // 45s - 55s
 //                TimingData(80000, 90000), // 1:20 - 1:30

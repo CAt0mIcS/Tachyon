@@ -48,7 +48,7 @@ abstract class Loop(
         setArtist(artist)
         setExtras(Bundle().apply {
             putLong(MetadataKeys.Duration, duration)
-            putStringArray(MetadataKeys.TimingData, timingData.toStringArray())
+            putParcelable(MetadataKeys.TimingData, timingData)
             putString(MetadataKeys.Name, name)
             putParcelable(MetadataKeys.Playback, this@Loop)
         })
@@ -56,7 +56,7 @@ abstract class Loop(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
-        parcel.writeStringArray(timingData.toStringArray())
+        parcel.writeParcelable(timingData, flags)
         parcel.writeParcelable(song, flags)
     }
 

@@ -24,7 +24,8 @@ class RemoteLoop(
             override fun createFromParcel(parcel: Parcel): RemoteLoop {
                 val name = parcel.readString()!!
 
-                val timingData = TimingDataController.fromStringArray(parcel.createStringArray()!!)
+                val timingData: TimingDataController =
+                    parcel.readParcelable(TimingDataController::class.java.classLoader)!!
 
                 val song: Song = parcel.readParcelable(Song::class.java.classLoader)!!
                 return RemoteLoop(

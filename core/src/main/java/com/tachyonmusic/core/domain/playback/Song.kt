@@ -38,7 +38,9 @@ abstract class Song(
         setArtist(artist)
         setExtras(Bundle().apply {
             putLong(MetadataKeys.Duration, duration)
-            putStringArray(MetadataKeys.TimingData, emptyArray())
+
+            // Empty here to allow custom setting of timing data
+            putParcelable(MetadataKeys.TimingData, TimingDataController())
             putParcelable(MetadataKeys.Playback, this@Song)
         })
     }.build()

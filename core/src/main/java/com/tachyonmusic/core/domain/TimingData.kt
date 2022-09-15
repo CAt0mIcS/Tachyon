@@ -1,5 +1,7 @@
 package com.tachyonmusic.core.domain
 
+import android.os.Parcel
+import android.os.Parcelable
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
@@ -13,7 +15,13 @@ import com.google.gson.stream.JsonWriter
 data class TimingData(
     var startTime: Long,
     var endTime: Long
-) {
+) : Parcelable {
+
+    constructor(parcel: Parcel) : this(
+        parcel.readLong(),
+        parcel.readLong()
+    )
+
     fun surrounds(playerPosition: Long) =
         if (startTime < endTime) playerPosition in startTime..endTime
         else playerPosition >= startTime || playerPosition <= endTime // TODO: <= or just < ||| >= or just >
@@ -36,22 +44,6 @@ data class TimingData(
         return result
     }
 
-
-    companion object {
-        fun deserialize(value: String): TimingData {
-            val strings = value.split('|')
-            return TimingData(strings[0].toLong(), strings[1].toLong())
-        }
-
-        fun deserializeIfValid(value: String?): TimingData? {
-            return try {
-                deserialize(value ?: "")
-            } catch (e: Exception) {
-                null
-            }
-        }
-    }
-
     class Serializer : TypeAdapter<TimingData>() {
         override fun read(reader: JsonReader): TimingData? {
             if (reader.peek() == JsonToken.NULL) {
@@ -67,6 +59,34 @@ data class TimingData(
                 return
             }
             writer.value(value.toString())
+        }
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeLong(startTime)
+        parcel.writeLong(endTime)
+    }
+
+    override fun describeContents() = 0
+
+    companion object {
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<TimingData> {
+            override fun createFromParcel(parcel: Parcel) = TimingData(parcel)
+            override fun newArray(size: Int): Array<TimingData?> = arrayOfNulls(size)
+        }
+
+        fun deserialize(value: String): TimingData {
+            val strings = value.split('|')
+            return TimingData(strings[0].toLong(), strings[1].toLong())
+        }
+
+        fun deserializeIfValid(value: String?): TimingData? {
+            return try {
+                deserialize(value ?: "")
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 }

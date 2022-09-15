@@ -1,8 +1,12 @@
 package com.tachyonmusic.core.domain
 
+import android.os.Parcel
+import android.os.Parcelable
+
 class TimingDataController(
-    timingData: List<TimingData> = emptyList()
-) : ArrayList<TimingData>() {
+    timingData: List<TimingData> = emptyList(),
+    currentIndex: Int = 0
+) : ArrayList<TimingData>(), Parcelable {
     var currentIndex: Int = 0
         private set
 
@@ -12,7 +16,14 @@ class TimingDataController(
     val current: TimingData
         get() = currentTimingData()
 
+    constructor(parcel: Parcel) : this(
+        // TODO: Faster way of storing array/list
+        parcel.readParcelableArray(TimingData::class.java.classLoader)!!.map { it as TimingData },
+        parcel.readInt()
+    )
+
     init {
+        this.currentIndex = currentIndex
         addAll(timingData)
     }
 
@@ -27,9 +38,6 @@ class TimingDataController(
     }
 
     fun getIndexOfCurrentPosition(positionMs: Long): Int {
-        if (positionMs == 0L)
-            return 0
-
         for (i in indices) {
             if (this[i].surrounds(positionMs))
                 return i
@@ -50,6 +58,13 @@ class TimingDataController(
         return closestApproachIndex
     }
 
+    fun anySurrounds(positionMs: Long): Boolean {
+        for (item in this)
+            if (item.surrounds(positionMs))
+                return true
+        return false
+    }
+
     private fun nextTimingData(): TimingData {
         var nextIdx = currentIndex + 1
         if (nextIdx >= size)
@@ -59,11 +74,16 @@ class TimingDataController(
 
     private fun currentTimingData() = this[currentIndex]
 
-    fun toStringArray(): Array<String> = map { it.toString() }.toTypedArray()
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeParcelableArray(this.toTypedArray(), flags)
+        parcel.writeInt(currentIndex)
+    }
 
-    companion object {
-        fun fromStringArray(array: Array<String>) =
-            TimingDataController(array.map { TimingData.deserialize(it) })
+    override fun describeContents() = 0
+
+    companion object CREATOR : Parcelable.Creator<TimingDataController> {
+        override fun createFromParcel(parcel: Parcel) = TimingDataController(parcel)
+        override fun newArray(size: Int): Array<TimingDataController?> = arrayOfNulls(size)
     }
 }
 

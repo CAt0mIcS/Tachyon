@@ -1,4 +1,4 @@
-package com.tachyonmusic.ui.theme
+package com.tachyonmusic.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme

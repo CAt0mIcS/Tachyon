@@ -15,15 +15,11 @@ val MediaMetadata.duration: Long?
 
 var MediaMetadata.timingData: TimingDataController?
     get() {
-        val strArr = extras?.getStringArray(MetadataKeys.TimingData)
-        return if (strArr == null) null
-        else TimingDataController.fromStringArray(strArr)
+        extras?.classLoader = TimingDataController::class.java.classLoader
+        return extras?.getParcelable(MetadataKeys.TimingData) as TimingDataController?
     }
     set(value) {
-        extras?.putStringArray(
-            MetadataKeys.TimingData,
-            value?.toStringArray() ?: emptyArray()
-        )
+        extras?.putParcelable(MetadataKeys.TimingData, value)
     }
 
 

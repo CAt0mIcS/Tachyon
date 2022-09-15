@@ -11,6 +11,7 @@ import com.tachyonmusic.util.Resource
 import com.tachyonmusic.core.constants.MediaAction
 import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.domain.CustomPlayer
@@ -99,6 +100,7 @@ class MediaPlaybackService : MediaLibraryService() {
         ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
             return@future when (customCommand) {
                 MediaAction.setPlaybackCommand -> {
+                    args.classLoader = Playback::class.java.classLoader
                     val loadingRes = useCases.loadPlaylistForPlayback(
                         args.getParcelable(MetadataKeys.Playback)
                     )
@@ -116,10 +118,9 @@ class MediaPlaybackService : MediaLibraryService() {
                 }
                 MediaAction.updateTimingDataCommand -> {
                     val res = withContext(Dispatchers.Main) {
+                        args.classLoader = TimingDataController::class.java.classLoader
                         useCases.updateTimingDataOfCurrentPlayback(
-                            TimingDataController.fromStringArray(
-                                args.getStringArray(MetadataKeys.TimingData) ?: emptyArray()
-                            )
+                            args.getParcelable(MetadataKeys.TimingData)
                         )
                     }
 
