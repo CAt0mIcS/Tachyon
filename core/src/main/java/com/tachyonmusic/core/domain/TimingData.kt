@@ -10,7 +10,6 @@ import com.google.gson.stream.JsonWriter
 /**
  * Class which holds one start and end time of a loop
  * TODO: How much performance do we get out of providing our own serializer
- * TODO: Maybe make parcelable, depending on performance of above
  */
 data class TimingData(
     var startTime: Long,

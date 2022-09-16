@@ -28,8 +28,8 @@ android {
         applicationId "com.tachyonmusic"
         minSdk 21
         targetSdk 32
-        versionCode 62
-        versionName "Dev 62"
+        versionCode 63
+        versionName "Dev 63"
 
         testInstrumentationRunner "com.tachyonmusic.HiltTestRunner"
 
@@ -88,6 +88,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-core'
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
+
+    implementation "com.google.android.gms:play-services-cast-framework:21.1.0"
 
     implementation 'com.google.code.gson:gson:2.9.0'
 

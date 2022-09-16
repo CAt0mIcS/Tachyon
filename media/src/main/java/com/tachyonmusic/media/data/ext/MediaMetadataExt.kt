@@ -14,18 +14,11 @@ val MediaMetadata.duration: Long?
 
 
 var MediaMetadata.timingData: TimingDataController?
-    get() {
-        extras?.classLoader = TimingDataController::class.java.classLoader
-        return extras?.getParcelable(MetadataKeys.TimingData) as TimingDataController?
-    }
+    get() = extras?.parcelable(MetadataKeys.TimingData)
     set(value) {
         extras?.putParcelable(MetadataKeys.TimingData, value)
     }
 
 
 val MediaMetadata.playback: Playback?
-    get() {
-        // TODO: WHY??!?!??!?!!?
-        extras?.classLoader = Playback::class.java.classLoader
-        return extras?.getParcelable(MetadataKeys.Playback) as Playback?
-    }
+    get() = extras?.parcelable(MetadataKeys.Playback)

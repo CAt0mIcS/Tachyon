@@ -2,11 +2,13 @@ package com.tachyonmusic.media.data
 
 import android.os.Looper
 import android.util.Log
+import androidx.media3.cast.CastPlayer
+import androidx.media3.common.C
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.Player
+import androidx.media3.common.util.Clock
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.domain.CustomPlayer
@@ -16,6 +18,8 @@ import com.tachyonmusic.media.domain.CustomPlayer
  */
 class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer, Player.Listener {
     private var loopMessage: PlayerMessage? = null
+
+    private val castPlayerMessageSender = CastPlayerMessageSender()
 
     init {
         addListener(this)
@@ -39,12 +43,19 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer,
                 (command == COMMAND_SEEK_TO_PREVIOUS && !isPlayingAd && mediaItemCount > 1)
     }
 
-    fun createMessage(target: PlayerMessage.Target): PlayerMessage {
-        if (wrappedPlayer is ExoPlayer) {
-            return (wrappedPlayer as ExoPlayer).createMessage(target)
+    fun createMessage(target: PlayerMessage.Target) =
+        when (wrappedPlayer) {
+            is ExoPlayer -> (wrappedPlayer as ExoPlayer).createMessage(target)
+            is CastPlayer -> PlayerMessage(
+                castPlayerMessageSender,
+                target,
+                currentTimeline,
+                if (currentMediaItemIndex == C.INDEX_UNSET) 0 else currentMediaItemIndex,
+                Clock.DEFAULT,
+                wrappedPlayer.applicationLooper // TODO (internalPlayer.getPlaybackLooper())
+            )
+            else -> TODO("createMessage for other types of players")
         }
-        TODO("createMessage for other types of players")
-    }
 
     override fun seekToNext() {
         if (currentTimeline.isEmpty || isPlayingAd) {

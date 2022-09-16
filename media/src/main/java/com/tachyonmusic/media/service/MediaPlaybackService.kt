@@ -2,6 +2,7 @@ package com.tachyonmusic.media.service
 
 import android.os.Bundle
 import android.util.Log
+import androidx.media3.cast.DefaultCastOptionsProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.session.*
 import com.google.common.collect.ImmutableList
@@ -10,10 +11,11 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.core.constants.MediaAction
 import com.tachyonmusic.core.constants.MetadataKeys
-import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.media.CAST_PLAYER_NAME
+import com.tachyonmusic.media.EXO_PLAYER_NAME
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.MediaNotificationProvider
+import com.tachyonmusic.media.data.ext.parcelable
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.ServiceUseCases
 import com.tachyonmusic.util.future
@@ -21,13 +23,19 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import javax.inject.Named
 
 
 @AndroidEntryPoint
 class MediaPlaybackService : MediaLibraryService() {
 
     @Inject
-    lateinit var player: CustomPlayer
+    @Named(EXO_PLAYER_NAME)
+    lateinit var exoPlayer: CustomPlayer
+
+    @Inject
+    @Named(CAST_PLAYER_NAME)
+    lateinit var castPlayer: CustomPlayer
 
     @Inject
     lateinit var browserTree: BrowserTree
@@ -43,14 +51,15 @@ class MediaPlaybackService : MediaLibraryService() {
         setMediaNotificationProvider(MediaNotificationProvider(this))
 
         mediaSession =
-            MediaLibrarySession.Builder(this, player, MediaLibrarySessionCallback()).build()
+            MediaLibrarySession.Builder(this, exoPlayer, MediaLibrarySessionCallback()).build()
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession =
         mediaSession
 
     override fun onDestroy() {
-        player.release()
+        exoPlayer.release()
+        castPlayer.release()
         mediaSession.release()
         // TODO: Make [mediaSession] nullable and set to null?
     }
@@ -100,9 +109,8 @@ class MediaPlaybackService : MediaLibraryService() {
         ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
             return@future when (customCommand) {
                 MediaAction.setPlaybackCommand -> {
-                    args.classLoader = Playback::class.java.classLoader
                     val loadingRes = useCases.loadPlaylistForPlayback(
-                        args.getParcelable(MetadataKeys.Playback)
+                        args.parcelable(MetadataKeys.Playback)
                     )
 
                     if (loadingRes is Resource.Error)
@@ -118,9 +126,8 @@ class MediaPlaybackService : MediaLibraryService() {
                 }
                 MediaAction.updateTimingDataCommand -> {
                     val res = withContext(Dispatchers.Main) {
-                        args.classLoader = TimingDataController::class.java.classLoader
                         useCases.updateTimingDataOfCurrentPlayback(
-                            args.getParcelable(MetadataKeys.TimingData)
+                            args.parcelable(MetadataKeys.TimingData)
                         )
                     }
 
