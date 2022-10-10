@@ -58,7 +58,8 @@ class PlayerViewModel @Inject constructor(
         Log.d("PlayerViewModel", "onPlaybackTransition to ${playback?.title} - ${playback?.artist}")
         _playbackState.value.title = playback?.title ?: ""
         _playbackState.value.artist = playback?.artist ?: ""
-        _playbackState.value.duration = millisecondsToString(playback?.duration)
+        _playbackState.value.durationString = millisecondsToString(playback?.duration)
+        _playbackState.value.duration = playback?.duration ?: 0L
 
         val timingData = browser.timingData
         timingData?.addAll(

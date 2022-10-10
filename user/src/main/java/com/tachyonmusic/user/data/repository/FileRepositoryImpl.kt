@@ -26,6 +26,7 @@ class FileRepositoryImpl : FileRepository {
             }
         }
         Log.d("FirebaseRepository", "Finished loading songs")
+        songs.sortBy { it.title + it.artist }
         _songs.complete(songs)
     }
 }

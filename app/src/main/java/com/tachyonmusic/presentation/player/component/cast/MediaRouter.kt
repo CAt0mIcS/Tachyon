@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation.player.cast
+package com.tachyonmusic.presentation.player.component.cast
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box

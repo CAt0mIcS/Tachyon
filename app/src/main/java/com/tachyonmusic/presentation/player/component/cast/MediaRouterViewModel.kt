@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation.player.cast
+package com.tachyonmusic.presentation.player.component.cast
 
 import android.content.Context
 import android.view.View
