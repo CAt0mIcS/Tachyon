@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.app.R
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
-import com.tachyonmusic.domain.use_case.SignInUser
+import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach

@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain.use_case
+package com.tachyonmusic.domain.use_case.player
 
 import java.util.*
 

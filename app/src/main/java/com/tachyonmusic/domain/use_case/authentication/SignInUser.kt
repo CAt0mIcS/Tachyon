@@ -1,17 +1,16 @@
-package com.tachyonmusic.domain.use_case
+package com.tachyonmusic.domain.use_case.authentication
 
 import com.tachyonmusic.app.R
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.domain.util.AccountVerificator
 import com.tachyonmusic.user.domain.UserRepository
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class RegisterUser(
+class SignInUser(
     private val repository: UserRepository
 ) {
-    operator fun invoke(emailIn: String, password: String): Flow<Resource<Unit>> = flow {
+    operator fun invoke(emailIn: String, password: String) = flow {
         emit(Resource.Loading())
 
         val email = emailIn.trim()
@@ -20,6 +19,6 @@ class RegisterUser(
         else if (!AccountVerificator.verifyPassword(password))
             emit(Resource.Error(UiText.StringResource(R.string.invalid_password_error)))
         else
-            emit(repository.register(email, password))
+            emit(repository.signIn(email, password))
     }
 }

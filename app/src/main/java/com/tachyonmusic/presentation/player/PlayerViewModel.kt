@@ -6,10 +6,9 @@ import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.domain.MediaBrowserController
-import com.tachyonmusic.domain.use_case.MillisecondsToReadableString
+import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -32,7 +31,7 @@ class PlayerViewModel @Inject constructor(
         updateHandler.post(object : Runnable {
             override fun run() {
                 if (browser.isPlaying) {
-                    _currentPosition.value = millisecondsToString(browser.currentPosition)
+                    updateStates()
                 }
                 updateHandler.postDelayed(
                     this,
@@ -90,5 +89,9 @@ class PlayerViewModel @Inject constructor(
 //                TimingData(10000, 20000), // 10s - 20s
 //            )
 //        )
+    }
+
+    fun updateStates() {
+        _currentPosition.value = millisecondsToString(browser.currentPosition)
     }
 }

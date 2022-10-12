@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain
+package com.tachyonmusic.domain.repository
 
 import androidx.media3.common.MediaItem
 import androidx.media3.session.LibraryResult

@@ -1,11 +1,10 @@
 package com.tachyonmusic.presentation
 
 import androidx.compose.runtime.Composable
-import androidx.media3.session.MediaBrowser
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.tachyonmusic.domain.MediaBrowserController
+import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.presentation.authentication.RegisterScreen
 import com.tachyonmusic.presentation.authentication.SignInScreen
 import com.tachyonmusic.presentation.main.LibraryScreen

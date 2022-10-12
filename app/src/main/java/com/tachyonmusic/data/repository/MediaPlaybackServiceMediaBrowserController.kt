@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain
+package com.tachyonmusic.data.repository
 
 import android.app.Activity
 import android.content.ComponentName
@@ -18,6 +18,7 @@ import com.tachyonmusic.core.constants.MediaAction
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.data.ext.*
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.user.domain.UserRepository

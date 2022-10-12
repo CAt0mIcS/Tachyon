@@ -1,10 +1,11 @@
 package com.tachyonmusic.di
 
-import com.tachyonmusic.domain.MediaBrowserController
-import com.tachyonmusic.domain.MediaPlaybackServiceMediaBrowserController
-import com.tachyonmusic.domain.use_case.MillisecondsToReadableString
-import com.tachyonmusic.domain.use_case.RegisterUser
-import com.tachyonmusic.domain.use_case.SignInUser
+import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
+import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
+import com.tachyonmusic.domain.use_case.authentication.RegisterUser
+import com.tachyonmusic.domain.use_case.authentication.SignInUser
+import com.tachyonmusic.domain.use_case.main.ItemClicked
 import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -24,6 +25,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSignInUserUseCase(repository: UserRepository) = SignInUser(repository)
+
+    @Provides
+    @Singleton
+    fun provideItemClickedUseCase(browser: MediaBrowserController) = ItemClicked(browser)
 
     @Provides
     @Singleton

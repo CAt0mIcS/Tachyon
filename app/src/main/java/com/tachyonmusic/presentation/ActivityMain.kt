@@ -6,8 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.material.Scaffold
 import androidx.navigation.compose.rememberNavController
 import com.tachyonmusic.app.R
-import com.tachyonmusic.domain.MediaBrowserController
-import com.tachyonmusic.domain.MediaPlaybackServiceMediaBrowserController
+import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.presentation.main.component.BottomNavigation
 import com.tachyonmusic.presentation.util.Permission
 import com.tachyonmusic.presentation.util.PermissionManager
