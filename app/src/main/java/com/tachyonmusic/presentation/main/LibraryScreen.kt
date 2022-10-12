@@ -45,6 +45,7 @@ object LibraryScreen :
     ) {
         LazyColumn(
             modifier = Modifier
+                .padding(bottom = HEIGHT)
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
