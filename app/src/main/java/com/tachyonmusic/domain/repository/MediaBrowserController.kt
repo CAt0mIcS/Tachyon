@@ -1,5 +1,7 @@
 package com.tachyonmusic.domain.repository
 
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.Lifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.session.LibraryResult
 import com.google.common.collect.ImmutableList
@@ -8,7 +10,15 @@ import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.util.IListenable
 
-interface MediaBrowserController : IListenable<MediaBrowserController.EventListener> {
+interface MediaBrowserController : IListenable<MediaBrowserController.EventListener>,
+    DefaultLifecycleObserver {
+
+    /**
+     * Binds a lifecycle object to the [MediaBrowserController]
+     */
+    fun registerLifecycle(lifecycle: Lifecycle) {
+        lifecycle.addObserver(this)
+    }
 
     var playback: Playback?
 
@@ -36,6 +46,7 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
     fun pause()
 
     interface EventListener {
+        fun onConnected() {}
         fun onPlaybackTransition(playback: Playback?) {}
     }
 }

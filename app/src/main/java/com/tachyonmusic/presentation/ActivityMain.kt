@@ -16,7 +16,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ActivityMain : ComponentActivity() {
+class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
 
     @Inject
     lateinit var mediaBrowser: MediaBrowserController
@@ -34,21 +34,20 @@ class ActivityMain : ComponentActivity() {
             }
         }
 
-        // TODO: Temporary, setContent for now needs to be called after MediaBrowserController initialization
-        (mediaBrowser as MediaPlaybackServiceMediaBrowserController).onConnected = {
-            setContent {
-                TachyonTheme {
-                    val navController = rememberNavController()
-                    Scaffold(
-                        bottomBar = { BottomNavigation(navController) }
-                    ) {
-                        NavigationGraph(navController, mediaBrowser)
-                    }
+        mediaBrowser.registerLifecycle(lifecycle)
+        mediaBrowser.registerEventListener(this)
+    }
+
+    override fun onConnected() {
+        setContent {
+            TachyonTheme {
+                val navController = rememberNavController()
+                Scaffold(
+                    bottomBar = { BottomNavigation(navController) }
+                ) {
+                    NavigationGraph(navController, mediaBrowser)
                 }
             }
         }
-
-        // TODO: Shouldn't need to cast here
-        lifecycle.addObserver(mediaBrowser as MediaPlaybackServiceMediaBrowserController)
     }
 }

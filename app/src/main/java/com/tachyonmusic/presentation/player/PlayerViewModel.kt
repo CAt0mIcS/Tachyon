@@ -1,19 +1,24 @@
 package com.tachyonmusic.presentation.player
 
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
+import com.tachyonmusic.media.data.ext.parcelable
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
     private val browser: MediaBrowserController,
     private val millisecondsToString: MillisecondsToReadableString
 ) : ViewModel(), MediaBrowserController.EventListener {
@@ -42,11 +47,34 @@ class PlayerViewModel @Inject constructor(
 
         browser.registerEventListener(this)
 
+        val initialState: Bundle? = savedStateHandle[MetadataKeys.Playback]
+        if (initialState == null) {
+            Log.d("PlayerViewModel", "No saved playback state present, loading default media item")
+            // Playback launched from LibraryScreen
+
+            /**
+             * [onPlaybackTransition] already happened when [PlayerViewModel] is launched, thus invoke
+             * callback here again to update state.
+             */
+            onPlaybackTransition(browser.playback)
+        } else {
+            Log.d("PlayerViewModel", "Loading playback from saved state handle")
+            // TODO: Shouldn't use [parcelable] function here, as it should probably be private in project media
+            browser.playback = initialState.parcelable(MetadataKeys.Playback)
+
+            // TODO: Nothing happening after setting playback here, also playback is already set in browser.playback (preserved?)
+        }
+
         /**
-         * [onPlaybackTransition] already happened when [PlayerViewModel] is launched, thus invoke
-         * callback here again to update state
+         * Callback called when [savedStateHandle] needs to save in order to preserve state.
+         * Saving the current playback to be able to load it again once the activity is recreated
          */
-        onPlaybackTransition(browser.playback)
+        savedStateHandle.setSavedStateProvider(MetadataKeys.Playback) {
+            Log.d("PlayerViewModel", "Placing playback into saved state")
+            Bundle().apply {
+                putParcelable(MetadataKeys.Playback, browser.playback)
+            }
+        }
     }
 
     override fun onCleared() {

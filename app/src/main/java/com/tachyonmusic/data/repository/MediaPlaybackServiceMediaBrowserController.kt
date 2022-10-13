@@ -31,14 +31,11 @@ import kotlinx.coroutines.runBlocking
 class MediaPlaybackServiceMediaBrowserController(
     private val userRepository: UserRepository
 ) : MediaBrowserController,
-    DefaultLifecycleObserver,
     Player.Listener,
     ListenableMutableList.EventListener<TimingData>,
     IListenable<MediaBrowserController.EventListener> by Listenable() {
 
     private var browser: MediaBrowser? = null
-
-    var onConnected: (() -> Unit)? = null
 
     override fun onCreate(owner: LifecycleOwner) {
         // TODO: Does this need to be done in onStart/onResume?
@@ -56,8 +53,15 @@ class MediaPlaybackServiceMediaBrowserController(
             browser = MediaBrowser.Builder(owner, sessionToken)
                 .buildAsync().await()
             browser?.addListener(this@MediaPlaybackServiceMediaBrowserController)
-            onConnected?.invoke()
+            invokeEvent {
+                it.onConnected()
+            }
         }
+    }
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        owner.lifecycle.removeObserver(this)
+        browser?.release()
     }
 
     override var playback: Playback?
