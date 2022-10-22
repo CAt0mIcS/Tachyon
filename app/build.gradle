@@ -28,8 +28,8 @@ android {
         applicationId "com.tachyonmusic"
         minSdk 21
         targetSdk 32
-        versionCode 67
-        versionName "Dev 67"
+        versionCode 68
+        versionName "Dev 68"
 
         testInstrumentationRunner "com.tachyonmusic.HiltTestRunner"
 
