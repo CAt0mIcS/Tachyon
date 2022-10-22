@@ -91,6 +91,10 @@ class MediaPlaybackServiceMediaBrowserController(
         browser?.pause()
     }
 
+    override fun seekTo(pos: Long) {
+        browser?.seekTo(pos)
+    }
+
     override fun getChildren(
         parentId: String,
         page: Int,
@@ -137,13 +141,7 @@ class MediaPlaybackServiceMediaBrowserController(
         }
     }
 
-    override fun onItemAdded(index: Int, list: List<TimingData>) {
-        if (browser == null)
-            return
-        MediaAction.updateTimingDataEvent(browser!!, TimingDataController(list))
-    }
-
-    override fun onItemRemoved(list: List<TimingData>) {
+    override fun onChanged(list: List<TimingData>) {
         if (browser == null)
             return
         MediaAction.updateTimingDataEvent(browser!!, TimingDataController(list))

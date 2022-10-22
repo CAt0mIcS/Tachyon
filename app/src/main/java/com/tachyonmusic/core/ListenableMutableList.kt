@@ -16,6 +16,7 @@ class ListenableMutableList<T>(collection: Collection<T>) :
     override fun add(element: T): Boolean {
         return super.add(element).also {
             invokeEvent {
+                it.onChanged(this)
                 it.onItemAdded(size - 1, this)
             }
         }
@@ -24,6 +25,7 @@ class ListenableMutableList<T>(collection: Collection<T>) :
     override fun add(index: Int, element: T) {
         super.add(index, element).also {
             invokeEvent {
+                it.onChanged(this)
                 it.onItemAdded(index, this)
             }
         }
@@ -33,6 +35,7 @@ class ListenableMutableList<T>(collection: Collection<T>) :
         val startIdx = size
         return super.addAll(elements).also {
             invokeEvent {
+                it.onChanged(this)
                 it.onItemAdded(startIdx, this)
             }
         }
@@ -41,6 +44,7 @@ class ListenableMutableList<T>(collection: Collection<T>) :
     override fun addAll(index: Int, elements: Collection<T>): Boolean {
         return super.addAll(index, elements).also {
             invokeEvent {
+                it.onChanged(this)
                 it.onItemAdded(index, this)
             }
         }
@@ -49,6 +53,7 @@ class ListenableMutableList<T>(collection: Collection<T>) :
     override fun clear() {
         super.clear()
         invokeEvent {
+            it.onChanged(this)
             it.onItemRemoved(this)
         }
     }
@@ -56,6 +61,7 @@ class ListenableMutableList<T>(collection: Collection<T>) :
     override fun remove(element: T): Boolean {
         return super.remove(element).also {
             invokeEvent {
+                it.onChanged(this)
                 it.onItemRemoved(this)
             }
         }
@@ -64,6 +70,7 @@ class ListenableMutableList<T>(collection: Collection<T>) :
     override fun removeAll(elements: Collection<T>): Boolean {
         return super.removeAll(elements.toSet()).also {
             invokeEvent {
+                it.onChanged(this)
                 it.onItemRemoved(this)
             }
         }
@@ -76,13 +83,19 @@ class ListenableMutableList<T>(collection: Collection<T>) :
     override fun removeAt(index: Int): T {
         return super.removeAt(index).also {
             invokeEvent {
+                it.onChanged(this)
                 it.onItemRemoved(this)
             }
         }
     }
 
     override fun set(index: Int, element: T): T {
-        TODO()
+        return super.set(index, element).also {
+            invokeEvent {
+                it.onChanged(this)
+                // TODO: Clean this class up, should call onAdded/onRemoved here also
+            }
+        }
     }
 
     override fun replaceAll(operator: UnaryOperator<T>) {
@@ -95,6 +108,7 @@ class ListenableMutableList<T>(collection: Collection<T>) :
 
 
     interface EventListener<T> {
+        fun onChanged(list: List<T>) {}
         fun onItemAdded(index: Int, list: List<T>) {}
         fun onItemRemoved(list: List<T>) {}
     }

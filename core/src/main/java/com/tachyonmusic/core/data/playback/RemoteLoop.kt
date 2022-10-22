@@ -58,5 +58,8 @@ class RemoteLoop(
                 "Unknown song type when deserializing loop"
             )
         )
+
+        fun build(name: String, songMediaId: MediaId, timingData: TimingDataController) =
+            build(MediaId.ofRemoteLoop(name, songMediaId), timingData)
     }
 }

@@ -6,6 +6,8 @@ import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.main.ItemClicked
+import com.tachyonmusic.domain.use_case.player.CreateNewLoop
+import com.tachyonmusic.domain.use_case.player.PlayerUseCases
 import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -32,8 +34,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideCurrentPlaybackPositionToReadableStringUseCase() =
+    fun providePlayerUseCases(repository: UserRepository) = PlayerUseCases(
+        CreateNewLoop(repository),
         MillisecondsToReadableString()
+    )
 
     @Provides
     @Singleton

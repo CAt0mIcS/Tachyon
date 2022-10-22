@@ -6,16 +6,17 @@ import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
+import com.tachyonmusic.domain.use_case.player.PlayerUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val browser: MediaBrowserController,
-    private val millisecondsToString: MillisecondsToReadableString
+    private val useCases: PlayerUseCases
 ) : ViewModel(), MediaBrowserController.EventListener {
 
     private val updateHandler = Handler(Looper.getMainLooper())
@@ -24,13 +25,18 @@ class PlayerViewModel @Inject constructor(
     private val _playbackState = mutableStateOf(PlaybackState())
     val playbackState: State<PlaybackState> = _playbackState
 
-    private val _currentPosition = mutableStateOf("")
-    val currentPosition: State<String> = _currentPosition
+    private val _currentPosition = mutableStateOf(UpdateState())
+    val currentPosition: State<UpdateState> = _currentPosition
+
+    private val _loopState = mutableStateOf(LoopState())
+    val loopState: State<LoopState> = _loopState
+
+    private var isSeeking = false
 
     init {
         updateHandler.post(object : Runnable {
             override fun run() {
-                if (browser.isPlaying) {
+                if (browser.isPlaying && !isSeeking) {
                     updateStates()
                 }
                 updateHandler.postDelayed(
@@ -59,8 +65,13 @@ class PlayerViewModel @Inject constructor(
         Log.d("PlayerViewModel", "onPlaybackTransition to ${playback?.title} - ${playback?.artist}")
         _playbackState.value.title = playback?.title ?: ""
         _playbackState.value.artist = playback?.artist ?: ""
-        _playbackState.value.durationString = millisecondsToString(playback?.duration)
+        _playbackState.value.durationString = useCases.millisecondsToString(playback?.duration)
         _playbackState.value.duration = playback?.duration ?: 0L
+
+        _loopState.value = LoopState(
+            playback?.timingData?.getOrNull(0)?.startTime ?: 0L,
+            playback?.timingData?.getOrNull(0)?.endTime ?: playback?.duration ?: 0L
+        )
 
         val timingData = browser.timingData
 //        timingData?.addAll(
@@ -93,7 +104,37 @@ class PlayerViewModel @Inject constructor(
 //        )
     }
 
-    fun updateStates() {
-        _currentPosition.value = millisecondsToString(browser.currentPosition)
+    fun onPositionChange(pos: Long) {
+        isSeeking = true
+        updateStates(pos)
+    }
+
+    fun onPositionChangeFinished() {
+        browser.seekTo(currentPosition.value.pos)
+        isSeeking = false
+    }
+
+    fun onLoopStateChanged(startTime: Long, endTime: Long) {
+        _loopState.value = LoopState(startTime, endTime)
+    }
+
+    fun onLoopStateChangeFinished() {
+        if(loopState.value.startTime == 0L && loopState.value.endTime == currentPosition.value.pos) {
+            browser.timingData?.clear()
+            return
+        }
+
+        val data = TimingData(loopState.value.startTime, loopState.value.endTime)
+        if ((browser.timingData?.size ?: 0) > 0)
+            browser.timingData?.set(0, data)
+        else
+            browser.timingData?.add(data)
+    }
+
+    fun updateStates(pos: Long? = null) {
+        _currentPosition.value = UpdateState(
+            pos ?: browser.currentPosition ?: 0L,
+            useCases.millisecondsToString(pos ?: browser.currentPosition)
+        )
     }
 }
