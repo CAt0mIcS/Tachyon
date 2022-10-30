@@ -1,5 +1,8 @@
 package com.tachyonmusic.presentation.player
 
+import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
+
 data class PlaybackState(
     var title: String = "",
     var artist: String = "",
@@ -13,6 +16,5 @@ data class UpdateState(
 )
 
 data class LoopState(
-    var startTime: Long = 0L,
-    var endTime: Long = 0L
+    var timingData: TimingData
 )

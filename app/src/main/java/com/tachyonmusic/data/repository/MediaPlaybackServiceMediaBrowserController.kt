@@ -122,7 +122,7 @@ class MediaPlaybackServiceMediaBrowserController(
         get() = browser?.mediaMetadata?.name
     override val duration: Long?
         get() = browser?.mediaMetadata?.duration
-    override val timingData: ListenableMutableList<TimingData>?
+    override var timingData: MutableList<TimingData>?
         get() {
             val data = browser?.mediaMetadata?.timingData
             return if (data == null) null
@@ -130,6 +130,13 @@ class MediaPlaybackServiceMediaBrowserController(
                 registerEventListener(this@MediaPlaybackServiceMediaBrowserController)
             }
         }
+        set(value) {
+            if (value != null)
+                onChanged(value)
+            else
+                onChanged(listOf())
+        }
+
     override val currentPosition: Long?
         get() = browser?.currentPosition
 
