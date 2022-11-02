@@ -45,7 +45,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                 Scaffold(
                     bottomBar = { BottomNavigation(navController) }
                 ) {
-                    NavigationGraph(navController, mediaBrowser)
+                    NavigationGraph(navController)
                 }
             }
         }

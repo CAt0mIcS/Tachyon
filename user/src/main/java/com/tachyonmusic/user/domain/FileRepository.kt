@@ -1,13 +1,12 @@
 package com.tachyonmusic.user.domain
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.tachyonmusic.core.domain.playback.Song
-import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.flow.StateFlow
 
 interface FileRepository {
-    val songs: Deferred<ArrayList<Song>>
-
-    suspend operator fun plusAssign(song: Song) {
-        songs.await().add(song)
-        songs.await().sortBy { it.title + it.artist }
-    }
+    val songs: StateFlow<List<Song>>
+    operator fun plusAssign(song: Song)
+    operator fun minusAssign(song: Song)
 }

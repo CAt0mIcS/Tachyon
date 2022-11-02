@@ -1,16 +1,18 @@
 package com.tachyonmusic.user.data
 
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
 import com.tachyonmusic.core.data.playback.RemoteLoop
 import com.tachyonmusic.core.data.playback.RemotePlaylist
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
-class Metadata(private val gson: Gson, autoComplete: Boolean = true) {
+class Metadata(private val gson: Gson) {
     companion object {
         const val TAG = "UserMetadata"
     }
@@ -21,23 +23,21 @@ class Metadata(private val gson: Gson, autoComplete: Boolean = true) {
     var audioUpdateInterval = 100
     var maxPlaybacksInHistory = 25
 
-    var loops: CompletableDeferred<ArrayList<Loop>> = CompletableDeferred()
-    var playlists: CompletableDeferred<ArrayList<Playlist>> = CompletableDeferred()
+    private val _loops: MutableStateFlow<List<Loop>> = MutableStateFlow(listOf())
+    private val _playlists: MutableStateFlow<List<Playlist>> = MutableStateFlow(listOf())
+
+    val loops: StateFlow<List<Loop>>
+        get() = _loops
+    val playlists: StateFlow<List<Playlist>>
+        get() = _playlists
 
 //    val history: MutableList<Playback> = mutableListOf()
-
-    init {
-        if (autoComplete) {
-            loops.complete(arrayListOf())
-            playlists.complete(arrayListOf())
-        }
-    }
 
     constructor(
         gson: Gson,
         data: Map<String, Any?>,
 //        onHistoryChanged: ((MutableList<Playback>) -> Unit)?
-    ) : this(gson, false) {
+    ) : this(gson) {
         ignoreAudioFocus = data["ignoreAudioFocus"] as Boolean? ?: false
         combineDifferentPlaybackTypes = data["combineDifferentPlaybackTypes"] as Boolean? ?: false
         songIncDecInterval = (data["songIncDecInterval"] as Long? ?: 100L).toInt()
@@ -49,13 +49,13 @@ class Metadata(private val gson: Gson, autoComplete: Boolean = true) {
                 RemoteLoop.build(it!!)
             } as ArrayList<Loop>?)
                 ?: arrayListOf()
-        loops.complete(loadedLoops)
+        _loops.value = loadedLoops
 
         val loadedPlaylists = ((data["playlists"] as List<Map<String, Any?>?>?)?.map {
             RemotePlaylist.build(it!!)
         } as ArrayList<Playlist>?)
             ?: arrayListOf()
-        playlists.complete(loadedPlaylists)
+        _playlists.value = loadedPlaylists
 
         // TODO: Unable to find loop the first time history loads on release builds only
 //        (data["history"] as List<String?>?)?.forEach { mediaIdStr ->
@@ -87,12 +87,8 @@ class Metadata(private val gson: Gson, autoComplete: Boolean = true) {
         "songIncDecInterval" to songIncDecInterval,
         "audioUpdateInterval" to audioUpdateInterval,
         "maxPlaybacksInHistory" to maxPlaybacksInHistory,
-        runBlocking {
-            "loops" to loops.await().map { it.toHashMap() }
-        },
-        runBlocking {
-            "playlists" to playlists.await().map { it.toHashMap() }
-        },
+        "loops" to _loops.value.map { it.toHashMap() },
+        "playlists" to _playlists.value.map { it.toHashMap() },
 //        "history" to history.map { it.mediaId.toString() }
     )
 
@@ -124,6 +120,26 @@ class Metadata(private val gson: Gson, autoComplete: Boolean = true) {
 //        history.subList(0, history.size - maxPlaybacksInHistory).clear()
 //    }
 
+    operator fun plusAssign(loop: Loop) {
+        val newList = (_loops.value ?: emptyList()) + loop
+        newList.sortedBy { it.name + it.title + it.artist }
+        _loops.value = newList
+    }
+
+    operator fun plusAssign(playlist: Playlist) {
+        val newList = (_playlists.value ?: emptyList()) + playlist
+        newList.sortedBy { it.name }
+        _playlists.value = newList
+    }
+
+    operator fun minusAssign(loop: Loop) {
+        _loops.value -= loop
+    }
+
+    operator fun minusAssign(playlist: Playlist) {
+        _playlists.value -= playlist
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Metadata) return false
@@ -133,8 +149,8 @@ class Metadata(private val gson: Gson, autoComplete: Boolean = true) {
         if (songIncDecInterval != other.songIncDecInterval) return false
         if (audioUpdateInterval != other.audioUpdateInterval) return false
         if (maxPlaybacksInHistory != other.maxPlaybacksInHistory) return false
-        if (loops != other.loops) return false
-        if (playlists != other.playlists) return false
+        if (_loops != other._loops) return false
+        if (_playlists != other._playlists) return false
 
         return true
     }

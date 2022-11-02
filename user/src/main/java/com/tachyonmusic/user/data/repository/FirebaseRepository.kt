@@ -1,5 +1,6 @@
 package com.tachyonmusic.user.data.repository
 
+import androidx.lifecycle.LiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -20,6 +21,7 @@ import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
 import com.tachyonmusic.util.launch
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.StateFlow
 
 class FirebaseRepository(
     private var fileRepository: FileRepository,
@@ -29,11 +31,11 @@ class FirebaseRepository(
     private val firestore: FirebaseFirestore = Firebase.firestore
 ) : UserRepository, IListenable<UserRepository.EventListener> by Listenable() {
 
-    override val songs: Deferred<List<Song>>
+    override val songs: StateFlow<List<Song>>
         get() = fileRepository.songs
-    override val loops: Deferred<List<Loop>>
+    override val loops: StateFlow<List<Loop>>
         get() = metadata.loops
-    override val playlists: Deferred<List<Playlist>>
+    override val playlists: StateFlow<List<Playlist>>
         get() = metadata.playlists
 
     private var metadata: Metadata = if (localCache.exists) localCache.get() else Metadata(gson)
@@ -200,24 +202,27 @@ class FirebaseRepository(
         job.join()
     }
 
-    override suspend operator fun plusAssign(song: Song) {
+    override operator fun plusAssign(song: Song) {
         fileRepository += song
-        invokeEvent {
-            it.onSongListChanged(song)
-        }
     }
 
-    override suspend operator fun plusAssign(loop: Loop) {
-        metadata.loops.await().add(loop)
-        invokeEvent {
-            it.onLoopListChanged(loop)
-        }
+    override operator fun plusAssign(loop: Loop) {
+        metadata += loop
     }
 
-    override suspend operator fun plusAssign(playlist: Playlist) {
-        metadata.playlists.await().add(playlist)
-        invokeEvent {
-            it.onPlaylistListChanged(playlist)
-        }
+    override operator fun plusAssign(playlist: Playlist) {
+        metadata += playlist
+    }
+
+    override operator fun minusAssign(song: Song) {
+        fileRepository -= song
+    }
+
+    override operator fun minusAssign(loop: Loop) {
+        metadata -= loop
+    }
+
+    override operator fun minusAssign(playlist: Playlist) {
+        metadata -= playlist
     }
 }

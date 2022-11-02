@@ -10,12 +10,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -31,9 +35,12 @@ object LibraryScreen :
     @Composable
     operator fun invoke(
         navController: NavController,
-        browser: MediaBrowserController,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
+        val songs by viewModel.songs.observeAsState()
+        val loops by viewModel.loops.observeAsState()
+        val playlists by viewModel.playlist.observeAsState()
+
         LazyColumn(
             modifier = Modifier
                 .padding(bottom = HEIGHT)
@@ -48,10 +55,19 @@ object LibraryScreen :
                 }
             }
 
-            runBlocking {
-                val children = browser.getPlaybacks(BrowserTree.ROOT, 0, Int.MAX_VALUE)
+            item {
+                Button(
+                    onClick = { viewModel.addItem() }
+                )
+                {
+                    Text("Add item to list")
+                }
+            }
 
-                items(children) { playback ->
+            runBlocking {
+                // TODO: Nullable?
+                val playbacks: List<Playback> = songs!! + loops!! + playlists!!
+                items(playbacks) { playback ->
                     Text(
                         text =
                         when (playback) {

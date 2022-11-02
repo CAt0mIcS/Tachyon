@@ -21,12 +21,12 @@ class LoadPlaylistForPlayback(
 
         when (playback) {
             is Song -> {
-                initialWindowIndex = repository.songs.await().indexOf(playback)
-                items = repository.songs.await().map { it.toMediaItem() }
+                initialWindowIndex = repository.songs.value?.indexOf(playback)
+                items = repository.songs.value?.map { it.toMediaItem() }
             }
             is Loop -> {
-                initialWindowIndex = repository.loops.await().indexOf(playback)
-                items = repository.loops.await().map { it.toMediaItem() }
+                initialWindowIndex = repository.loops.value?.indexOf(playback)
+                items = repository.loops.value?.map { it.toMediaItem() }
             }
             is Playlist -> {
                 items = playback.toMediaItemList()
@@ -36,6 +36,9 @@ class LoadPlaylistForPlayback(
                 return@withContext Resource.Error(UiText.StringResource(R.string.invalid_playback))
             }
         }
+
+        if (items == null || initialWindowIndex == null)
+            return@withContext Resource.Error(UiText.StringResource(R.string.invalid_playback))
 
         Resource.Success(items to initialWindowIndex)
     }
