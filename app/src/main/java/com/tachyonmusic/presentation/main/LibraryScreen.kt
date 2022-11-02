@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
@@ -37,9 +38,9 @@ object LibraryScreen :
         navController: NavController,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
-        val songs by viewModel.songs.observeAsState()
-        val loops by viewModel.loops.observeAsState()
-        val playlists by viewModel.playlist.observeAsState()
+        val songs by viewModel.songs.collectAsState()
+        val loops by viewModel.loops.collectAsState()
+        val playlists by viewModel.playlist.collectAsState()
 
         LazyColumn(
             modifier = Modifier
@@ -65,9 +66,7 @@ object LibraryScreen :
             }
 
             runBlocking {
-                // TODO: Nullable?
-                val playbacks: List<Playback> = songs!! + loops!! + playlists!!
-                items(playbacks) { playback ->
+                items(songs + loops + playlists) { playback ->
                     Text(
                         text =
                         when (playback) {

@@ -15,6 +15,7 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.IListenable
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface MediaBrowserController : IListenable<MediaBrowserController.EventListener>,
     DefaultLifecycleObserver {
@@ -41,13 +42,6 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
         page: Int = 0,
         pageSize: Int = Int.MAX_VALUE
     ): List<Playback>
-
-    // TODO: Shouldn't use liveData in repositories
-    val songs: LiveData<List<Song>>
-    val loops: LiveData<List<Loop>>
-    val playlists: LiveData<List<Playlist>>
-
-    operator fun plusAssign(song: Song)
 
     val isPlaying: Boolean
 

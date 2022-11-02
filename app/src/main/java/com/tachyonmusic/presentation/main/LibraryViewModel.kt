@@ -5,6 +5,8 @@ import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.main.AddPlaybackUseCases
+import com.tachyonmusic.domain.use_case.main.GetPlaybacksUseCases
 import com.tachyonmusic.domain.use_case.main.ItemClicked
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -12,15 +14,13 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     private val itemClicked: ItemClicked,
-    private val browser: MediaBrowserController
+    getPlaybacks: GetPlaybacksUseCases,
+    private val addPlayback: AddPlaybackUseCases
 ) : ViewModel() {
 
-    val songs
-        get() = browser.songs
-    val loops
-        get() = browser.loops
-    val playlist
-        get() = browser.playlists
+    val songs = getPlaybacks.songs()
+    val loops = getPlaybacks.loops()
+    val playlist = getPlaybacks.playlists()
 
 
     fun onItemClicked(playback: Playback) {
@@ -28,7 +28,9 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun addItem() {
-        browser += LocalSong(MediaId("TestSource"), "title", "artist", 123L)
+        addPlayback.addSong(
+            LocalSong(MediaId("TestSource"), "title", "artist", 123L)
+        )
     }
 
 }

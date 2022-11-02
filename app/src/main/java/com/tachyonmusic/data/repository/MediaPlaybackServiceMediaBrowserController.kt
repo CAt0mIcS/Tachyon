@@ -28,6 +28,7 @@ import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
@@ -117,17 +118,6 @@ class MediaPlaybackServiceMediaBrowserController(
                 children[i].mediaMetadata.playback!!
             }
         }
-
-    override val songs: LiveData<List<Song>>
-        get() = userRepository.songs
-    override val loops: LiveData<List<Loop>>
-        get() = userRepository.loops
-    override val playlists: LiveData<List<Playlist>>
-        get() = userRepository.playlists
-
-    override fun plusAssign(song: Song) {
-        userRepository += song
-    }
 
     override val isPlaying: Boolean
         get() = browser?.isPlaying ?: false

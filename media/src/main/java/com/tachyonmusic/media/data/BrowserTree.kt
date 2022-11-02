@@ -74,9 +74,9 @@ class BrowserTree(
 
 
     // TODO: Nullable?
-    private fun getSongs() = repository.songs.value!!.map { it.toMediaItem() }
-    private fun getLoops() = repository.loops.value!!.map { it.toMediaItem() }
-    private fun getPlaylists() = repository.playlists.value!!.map { it.toMediaItem() }
+    private fun getSongs() = repository.songs.value.map { it.toMediaItem() }
+    private fun getLoops() = repository.loops.value.map { it.toMediaItem() }
+    private fun getPlaylists() = repository.playlists.value.map { it.toMediaItem() }
 
     private fun constraintItems(
         playbacks: List<MediaItem>,

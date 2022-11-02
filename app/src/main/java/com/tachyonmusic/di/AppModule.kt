@@ -5,7 +5,7 @@ import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserControll
 import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
-import com.tachyonmusic.domain.use_case.main.ItemClicked
+import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.CreateNewLoop
 import com.tachyonmusic.domain.use_case.player.PlayerUseCases
 import com.tachyonmusic.user.domain.UserRepository
@@ -31,6 +31,22 @@ object AppModule {
     @Provides
     @Singleton
     fun provideItemClickedUseCase(browser: MediaBrowserController) = ItemClicked(browser)
+
+    @Provides
+    @Singleton
+    fun provideGetPlaybacksUseCases(userRepository: UserRepository) =
+        GetPlaybacksUseCases(
+            GetSongs(userRepository),
+            GetLoops(userRepository),
+            GetPlaylists(userRepository)
+        )
+
+    @Provides
+    @Singleton
+    fun provideAddPlaybacksUseCases(userRepository: UserRepository) =
+        AddPlaybackUseCases(
+            AddSong(userRepository)
+        )
 
     @Provides
     @Singleton
