@@ -19,7 +19,7 @@ class AppModule {
     @Singleton
     fun provideGSON(): Gson = GsonBuilder().apply {
         registerTypeAdapter(MediaId::class.java, MediaId.Serializer())
-        registerTypeAdapter(TimingData::class.java, TimingData.Serializer())
+//        registerTypeAdapter(TimingData::class.java, TimingData.Serializer())
         setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
     }.create()
 

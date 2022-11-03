@@ -23,13 +23,14 @@ class CreateNewLoop(
         )
             return Resource.Error(UiText.DynamicString("Invalid loop"))
 
-        val loop = RemoteLoop.build(
-            name,
-            browser.playback!!.mediaId,
-            TimingDataController(browser.timingData!!)
-        )
-        userRepo += loop
-        userRepo.save()
-        return Resource.Success(loop)
+        TODO()
+//        val loop = RemoteLoop.build(
+//            name,
+//            browser.playback!!.mediaId,
+////            TimingDataController(browser.timingData!!)
+//        )
+//        userRepo += loop
+//        userRepo.save()
+//        return Resource.Success(loop)
     }
 }

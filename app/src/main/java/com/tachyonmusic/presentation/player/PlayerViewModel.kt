@@ -75,7 +75,7 @@ class PlayerViewModel @Inject constructor(
         _playbackState.value.artist = playback?.artist ?: ""
         _playbackState.value.durationString = useCases.millisecondsToString(playback?.duration)
         _playbackState.value.duration = playback?.duration ?: 0L
-        loopState.addAll(playback?.timingData?: emptyList())
+        loopState.addAll(playback?.timingData?.timingData ?: emptyList())
     }
 
     fun onPositionChange(pos: Long) {

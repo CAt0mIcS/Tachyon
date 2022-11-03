@@ -45,7 +45,7 @@ class RemoteLoop(
             return RemoteLoop(
                 mediaId,
                 name,
-                TimingDataController(map["timingData"]!! as ArrayList<TimingData>),
+                TimingDataController(map["timingData"]!! as ArrayList<String>),
                 LocalSong.build(mediaId.underlyingMediaId!!)
             )
         }

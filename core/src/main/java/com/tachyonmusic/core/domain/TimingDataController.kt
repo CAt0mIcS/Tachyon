@@ -4,9 +4,9 @@ import android.os.Parcel
 import android.os.Parcelable
 
 class TimingDataController(
-    timingData: List<TimingData> = emptyList(),
+    private val _timingData: ArrayList<String> = arrayListOf(),
     currentIndex: Int = 0
-) : ArrayList<TimingData>(), Parcelable {
+) : Parcelable {
     var currentIndex: Int = 0
         private set
 
@@ -16,9 +16,16 @@ class TimingDataController(
     val current: TimingData
         get() = currentTimingData()
 
+    val timingData: MutableList<TimingData>
+        get() = _timingData.map { TimingData.deserialize(it) }.toMutableList()
+
+    constructor(
+        timingData: List<String>,
+        currentIndex: Int = 0
+    ) : this(timingData.toMutableList() as ArrayList<String>, currentIndex)
+
     init {
         this.currentIndex = currentIndex
-        addAll(timingData)
     }
 
     fun advanceToCurrentPosition(positionMs: Long) {
@@ -27,13 +34,13 @@ class TimingDataController(
 
     fun advanceToNext() {
         currentIndex++
-        if (currentIndex >= size)
+        if (currentIndex >= _timingData.size)
             currentIndex = 0
     }
 
     fun getIndexOfCurrentPosition(positionMs: Long): Int {
-        for (i in indices) {
-            if (this[i].surrounds(positionMs))
+        for (i in _timingData.indices) {
+            if (TimingData.deserialize(_timingData[i]).surrounds(positionMs))
                 return i
         }
 
@@ -43,8 +50,8 @@ class TimingDataController(
     fun closestTimingDataIndexAfter(positionMs: Long): Int {
         var closestApproachIndex = 0
         var closestApproach = Int.MAX_VALUE
-        for (i in indices) {
-            val distance = (this[i].startTime - positionMs).toInt()
+        for (i in _timingData.indices) {
+            val distance = (TimingData.deserialize(_timingData[i]).startTime - positionMs).toInt()
             if (distance > 0 && distance < closestApproach) {
                 closestApproach = distance
                 closestApproachIndex = i
@@ -54,23 +61,25 @@ class TimingDataController(
     }
 
     fun anySurrounds(positionMs: Long): Boolean {
-        for (item in this)
-            if (item.surrounds(positionMs))
+        for (item in _timingData)
+            if (TimingData.deserialize(item).surrounds(positionMs))
                 return true
         return false
     }
 
     private fun nextTimingData(): TimingData {
         var nextIdx = currentIndex + 1
-        if (nextIdx >= size)
+        if (nextIdx >= _timingData.size)
             nextIdx = 0
-        return this[nextIdx]
+        return TimingData.deserialize(_timingData[nextIdx])
     }
 
-    private fun currentTimingData() = this[currentIndex]
+    private fun currentTimingData() = TimingData.deserialize(_timingData[currentIndex])
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeParcelableArray(this.toTypedArray(), flags)
+//        parcel.writeParcelableArray(this.toTypedArray(), flags)
+
+        parcel.writeStringArray(_timingData.toTypedArray())
         parcel.writeInt(currentIndex)
     }
 
@@ -79,14 +88,21 @@ class TimingDataController(
     companion object CREATOR : Parcelable.Creator<TimingDataController> {
         override fun createFromParcel(parcel: Parcel): TimingDataController {
             // TODO: Better implementation for loading arrays/lists/...
+//            val list = parcel.readParcelableArray(TimingData::class.java.classLoader)
+//                ?.map { it as TimingData } ?: emptyList()
 
-            return TimingDataController(
-                parcel.readParcelableArray(TimingData::class.java.classLoader)
-                    ?.map { it as TimingData } ?: emptyList(), parcel.readInt()
-            )
+            val str = parcel.createStringArray()!!.toList()
+
+            val index = parcel.readInt()
+            return TimingDataController(str, index)
         }
 
         override fun newArray(size: Int): Array<TimingDataController?> = arrayOfNulls(size)
     }
+
+    fun getOrNull(index: Int) = _timingData.getOrNull(index)
+    fun isEmpty() = _timingData.isEmpty()
+    fun isNotEmpty() = _timingData.isNotEmpty()
+    val size get() = _timingData.size
 }
 
