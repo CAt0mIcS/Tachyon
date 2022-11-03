@@ -33,13 +33,13 @@ interface UserRepository : IListenable<UserRepository.EventListener> {
     suspend fun delete(): Resource<Unit>
 
     fun find(mediaId: MediaId): Playback? {
-        val s = songs.value?.find { it.mediaId == mediaId }
+        val s = songs.value.find { it.mediaId == mediaId }
         if (s != null)
             return s
-        val l = loops.value?.find { it.mediaId == mediaId }
+        val l = loops.value.find { it.mediaId == mediaId }
         if (l != null)
             return l
-        return playlists.value?.find { it.mediaId == mediaId }
+        return playlists.value.find { it.mediaId == mediaId }
     }
 
     suspend fun upload(): Resource<Unit>

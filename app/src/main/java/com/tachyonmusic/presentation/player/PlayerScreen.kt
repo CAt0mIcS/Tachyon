@@ -28,7 +28,7 @@ object PlayerScreen : NavigationItem("player_screen") {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            MediaRouter(modifier = Modifier.size(48.dp), iconWidth = 48.dp)
+//            MediaRouter(modifier = Modifier.size(48.dp), iconWidth = 48.dp)
 
             Text(text = playbackState.title)
             Text(text = playbackState.artist)

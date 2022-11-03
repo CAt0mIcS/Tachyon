@@ -1,0 +1,48 @@
+plugins {
+    id("com.android.library")
+    id("org.jetbrains.kotlin.android")
+
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
+}
+
+android {
+    compileSdk = Version.COMPILE_SDK
+
+    defaultConfig {
+        minSdk = Version.MIN_SDK
+        targetSdk = Version.TARGET_SDK
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
+    }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+
+dependencies {
+    projectUtil()
+
+    dagger()
+
+    localTest("implementation", false)
+    androidTest("implementation", false)
+//    kaptAndroidTest("com.google.dagger:hilt-android-compiler:2.37")
+}

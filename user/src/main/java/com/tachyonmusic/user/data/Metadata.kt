@@ -121,13 +121,13 @@ class Metadata(private val gson: Gson) {
 //    }
 
     operator fun plusAssign(loop: Loop) {
-        val newList = (_loops.value ?: emptyList()) + loop
+        val newList = _loops.value + loop
         newList.sortedBy { it.name + it.title + it.artist }
         _loops.value = newList
     }
 
     operator fun plusAssign(playlist: Playlist) {
-        val newList = (_playlists.value ?: emptyList()) + playlist
+        val newList = _playlists.value + playlist
         newList.sortedBy { it.name }
         _playlists.value = newList
     }
