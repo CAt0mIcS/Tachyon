@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ComponentName
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -17,16 +18,22 @@ import com.tachyonmusic.core.ListenableMutableList
 import com.tachyonmusic.core.constants.MediaAction
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.data.ext.*
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.Flow
 
 class MediaPlaybackServiceMediaBrowserController(
     private val userRepository: UserRepository
@@ -104,7 +111,7 @@ class MediaPlaybackServiceMediaBrowserController(
             LibraryResult.ofItemList(listOf(), null)
         )
 
-    override fun getPlaybacks(parentId: String, page: Int, pageSize: Int): List<Playback> =
+    override fun getPlaybacksNative(parentId: String, page: Int, pageSize: Int): List<Playback> =
         runBlocking {
             val children = getChildren(parentId, page, pageSize).await().value ?: emptyList()
             List(children.size) { i ->

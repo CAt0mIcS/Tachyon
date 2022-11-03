@@ -10,12 +10,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -31,9 +36,12 @@ object LibraryScreen :
     @Composable
     operator fun invoke(
         navController: NavController,
-        browser: MediaBrowserController,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
+        val songs by viewModel.songs.collectAsState()
+        val loops by viewModel.loops.collectAsState()
+        val playlists by viewModel.playlist.collectAsState()
+
         LazyColumn(
             modifier = Modifier
                 .padding(bottom = HEIGHT)
@@ -49,15 +57,13 @@ object LibraryScreen :
             }
 
             runBlocking {
-                val children = browser.getPlaybacks(BrowserTree.ROOT, 0, Int.MAX_VALUE)
-
-                items(children) { playback ->
+                items(songs + loops + playlists) { playback ->
                     Text(
                         text =
                         when (playback) {
                             is Song -> "${playback.title} - ${playback.artist}"
                             is Loop -> "${playback.name} - ${playback.title} - ${playback.artist}"
-                            else -> (playback as Playlist).name
+                            is Playlist -> playback.name
                         },
                         modifier = Modifier.clickable {
                             viewModel.onItemClicked(playback)

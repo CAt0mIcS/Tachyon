@@ -1,5 +1,6 @@
 package com.tachyonmusic.user.domain
 
+import androidx.lifecycle.LiveData
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Loop
@@ -8,11 +9,12 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.IListenable
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.flow.StateFlow
 
 interface UserRepository : IListenable<UserRepository.EventListener> {
-    val songs: Deferred<List<Song>>
-    val loops: Deferred<List<Loop>>
-    val playlists: Deferred<List<Playlist>>
+    val songs: StateFlow<List<Song>>
+    val loops: StateFlow<List<Loop>>
+    val playlists: StateFlow<List<Playlist>>
 
     val signedIn: Boolean
 
@@ -30,29 +32,26 @@ interface UserRepository : IListenable<UserRepository.EventListener> {
 
     suspend fun delete(): Resource<Unit>
 
-    suspend fun find(mediaId: MediaId): Playback? {
-        val s = songs.await().find { it.mediaId == mediaId }
+    fun find(mediaId: MediaId): Playback? {
+        val s = songs.value?.find { it.mediaId == mediaId }
         if (s != null)
             return s
-        val l = loops.await().find { it.mediaId == mediaId }
+        val l = loops.value?.find { it.mediaId == mediaId }
         if (l != null)
             return l
-        return playlists.await().find { it.mediaId == mediaId }
+        return playlists.value?.find { it.mediaId == mediaId }
     }
 
     suspend fun upload(): Resource<Unit>
 
-    suspend operator fun plusAssign(song: Song)
-    suspend operator fun plusAssign(loop: Loop)
-    suspend operator fun plusAssign(playlist: Playlist)
+    operator fun plusAssign(song: Song)
+    operator fun plusAssign(loop: Loop)
+    operator fun plusAssign(playlist: Playlist)
+    operator fun minusAssign(song: Song)
+    operator fun minusAssign(loop: Loop)
+    operator fun minusAssign(playlist: Playlist)
 
     interface EventListener {
         fun onUserChanged(uid: String?) {}
-
-        fun onSongListChanged(song: Song) {}
-        fun onLoopListChanged(loop: Loop) {}
-        fun onPlaylistListChanged(playlist: Playlist) {}
-
-        fun onPlaylistChanged(playlist: Playlist) {}
     }
 }

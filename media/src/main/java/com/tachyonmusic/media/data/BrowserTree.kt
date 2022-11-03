@@ -73,9 +73,10 @@ class BrowserTree(
     /** Type for a folder containing media categorized by year.  */
 
 
-    private suspend fun getSongs() = repository.songs.await().map { it.toMediaItem() }
-    private suspend fun getLoops() = repository.loops.await().map { it.toMediaItem() }
-    private suspend fun getPlaylists() = repository.playlists.await().map { it.toMediaItem() }
+    // TODO: Nullable?
+    private fun getSongs() = repository.songs.value.map { it.toMediaItem() }
+    private fun getLoops() = repository.loops.value.map { it.toMediaItem() }
+    private fun getPlaylists() = repository.playlists.value.map { it.toMediaItem() }
 
     private fun constraintItems(
         playbacks: List<MediaItem>,

@@ -14,10 +14,10 @@ import com.tachyonmusic.presentation.main.SearchScreen
 import com.tachyonmusic.presentation.player.PlayerScreen
 
 @Composable
-fun NavigationGraph(navController: NavHostController, browser: MediaBrowserController) {
+fun NavigationGraph(navController: NavHostController) {
     NavHost(navController, startDestination = LibraryScreen.route) {
         composable(LibraryScreen.route) {
-            LibraryScreen(navController, browser)
+            LibraryScreen(navController)
         }
         composable(SearchScreen.route) {
             SearchScreen()
