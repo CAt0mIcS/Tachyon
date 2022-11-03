@@ -43,13 +43,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAddPlaybacksUseCases(userRepository: UserRepository) =
-        AddPlaybackUseCases(
-            AddSong(userRepository)
-        )
-
-    @Provides
-    @Singleton
     fun providePlayerUseCases(repository: UserRepository) = PlayerUseCases(
         CreateNewLoop(repository),
         MillisecondsToReadableString()

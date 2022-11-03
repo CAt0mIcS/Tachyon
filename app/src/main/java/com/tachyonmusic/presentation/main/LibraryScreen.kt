@@ -56,15 +56,6 @@ object LibraryScreen :
                 }
             }
 
-            item {
-                Button(
-                    onClick = { viewModel.addItem() }
-                )
-                {
-                    Text("Add item to list")
-                }
-            }
-
             runBlocking {
                 items(songs + loops + playlists) { playback ->
                     Text(
@@ -72,7 +63,7 @@ object LibraryScreen :
                         when (playback) {
                             is Song -> "${playback.title} - ${playback.artist}"
                             is Loop -> "${playback.name} - ${playback.title} - ${playback.artist}"
-                            else -> (playback as Playlist).name
+                            is Playlist -> playback.name
                         },
                         modifier = Modifier.clickable {
                             viewModel.onItemClicked(playback)
