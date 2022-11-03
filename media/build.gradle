@@ -12,8 +12,6 @@ android {
     defaultConfig {
         minSdk 21
         targetSdk 32
-        versionCode 70
-        versionName "Dev 70"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -30,7 +28,6 @@ android {
 
     buildTypes {
         release {
-            debuggable false
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.profileRelease
