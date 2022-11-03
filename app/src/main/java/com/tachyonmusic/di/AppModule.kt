@@ -43,10 +43,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providePlayerUseCases(repository: UserRepository) = PlayerUseCases(
-        CreateNewLoop(repository),
-        MillisecondsToReadableString()
-    )
+    fun providePlayerUseCases(userRepo: UserRepository, browser: MediaBrowserController) =
+        PlayerUseCases(
+            CreateNewLoop(userRepo, browser),
+            MillisecondsToReadableString()
+        )
 
     @Provides
     @Singleton

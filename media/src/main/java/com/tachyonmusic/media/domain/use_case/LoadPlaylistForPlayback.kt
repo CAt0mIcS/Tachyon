@@ -15,28 +15,50 @@ import kotlinx.coroutines.withContext
 class LoadPlaylistForPlayback(
     private val repository: UserRepository
 ) {
-    suspend operator fun invoke(playback: Playback?) = withContext(Dispatchers.IO) {
+    operator fun invoke(playback: Playback?): Resource<Pair<List<MediaItem>, Int>> {
         var initialWindowIndex: Int? = null
         var items: List<MediaItem>? = null
 
-        when (playback) {
-            is Song -> {
-                initialWindowIndex = repository.songs.value.indexOf(playback)
-                items = repository.songs.value.map { it.toMediaItem() }
+        if (/*repository.combinePlaybackTypes*/false) {
+            when (playback) {
+                is Song -> {
+                    initialWindowIndex = repository.songs.value.indexOf(playback)
+                    items =
+                        repository.songs.value.map { it.toMediaItem() } + repository.loops.value.map { it.toMediaItem() }
+                }
+                is Loop -> {
+                    initialWindowIndex = repository.loops.value.indexOf(playback)
+                    items =
+                        repository.loops.value.map { it.toMediaItem() } + repository.songs.value.map { it.toMediaItem() }
+                }
+                is Playlist -> {
+                    initialWindowIndex = playback.currentPlaylistIndex
+                    items = playback.toMediaItemList()
+                }
+                null -> {
+                    return Resource.Error(UiText.StringResource(R.string.invalid_playback))
+                }
             }
-            is Loop -> {
-                initialWindowIndex = repository.loops.value.indexOf(playback)
-                items = repository.loops.value.map { it.toMediaItem() }
-            }
-            is Playlist -> {
-                items = playback.toMediaItemList()
-                initialWindowIndex = playback.currentPlaylistIndex
-            }
-            null -> {
-                return@withContext Resource.Error(UiText.StringResource(R.string.invalid_playback))
+        } else {
+            when (playback) {
+                is Song -> {
+                    initialWindowIndex = repository.songs.value.indexOf(playback)
+                    items = repository.songs.value.map { it.toMediaItem() }
+                }
+                is Loop -> {
+                    initialWindowIndex = repository.loops.value.indexOf(playback)
+                    items = repository.loops.value.map { it.toMediaItem() }
+                }
+                is Playlist -> {
+                    items = playback.toMediaItemList()
+                    initialWindowIndex = playback.currentPlaylistIndex
+                }
+                null -> {
+                    return Resource.Error(UiText.StringResource(R.string.invalid_playback))
+                }
             }
         }
 
-        Resource.Success(items to initialWindowIndex)
+        return Resource.Success(items to initialWindowIndex)
     }
 }

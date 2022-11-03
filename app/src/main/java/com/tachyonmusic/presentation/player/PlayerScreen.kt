@@ -2,16 +2,12 @@ package com.tachyonmusic.presentation.player
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.fragment.app.FragmentManager
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.core.NavigationItem
-import com.tachyonmusic.presentation.player.component.cast.MediaRouter
 
 object PlayerScreen : NavigationItem("player_screen") {
 
@@ -21,9 +17,11 @@ object PlayerScreen : NavigationItem("player_screen") {
         navController: NavController,
         viewModel: PlayerViewModel = hiltViewModel()
     ) {
-        val playbackState = viewModel.playbackState.value
-        val currentPosState = viewModel.currentPosition.value
+        val playbackState by viewModel.playbackState
+        val currentPosState by viewModel.currentPosition
         val loopState = viewModel.loopState
+
+        var loopName by remember { mutableStateOf("") }
 
         Column(
             modifier = Modifier.fillMaxSize()
@@ -41,6 +39,12 @@ object PlayerScreen : NavigationItem("player_screen") {
                 onValueChangeFinished = { viewModel.onPositionChangeFinished() },
                 onValueChange = { viewModel.onPositionChange(it.toLong()) }
             )
+
+            TextField(value = loopName, onValueChange = { loopName = it })
+
+            Button(onClick = { viewModel.onSaveLoop(loopName) }) {
+                Text("Save Loop")
+            }
 
             Button(onClick = { viewModel.onAddNewTimingData() }) {
                 Text(text = "Add Loop Time")

@@ -16,12 +16,6 @@ class TimingDataController(
     val current: TimingData
         get() = currentTimingData()
 
-    constructor(parcel: Parcel) : this(
-        // TODO: Faster way of storing array/list
-        parcel.readParcelableArray(TimingData::class.java.classLoader)!!.map { it as TimingData },
-        parcel.readInt()
-    )
-
     init {
         this.currentIndex = currentIndex
         addAll(timingData)
@@ -42,6 +36,7 @@ class TimingDataController(
             if (this[i].surrounds(positionMs))
                 return i
         }
+
         return closestTimingDataIndexAfter(positionMs)
     }
 
@@ -82,7 +77,15 @@ class TimingDataController(
     override fun describeContents() = 0
 
     companion object CREATOR : Parcelable.Creator<TimingDataController> {
-        override fun createFromParcel(parcel: Parcel) = TimingDataController(parcel)
+        override fun createFromParcel(parcel: Parcel): TimingDataController {
+            // TODO: Better implementation for loading arrays/lists/...
+
+            return TimingDataController(
+                parcel.readParcelableArray(TimingData::class.java.classLoader)
+                    ?.map { it as TimingData } ?: emptyList(), parcel.readInt()
+            )
+        }
+
         override fun newArray(size: Int): Array<TimingDataController?> = arrayOfNulls(size)
     }
 }

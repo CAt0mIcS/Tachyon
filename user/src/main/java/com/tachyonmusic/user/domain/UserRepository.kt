@@ -42,7 +42,7 @@ interface UserRepository : IListenable<UserRepository.EventListener> {
         return playlists.value.find { it.mediaId == mediaId }
     }
 
-    suspend fun upload(): Resource<Unit>
+    suspend fun save(): Resource<Unit>
 
     operator fun plusAssign(song: Song)
     operator fun plusAssign(loop: Loop)

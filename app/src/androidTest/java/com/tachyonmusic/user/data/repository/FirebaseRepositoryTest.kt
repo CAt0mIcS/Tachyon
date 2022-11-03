@@ -73,7 +73,7 @@ class FirebaseRepositoryTest {
         for (playlist in playlists)
             repository += playlist
 
-        assertResource(repository.upload())
+        assertResource(repository.save())
 
         assertResource(repository.register(TEST_EMAIL, TEST_PASSWORD))
 
@@ -89,7 +89,7 @@ class FirebaseRepositoryTest {
             repository += playlist
 
         assertResource(repository.register(TEST_EMAIL, TEST_PASSWORD))
-        assertResource(repository.upload())
+        assertResource(repository.save())
 
         repository.signOut()
 
@@ -105,7 +105,7 @@ class FirebaseRepositoryTest {
             repository += playlist
 
         assertResource(repository.register(TEST_EMAIL, TEST_PASSWORD))
-        assertResource(repository.upload())
+        assertResource(repository.save())
 
         repository.delete()
 

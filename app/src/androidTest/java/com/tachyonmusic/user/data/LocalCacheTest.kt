@@ -66,7 +66,7 @@ class LocalCacheTest {
         for (playlist in playlists)
             repository += playlist
 
-        repository.upload()
+        repository.save()
 
         assert(localCache.exists)
 

@@ -1,6 +1,5 @@
 package com.tachyonmusic.user.data.repository
 
-import androidx.lifecycle.LiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -82,7 +81,7 @@ class FirebaseRepository(
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     launch(Dispatchers.IO) {
-                        upload()
+                        save()
                         initialize()
                         job.complete(Resource.Success())
                     }
@@ -135,7 +134,7 @@ class FirebaseRepository(
 
     // TODO: Use [Firebase.firestore.update] (https://firebase.google.com/docs/Firebase.firestore/manage-data/add-data#update-data) && (https://firebase.google.com/docs/Firebase.firestore/manage-data/add-data#update_elements_in_an_array)
 
-    override suspend fun upload() = withContext(Dispatchers.IO) {
+    override suspend fun save() = withContext(Dispatchers.IO) {
         // TODO: When not signed in and history changes, signing in will only download
         // TODO: history from firebase and not keep local changes. Should be fixed once we figure
         // TODO: out how to remove this check and query the upload if the user is not signed in
