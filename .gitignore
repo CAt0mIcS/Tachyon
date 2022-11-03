@@ -15,4 +15,4 @@
 local.properties
 app/release/*.*
 google-services.json
-buildsrc/build/*
+buildsrc/build/
