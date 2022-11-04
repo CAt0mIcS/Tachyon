@@ -100,7 +100,7 @@ class TimingDataController(
         override fun newArray(size: Int): Array<TimingDataController?> = arrayOfNulls(size)
     }
 
-    fun getOrNull(index: Int) = _timingData.getOrNull(index)
+    fun getOrNull(index: Int) = TimingData.deserializeIfValid(_timingData.getOrNull(index))
     fun isEmpty() = _timingData.isEmpty()
     fun isNotEmpty() = _timingData.isNotEmpty()
     val size get() = _timingData.size

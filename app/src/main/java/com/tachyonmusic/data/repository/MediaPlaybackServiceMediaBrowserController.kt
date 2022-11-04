@@ -148,9 +148,11 @@ class MediaPlaybackServiceMediaBrowserController(
     }
 
     override fun onChanged(list: List<TimingData>) {
-        TODO()
-//        if (browser == null)
-//            return
-//        MediaAction.updateTimingDataEvent(browser!!, TimingDataController(list))
+        if (browser == null)
+            return
+        MediaAction.updateTimingDataEvent(
+            browser!!,
+            TimingDataController(list.map { it.toString() })
+        )
     }
 }

@@ -103,10 +103,18 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer,
          * When seeking we need to update the [currentTimingDataIndex] depending on the seek position
          */
         val timingData = currentMediaItem?.mediaMetadata?.timingData
-        if (timingData != null && timingData.isNotEmpty() && reason == Player.DISCONTINUITY_REASON_SEEK)
-            updateTimingData(timingData)
+        if (timingData != null && timingData.isNotEmpty()) {
+            // TODO: See bellow
+            /**
+             * When a new playback is played, we don't want to call [TimingDataController.advanceToCurrentPosition]
+             * because at position 0ms (starting pos) the second/third/... timing data might be closer to position 0ms
+             * than the first one in the timing data array. But when starting a new song we want to play
+             * the first timing data in the list
+             */
+            if (reason == Player.DISCONTINUITY_REASON_SEEK)
+                updateTimingData(timingData)
+        }
     }
-
 
     override fun updateTimingData(newTimingData: TimingDataController) {
         if (newTimingData.size == 0) {
