@@ -39,6 +39,10 @@ class TimingDataController(
     }
 
     fun getIndexOfCurrentPosition(positionMs: Long): Int {
+        // TODO: Better way of ensuring that when a new playback is played, the first timing data is loaded first
+        if (positionMs == 0L)
+            return 0
+
         for (i in _timingData.indices) {
             if (TimingData.deserialize(_timingData[i]).surrounds(positionMs))
                 return i
