@@ -57,7 +57,7 @@ object LibraryScreen :
             }
 
             runBlocking {
-                items(songs + loops + playlists) { playback ->
+                items(loops + songs + playlists) { playback ->
                     Text(
                         text =
                         when (playback) {

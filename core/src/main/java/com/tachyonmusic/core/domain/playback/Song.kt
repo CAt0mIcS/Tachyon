@@ -17,7 +17,8 @@ abstract class Song(
     final override val duration: Long
 ) : SinglePlayback(mediaId) {
 
-    final override val timingData = TimingDataController(arrayListOf(TimingData(0L, duration)))
+    final override val timingData =
+        TimingDataController(arrayListOf(TimingData(0L, duration).toString()))
 
     abstract override val playbackType: PlaybackType.Song
 

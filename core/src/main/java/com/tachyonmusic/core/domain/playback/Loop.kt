@@ -32,7 +32,7 @@ abstract class Loop(
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
         "mediaId" to mediaId.toString(),
-        "timingData" to timingData
+        "timingData" to timingData.timingData
     )
 
     override fun toMediaItem() = MediaItem.Builder().apply {

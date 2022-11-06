@@ -1,14 +1,12 @@
 package com.tachyonmusic.user.domain
 
-import androidx.lifecycle.LiveData
-import com.tachyonmusic.util.Resource
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.IListenable
-import kotlinx.coroutines.Deferred
+import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.flow.StateFlow
 
 interface UserRepository : IListenable<UserRepository.EventListener> {
@@ -42,7 +40,7 @@ interface UserRepository : IListenable<UserRepository.EventListener> {
         return playlists.value.find { it.mediaId == mediaId }
     }
 
-    suspend fun upload(): Resource<Unit>
+    suspend fun save(): Resource<Unit>
 
     operator fun plusAssign(song: Song)
     operator fun plusAssign(loop: Loop)

@@ -6,14 +6,14 @@ import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.snapshots.StateObject
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.player.PlayerUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -75,6 +75,7 @@ class PlayerViewModel @Inject constructor(
         _playbackState.value.artist = playback?.artist ?: ""
         _playbackState.value.durationString = useCases.millisecondsToString(playback?.duration)
         _playbackState.value.duration = playback?.duration ?: 0L
+        loopState.addAll(playback?.timingData?.timingData ?: emptyList())
     }
 
     fun onPositionChange(pos: Long) {
@@ -100,6 +101,18 @@ class PlayerViewModel @Inject constructor(
             val data = TimingData(0L, browser.duration ?: return)
             loopState.add(data)
             browser.timingData!!.add(data)
+        }
+    }
+
+    fun onSaveLoop(name: String) {
+        viewModelScope.launch {
+            val loop = useCases.createNewLoop(name)
+            if (loop.data != null) {
+                val prevTime = browser.currentPosition ?: 0L
+                browser.playback = loop.data
+                browser.seekTo(prevTime)
+            } else
+                assert(false) { loop.message ?: "Invalid Loop" }
         }
     }
 

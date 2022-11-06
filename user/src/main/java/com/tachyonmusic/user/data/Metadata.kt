@@ -75,8 +75,6 @@ class Metadata(private val gson: Gson) {
 //            launch(Dispatchers.Main) { this@Metadata.onHistoryChanged?.invoke(history) }
     }
 
-    // TODO TODO TODO: Store Gson instance in Hilt
-
     constructor(gson: Gson, map: String) : this(
         gson, gson.fromJson<LinkedTreeMap<String, Any>>(map, LinkedTreeMap::class.java)
     )
@@ -87,8 +85,8 @@ class Metadata(private val gson: Gson) {
         "songIncDecInterval" to songIncDecInterval,
         "audioUpdateInterval" to audioUpdateInterval,
         "maxPlaybacksInHistory" to maxPlaybacksInHistory,
-        "loops" to _loops.value.map { it.toHashMap() },
-        "playlists" to _playlists.value.map { it.toHashMap() },
+        "loops" to loops.value.map { it.toHashMap() },
+        "playlists" to playlists.value.map { it.toHashMap() },
 //        "history" to history.map { it.mediaId.toString() }
     )
 
