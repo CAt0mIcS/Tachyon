@@ -56,7 +56,6 @@ object Dependency {
         const val JUNIT = "junit:junit:4.13.2"
         const val ARCH_CORE_TESTING = "androidx.arch.core:core-testing:2.1.0"
         const val COROUTINES_TEST = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
-        const val TRUTH = "com.google.truth:truth:1.1.3"
 
         const val DAGGER_TEST = "com.google.dagger:hilt-android-testing:2.37"
         const val DAGGER_TEST_COMPILER = "com.google.dagger:hilt-android-compiler:2.37"
@@ -151,7 +150,6 @@ fun DependencyHandler.localTest(
     add(configName, Dependency.Test.JUNIT)
     add(configName, Dependency.Test.ARCH_CORE_TESTING)
     add(configName, Dependency.Test.COROUTINES_TEST)
-    add(configName, Dependency.Test.TRUTH)
     if (addTestUtilsProject)
         add(configName, project(":testutils"))
 }
@@ -167,7 +165,6 @@ fun DependencyHandler.androidTest(
     add(configName, Dependency.Test.DAGGER_TEST)
     add(configName, Dependency.Test.COROUTINES_TEST)
     add(configName, Dependency.Test.ARCH_CORE_TESTING)
-    add(configName, Dependency.Test.TRUTH)
     add(configName, Dependency.Test.JUNIT_EXT)
     add(configName, Dependency.Test.ANDROIDX_CORE)
     add(configName, Dependency.Test.TEST_RUNNER)

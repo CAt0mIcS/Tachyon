@@ -5,15 +5,27 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.util.IListenable
+import com.tachyonmusic.util.Listenable
 import com.tachyonmusic.util.launch
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
-class TestUserRepository : UserRepository {
-    override val songs: CompletableDeferred<List<Song>> = CompletableDeferred()
-    override val loops: CompletableDeferred<List<Loop>> = CompletableDeferred()
-    override val playlists: CompletableDeferred<List<Playlist>> = CompletableDeferred()
+class TestUserRepository : UserRepository,
+    IListenable<UserRepository.EventListener> by Listenable() {
+    override val songs: StateFlow<List<Song>>
+        get() = _songs
+    override val loops: StateFlow<List<Loop>>
+        get() = _loops
+    override val playlists: StateFlow<List<Playlist>>
+        get() = _playlists
+
+    private val _songs = MutableStateFlow(listOf<Song>())
+    private val _loops = MutableStateFlow(listOf<Loop>())
+    private val _playlists = MutableStateFlow(listOf<Playlist>())
+
 
     override val signedIn: Boolean
         get() = TODO("Not yet implemented")
@@ -28,9 +40,9 @@ class TestUserRepository : UserRepository {
             if (delay != null)
                 delay(delay)
 
-            this@TestUserRepository.songs.complete(songs)
-            this@TestUserRepository.loops.complete(loops)
-            this@TestUserRepository.playlists.complete(playlists)
+            _songs.value = songs
+            _loops.value = loops
+            _playlists.value = playlists
         }
 
     }
@@ -47,11 +59,36 @@ class TestUserRepository : UserRepository {
         TODO("Not yet implemented")
     }
 
-    override fun upload() {
+    override suspend fun delete(): Resource<Unit> {
         TODO("Not yet implemented")
     }
 
-    override fun registerEventListener(listener: UserRepository.EventListener?) {
+    override suspend fun save(): Resource<Unit> {
         TODO("Not yet implemented")
     }
+
+    override fun plusAssign(song: Song) {
+        _songs.value += song
+    }
+
+    override fun plusAssign(loop: Loop) {
+        _loops.value += loop
+    }
+
+    override fun plusAssign(playlist: Playlist) {
+        _playlists.value += playlist
+    }
+
+    override fun minusAssign(song: Song) {
+        _songs.value -= song
+    }
+
+    override fun minusAssign(loop: Loop) {
+        _loops.value -= loop
+    }
+
+    override fun minusAssign(playlist: Playlist) {
+        _playlists.value -= playlist
+    }
+
 }

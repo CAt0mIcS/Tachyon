@@ -16,6 +16,12 @@ fun <T> assertEquals(val1: T, val2: T) {
     }
 }
 
+fun <T> assertNotEquals(val1: T, val2: T) {
+    assert(val1 != val2) {
+        "$val1 == $val2"
+    }
+}
+
 fun <T> assertEquals(val1: List<T>, val2: List<T>) {
     assert(val1 == val2) {
         "${val1.joinToString(",") { "[$it]" }} != ${val2.joinToString(",") { "[$it]" }}"

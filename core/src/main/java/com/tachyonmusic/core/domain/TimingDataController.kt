@@ -108,5 +108,7 @@ class TimingDataController(
     fun isEmpty() = _timingData.isEmpty()
     fun isNotEmpty() = _timingData.isNotEmpty()
     val size get() = _timingData.size
+    val indices get() = _timingData.indices
+    operator fun get(index: Int) = _timingData[index]
 }
 

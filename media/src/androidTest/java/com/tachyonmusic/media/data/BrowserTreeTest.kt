@@ -1,6 +1,5 @@
 package com.tachyonmusic.media.data
 
-import com.google.common.truth.Truth.assertThat
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.media.domain.model.TestSong
 import kotlinx.coroutines.runBlocking
@@ -52,36 +51,36 @@ class BrowserTreeTest {
     fun getting_browser_tree_root_returns_all_playbacks() {
         runBlocking {
             val expectedItems =
-                (repository.songs.await() + repository.loops.await() + repository.playlists.await()).map { it.toMediaItem() }
+                (repository.songs.value + repository.loops.value + repository.playlists.value).map { it.toMediaItem() }
             val items = browserTree.get(BrowserTree.ROOT, 0, expectedItems.size)
-            assertThat(items?.containsAll(expectedItems))
+            assert(items?.containsAll(expectedItems) ?: false)
         }
     }
 
     @Test
     fun getting_browser_tree_songs_returns_all_songs() {
         runBlocking {
-            val expectedItems = repository.songs.await().map { it.toMediaItem() }
+            val expectedItems = repository.songs.value.map { it.toMediaItem() }
             val items = browserTree.get(BrowserTree.SONG_ROOT, 0, expectedItems.size)
-            assertThat(items?.containsAll(expectedItems))
+            assert(items?.containsAll(expectedItems) ?: false)
         }
     }
 
     @Test
     fun getting_browser_tree_loops_returns_all_loops() {
         runBlocking {
-            val expectedItems = repository.loops.await().map { it.toMediaItem() }
+            val expectedItems = repository.loops.value.map { it.toMediaItem() }
             val items = browserTree.get(BrowserTree.LOOP_ROOT, 0, expectedItems.size)
-            assertThat(items?.containsAll(expectedItems))
+            assert(items?.containsAll(expectedItems) ?: false)
         }
     }
 
     @Test
     fun getting_browser_tree_playlists_returns_all_playlists() {
         runBlocking {
-            val expectedItems = repository.playlists.await().map { it.toMediaItem() }
+            val expectedItems = repository.playlists.value.map { it.toMediaItem() }
             val items = browserTree.get(BrowserTree.PLAYLIST_ROOT, 0, expectedItems.size)
-            assertThat(items?.containsAll(expectedItems))
+            assert(items?.containsAll(expectedItems) ?: false)
         }
     }
 }

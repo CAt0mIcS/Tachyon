@@ -1,5 +1,6 @@
 package com.tachyonmusic.media.domain.model
 
+import android.net.Uri
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Song
@@ -11,4 +12,5 @@ class TestSong(
     duration: Long
 ) : Song(mediaId, title, artist, duration) {
     override val playbackType = PlaybackType.Song.Local()
+    override val uri: Uri = Uri.fromFile(mediaId.path)
 }

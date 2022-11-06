@@ -1,7 +1,8 @@
 package com.tachyonmusic.core.domain
 
 import android.annotation.SuppressLint
-import com.google.common.truth.Truth.assertThat
+import com.tachyonmusic.testutils.assertEquals
+import com.tachyonmusic.testutils.assertNotEquals
 import org.junit.Test
 import java.io.File
 
@@ -15,9 +16,9 @@ class MediaIdTest {
         val mediaId = MediaId.ofLocalSong(path)
 
         val expectedSource = "*0*${path.absolutePath}"
-        assertThat(mediaId.source == expectedSource)
-        assertThat(mediaId.isLocalSong)
-        assertThat(mediaId.path != null)
-        assertThat(mediaId.path!!.absolutePath == path.absolutePath)
+        assertEquals(mediaId.source, expectedSource)
+        assert(mediaId.isLocalSong)
+        assertNotEquals(mediaId.path, null)
+        assertEquals(mediaId.path!!.absolutePath, path.absolutePath)
     }
 }
