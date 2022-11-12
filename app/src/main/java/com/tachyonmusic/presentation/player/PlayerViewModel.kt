@@ -10,9 +10,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.player.PlayerUseCases
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,6 +27,7 @@ class PlayerViewModel @Inject constructor(
     private val updateHandler = Handler(Looper.getMainLooper())
     private val audioUpdateInterval = 100L
 
+    // TODO: Ensure that artwork gets destroyed when the screen is closed
     private val _playbackState = mutableStateOf(PlaybackState())
     val playbackState: State<PlaybackState> = _playbackState
 
@@ -71,11 +74,23 @@ class PlayerViewModel @Inject constructor(
 
     override fun onPlaybackTransition(playback: Playback?) {
         Log.d("PlayerViewModel", "onPlaybackTransition to ${playback?.title} - ${playback?.artist}")
-        _playbackState.value.title = playback?.title ?: ""
-        _playbackState.value.artist = playback?.artist ?: ""
-        _playbackState.value.durationString = useCases.millisecondsToString(playback?.duration)
-        _playbackState.value.duration = playback?.duration ?: 0L
+        _playbackState.value = PlaybackState(
+            playback?.title ?: "",
+            playback?.artist ?: "",
+            playback?.duration ?: 0L,
+            useCases.millisecondsToString(playback?.duration),
+            if (playback is SinglePlayback) playback.artwork else null
+        )
         loopState.addAll(playback?.timingData?.timingData ?: emptyList())
+
+        // TODO: Use case?
+        if (playback is SinglePlayback) {
+            viewModelScope.launch(Dispatchers.IO) {
+                playback.loadBitmap {
+                    _playbackState.value = playbackState.value.copy(artwork = playback.artwork)
+                }
+            }
+        }
     }
 
     fun onPositionChange(pos: Long) {

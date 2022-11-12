@@ -43,6 +43,8 @@ interface UserRepository : IListenable<UserRepository.EventListener> {
 
     suspend fun save(): Resource<Unit>
 
+    fun addHistory(playback: Playback)
+
     operator fun plusAssign(song: Song)
     operator fun plusAssign(loop: Loop)
     operator fun plusAssign(playlist: Playlist)

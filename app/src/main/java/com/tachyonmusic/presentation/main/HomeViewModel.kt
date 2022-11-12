@@ -44,11 +44,6 @@ class HomeViewModel @Inject constructor(
 
     private var albumArtLoaded: Boolean = false
 
-    init {
-        // Load album art when the view is active, TODO: Unload when view becomes inactive and don't load on main coroutine
-        loadAlbumArtState(history.value.filterIsInstance<Song>())
-    }
-
     fun onSearch(text: String) {
         _searchString.value = text
 
@@ -56,7 +51,7 @@ class HomeViewModel @Inject constructor(
             _searchResults.value = listOf()
 
         if (!albumArtLoaded) {
-            loadAlbumArtState(
+            loadArtworkState(
                 songs.value.toMutableList()
                     .apply { removeAll(history.value.toSet()) })
             albumArtLoaded = true
@@ -75,9 +70,15 @@ class HomeViewModel @Inject constructor(
 
     fun onItemClicked(playback: Playback) {
         itemClicked(playback)
+
+        // Unload artwork in not used songs to save memory
+        // TODO: Don't unload now playing artwork, currently is reloaded again in [PlayerViewModel]
+        for (song in songs.value) {
+            song.unloadArtwork()
+        }
     }
 
-    private fun loadAlbumArtState(items: List<Song>) {
+    fun loadArtworkState(items: List<Song>) {
         viewModelScope.launch(Dispatchers.IO) {
             loadAlbumArt(items).map { res ->
                 when (res) {

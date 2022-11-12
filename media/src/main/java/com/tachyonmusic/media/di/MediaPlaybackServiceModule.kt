@@ -70,6 +70,7 @@ class MediaPlaybackServiceModule {
         ConfirmAddedMediaItems(repository),
         PreparePlayer(player),
         GetSupportedCommands(),
-        UpdateTimingDataOfCurrentPlayback(player)
+        UpdateTimingDataOfCurrentPlayback(player),
+        AddNewPlaybackToHistory(repository)
     )
 }

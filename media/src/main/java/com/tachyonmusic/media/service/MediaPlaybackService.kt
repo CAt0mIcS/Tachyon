@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.media3.cast.DefaultCastOptionsProvider
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.session.*
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
@@ -16,18 +17,18 @@ import com.tachyonmusic.media.EXO_PLAYER_NAME
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.data.ext.parcelable
+import com.tachyonmusic.media.data.ext.playback
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.ServiceUseCases
 import com.tachyonmusic.util.future
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import javax.inject.Named
 
 
 @AndroidEntryPoint
-class MediaPlaybackService : MediaLibraryService() {
+class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     @Named(EXO_PLAYER_NAME)
@@ -43,12 +44,18 @@ class MediaPlaybackService : MediaLibraryService() {
     @Inject
     lateinit var useCases: ServiceUseCases
 
+    private val supervisor = SupervisorJob()
+    private val ioScope = CoroutineScope(supervisor + Dispatchers.IO)
+
     private lateinit var mediaSession: MediaLibrarySession
 
     override fun onCreate() {
         super.onCreate()
 
         setMediaNotificationProvider(MediaNotificationProvider(this))
+
+        exoPlayer.addListener(this)
+        castPlayer.addListener(this)
 
         mediaSession =
             MediaLibrarySession.Builder(this, exoPlayer, MediaLibrarySessionCallback()).build()
@@ -137,6 +144,12 @@ class MediaPlaybackService : MediaLibraryService() {
                 }
                 else -> SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED)
             }
+        }
+    }
+
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        ioScope.launch {
+            useCases.addNewPlaybackToHistory(mediaItem?.mediaMetadata?.playback)
         }
     }
 }

@@ -204,6 +204,8 @@ class FirebaseRepository(
         job.join()
     }
 
+    override fun addHistory(playback: Playback) = metadata.addHistory(playback)
+
     override operator fun plusAssign(song: Song) {
         fileRepository += song
     }

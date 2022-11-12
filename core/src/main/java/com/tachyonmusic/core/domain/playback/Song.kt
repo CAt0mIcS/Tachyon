@@ -22,6 +22,10 @@ abstract class Song(
 
     abstract override val playbackType: PlaybackType.Song
 
+    fun unloadArtwork() {
+        artwork = null
+    }
+
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
         "mediaId" to mediaId.toString()
     )
