@@ -37,7 +37,8 @@ class LocalSong(
     )
 
     override suspend fun loadBitmap(onDone: suspend () -> Unit) {
-        artwork = SongMetadata.loadBitmap(path)
+        if (artwork == null)
+            artwork = SongMetadata.loadBitmap(path)
         onDone()
     }
 

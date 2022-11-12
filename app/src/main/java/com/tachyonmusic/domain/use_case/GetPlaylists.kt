@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain.use_case.main
+package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.user.domain.UserRepository
 

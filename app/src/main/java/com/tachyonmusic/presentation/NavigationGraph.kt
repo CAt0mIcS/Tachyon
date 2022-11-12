@@ -8,7 +8,7 @@ import com.tachyonmusic.presentation.authentication.RegisterScreen
 import com.tachyonmusic.presentation.authentication.SignInScreen
 import com.tachyonmusic.presentation.main.HomeScreen
 import com.tachyonmusic.presentation.main.RecommendedScreen
-import com.tachyonmusic.presentation.main.SearchScreen
+import com.tachyonmusic.presentation.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.player.PlayerScreen
 
 @Composable
@@ -17,8 +17,8 @@ fun NavigationGraph(navController: NavHostController) {
         composable(HomeScreen.route) {
             HomeScreen(navController)
         }
-        composable(SearchScreen.route) {
-            SearchScreen()
+        composable(PlaybackSearchScreen.route) {
+            PlaybackSearchScreen(navController)
         }
         composable(RecommendedScreen.route) {
             RecommendedScreen()

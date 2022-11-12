@@ -12,7 +12,8 @@ import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.use_case.player.PlayerUseCases
+import com.tachyonmusic.domain.use_case.player.CreateNewLoop
+import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val browser: MediaBrowserController,
-    private val useCases: PlayerUseCases
+    private val millisecondsToReadableString: MillisecondsToReadableString,
+    private val createNewLoop: CreateNewLoop
 ) : ViewModel(), MediaBrowserController.EventListener {
 
     private val updateHandler = Handler(Looper.getMainLooper())
@@ -78,7 +80,7 @@ class PlayerViewModel @Inject constructor(
             playback?.title ?: "",
             playback?.artist ?: "",
             playback?.duration ?: 0L,
-            useCases.millisecondsToString(playback?.duration),
+            millisecondsToReadableString(playback?.duration),
             if (playback is SinglePlayback) playback.artwork else null
         )
         loopState.addAll(playback?.timingData?.timingData ?: emptyList())
@@ -121,7 +123,7 @@ class PlayerViewModel @Inject constructor(
 
     fun onSaveLoop(name: String) {
         viewModelScope.launch {
-            val loop = useCases.createNewLoop(name)
+            val loop = createNewLoop(name)
             if (loop.data != null) {
                 val prevTime = browser.currentPosition ?: 0L
                 browser.playback = loop.data
@@ -134,7 +136,7 @@ class PlayerViewModel @Inject constructor(
     private fun updateStates(pos: Long? = null) {
         _currentPosition.value = UpdateState(
             pos ?: browser.currentPosition ?: 0L,
-            useCases.millisecondsToString(pos ?: browser.currentPosition)
+            millisecondsToReadableString(pos ?: browser.currentPosition)
         )
     }
 }
