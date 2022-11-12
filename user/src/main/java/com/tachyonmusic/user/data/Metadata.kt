@@ -5,9 +5,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
+import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.data.playback.RemoteLoop
 import com.tachyonmusic.core.data.playback.RemotePlaylist
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,13 +28,15 @@ class Metadata(private val gson: Gson) {
 
     private val _loops: MutableStateFlow<List<Loop>> = MutableStateFlow(listOf())
     private val _playlists: MutableStateFlow<List<Playlist>> = MutableStateFlow(listOf())
+    private val _history: MutableStateFlow<List<Playback>> = MutableStateFlow(listOf())
 
     val loops: StateFlow<List<Loop>>
         get() = _loops
     val playlists: StateFlow<List<Playlist>>
         get() = _playlists
+    val history: StateFlow<List<Playback>>
+        get() = _history
 
-//    val history: MutableList<Playback> = mutableListOf()
 
     constructor(
         gson: Gson,
@@ -57,22 +62,21 @@ class Metadata(private val gson: Gson) {
             ?: arrayListOf()
         _playlists.value = loadedPlaylists
 
-        // TODO: Unable to find loop the first time history loads on release builds only
-//        (data["history"] as List<String?>?)?.forEach { mediaIdStr ->
-//            val mediaId = MediaId.deserialize(mediaIdStr!!)
-//            if (mediaId.isSong)
-//                history.add(Song(mediaId))
-//            else if (mediaId.isLoop)
-//                loadedLoops.find { it.mediaId == mediaId }?.let { history.add(it) }
-//            else
-//                loadedPlaylists.find { it.mediaId == mediaId }?.let { history.add(it) }
-//        }
+
+        (data["history"] as List<String?>?)?.forEach { mediaIdStr ->
+            val mediaId = MediaId.deserializeIfValid(mediaIdStr)
+            if (mediaId != null) {
+                if (mediaId.isLocalSong)
+                    _history.value += LocalSong.build(mediaId)
+                else if (mediaId.isRemoteLoop)
+                    loadedLoops.find { it.mediaId == mediaId }?.let { _history.value += it }
+                else
+                    loadedPlaylists.find { it.mediaId == mediaId }?.let { _history.value += it }
+            }
+        }
+        shrinkHistory()
 
         Log.d(TAG, "Finished loading metadata")
-
-//        this.onHistoryChanged = onHistoryChanged
-//        if (history.isNotEmpty())
-//            launch(Dispatchers.Main) { this@Metadata.onHistoryChanged?.invoke(history) }
     }
 
     constructor(gson: Gson, map: String) : this(
@@ -87,36 +91,39 @@ class Metadata(private val gson: Gson) {
         "maxPlaybacksInHistory" to maxPlaybacksInHistory,
         "loops" to loops.value.map { it.toHashMap() },
         "playlists" to playlists.value.map { it.toHashMap() },
-//        "history" to history.map { it.mediaId.toString() }
+        "history" to history.value.map { it.mediaId.toString() }
     )
 
     override fun toString(): String = gson.toJson(toHashMap())
 
-//    fun addHistory(playback: Playback) {
-//        if (history.contains(playback)) {
-//            history.remove(playback)
-//            history.add(0, playback)
-//        } else {
-//            history.add(0, playback)
-//            if (history.size > maxPlaybacksInHistory)
-//                shrinkHistory()
-//        }
-//        onHistoryChanged?.invoke(history)
-//    }
-//
-//    fun clearHistory() {
-//        if (history.isNotEmpty()) {
-//            history.clear()
-//            onHistoryChanged?.invoke(history)
-//        }
-//    }
+    fun addHistory(playback: Playback) {
+        if (history.value.contains(playback)) {
+            _history.value = history.value.toMutableList().apply {
+                remove(playback)
+                add(0, playback)
+            }
+        } else {
+            if (history.value.size + 1 <= maxPlaybacksInHistory)
+                _history.value = history.value.toMutableList().apply {
+                    add(0, playback)
+                }
+            shrinkHistory()
+        }
+    }
+
+    fun clearHistory() {
+        if (history.value.isNotEmpty())
+            _history.value = listOf()
+    }
 
     /**
      * Shrinks length of [history] to [maxPlaybacksInHistory]
      */
-//    private fun shrinkHistory() {
-//        history.subList(0, history.size - maxPlaybacksInHistory).clear()
-//    }
+    private fun shrinkHistory() {
+        if (history.value.size > maxPlaybacksInHistory) {
+            _history.value = history.value.subList(0, maxPlaybacksInHistory)
+        }
+    }
 
     operator fun plusAssign(loop: Loop) {
         val newList = _loops.value + loop
@@ -149,6 +156,7 @@ class Metadata(private val gson: Gson) {
         if (maxPlaybacksInHistory != other.maxPlaybacksInHistory) return false
         if (_loops != other._loops) return false
         if (_playlists != other._playlists) return false
+        if (_history != other._history) return false
 
         return true
     }

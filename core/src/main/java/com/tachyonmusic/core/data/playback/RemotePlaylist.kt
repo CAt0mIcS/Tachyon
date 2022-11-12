@@ -1,5 +1,6 @@
 package com.tachyonmusic.core.data.playback
 
+import android.graphics.Bitmap
 import android.os.Parcel
 import android.os.Parcelable
 import com.google.gson.internal.LinkedTreeMap
@@ -16,6 +17,12 @@ class RemotePlaylist(
 ) : Playlist(mediaId, name, playbacks, currentPlaylistIndex) {
 
     override val playbackType = PlaybackType.Playlist.Remote()
+
+    override suspend fun loadBitmap(onDone: suspend () -> Unit) {
+        for (playback in playbacks)
+            playback.loadBitmap()
+        onDone()
+    }
 
 
     companion object {

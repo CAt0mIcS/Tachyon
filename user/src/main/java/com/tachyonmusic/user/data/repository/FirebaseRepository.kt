@@ -9,6 +9,7 @@ import com.google.gson.Gson
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.user.R
@@ -36,6 +37,8 @@ class FirebaseRepository(
         get() = metadata.loops
     override val playlists: StateFlow<List<Playlist>>
         get() = metadata.playlists
+    override val history: StateFlow<List<Playback>>
+        get() = metadata.history
 
     private var metadata: Metadata = if (localCache.exists) localCache.get() else Metadata(gson)
 

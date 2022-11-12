@@ -38,8 +38,18 @@ object AppModule {
         GetPlaybacksUseCases(
             GetSongs(userRepository),
             GetLoops(userRepository),
-            GetPlaylists(userRepository)
+            GetPlaylists(userRepository),
+            GetHistory(userRepository)
         )
+
+    @Provides
+    @Singleton
+    fun provideLoadAlbumArtUseCase() = LoadAlbumArt()
+
+    @Provides
+    @Singleton
+    fun provideSearchSotredPlaybacksUseCase(userRepository: UserRepository) =
+        SearchStoredPlaybacks(userRepository)
 
     @Provides
     @Singleton

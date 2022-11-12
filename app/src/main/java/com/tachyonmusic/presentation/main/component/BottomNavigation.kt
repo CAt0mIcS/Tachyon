@@ -10,7 +10,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.tachyonmusic.presentation.main.LibraryScreen
+import com.tachyonmusic.presentation.main.HomeScreen
 import com.tachyonmusic.presentation.main.RecommendedScreen
 import com.tachyonmusic.presentation.main.SearchScreen
 
@@ -19,7 +19,7 @@ fun BottomNavigation(
     navController: NavController
 ) {
     val items = listOf(
-        LibraryScreen,
+        HomeScreen,
         SearchScreen,
         RecommendedScreen,
     )

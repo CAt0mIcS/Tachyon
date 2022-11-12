@@ -13,6 +13,7 @@ interface UserRepository : IListenable<UserRepository.EventListener> {
     val songs: StateFlow<List<Song>>
     val loops: StateFlow<List<Loop>>
     val playlists: StateFlow<List<Playlist>>
+    val history: StateFlow<List<Playback>>
 
     val signedIn: Boolean
 

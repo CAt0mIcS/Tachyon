@@ -1,6 +1,7 @@
 package com.tachyonmusic.core.data
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import java.io.File
 
@@ -8,8 +9,6 @@ class SongMetadata(path: File) {
 
     val title: String
     val artist: String
-    var albumArt: Bitmap? = null
-        private set
     val duration: Long
 
     init {
@@ -29,15 +28,27 @@ class SongMetadata(path: File) {
             metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
                 ?: "Unknown Artist"
 
-        // TODO: Decide if should be stored for all songs or loaded only when required
-//        val art: ByteArray? = metaRetriever.embeddedPicture
-//        if (art != null) {
-//            albumArt = BitmapFactory.decodeByteArray(art, 0, art.size)
-//        }
-
         duration =
             metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)!!
                 .toLong()
+    }
+
+    companion object {
+        fun loadBitmap(path: File): Bitmap? {
+            val metaRetriever = MediaMetadataRetriever()
+            try {
+                metaRetriever.setDataSource(path.absolutePath)
+            } catch (e: IllegalArgumentException) {
+                e.printStackTrace()
+                TODO("Implement error handling: ${path.absolutePath}")
+            }
+
+            val art: ByteArray? = metaRetriever.embeddedPicture
+            if (art != null) {
+                return BitmapFactory.decodeByteArray(art, 0, art.size)
+            }
+            return null
+        }
     }
 
 }
