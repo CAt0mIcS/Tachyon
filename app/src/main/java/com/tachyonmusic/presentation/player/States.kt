@@ -11,12 +11,3 @@ data class PlaybackState(
     var durationString: String = "",
     var artwork: Bitmap? = null
 )
-
-data class UpdateState(
-    var pos: Long = 0L,
-    var posStr: String = ""
-)
-
-data class LoopState(
-    var timingData: TimingData
-)

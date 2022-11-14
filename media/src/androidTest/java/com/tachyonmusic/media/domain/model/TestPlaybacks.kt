@@ -3,7 +3,7 @@ package com.tachyonmusic.media.domain.model
 import android.net.Uri
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.data.playback.Song
+import com.tachyonmusic.core.domain.playback.Song
 
 class TestSong(
     mediaId: MediaId,

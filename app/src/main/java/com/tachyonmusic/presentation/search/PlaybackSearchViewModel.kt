@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.core.data.playback.Playback
-import com.tachyonmusic.core.data.playback.Song
+import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.util.Resource

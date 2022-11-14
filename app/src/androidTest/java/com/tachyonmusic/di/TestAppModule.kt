@@ -2,14 +2,11 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import com.google.gson.Gson
-import com.tachyonmusic.core.data.playback.RemoteLoop
-import com.tachyonmusic.core.data.playback.RemotePlaylist
+import com.tachyonmusic.core.data.playback.*
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.data.playback.AbstractLoop
-import com.tachyonmusic.core.data.playback.Playlist
-import com.tachyonmusic.core.data.playback.SinglePlayback
+import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.user.data.LocalCache
 import com.tachyonmusic.user.data.repository.FileRepositoryImpl
 import com.tachyonmusic.user.data.repository.FirebaseRepository
@@ -35,11 +32,13 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun provideLoops(repository: UserRepository): MutableList<AbstractLoop> = runBlocking {
+    fun provideLoops(repository: UserRepository): MutableList<Loop> = runBlocking {
         MutableList(3) { i ->
             val song = repository.songs.await()[i]
 
-            RemoteLoop(
+            // TODO: Don't use Impl here
+
+            RemoteLoopImpl(
                 MediaId.ofRemoteLoop(i.toString(), song.mediaId),
                 i.toString(),
                 TimingDataController(listOf(TimingData(1, 10), TimingData(100, 1000))),

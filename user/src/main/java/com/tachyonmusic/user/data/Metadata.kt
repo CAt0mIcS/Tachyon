@@ -3,13 +3,13 @@ package com.tachyonmusic.user.data
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
-import com.tachyonmusic.core.data.playback.LocalSong
-import com.tachyonmusic.core.data.playback.RemoteLoop
+import com.tachyonmusic.core.data.playback.LocalSongImpl
+import com.tachyonmusic.core.data.playback.RemoteLoopImpl
 import com.tachyonmusic.core.data.playback.RemotePlaylist
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.data.playback.AbstractLoop
-import com.tachyonmusic.core.data.playback.Playback
-import com.tachyonmusic.core.data.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -24,11 +24,11 @@ class Metadata(private val gson: Gson) {
     var audioUpdateInterval = 100
     var maxPlaybacksInHistory = 25
 
-    private val _loops: MutableStateFlow<List<AbstractLoop>> = MutableStateFlow(listOf())
+    private val _loops: MutableStateFlow<List<Loop>> = MutableStateFlow(listOf())
     private val _playlists: MutableStateFlow<List<Playlist>> = MutableStateFlow(listOf())
     private val _history: MutableStateFlow<List<Playback>> = MutableStateFlow(listOf())
 
-    val loops: StateFlow<List<AbstractLoop>>
+    val loops: StateFlow<List<Loop>>
         get() = _loops
     val playlists: StateFlow<List<Playlist>>
         get() = _playlists
@@ -47,10 +47,12 @@ class Metadata(private val gson: Gson) {
         audioUpdateInterval = (data["audioUpdateInterval"] as Long? ?: 100L).toInt()
         maxPlaybacksInHistory = (data["maxPlaybacksInHistory"] as Long? ?: 25L).toInt()
 
+        // TODO: Don't use [Playback]Impl here
+
         val loadedLoops =
             ((data["loops"] as List<Map<String, Any?>?>?)?.map {
-                RemoteLoop.build(it!!)
-            } as ArrayList<AbstractLoop>?)
+                RemoteLoopImpl.build(it!!)
+            } as ArrayList<Loop>?)
                 ?: arrayListOf()
         _loops.value = loadedLoops
 
@@ -65,7 +67,7 @@ class Metadata(private val gson: Gson) {
             val mediaId = MediaId.deserializeIfValid(mediaIdStr)
             if (mediaId != null) {
                 if (mediaId.isLocalSong)
-                    _history.value += LocalSong.build(mediaId)
+                    _history.value += LocalSongImpl.build(mediaId)
                 else if (mediaId.isRemoteLoop)
                     loadedLoops.find { it.mediaId == mediaId }?.let { _history.value += it }
                 else
@@ -123,7 +125,7 @@ class Metadata(private val gson: Gson) {
         }
     }
 
-    operator fun plusAssign(loop: AbstractLoop) {
+    operator fun plusAssign(loop: Loop) {
         val newList = _loops.value + loop
         newList.sortedBy { it.name + it.title + it.artist }
         _loops.value = newList
@@ -135,7 +137,7 @@ class Metadata(private val gson: Gson) {
         _playlists.value = newList
     }
 
-    operator fun minusAssign(loop: AbstractLoop) {
+    operator fun minusAssign(loop: Loop) {
         _loops.value -= loop
     }
 

@@ -41,7 +41,7 @@ class RemoteLoopImpl(
             override fun newArray(size: Int): Array<RemoteLoopImpl?> = arrayOfNulls(size)
         }
 
-        fun build(map: Map<String, Any?>): AbstractLoop {
+        fun build(map: Map<String, Any?>): Loop {
             val mediaId = MediaId.deserialize(map["mediaId"]!! as String)
             val name = mediaId.source.replace(PlaybackType.Loop.Remote().toString(), "")
             return RemoteLoopImpl(

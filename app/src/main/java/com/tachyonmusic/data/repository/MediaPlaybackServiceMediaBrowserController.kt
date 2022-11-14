@@ -32,9 +32,7 @@ import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-class MediaPlaybackServiceMediaBrowserController(
-    private val userRepository: UserRepository
-) : MediaBrowserController,
+class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
     Player.Listener,
     ListenableMutableList.EventListener<TimingData>,
     ForwardingSong.Listener,
@@ -153,12 +151,16 @@ class MediaPlaybackServiceMediaBrowserController(
         }
     }
 
+    override fun onIsPlayingChanged(isPlaying: Boolean) = invokeEvent {
+        it.onIsPlayingChanged(isPlaying)
+    }
+
     override fun onChanged(list: List<TimingData>) {
         if (browser == null)
             return
         MediaAction.updateTimingDataEvent(
             browser!!,
-            TimingDataController(list.map { it.toString() })
+            TimingDataController(list)
         )
     }
 

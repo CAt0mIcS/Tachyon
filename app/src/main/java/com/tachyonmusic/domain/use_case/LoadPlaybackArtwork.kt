@@ -1,7 +1,7 @@
 package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.app.R
-import com.tachyonmusic.core.data.playback.Song
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.flow.flow

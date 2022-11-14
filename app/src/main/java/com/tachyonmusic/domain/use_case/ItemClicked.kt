@@ -1,6 +1,6 @@
 package com.tachyonmusic.domain.use_case
 
-import com.tachyonmusic.core.data.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.util.Resource
 

@@ -14,7 +14,7 @@ import com.tachyonmusic.core.domain.playback.SinglePlayback
 
 abstract class AbstractPlaylist(
     final override val mediaId: MediaId,
-    val name: String,
+    final override val name: String,
     playbacks: MutableList<SinglePlayback>,
     currentPlaylistIndex: Int = 0
 ) : Playlist, AbstractPlayback() {

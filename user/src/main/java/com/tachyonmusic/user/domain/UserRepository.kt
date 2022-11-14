@@ -1,17 +1,17 @@
 package com.tachyonmusic.user.domain
 
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.data.playback.AbstractLoop
-import com.tachyonmusic.core.data.playback.Playback
-import com.tachyonmusic.core.data.playback.Playlist
-import com.tachyonmusic.core.data.playback.Song
+import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.flow.StateFlow
 
 interface UserRepository : IListenable<UserRepository.EventListener> {
     val songs: StateFlow<List<Song>>
-    val loops: StateFlow<List<AbstractLoop>>
+    val loops: StateFlow<List<Loop>>
     val playlists: StateFlow<List<Playlist>>
     val history: StateFlow<List<Playback>>
 
@@ -46,10 +46,10 @@ interface UserRepository : IListenable<UserRepository.EventListener> {
     fun addHistory(playback: Playback)
 
     operator fun plusAssign(song: Song)
-    operator fun plusAssign(loop: AbstractLoop)
+    operator fun plusAssign(loop: Loop)
     operator fun plusAssign(playlist: Playlist)
     operator fun minusAssign(song: Song)
-    operator fun minusAssign(loop: AbstractLoop)
+    operator fun minusAssign(loop: Loop)
     operator fun minusAssign(playlist: Playlist)
 
     interface EventListener {

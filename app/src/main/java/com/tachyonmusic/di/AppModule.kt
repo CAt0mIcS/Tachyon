@@ -6,8 +6,7 @@ import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.main.*
-import com.tachyonmusic.domain.use_case.player.CreateNewLoop
-import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
+import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
@@ -69,7 +68,38 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMediaBrowserController(repository: UserRepository): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController(repository)
+    fun providePlayerListenerHandlerUseCase(browser: MediaBrowserController) =
+        PlayerListenerHandler(browser)
+
+    @Provides
+    @Singleton
+    fun provideGetCurrentPositionUseCase(browser: MediaBrowserController) =
+        GetCurrentPosition(browser)
+
+    @Provides
+    @Singleton
+    fun provideGetAudioUpdateIntervalUseCase(userRepository: UserRepository) =
+        GetAudioUpdateInterval(userRepository)
+
+    @Provides
+    @Singleton
+    fun provideHandlePlaybackStateUseCase(
+        browser: MediaBrowserController,
+        millisecondsToReadableString: MillisecondsToReadableString
+    ) = HandlePlaybackState(browser, millisecondsToReadableString)
+
+    @Provides
+    @Singleton
+    fun provideHandleLoopStateUseCase(browser: MediaBrowserController) = HandleLoopState(browser)
+
+    @Provides
+    @Singleton
+    fun provideSeekToPositionUseCase(browser: MediaBrowserController) = SeekToPosition(browser)
+
+
+    @Provides
+    @Singleton
+    fun provideMediaBrowserController(): MediaBrowserController =
+        MediaPlaybackServiceMediaBrowserController()
 }
 

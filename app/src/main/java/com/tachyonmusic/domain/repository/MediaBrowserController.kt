@@ -53,5 +53,6 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
     interface EventListener {
         fun onConnected() {}
         fun onPlaybackTransition(playback: Playback?) {}
+        fun onIsPlayingChanged(isPlaying: Boolean) {}
     }
 }

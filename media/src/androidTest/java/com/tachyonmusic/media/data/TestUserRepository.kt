@@ -2,8 +2,9 @@ package com.tachyonmusic.media.data
 
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.core.data.playback.AbstractLoop
-import com.tachyonmusic.core.data.playback.Playlist
-import com.tachyonmusic.core.data.playback.Song
+import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
@@ -17,7 +18,7 @@ class TestUserRepository : UserRepository,
     IListenable<UserRepository.EventListener> by Listenable() {
     override val songs: StateFlow<List<Song>>
         get() = _songs
-    override val loops: StateFlow<List<AbstractLoop>>
+    override val loops: StateFlow<List<Loop>>
         get() = _loops
     override val playlists: StateFlow<List<Playlist>>
         get() = _playlists

@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.core.NavigationItem
+import kotlinx.coroutines.delay
 
 object PlayerScreen : NavigationItem("player_screen") {
 
@@ -17,11 +18,31 @@ object PlayerScreen : NavigationItem("player_screen") {
         navController: NavController,
         viewModel: PlayerViewModel = hiltViewModel()
     ) {
-        val playbackState by viewModel.playbackState
-        val currentPosState by viewModel.currentPosition
-        val loopState = viewModel.loopState
+        var currentPosition by remember { mutableStateOf(0L) }
+        val isPlaying by viewModel.isPlaying
 
         var loopName by remember { mutableStateOf("") }
+        val playbackState by viewModel.playbackState
+
+        var isSeeking by remember { mutableStateOf(false) }
+
+        DisposableEffect(Unit) {
+            viewModel.registerPlayerListeners()
+            onDispose {
+                viewModel.unregisterPlayerListeners()
+            }
+        }
+
+        if (isPlaying) {
+            LaunchedEffect(Unit) {
+                while (true) {
+                    if (!isSeeking)
+                        currentPosition = viewModel.currentPosition
+                    delay(viewModel.audioUpdateInterval)
+                }
+            }
+        }
+
 
         Column(
             modifier = Modifier.fillMaxSize()
@@ -31,39 +52,46 @@ object PlayerScreen : NavigationItem("player_screen") {
             Text(text = playbackState.title)
             Text(text = playbackState.artist)
             Text(text = playbackState.durationString)
-            Text(text = currentPosState.posStr)
+            Text(text = viewModel.getTextForPosition(currentPosition))
 
             Slider(
-                value = currentPosState.pos.toFloat(),
+                value = currentPosition.toFloat(),
                 valueRange = 0f..playbackState.duration.toFloat(),
-                onValueChangeFinished = { viewModel.onPositionChangeFinished() },
-                onValueChange = { viewModel.onPositionChange(it.toLong()) }
+                onValueChangeFinished = {
+                    viewModel.onSeekTo(currentPosition)
+                    isSeeking = false
+                },
+                onValueChange = {
+                    isSeeking = true
+                    currentPosition = it.toLong()
+                }
             )
 
             TextField(value = loopName, onValueChange = { loopName = it })
 
-            Button(onClick = { viewModel.onSaveLoop(loopName) }) {
-                Text("Save Loop")
-            }
-
-            Button(onClick = { viewModel.onAddNewTimingData() }) {
-                Text(text = "Add Loop Time")
-            }
-
-            for (i in loopState.indices) {
-                RangeSlider(
-                    value = loopState[i].startTime.toFloat()..loopState[i].endTime.toFloat(),
-                    onValueChange = {
-                        viewModel.onLoopStateChanged(
-                            i,
-                            it.start.toLong(),
-                            it.endInclusive.toLong()
-                        )
-                    },
-                    onValueChangeFinished = { viewModel.onLoopStateChangeFinished() },
-                    valueRange = 0f..playbackState.duration.toFloat()
-                )
-            }
+//            Button(onClick = { viewModel.onSaveLoop(loopName) }) {
+//                Text("Save Loop")
+//            }
+//
+//            Button(onClick = { viewModel.onAddNewTimingData() }) {
+//                Text(text = "Add Loop Time")
+//            }
+//
+//            for (i in loopState.indices) {
+//                RangeSlider(
+//                    value = loopState[i].startTime.toFloat()..loopState[i].endTime.toFloat(),
+//                    onValueChange = {
+//                        viewModel.onLoopStateChanged(
+//                            i,
+//                            it.start.toLong(),
+//                            it.endInclusive.toLong()
+//                        )
+//                    },
+//                    onValueChangeFinished = { viewModel.onLoopStateChangeFinished() },
+//                    valueRange = 0f..playbackState.duration.toFloat()
+//                )
+//            }
         }
+
     }
 }
