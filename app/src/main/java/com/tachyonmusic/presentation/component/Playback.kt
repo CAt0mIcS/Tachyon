@@ -26,7 +26,11 @@ fun PlaybacksView(
         items(items) { playback ->
             PlaybackView(
                 playback,
-                albumArts[playback] ?: false,
+                when (playback) {
+                    is Song -> albumArts[playback] ?: false
+                    is Loop -> albumArts[playback.song] ?: false
+                    else -> false
+                }
             ) {
                 onClick(playback)
             }
