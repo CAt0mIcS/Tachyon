@@ -26,6 +26,8 @@ object PlayerScreen : NavigationItem("player_screen") {
 
         var isSeeking by remember { mutableStateOf(false) }
 
+        val loopState = viewModel.loopState
+
         DisposableEffect(Unit) {
             viewModel.registerPlayerListeners()
             onDispose {
@@ -69,28 +71,28 @@ object PlayerScreen : NavigationItem("player_screen") {
 
             TextField(value = loopName, onValueChange = { loopName = it })
 
-//            Button(onClick = { viewModel.onSaveLoop(loopName) }) {
-//                Text("Save Loop")
-//            }
-//
-//            Button(onClick = { viewModel.onAddNewTimingData() }) {
-//                Text(text = "Add Loop Time")
-//            }
-//
-//            for (i in loopState.indices) {
-//                RangeSlider(
-//                    value = loopState[i].startTime.toFloat()..loopState[i].endTime.toFloat(),
-//                    onValueChange = {
-//                        viewModel.onLoopStateChanged(
-//                            i,
-//                            it.start.toLong(),
-//                            it.endInclusive.toLong()
-//                        )
-//                    },
-//                    onValueChangeFinished = { viewModel.onLoopStateChangeFinished() },
-//                    valueRange = 0f..playbackState.duration.toFloat()
-//                )
-//            }
+            Button(onClick = { viewModel.onSaveLoop(loopName) }) {
+                Text("Save Loop")
+            }
+
+            Button(onClick = { viewModel.onAddTimingData() }) {
+                Text(text = "Add Loop Time")
+            }
+
+            for (i in loopState.indices) {
+                RangeSlider(
+                    value = loopState[i].startTime.toFloat()..loopState[i].endTime.toFloat(),
+                    onValueChange = {
+                        viewModel.onTimingDataValuesChanged(
+                            i,
+                            it.start.toLong(),
+                            it.endInclusive.toLong()
+                        )
+                    },
+                    onValueChangeFinished = { viewModel.onSetUpdatedTimingData() },
+                    valueRange = 0f..playbackState.duration.toFloat()
+                )
+            }
         }
 
     }

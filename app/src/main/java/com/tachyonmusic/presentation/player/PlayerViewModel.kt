@@ -1,8 +1,11 @@
 package com.tachyonmusic.presentation.player
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.domain.use_case.player.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration
 
@@ -15,6 +18,8 @@ class PlayerViewModel @Inject constructor(
     private val handlePlaybackState: HandlePlaybackState,
     private val handleLoopState: HandleLoopState,
     private val seekToPosition: SeekToPosition,
+    private val createAndSaveNewLoop: CreateAndSaveNewLoop,
+    private val setCurrentPlayback: SetCurrentPlayback,
     private val millisecondsToReadableString: MillisecondsToReadableString
 ) : ViewModel() {
 
@@ -25,6 +30,7 @@ class PlayerViewModel @Inject constructor(
         get() = getAudioUpdateInterval()
 
     val playbackState = handlePlaybackState.playbackState
+    val loopState = handleLoopState.loopState
 
 
     fun registerPlayerListeners() {
@@ -44,5 +50,26 @@ class PlayerViewModel @Inject constructor(
 
     fun onSeekTo(position: Long) {
         seekToPosition(position)
+    }
+
+    fun onSaveLoop(name: String) {
+        viewModelScope.launch {
+            val loop = createAndSaveNewLoop(name)
+            if(loop.data == null)
+                TODO("Error: Invalid loop")
+            setCurrentPlayback(loop.data)
+        }
+    }
+
+    fun onAddTimingData() {
+        handleLoopState.onNewTimingData()
+    }
+
+    fun onTimingDataValuesChanged(i: Int, startTime: Long, endTime: Long) {
+        handleLoopState.onTimingDataValuesChanged(i, startTime, endTime)
+    }
+
+    fun onSetUpdatedTimingData() {
+        handleLoopState.onSetUpdatedTimingData()
     }
 }

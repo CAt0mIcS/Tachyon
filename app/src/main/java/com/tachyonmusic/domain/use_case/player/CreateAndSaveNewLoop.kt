@@ -8,7 +8,7 @@ import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 
-class CreateNewLoop(
+class CreateAndSaveNewLoop(
     private val userRepo: UserRepository,
     private val browser: MediaBrowserController
 ) {
@@ -23,9 +23,14 @@ class CreateNewLoop(
 
         // TODO: Don't use Impl here
 
+        /**
+         * Building the new loop by using either the [underlyingMediaId] of the current playback
+         * which means that the current playback is a loop or using the direct media id of the current
+         * playback which means that it's a song TODO: Saving current playlist item as loop
+         */
         val loop = RemoteLoopImpl.build(
             name,
-            browser.playback!!.mediaId,
+            browser.playback!!.mediaId.underlyingMediaId ?: browser.playback!!.mediaId,
             TimingDataController(browser.timingData!!)
         )
         userRepo += loop

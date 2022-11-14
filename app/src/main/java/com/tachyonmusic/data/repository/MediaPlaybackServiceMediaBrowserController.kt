@@ -17,15 +17,12 @@ import com.tachyonmusic.core.constants.MediaAction
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.data.ForwardingSong
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.data.ext.duration
 import com.tachyonmusic.media.data.ext.name
 import com.tachyonmusic.media.data.ext.playback
 import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.service.MediaPlaybackService
-import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
 import kotlinx.coroutines.guava.await
@@ -35,7 +32,6 @@ import kotlinx.coroutines.runBlocking
 class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
     Player.Listener,
     ListenableMutableList.EventListener<TimingData>,
-    ForwardingSong.Listener,
     IListenable<MediaBrowserController.EventListener> by Listenable() {
 
     private var browser: MediaBrowser? = null
@@ -161,15 +157,6 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         MediaAction.updateTimingDataEvent(
             browser!!,
             TimingDataController(list)
-        )
-    }
-
-    override fun onSetTimingData(song: Song, timingData: TimingDataController) {
-        if (browser == null)
-            return
-        MediaAction.updateTimingDataEvent(
-            browser!!,
-            timingData
         )
     }
 }

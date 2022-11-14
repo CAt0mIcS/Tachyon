@@ -60,7 +60,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideCreateNewLoopUseCase(userRepo: UserRepository, browser: MediaBrowserController) =
-        CreateNewLoop(userRepo, browser)
+        CreateAndSaveNewLoop(userRepo, browser)
 
     @Provides
     @Singleton
@@ -96,6 +96,9 @@ object AppModule {
     @Singleton
     fun provideSeekToPositionUseCase(browser: MediaBrowserController) = SeekToPosition(browser)
 
+    @Provides
+    @Singleton
+    fun provideSetCurrentPlayback(browser: MediaBrowserController) = SetCurrentPlayback(browser)
 
     @Provides
     @Singleton
