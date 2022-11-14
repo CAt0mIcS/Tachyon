@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.app.R
-import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.core.data.playback.Song
 import com.tachyonmusic.presentation.component.PlaybacksView
 import com.tachyonmusic.presentation.main.component.BottomNavigationItem
 import com.tachyonmusic.presentation.player.PlayerScreen

@@ -1,21 +1,19 @@
 package com.tachyonmusic.core.data.playback
 
-import android.graphics.Bitmap
 import android.os.Parcel
 import android.os.Parcelable
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Song
 
-class RemoteLoop(
+class RemoteLoopImpl(
     mediaId: MediaId,
     name: String,
     timingData: TimingDataController,
     song: Song
-) : Loop(mediaId, name, timingData, song) {
+) : AbstractLoop(mediaId, name, timingData, song) {
 
     override val playbackType = PlaybackType.Loop.Remote()
 
@@ -23,15 +21,16 @@ class RemoteLoop(
 
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<RemoteLoop> {
-            override fun createFromParcel(parcel: Parcel): RemoteLoop {
+        val CREATOR = object : Parcelable.Creator<RemoteLoopImpl> {
+            override fun createFromParcel(parcel: Parcel): RemoteLoopImpl {
                 val name = parcel.readString()!!
 
                 val timingData: TimingDataController =
                     parcel.readParcelable(TimingDataController::class.java.classLoader)!!
 
-                val song: Song = parcel.readParcelable(Song::class.java.classLoader)!!
-                return RemoteLoop(
+                val song: Song =
+                    parcel.readParcelable(Song::class.java.classLoader)!!
+                return RemoteLoopImpl(
                     MediaId.ofRemoteLoop(name, song.mediaId),
                     name,
                     timingData,
@@ -39,25 +38,25 @@ class RemoteLoop(
                 )
             }
 
-            override fun newArray(size: Int): Array<RemoteLoop?> = arrayOfNulls(size)
+            override fun newArray(size: Int): Array<RemoteLoopImpl?> = arrayOfNulls(size)
         }
 
-        fun build(map: Map<String, Any?>): Loop {
+        fun build(map: Map<String, Any?>): AbstractLoop {
             val mediaId = MediaId.deserialize(map["mediaId"]!! as String)
             val name = mediaId.source.replace(PlaybackType.Loop.Remote().toString(), "")
-            return RemoteLoop(
+            return RemoteLoopImpl(
                 mediaId,
                 name,
                 TimingDataController(map["timingData"]!! as ArrayList<String>),
-                LocalSong.build(mediaId.underlyingMediaId!!)
+                LocalSongImpl.build(mediaId.underlyingMediaId!!)
             )
         }
 
-        fun build(mediaId: MediaId, timingData: TimingDataController) = RemoteLoop(
+        fun build(mediaId: MediaId, timingData: TimingDataController): Loop = RemoteLoopImpl(
             mediaId,
             mediaId.source.replace(PlaybackType.Loop.Remote().toString(), ""),
             timingData,
-            if (mediaId.underlyingMediaId?.isLocalSong == true) LocalSong.build(mediaId.underlyingMediaId) else TODO(
+            if (mediaId.underlyingMediaId?.isLocalSong == true) LocalSongImpl.build(mediaId.underlyingMediaId) else TODO(
                 "Unknown song type when deserializing loop"
             )
         )

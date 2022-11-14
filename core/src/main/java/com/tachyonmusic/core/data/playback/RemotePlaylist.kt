@@ -1,9 +1,7 @@
 package com.tachyonmusic.core.data.playback
 
-import android.graphics.Bitmap
 import android.os.Parcel
 import android.os.Parcelable
-import com.google.gson.internal.LinkedTreeMap
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
@@ -14,7 +12,7 @@ class RemotePlaylist(
     name: String,
     playbacks: MutableList<SinglePlayback>,
     currentPlaylistIndex: Int = 0
-) : Playlist(mediaId, name, playbacks, currentPlaylistIndex) {
+) : AbstractPlaylist(mediaId, name, playbacks, currentPlaylistIndex) {
 
     override val playbackType = PlaybackType.Playlist.Remote()
 
@@ -63,8 +61,8 @@ class RemotePlaylist(
             val playbacks = playbacksMaps.map { map ->
                 val singleMediaId = MediaId.deserialize(map["mediaId"]!! as String)
                 if (singleMediaId.isLocalSong)
-                    return@map LocalSong.build(map)
-                RemoteLoop.build(map)
+                    return@map LocalSongImpl.build(map)
+                RemoteLoopImpl.build(map)
             } as MutableList<SinglePlayback>
 
             return RemotePlaylist(mediaId, name, playbacks, idx)
@@ -74,7 +72,7 @@ class RemotePlaylist(
             mediaId: MediaId,
             playbacks: MutableList<SinglePlayback>,
             currentPlaylistIndex: Int
-        ) =
+        ): Playlist =
             RemotePlaylist(
                 mediaId,
                 mediaId.source.replace(PlaybackType.Playlist.Remote().toString(), ""),

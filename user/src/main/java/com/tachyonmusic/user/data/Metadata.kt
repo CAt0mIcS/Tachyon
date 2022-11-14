@@ -1,17 +1,15 @@
 package com.tachyonmusic.user.data
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
 import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.data.playback.RemoteLoop
 import com.tachyonmusic.core.data.playback.RemotePlaylist
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Loop
-import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.data.playback.AbstractLoop
+import com.tachyonmusic.core.data.playback.Playback
+import com.tachyonmusic.core.data.playback.Playlist
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -26,11 +24,11 @@ class Metadata(private val gson: Gson) {
     var audioUpdateInterval = 100
     var maxPlaybacksInHistory = 25
 
-    private val _loops: MutableStateFlow<List<Loop>> = MutableStateFlow(listOf())
+    private val _loops: MutableStateFlow<List<AbstractLoop>> = MutableStateFlow(listOf())
     private val _playlists: MutableStateFlow<List<Playlist>> = MutableStateFlow(listOf())
     private val _history: MutableStateFlow<List<Playback>> = MutableStateFlow(listOf())
 
-    val loops: StateFlow<List<Loop>>
+    val loops: StateFlow<List<AbstractLoop>>
         get() = _loops
     val playlists: StateFlow<List<Playlist>>
         get() = _playlists
@@ -52,7 +50,7 @@ class Metadata(private val gson: Gson) {
         val loadedLoops =
             ((data["loops"] as List<Map<String, Any?>?>?)?.map {
                 RemoteLoop.build(it!!)
-            } as ArrayList<Loop>?)
+            } as ArrayList<AbstractLoop>?)
                 ?: arrayListOf()
         _loops.value = loadedLoops
 
@@ -125,7 +123,7 @@ class Metadata(private val gson: Gson) {
         }
     }
 
-    operator fun plusAssign(loop: Loop) {
+    operator fun plusAssign(loop: AbstractLoop) {
         val newList = _loops.value + loop
         newList.sortedBy { it.name + it.title + it.artist }
         _loops.value = newList
@@ -137,7 +135,7 @@ class Metadata(private val gson: Gson) {
         _playlists.value = newList
     }
 
-    operator fun minusAssign(loop: Loop) {
+    operator fun minusAssign(loop: AbstractLoop) {
         _loops.value -= loop
     }
 

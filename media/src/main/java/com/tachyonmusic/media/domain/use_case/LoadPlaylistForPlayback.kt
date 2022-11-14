@@ -3,14 +3,12 @@ package com.tachyonmusic.media.domain.use_case
 import androidx.media3.common.MediaItem
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
-import com.tachyonmusic.core.domain.playback.Loop
-import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.core.data.playback.AbstractLoop
+import com.tachyonmusic.core.data.playback.Playback
+import com.tachyonmusic.core.data.playback.Playlist
+import com.tachyonmusic.core.data.playback.Song
 import com.tachyonmusic.media.R
 import com.tachyonmusic.user.domain.UserRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class LoadPlaylistForPlayback(
     private val repository: UserRepository
@@ -26,7 +24,7 @@ class LoadPlaylistForPlayback(
                     items =
                         repository.songs.value.map { it.toMediaItem() } + repository.loops.value.map { it.toMediaItem() }
                 }
-                is Loop -> {
+                is AbstractLoop -> {
                     initialWindowIndex = repository.loops.value.indexOf(playback)
                     items =
                         repository.loops.value.map { it.toMediaItem() } + repository.songs.value.map { it.toMediaItem() }
@@ -45,7 +43,7 @@ class LoadPlaylistForPlayback(
                     initialWindowIndex = repository.songs.value.indexOf(playback)
                     items = repository.songs.value.map { it.toMediaItem() }
                 }
-                is Loop -> {
+                is AbstractLoop -> {
                     initialWindowIndex = repository.loops.value.indexOf(playback)
                     items = repository.loops.value.map { it.toMediaItem() }
                 }

@@ -1,7 +1,7 @@
 package com.tachyonmusic.user.data
 
-import com.tachyonmusic.core.domain.playback.Loop
-import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.data.playback.AbstractLoop
+import com.tachyonmusic.core.data.playback.Playlist
 import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.tryInject
 import com.tachyonmusic.user.di.AppModule
@@ -30,7 +30,7 @@ class LocalCacheTest {
     lateinit var localCache: LocalCache
 
     @Inject
-    lateinit var loops: MutableList<Loop>
+    lateinit var loops: MutableList<AbstractLoop>
 
     @Inject
     lateinit var playlists: MutableList<Playlist>

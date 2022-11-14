@@ -8,7 +8,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tachyonmusic.core.data.playback.SinglePlayback
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -21,9 +23,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    private val browser: MediaBrowserController,
     private val millisecondsToReadableString: MillisecondsToReadableString,
-    private val createNewLoop: CreateNewLoop
+    private val createNewLoop: CreateNewLoop,
 ) : ViewModel(), MediaBrowserController.EventListener {
 
     private val updateHandler = Handler(Looper.getMainLooper())
@@ -109,8 +110,8 @@ class PlayerViewModel @Inject constructor(
         loopState[i] = TimingData(startTime, endTime)
     }
 
-    fun onLoopStateChangeFinished() {
-        browser.timingData = loopState
+    fun onLoopStateChangeFinished(playback: SinglePlayback) {
+        playback.timingData = TimingDataController(loopState)
     }
 
     fun onAddNewTimingData() {

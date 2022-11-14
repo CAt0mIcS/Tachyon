@@ -1,6 +1,5 @@
 package com.tachyonmusic.core.data.playback
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
@@ -8,18 +7,17 @@ import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.data.SongMetadata
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Song
-import kotlinx.coroutines.flow.flow
 import java.io.File
 
 /**
  * Song stored in local storage with a path in the filesystem
  */
-class LocalSong(
+class LocalSongImpl(
     mediaId: MediaId,
     title: String,
     artist: String,
     duration: Long
-) : Song(mediaId, title, artist, duration) {
+) : AbstractSong(mediaId, title, artist, duration) {
 
     override val playbackType = PlaybackType.Song.Local()
 
@@ -44,14 +42,14 @@ class LocalSong(
 
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<LocalSong> {
-            override fun createFromParcel(parcel: Parcel) = LocalSong(parcel)
-            override fun newArray(size: Int): Array<LocalSong?> = arrayOfNulls(size)
+        val CREATOR = object : Parcelable.Creator<LocalSongImpl> {
+            override fun createFromParcel(parcel: Parcel) = LocalSongImpl(parcel)
+            override fun newArray(size: Int): Array<LocalSongImpl?> = arrayOfNulls(size)
         }
 
-        fun build(path: File): LocalSong =
+        fun build(path: File): Song =
             SongMetadata(path).run {
-                return@run LocalSong(MediaId.ofLocalSong(path), title, artist, duration)
+                return@run LocalSongImpl(MediaId.ofLocalSong(path), title, artist, duration)
             }
 
         fun build(mediaId: MediaId) = build(mediaId.path!!)

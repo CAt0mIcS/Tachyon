@@ -3,9 +3,8 @@ package com.tachyonmusic.core.constants
 import android.os.Bundle
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionCommand
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.data.playback.Playback
 
 /**
  * Defines custom actions sent to the MediaPlaybackService. The first item is the event name the ones

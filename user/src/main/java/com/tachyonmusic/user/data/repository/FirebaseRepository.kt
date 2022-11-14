@@ -8,10 +8,10 @@ import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
-import com.tachyonmusic.core.domain.playback.Loop
-import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.core.data.playback.AbstractLoop
+import com.tachyonmusic.core.data.playback.Playback
+import com.tachyonmusic.core.data.playback.Playlist
+import com.tachyonmusic.core.data.playback.Song
 import com.tachyonmusic.user.R
 import com.tachyonmusic.user.data.LocalCache
 import com.tachyonmusic.user.data.Metadata
@@ -33,7 +33,7 @@ class FirebaseRepository(
 
     override val songs: StateFlow<List<Song>>
         get() = fileRepository.songs
-    override val loops: StateFlow<List<Loop>>
+    override val loops: StateFlow<List<AbstractLoop>>
         get() = metadata.loops
     override val playlists: StateFlow<List<Playlist>>
         get() = metadata.playlists
@@ -210,7 +210,7 @@ class FirebaseRepository(
         fileRepository += song
     }
 
-    override operator fun plusAssign(loop: Loop) {
+    override operator fun plusAssign(loop: AbstractLoop) {
         metadata += loop
     }
 
@@ -222,7 +222,7 @@ class FirebaseRepository(
         fileRepository -= song
     }
 
-    override operator fun minusAssign(loop: Loop) {
+    override operator fun minusAssign(loop: AbstractLoop) {
         metadata -= loop
     }
 

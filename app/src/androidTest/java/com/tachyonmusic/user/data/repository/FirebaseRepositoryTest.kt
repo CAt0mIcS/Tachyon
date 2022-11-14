@@ -1,8 +1,8 @@
 package com.tachyonmusic.user.data.repository
 
 import android.annotation.SuppressLint
-import com.tachyonmusic.core.domain.playback.Loop
-import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.data.playback.AbstractLoop
+import com.tachyonmusic.core.data.playback.Playlist
 import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.assertResource
 import com.tachyonmusic.testutils.tryInject
@@ -39,7 +39,7 @@ class FirebaseRepositoryTest {
     lateinit var localCache: LocalCache
 
     @Inject
-    lateinit var loops: MutableList<Loop>
+    lateinit var loops: MutableList<AbstractLoop>
 
     @Inject
     lateinit var playlists: MutableList<Playlist>
