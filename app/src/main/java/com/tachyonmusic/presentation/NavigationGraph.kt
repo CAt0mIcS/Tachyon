@@ -1,26 +1,24 @@
 package com.tachyonmusic.presentation
 
 import androidx.compose.runtime.Composable
-import androidx.fragment.app.FragmentManager
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.presentation.authentication.RegisterScreen
 import com.tachyonmusic.presentation.authentication.SignInScreen
-import com.tachyonmusic.presentation.main.LibraryScreen
+import com.tachyonmusic.presentation.main.HomeScreen
 import com.tachyonmusic.presentation.main.RecommendedScreen
-import com.tachyonmusic.presentation.main.SearchScreen
+import com.tachyonmusic.presentation.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.player.PlayerScreen
 
 @Composable
 fun NavigationGraph(navController: NavHostController) {
-    NavHost(navController, startDestination = LibraryScreen.route) {
-        composable(LibraryScreen.route) {
-            LibraryScreen(navController)
+    NavHost(navController, startDestination = HomeScreen.route) {
+        composable(HomeScreen.route) {
+            HomeScreen(navController)
         }
-        composable(SearchScreen.route) {
-            SearchScreen()
+        composable(PlaybackSearchScreen.route) {
+            PlaybackSearchScreen(navController)
         }
         composable(RecommendedScreen.route) {
             RecommendedScreen()

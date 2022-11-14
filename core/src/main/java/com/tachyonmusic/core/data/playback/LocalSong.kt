@@ -1,5 +1,6 @@
 package com.tachyonmusic.core.data.playback
 
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
@@ -7,6 +8,7 @@ import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.data.SongMetadata
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Song
+import kotlinx.coroutines.flow.flow
 import java.io.File
 
 /**
@@ -33,6 +35,12 @@ class LocalSong(
         parcel.readString()!!,
         parcel.readLong()
     )
+
+    override suspend fun loadBitmap(onDone: suspend () -> Unit) {
+        if (artwork == null)
+            artwork = SongMetadata.loadBitmap(path)
+        onDone()
+    }
 
     companion object {
         @JvmField

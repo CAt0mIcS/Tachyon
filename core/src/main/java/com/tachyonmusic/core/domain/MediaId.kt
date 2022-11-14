@@ -19,9 +19,9 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
                 MediaId(strings[0], deserialize(strings[1]))
         }
 
-        fun deserializeIfValid(value: String): MediaId? =
+        fun deserializeIfValid(value: String?): MediaId? =
             try {
-                deserialize(value)
+                deserialize(value ?: "")
             } catch (e: Exception) {
                 null
             }

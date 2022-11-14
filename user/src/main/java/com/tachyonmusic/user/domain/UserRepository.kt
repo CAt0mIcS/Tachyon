@@ -13,6 +13,7 @@ interface UserRepository : IListenable<UserRepository.EventListener> {
     val songs: StateFlow<List<Song>>
     val loops: StateFlow<List<Loop>>
     val playlists: StateFlow<List<Playlist>>
+    val history: StateFlow<List<Playback>>
 
     val signedIn: Boolean
 
@@ -41,6 +42,8 @@ interface UserRepository : IListenable<UserRepository.EventListener> {
     }
 
     suspend fun save(): Resource<Unit>
+
+    fun addHistory(playback: Playback)
 
     operator fun plusAssign(song: Song)
     operator fun plusAssign(loop: Loop)

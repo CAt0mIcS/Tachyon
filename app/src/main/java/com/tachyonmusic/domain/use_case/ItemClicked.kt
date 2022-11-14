@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain.use_case.main
+package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController

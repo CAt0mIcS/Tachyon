@@ -1,5 +1,6 @@
 package com.tachyonmusic.core.data.playback
 
+import android.graphics.Bitmap
 import android.os.Parcel
 import android.os.Parcelable
 import com.tachyonmusic.core.constants.PlaybackType
@@ -17,6 +18,8 @@ class RemoteLoop(
 ) : Loop(mediaId, name, timingData, song) {
 
     override val playbackType = PlaybackType.Loop.Remote()
+
+    override suspend fun loadBitmap(onDone: suspend () -> Unit) = song.loadBitmap(onDone)
 
     companion object {
         @JvmField

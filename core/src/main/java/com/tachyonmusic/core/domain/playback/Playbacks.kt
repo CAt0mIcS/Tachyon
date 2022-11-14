@@ -1,5 +1,6 @@
 package com.tachyonmusic.core.domain.playback
 
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Parcelable
 import androidx.media3.common.MediaItem
@@ -25,6 +26,8 @@ sealed class Playback(val mediaId: MediaId) : Parcelable {
 
     abstract fun toHashMap(): HashMap<String, Any?>
 
+    abstract suspend fun loadBitmap(onDone: suspend () -> Unit = {})
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Playback) return false
@@ -41,6 +44,9 @@ sealed class SinglePlayback(mediaId: MediaId) : Playback(mediaId) {
     abstract override val title: String
     abstract override val artist: String
     abstract override val duration: Long
+
+    var artwork: Bitmap? = null
+        protected set
 
     abstract override val timingData: TimingDataController
 
