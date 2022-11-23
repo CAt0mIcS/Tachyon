@@ -19,7 +19,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -35,6 +36,7 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    namespace = "com.tachyonmusic.core"
 }
 
 dependencies {

@@ -39,27 +39,16 @@ android {
         }
     }
 
-    signingConfigs {
-        create("release") {
-            storeFile = file("D:\\dev\\Android\\Android Keys\\profile_release_key.keystore")
-            storePassword = "profile_release_key"
-            keyAlias = "profile_release_key"
-            keyPassword = "profile_release_key"
-        }
-    }
-
     buildTypes {
         release {
             isDebuggable = false
-            isShrinkResources = true
-            isMinifyEnabled = true
+            isShrinkResources = false
+            isMinifyEnabled = false
 
-            // TODO: Some serialization class is missing when [minifyEnabled] = true, use (-keep class ... { *; }) in proguard file
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
         }
     }
 

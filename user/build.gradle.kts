@@ -20,23 +20,14 @@ android {
         consumerProguardFiles("consumer-rules.pro")
     }
 
-    signingConfigs {
-        create("release") {
-            storeFile = file("D:\\dev\\Android\\Android Keys\\profile_release_key.keystore")
-            storePassword = "profile_release_key"
-            keyAlias = "profile_release_key"
-            keyPassword = "profile_release_key"
-        }
-    }
-
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("release")
         }
     }
 
