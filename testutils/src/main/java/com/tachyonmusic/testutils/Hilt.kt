@@ -5,5 +5,5 @@ import java.lang.IllegalStateException
 
 fun HiltAndroidRule.tryInject() = try {
     inject()
-} catch (e: IllegalStateException) {
+} catch (_: IllegalStateException) {
 }

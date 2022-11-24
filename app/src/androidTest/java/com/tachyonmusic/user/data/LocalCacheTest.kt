@@ -71,8 +71,8 @@ class LocalCacheTest {
         assert(localCache.exists)
 
         val metadata = localCache.get()
-        val loadedLoops = metadata._loops.await()
-        val loadedPlaylists = metadata._playlists.await()
+        val loadedLoops = metadata.loops.value
+        val loadedPlaylists = metadata.playlists.value
 
         assertEquals(loadedLoops, loops)
         assertEquals(loadedPlaylists, playlists)
