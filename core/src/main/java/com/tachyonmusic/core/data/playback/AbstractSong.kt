@@ -20,8 +20,7 @@ abstract class AbstractSong(
     final override val duration: Long
 ) : Song, AbstractPlayback() {
 
-    final override var timingData =
-        TimingDataController(arrayListOf(TimingData(0L, duration).toString()))
+    final override var timingData = TimingDataController(emptyList())
 
     abstract override val playbackType: PlaybackType.Song
 

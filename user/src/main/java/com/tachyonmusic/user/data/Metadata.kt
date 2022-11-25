@@ -5,7 +5,7 @@ import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.data.playback.RemoteLoopImpl
-import com.tachyonmusic.core.data.playback.RemotePlaylist
+import com.tachyonmusic.core.data.playback.RemotePlaylistImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
@@ -57,7 +57,7 @@ class Metadata(private val gson: Gson) {
         _loops.value = loadedLoops
 
         val loadedPlaylists = ((data["playlists"] as List<Map<String, Any?>?>?)?.map {
-            RemotePlaylist.build(it!!)
+            RemotePlaylistImpl.build(it!!)
         } as ArrayList<Playlist>?)
             ?: arrayListOf()
         _playlists.value = loadedPlaylists

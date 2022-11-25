@@ -7,7 +7,7 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 
-class RemotePlaylist(
+class RemotePlaylistImpl(
     mediaId: MediaId,
     name: String,
     playbacks: MutableList<SinglePlayback>,
@@ -25,8 +25,8 @@ class RemotePlaylist(
 
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<RemotePlaylist> {
-            override fun createFromParcel(parcel: Parcel): RemotePlaylist {
+        val CREATOR = object : Parcelable.Creator<RemotePlaylistImpl> {
+            override fun createFromParcel(parcel: Parcel): RemotePlaylistImpl {
                 val name = parcel.readString()!!
                 // TODO: More efficient way to convert Array<Parcelable> to MutableList<SinglePlayback>
                 val playbacks =
@@ -39,7 +39,7 @@ class RemotePlaylist(
 
                 val currentPlaylistIndex = parcel.readInt()
 
-                return RemotePlaylist(
+                return RemotePlaylistImpl(
                     MediaId.ofRemotePlaylist(name),
                     name,
                     playbacks,
@@ -47,10 +47,10 @@ class RemotePlaylist(
                 )
             }
 
-            override fun newArray(size: Int): Array<RemotePlaylist?> = arrayOfNulls(size)
+            override fun newArray(size: Int): Array<RemotePlaylistImpl?> = arrayOfNulls(size)
         }
 
-        fun build(map: Map<String, Any?>): RemotePlaylist {
+        fun build(map: Map<String, Any?>): RemotePlaylistImpl {
             val mediaId = MediaId(map["mediaId"]!! as String)
             val idx = (map["currPlIdx"] as Long).toInt()
 
@@ -65,7 +65,7 @@ class RemotePlaylist(
                 RemoteLoopImpl.build(map)
             } as MutableList<SinglePlayback>
 
-            return RemotePlaylist(mediaId, name, playbacks, idx)
+            return RemotePlaylistImpl(mediaId, name, playbacks, idx)
         }
 
         fun build(
@@ -73,7 +73,7 @@ class RemotePlaylist(
             playbacks: MutableList<SinglePlayback>,
             currentPlaylistIndex: Int
         ): Playlist =
-            RemotePlaylist(
+            RemotePlaylistImpl(
                 mediaId,
                 mediaId.source.replace(PlaybackType.Playlist.Remote().toString(), ""),
                 playbacks,

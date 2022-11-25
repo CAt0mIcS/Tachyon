@@ -58,7 +58,7 @@ object TestAppModule {
     @Singleton
     fun providePlaylists(repository: UserRepository): MutableList<Playlist> = runBlocking {
         MutableList(2) { i ->
-            RemotePlaylist(
+            RemotePlaylistImpl(
                 MediaId.ofRemotePlaylist(i.toString()),
                 i.toString(),
                 repository.songs.value.filter {
