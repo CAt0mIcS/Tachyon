@@ -11,18 +11,14 @@ class TimingDataControllerTest {
 
         for (i in timingData.indices) {
             assertEquals(timingData.currentIndex, i)
-
-            // TODO: Also check this. Currently not working due to temporary strings in TimingDataController
-//            assertEquals(timingData.current, timingData[i])
+            assertEquals(timingData.current, timingData[i])
 
             timingData.advanceToNext()
         }
 
         // Check that we advance to the first one after the last one
         assertEquals(timingData.currentIndex, 0)
-
-        // TODO: Also check this. Currently not working due to temporary strings in TimingDataController
-//        assertEquals(timingData.current, timingData[0])
+        assertEquals(timingData.current, timingData[0])
     }
 
     @Test
@@ -49,8 +45,8 @@ class TimingDataControllerTest {
     fun `getIndexOfCurrentPosition gets the first index when position is 0 and there's no timing data surrounding 0`() {
         val timingData = TimingDataController(
             listOf(
-                TimingData(48, 90).toString(),
-                TimingData(10, 20).toString(),
+                TimingData(48, 90),
+                TimingData(10, 20),
             )
         )
 
@@ -63,10 +59,10 @@ class TimingDataControllerTest {
      */
     private fun loadInOrderTimingData() = TimingDataController(
         listOf(
-            TimingData(10, 20).toString(),
-            TimingData(24, 40).toString(),
-            TimingData(46, 59).toString(),
-            TimingData(69, 80).toString(),
+            TimingData(10, 20),
+            TimingData(24, 40),
+            TimingData(46, 59),
+            TimingData(69, 80),
         )
     )
 
@@ -76,11 +72,11 @@ class TimingDataControllerTest {
      */
     private fun loadIntersectingTimingData() = TimingDataController(
         listOf(
-            TimingData(28, 32).toString(),
-            TimingData(18, 26).toString(),
-            TimingData(70, 5).toString(),
-            TimingData(10, 20).toString(),
-            TimingData(30, 60).toString(),
+            TimingData(28, 32),
+            TimingData(18, 26),
+            TimingData(70, 5),
+            TimingData(10, 20),
+            TimingData(30, 60),
         )
     )
 }

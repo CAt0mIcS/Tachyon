@@ -27,7 +27,7 @@ class TestUserRepository : UserRepository,
         get() = _history
 
     private val _songs = MutableStateFlow(listOf<Song>())
-    private val _loops = MutableStateFlow(listOf<AbstractLoop>())
+    private val _loops = MutableStateFlow(listOf<Loop>())
     private val _playlists = MutableStateFlow(listOf<Playlist>())
     private val _history = MutableStateFlow(listOf<Playback>())
 
@@ -80,7 +80,7 @@ class TestUserRepository : UserRepository,
         _songs.value += song
     }
 
-    override fun plusAssign(loop: AbstractLoop) {
+    override fun plusAssign(loop: Loop) {
         _loops.value += loop
     }
 
@@ -92,7 +92,7 @@ class TestUserRepository : UserRepository,
         _songs.value -= song
     }
 
-    override fun minusAssign(loop: AbstractLoop) {
+    override fun minusAssign(loop: Loop) {
         _loops.value -= loop
     }
 

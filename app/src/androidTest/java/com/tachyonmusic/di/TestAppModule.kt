@@ -7,6 +7,8 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.user.data.LocalCache
 import com.tachyonmusic.user.data.repository.FirebaseRepository
 import com.tachyonmusic.user.data.repository.TestFileRepositoryImpl
@@ -43,8 +45,8 @@ object TestAppModule {
                 i.toString(),
                 TimingDataController(
                     listOf(
-                        TimingData(1, 10).toString(),
-                        TimingData(100, 1000).toString()
+                        TimingData(1, 10),
+                        TimingData(100, 1000)
                     )
                 ),
                 song

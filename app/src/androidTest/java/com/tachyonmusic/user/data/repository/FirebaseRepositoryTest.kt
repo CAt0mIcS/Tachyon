@@ -1,8 +1,8 @@
 package com.tachyonmusic.user.data.repository
 
 import android.annotation.SuppressLint
-import com.tachyonmusic.core.data.playback.AbstractLoop
-import com.tachyonmusic.core.data.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.assertResource
 import com.tachyonmusic.testutils.tryInject
@@ -39,7 +39,7 @@ class FirebaseRepositoryTest {
     lateinit var localCache: LocalCache
 
     @Inject
-    lateinit var loops: MutableList<AbstractLoop>
+    lateinit var loops: MutableList<Loop>
 
     @Inject
     lateinit var playlists: MutableList<Playlist>
@@ -83,36 +83,34 @@ class FirebaseRepositoryTest {
 
     @Test
     fun cacheResetAfterUserSignedOut(): Unit = runBlocking {
-//        for (loop in loops)
-//            repository += loop
-//        for (playlist in playlists)
-//            repository += playlist
-//
-//        assertResource(repository.register(TEST_EMAIL, TEST_PASSWORD))
-//        assertResource(repository.save())
-//
-//        repository.signOut()
-//
-//        assertEquals(repository.loops.value, emptyList())
-//        assertEquals(repository.playlists.value, emptyList())
-        // TODO: Saving repository is weird right now...
+        for (loop in loops)
+            repository += loop
+        for (playlist in playlists)
+            repository += playlist
+
+        assertResource(repository.register(TEST_EMAIL, TEST_PASSWORD))
+        assertResource(repository.save())
+
+        repository.signOut()
+
+        assertEquals(repository.loops.value, emptyList())
+        assertEquals(repository.playlists.value, emptyList())
     }
 
     @Test
     fun cacheResetAfterUserDeleted(): Unit = runBlocking {
-//        for (loop in loops)
-//            repository += loop
-//        for (playlist in playlists)
-//            repository += playlist
-//
-//        assertResource(repository.register(TEST_EMAIL, TEST_PASSWORD))
-//        assertResource(repository.save())
-//
-//        repository.delete()
-//
-//        assertEquals(repository.loops.value, emptyList())
-//        assertEquals(repository.playlists.value, emptyList())
-        // TODO: Saving repository is weird right now...
+        for (loop in loops)
+            repository += loop
+        for (playlist in playlists)
+            repository += playlist
+
+        assertResource(repository.register(TEST_EMAIL, TEST_PASSWORD))
+        assertResource(repository.save())
+
+        repository.delete()
+
+        assertEquals(repository.loops.value, emptyList())
+        assertEquals(repository.playlists.value, emptyList())
     }
 
 
