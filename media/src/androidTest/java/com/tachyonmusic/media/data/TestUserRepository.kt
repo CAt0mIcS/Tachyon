@@ -3,6 +3,7 @@ package com.tachyonmusic.media.data
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.core.data.playback.AbstractLoop
 import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.user.domain.UserRepository
@@ -22,10 +23,13 @@ class TestUserRepository : UserRepository,
         get() = _loops
     override val playlists: StateFlow<List<Playlist>>
         get() = _playlists
+    override val history: StateFlow<List<Playback>>
+        get() = _history
 
     private val _songs = MutableStateFlow(listOf<Song>())
     private val _loops = MutableStateFlow(listOf<AbstractLoop>())
     private val _playlists = MutableStateFlow(listOf<Playlist>())
+    private val _history = MutableStateFlow(listOf<Playback>())
 
 
     override val signedIn: Boolean
@@ -68,6 +72,10 @@ class TestUserRepository : UserRepository,
         TODO("Not yet implemented")
     }
 
+    override fun addHistory(playback: Playback) {
+        TODO("Not yet implemented")
+    }
+
     override fun plusAssign(song: Song) {
         _songs.value += song
     }
@@ -91,5 +99,4 @@ class TestUserRepository : UserRepository,
     override fun minusAssign(playlist: Playlist) {
         _playlists.value -= playlist
     }
-
 }

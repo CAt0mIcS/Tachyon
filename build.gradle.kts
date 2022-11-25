@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 buildscript {
 
     repositories {
@@ -16,11 +19,25 @@ buildscript {
 }
 
 plugins {
-    id("com.android.application") version "7.3.0" apply false
-    id("com.android.library") version "7.3.0" apply false
+    id("com.android.application") version "7.3.1" apply false
+    id("com.android.library") version "7.3.1" apply false
     id("org.jetbrains.kotlin.android") version "1.7.10" apply false
 }
 
 tasks.register("clean", Delete::class) {
     delete(rootProject.buildDir)
+}
+
+// Show basic test information when running CI
+tasks.withType(Test::class) {
+    testLogging {
+        exceptionFormat = TestExceptionFormat.FULL
+        events = setOf(
+            TestLogEvent.STARTED,
+            TestLogEvent.SKIPPED,
+            TestLogEvent.PASSED,
+            TestLogEvent.FAILED
+        )
+        showStandardStreams = true
+    }
 }

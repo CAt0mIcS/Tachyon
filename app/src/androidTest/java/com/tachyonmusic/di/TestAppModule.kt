@@ -8,8 +8,8 @@ import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.user.data.LocalCache
-import com.tachyonmusic.user.data.repository.FileRepositoryImpl
 import com.tachyonmusic.user.data.repository.FirebaseRepository
+import com.tachyonmusic.user.data.repository.TestFileRepositoryImpl
 import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -24,7 +24,7 @@ object TestAppModule {
     @Provides
     @Singleton
     fun provideUserRepository(localCache: LocalCache, gson: Gson): UserRepository =
-        FirebaseRepository(FileRepositoryImpl(), localCache, gson)
+        FirebaseRepository(TestFileRepositoryImpl(), localCache, gson)
 
     @Provides
     @Singleton
@@ -34,14 +34,19 @@ object TestAppModule {
     @Singleton
     fun provideLoops(repository: UserRepository): MutableList<Loop> = runBlocking {
         MutableList(3) { i ->
-            val song = repository.songs.await()[i]
+            val song = repository.songs.value[i]
 
             // TODO: Don't use Impl here
 
             RemoteLoopImpl(
                 MediaId.ofRemoteLoop(i.toString(), song.mediaId),
                 i.toString(),
-                TimingDataController(listOf(TimingData(1, 10), TimingData(100, 1000))),
+                TimingDataController(
+                    listOf(
+                        TimingData(1, 10).toString(),
+                        TimingData(100, 1000).toString()
+                    )
+                ),
                 song
             )
         }
@@ -54,7 +59,7 @@ object TestAppModule {
             RemotePlaylist(
                 MediaId.ofRemotePlaylist(i.toString()),
                 i.toString(),
-                repository.songs.await().filter {
+                repository.songs.value.filter {
                     it.title == "Cosmic Storm" || it.title == "Awake" || it.title == "Last Time"
                 } as MutableList<SinglePlayback>
             )
