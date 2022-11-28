@@ -10,6 +10,7 @@ import com.tachyonmusic.domain.use_case.main.GetHistory
 import com.tachyonmusic.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -30,12 +31,43 @@ class HomeViewModel @Inject constructor(
     val loops = getLoops()
     val playlists = getPlaylists()
 
-    val history = getHistory()
+//    val history = getHistory()
 
-    // TODO: Make mutable part private
-    val albumArtworkLoading = mutableStateMapOf<Song, Boolean /*isLoading*/>()
+    val history = MutableStateFlow(listOf<Playback>())
 
-    private var albumArtLoaded: Boolean = false
+
+    init {
+        val song = songs.value.find { it.title == "Don't Play" }!!
+        history.value = listOf(
+            song,
+            song,
+            song,
+            song,
+            song,
+            song,
+            song,
+            song,
+            song,
+            song,
+            song,
+            song,
+            song,
+            song
+        )
+
+        viewModelScope.launch(Dispatchers.IO) {
+//            loadPlaybackArtwork(items).map { res ->
+//                when (res) {
+//                    is Resource.Loading -> albumArtworkLoading[res.data!!] = true
+//                    is Resource.Error, is Resource.Success -> albumArtworkLoading[res.data!!] =
+//                        false
+//                }
+//            }.collect()
+
+            loadPlaybackArtwork(listOf(history.value[0] as Song)).map { res ->
+            }.collect()
+        }
+    }
 
     fun onItemClicked(playback: Playback) {
         itemClicked(playback)
@@ -45,17 +77,5 @@ class HomeViewModel @Inject constructor(
 //        for (song in songs.value) {
 //            song.unloadArtwork()
 //        }
-    }
-
-    fun loadArtworkState(items: List<Song>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            loadPlaybackArtwork(items).map { res ->
-                when (res) {
-                    is Resource.Loading -> albumArtworkLoading[res.data!!] = true
-                    is Resource.Error, is Resource.Success -> albumArtworkLoading[res.data!!] =
-                        false
-                }
-            }.collect()
-        }
     }
 }

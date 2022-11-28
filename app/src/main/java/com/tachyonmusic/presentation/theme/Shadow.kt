@@ -1,0 +1,15 @@
+package com.tachyonmusic.presentation.theme
+
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
+data class Shadow(
+    val none: Dp = 0.dp,
+    val small: Dp = 12.dp,
+    val medium: Dp = 18.dp,
+    val large: Dp = 24.dp,
+    val default: Dp = none
+)
+
+val LocalShadow = compositionLocalOf { Shadow() }
