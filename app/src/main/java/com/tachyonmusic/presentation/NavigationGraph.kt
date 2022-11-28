@@ -6,10 +6,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.tachyonmusic.presentation.authentication.RegisterScreen
 import com.tachyonmusic.presentation.authentication.SignInScreen
+import com.tachyonmusic.presentation.library.LibraryScreen
 import com.tachyonmusic.presentation.main.HomeScreen
-import com.tachyonmusic.presentation.main.RecommendedScreen
-import com.tachyonmusic.presentation.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.player.PlayerScreen
+import com.tachyonmusic.presentation.profile.ProfileScreen
 
 @Composable
 fun NavigationGraph(navController: NavHostController) {
@@ -17,11 +17,11 @@ fun NavigationGraph(navController: NavHostController) {
         composable(HomeScreen.route) {
             HomeScreen(navController)
         }
-        composable(PlaybackSearchScreen.route) {
-            PlaybackSearchScreen(navController)
+        composable(LibraryScreen.route) {
+            LibraryScreen()
         }
-        composable(RecommendedScreen.route) {
-            RecommendedScreen()
+        composable(ProfileScreen.route) {
+            ProfileScreen()
         }
         composable(SignInScreen.route) {
             SignInScreen(navController)

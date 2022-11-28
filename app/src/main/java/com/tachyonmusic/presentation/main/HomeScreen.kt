@@ -137,7 +137,7 @@ object HomeScreen :
                     ) {
                         Text(
                             "View All",
-                            color = Color.Blue,
+                            color = Theme.colors.onSecondary,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )

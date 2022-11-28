@@ -2,7 +2,6 @@ package com.tachyonmusic.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.*
-import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -15,16 +14,16 @@ private val DarkColorPalette = darkColors(
 )
 
 private val LightColorPalette = lightColors(
-    primary = White,
-    primaryVariant = WhiteSecondary,
-    secondary = WhiteTertiary,
+    primary = LightWight,
+    primaryVariant = LightSecondary,
+    secondary = LightTertiary,
 
     background = Color.White,
-    surface = WhiteSecondary,
+    surface = LightSecondary,
     onPrimary = Color.Black,
-    onSecondary = Color.Black,
-    onBackground = WhiteContrastLow,
-    onSurface = WhiteContrastHigh,
+    onSecondary = LightBlue,
+    onBackground = LightContrastLow,
+    onSurface = LightContrastHigh,
 )
 
 

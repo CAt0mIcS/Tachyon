@@ -15,9 +15,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.tachyonmusic.presentation.library.LibraryScreen
 import com.tachyonmusic.presentation.main.HomeScreen
-import com.tachyonmusic.presentation.main.RecommendedScreen
-import com.tachyonmusic.presentation.search.PlaybackSearchScreen
+import com.tachyonmusic.presentation.profile.ProfileScreen
+import com.tachyonmusic.presentation.theme.NoRippleTheme
 import com.tachyonmusic.presentation.theme.Theme
 
 @Composable
@@ -26,8 +27,8 @@ fun BottomNavigation(
 ) {
     val items = listOf(
         HomeScreen,
-        PlaybackSearchScreen,
-        RecommendedScreen,
+        LibraryScreen,
+        ProfileScreen,
     )
 
     CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
@@ -65,12 +66,4 @@ fun BottomNavigation(
             }
         }
     }
-}
-
-private object NoRippleTheme : RippleTheme {
-    @Composable
-    override fun defaultColor() = Color.Unspecified
-
-    @Composable
-    override fun rippleAlpha(): RippleAlpha = RippleAlpha(0.0f,0.0f,0.0f,0.0f)
 }
