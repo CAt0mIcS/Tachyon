@@ -2,6 +2,7 @@ package com.tachyonmusic.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.*
+import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -22,8 +23,8 @@ private val LightColorPalette = lightColors(
     surface = WhiteSecondary,
     onPrimary = Color.Black,
     onSecondary = Color.Black,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
+    onBackground = WhiteContrastLow,
+    onSurface = WhiteContrastHigh,
 )
 
 
@@ -35,7 +36,10 @@ fun TachyonTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composabl
         LightColorPalette
     }
 
-    CompositionLocalProvider(LocalPadding provides Padding(), LocalShadow provides Shadow()) {
+    CompositionLocalProvider(
+        LocalPadding provides Padding(),
+        LocalShadow provides Shadow()
+    ) {
         MaterialTheme(
             colors = colors,
             typography = Typography,

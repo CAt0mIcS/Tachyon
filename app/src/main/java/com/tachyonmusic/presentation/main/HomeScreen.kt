@@ -1,10 +1,7 @@
 package com.tachyonmusic.presentation.main
 
 import android.graphics.Bitmap
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -63,6 +60,7 @@ object HomeScreen :
             modifier = Modifier
                 .fillMaxSize()
                 .padding(Theme.padding.small)
+                .verticalScroll(rememberScrollState())
         ) {
 
 
