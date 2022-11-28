@@ -21,10 +21,8 @@ object Dependency {
         const val UI_TOOLING_PREVIEW = "androidx.compose.ui:ui-tooling-preview:${Version.COMPOSE}"
         const val NAVIGATION = "androidx.navigation:navigation-compose:2.5.3"
         const val LIVEDATA = "androidx.compose.runtime:runtime-livedata:${Version.COMPOSE}"
-        const val JUNIT4 = "androidx.compose.ui:ui-test-junit4:${Version.COMPOSE}"
         const val ACTIVITY = "androidx.activity:activity-compose:1.6.1"
         const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Version.COMPOSE}"
-        const val TEST_MANIFEST = "androidx.compose.ui:ui-test-manifest:${Version.COMPOSE}"
     }
 
     object Lifecycle {
@@ -56,6 +54,9 @@ object Dependency {
         const val JUNIT = "junit:junit:4.13.2"
         const val ARCH_CORE_TESTING = "androidx.arch.core:core-testing:2.1.0"
         const val COROUTINES_TEST = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
+
+        const val COMPOSE_TEST = "androidx.compose.ui:ui-test-junit4:${Version.COMPOSE}"
+        const val TEST_MANIFEST = "androidx.compose.ui:ui-test-manifest:${Version.COMPOSE}"
 
         const val DAGGER_TEST = "com.google.dagger:hilt-android-testing:2.37"
         const val DAGGER_TEST_COMPILER = "com.google.dagger:hilt-android-compiler:2.37"
@@ -94,12 +95,12 @@ fun DependencyHandler.compose() {
     implementation(Dependency.Compose.NAVIGATION)
 
     implementation(Dependency.Compose.LIVEDATA)
-    kapt(Dependency.Compose.JUNIT4)
+//    kapt(Dependency.Compose.JUNIT4)
 
     implementation(Dependency.Compose.ACTIVITY)
 
     debugImplementation(Dependency.Compose.UI_TOOLING)
-    debugImplementation(Dependency.Compose.TEST_MANIFEST)
+//    debugImplementation(Dependency.Compose.TEST_MANIFEST)
 }
 
 fun DependencyHandler.lifecycle() {
@@ -162,6 +163,8 @@ fun DependencyHandler.androidTest(
     kaptAndroidTest(Dependency.Test.DAGGER_TEST_COMPILER)
 
     add(configName, Dependency.Test.JUNIT)
+    add(configName, Dependency.Test.COMPOSE_TEST)
+    add(configName, Dependency.Test.TEST_MANIFEST)
     add(configName, Dependency.Test.DAGGER_TEST)
     add(configName, Dependency.Test.COROUTINES_TEST)
     add(configName, Dependency.Test.ARCH_CORE_TESTING)
