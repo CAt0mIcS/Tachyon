@@ -3,15 +3,16 @@ package com.tachyonmusic.presentation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Scaffold
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.util.Permission
 import com.tachyonmusic.presentation.util.PermissionManager
-import com.tachyonmusic.presentation.theme.TachyonTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -38,10 +39,11 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
         mediaBrowser.registerEventListener(this)
     }
 
+    @OptIn(ExperimentalAnimationApi::class)
     override fun onConnected() {
         setContent {
             TachyonTheme {
-                val navController = rememberNavController()
+                val navController = rememberAnimatedNavController()
                 Scaffold(
                     bottomBar = { BottomNavigation(navController) }
                 ) { innerPadding ->

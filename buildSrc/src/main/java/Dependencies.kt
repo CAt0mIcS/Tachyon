@@ -23,6 +23,11 @@ object Dependency {
         const val LIVEDATA = "androidx.compose.runtime:runtime-livedata:${Version.COMPOSE}"
         const val ACTIVITY = "androidx.activity:activity-compose:1.6.1"
         const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Version.COMPOSE}"
+
+        object Accompanist {
+            const val NAVIGATION_ANIMATION =
+                "com.google.accompanist:accompanist-navigation-animation:0.28.0"
+        }
     }
 
     object Lifecycle {
@@ -98,6 +103,8 @@ fun DependencyHandler.compose() {
 //    kapt(Dependency.Compose.JUNIT4)
 
     implementation(Dependency.Compose.ACTIVITY)
+
+    implementation(Dependency.Compose.Accompanist.NAVIGATION_ANIMATION)
 
     debugImplementation(Dependency.Compose.UI_TOOLING)
 //    debugImplementation(Dependency.Compose.TEST_MANIFEST)
