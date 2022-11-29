@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,6 +26,9 @@ import com.tachyonmusic.presentation.theme.Theme
 fun PlaybackView(playback: Playback, artwork: ImageBitmap? = null, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
+            // Constrain width to padding + album art size (TODO)
+            // TODO: text should be animated to move in if it's too long
+            .width(Theme.padding.extraSmall * 2 + 100.dp)
             .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
             .background(Theme.colors.secondary, shape = Theme.shapes.medium)
             .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
@@ -49,19 +53,22 @@ fun PlaybackView(playback: Playback, artwork: ImageBitmap? = null, modifier: Mod
             )
 
         Text(
-            modifier = Modifier.padding(start = Theme.padding.small),
+            modifier = Modifier.padding(start = Theme.padding.small, end = Theme.padding.small),
             text = playback.title ?: "No Title",
             fontWeight = FontWeight.Bold,
-            fontSize = 14.sp
+            fontSize = 12.sp,
+            maxLines = 1
         )
 
         Text(
             modifier = Modifier.padding(
                 start = Theme.padding.small * 2,
-                bottom = Theme.padding.small
+                bottom = Theme.padding.small,
+                end = Theme.padding.small
             ),
             text = playback.artist ?: "No Artist",
-            fontSize = 12.sp
+            fontSize = 10.sp,
+            maxLines = 1
         )
     }
 }

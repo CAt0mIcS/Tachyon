@@ -4,6 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.*
@@ -53,25 +54,10 @@ class HomeViewModel @Inject constructor(
 
 
     init {
-        val song = songs.value.find { it.title == "Don't Play" }!!
-        history.value = listOf(
-            song,
-            song,
-            song,
-            song,
-            song,
-            song,
-            song,
-            song,
-            song,
-            song,
-            song,
-            song,
-            song,
-            song
-        )
+        if (songs.value.isNotEmpty()) {
+            history.value = mutableListOf<Playback>().apply { addAll(songs.value) }
 
-        viewModelScope.launch(Dispatchers.IO) {
+            viewModelScope.launch(Dispatchers.IO) {
 //            loadPlaybackArtwork(items).map { res ->
 //                when (res) {
 //                    is Resource.Loading -> albumArtworkLoading[res.data!!] = true
@@ -80,11 +66,14 @@ class HomeViewModel @Inject constructor(
 //                }
 //            }.collect()
 
-            loadPlaybackArtwork(listOf(history.value[0] as Song)).map { res ->
-            }.collect()
-        }
+                loadPlaybackArtwork(history.value as List<Song>).map { res ->
+                }.collect()
+            }
 
-        _recentlyPlayed.value = history.value[0]
+            _recentlyPlayed.value =
+                history.value.find { (it as LocalSongImpl).path.absolutePath == "/storage/emulated/0/Music/Don't Play - JAEGER.mp3" }
+                    ?: history.value[0]
+        }
     }
 
     fun registerPlayerListener() {

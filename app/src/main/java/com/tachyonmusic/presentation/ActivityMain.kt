@@ -28,10 +28,13 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
             request(Permission.ReadStorage)
             rationale(getString(R.string.storage_permission_rationale))
             checkPermission { result: Boolean ->
-                if (result) {
+                if (result)
                     println("Storage permission granted")
-                } else
+                else {
                     println("Storage permission NOT granted")
+                    TODO("Storage permission NOT granted")
+                }
+
             }
         }
 
