@@ -4,6 +4,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.text.BasicTextField
@@ -55,6 +56,8 @@ object HomeScreen :
         val isPlaying by viewModel.isPlaying
         var currentPosition by remember { mutableStateOf(viewModel.currentPositionNormalized) }
 
+        var bottomPaddingRequiredByMiniPlayer by remember { mutableStateOf(0.dp) }
+
         DisposableEffect(Unit) {
             viewModel.registerPlayerListener()
             onDispose {
@@ -71,41 +74,13 @@ object HomeScreen :
             }
         }
 
-//        CustomColumn(
-//            modifier = Modifier.fillMaxSize(),
-//        ) {
-//
-//            Column(
-//                modifier = Modifier
-//                    .padding(start = 16.dp)
-//                    .border(BorderStroke(2.dp, Color.Black))
-//                    .verticalScroll(rememberScrollState())
-//            ) {
-//                repeat(50) {
-//                    Text(it.toString())
-//                }
-//            }
-//
-//            MiniPlayer(
-//                playback = history[0],
-//                currentPosition = currentPosition,
-//                artwork = (history[0] as Song).artwork?.asImageBitmap()
-//            )
-//
-//        }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentPadding = PaddingValues(bottom = bottomPaddingRequiredByMiniPlayer)
+        ) {
 
-
-        CustomColumn(modifier = Modifier.fillMaxSize()) {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(bottom = 60.dp) // TODO: The end wouldn't be visible due to the min player otherwise
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-
-
+            item {
                 val interactionSource: MutableInteractionSource =
                     remember { MutableInteractionSource() }
 
@@ -162,8 +137,9 @@ object HomeScreen :
                         contentPadding = PaddingValues(0.dp)
                     )
                 }
+            }
 
-
+            item {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -199,15 +175,20 @@ object HomeScreen :
                         }
                     }
                 }
+            }
 
+
+            item {
                 LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = Theme.padding.small, top = Theme.padding.extraSmall)
+                        .padding(start = Theme.padding.small, top = Theme.padding.extraSmall),
                 ) {
                     playbacksView(history)
                 }
+            }
 
+            item {
                 Text(
                     "Recommended for You",
                     fontSize = 24.sp,
@@ -218,7 +199,9 @@ object HomeScreen :
                         end = Theme.padding.medium
                     )
                 )
+            }
 
+            item {
                 // TODO: Recommendations
                 LazyRow(
                     modifier = Modifier
@@ -227,7 +210,9 @@ object HomeScreen :
                 ) {
                     playbacksView(playbacks = history)
                 }
+            }
 
+            item {
                 // This ensures that the shadow isn't cut off by the BottomNavigationBar's padding
                 // TODO: Maybe use LazyColum.contentPadding(bottom)
                 Spacer(
@@ -236,56 +221,46 @@ object HomeScreen :
                         .height(Theme.shadow.large)
                 )
             }
-
-            MiniPlayer(
-                playback = recentlyPlayed ?: return@CustomColumn,
-                artwork = (recentlyPlayed as Song).artwork?.asImageBitmap(),
-                currentPosition = currentPosition
-            )
-        }
-    }
-}
-
-@Composable
-fun CustomColumn(modifier: Modifier, content: @Composable () -> Unit) {
-    Layout(
-        modifier = modifier,
-        content = content
-    ) { measurables, constraints ->
-
-        val looseConstraints = constraints.copy(
-            minWidth = 0,
-            maxWidth = constraints.maxWidth,
-            minHeight = 0,
-            maxHeight = constraints.maxHeight
-        )
-
-        // Don't constrain child views further, measure them with given constraints
-        // List of measured children
-        val placeables = measurables.map { measurable ->
-            // Measure each child
-            measurable.measure(looseConstraints)
         }
 
-        // Track the y co-ord we have placed children up to
-        var yPosition = 0
+        if(recentlyPlayed != null) {
+            Layout(
+                modifier = Modifier.fillMaxSize(),
+                content = {
+                    MiniPlayer(
+                        playback = recentlyPlayed ?: return,
+                        artwork = (recentlyPlayed as Song).artwork?.asImageBitmap(),
+                        currentPosition = currentPosition
+                    )
+                }
+            ) { measurables, constraints ->
+                val looseConstraints = constraints.copy(
+                    minWidth = 0,
+                    maxWidth = constraints.maxWidth,
+                    minHeight = 0,
+                    maxHeight = constraints.maxHeight
+                )
 
-
-        // Set the size of the layout as big as it can
-        layout(constraints.maxWidth, constraints.maxHeight) {
-            // Place children in the parent layout
-            placeables.forEachIndexed { index, placeable ->
-
-                println("Placeable width: ${placeable.width}, measuredWidth: ${placeable.measuredWidth}")
-                // Position item on the screen
-                if (index == placeables.size - 1 || index == placeables.size - 2) {
-                    placeable.placeRelative(x = 0, y = constraints.maxHeight - placeable.height)
-                } else {
-                    placeable.placeRelative(x = 0, y = yPosition)
+                // Measure each child
+                val placeables = measurables.map { measurable ->
+                    measurable.measure(looseConstraints)
                 }
 
-                // Record the y co-ord placed up to
-                yPosition += placeable.height
+                layout(constraints.maxWidth, constraints.maxHeight) {
+                    // Place children in the parent layout
+                    placeables.forEach { placeable ->
+                        // This applies bottom content padding to the LazyColumn handling the entire other screen
+                        // so that we can scroll down far enough
+                        // TODO: Many recompositions?
+                        if (bottomPaddingRequiredByMiniPlayer == 0.dp && placeable.height != 0) {
+                            bottomPaddingRequiredByMiniPlayer = placeable.height.toDp()
+                            println("BottomPadding $bottomPaddingRequiredByMiniPlayer")
+                        }
+
+                        // Position items at the bottom of the screen, excluding BottomNavBar
+                        placeable.placeRelative(x = 0, y = constraints.maxHeight - placeable.height)
+                    }
+                }
             }
         }
     }
