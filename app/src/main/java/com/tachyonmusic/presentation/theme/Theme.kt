@@ -37,7 +37,8 @@ fun TachyonTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composabl
 
     CompositionLocalProvider(
         LocalPadding provides Padding(),
-        LocalShadow provides Shadow()
+        LocalShadow provides Shadow(),
+        LocalAnimation provides Animation()
     ) {
         MaterialTheme(
             colors = colors,
@@ -73,6 +74,11 @@ object Theme {
         @Composable
         @ReadOnlyComposable
         get() = LocalShadow.current
+
+    val animation: Animation
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalAnimation.current
 }
 
 
