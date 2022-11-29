@@ -25,14 +25,14 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PermissionManager.from(this).apply {
-            request(Permission.ReadStorage)
+            request(Permission.ReadExternalStorage)
+            request(Permission.ReadMediaAudio)
             rationale(getString(R.string.storage_permission_rationale))
             checkPermission { result: Boolean ->
                 if (result)
                     println("Storage permission granted")
                 else {
                     println("Storage permission NOT granted")
-                    TODO("Storage permission NOT granted")
                 }
 
             }
