@@ -1,7 +1,6 @@
 package com.tachyonmusic.presentation.main
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,14 +11,9 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.Layout
@@ -35,9 +29,11 @@ import androidx.navigation.NavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.presentation.main.component.BottomNavigationItem
+import com.tachyonmusic.presentation.BottomNavigationItem
+import com.tachyonmusic.presentation.main.component.MiniPlayer
 import com.tachyonmusic.presentation.theme.Theme
 import kotlinx.coroutines.delay
+import com.tachyonmusic.presentation.main.component.PlaybackView
 
 
 object HomeScreen :
@@ -211,19 +207,9 @@ object HomeScreen :
                     playbacksView(playbacks = history)
                 }
             }
-
-            item {
-                // This ensures that the shadow isn't cut off by the BottomNavigationBar's padding
-                // TODO: Maybe use LazyColum.contentPadding(bottom)
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(Theme.shadow.large)
-                )
-            }
         }
 
-        if(recentlyPlayed != null) {
+        if (recentlyPlayed != null) {
             Layout(
                 modifier = Modifier.fillMaxSize(),
                 content = {
@@ -289,157 +275,6 @@ fun LazyListScope.playbacksView(playbacks: List<Playback>) {
             modifier = Modifier.padding(padding),
             playback = playbacks[i],
             artwork = (playbacks[i] as Song).artwork?.asImageBitmap()
-        )
-    }
-}
-
-
-@Composable
-fun PlaybackView(playback: Playback, artwork: ImageBitmap? = null, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
-            .background(Theme.colors.secondary, shape = Theme.shapes.medium)
-            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
-    ) {
-        if (artwork != null)
-            Image(
-                bitmap = artwork,
-                contentDescription = "Album Artwork",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(100.dp, 100.dp)
-                    .clip(Theme.shapes.medium)
-            )
-        else
-            Image(
-                painterResource(R.drawable.artwork_image_placeholder),
-                "Album Artwork Placeholder",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(100.dp, 100.dp)
-                    .clip(Theme.shapes.medium)
-            )
-
-        Text(
-            modifier = Modifier.padding(start = Theme.padding.small),
-            text = playback.title ?: "No Title",
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp
-        )
-
-        Text(
-            modifier = Modifier.padding(
-                start = Theme.padding.small * 2,
-                bottom = Theme.padding.small
-            ),
-            text = playback.artist ?: "No Artist",
-            fontSize = 12.sp
-        )
-    }
-}
-
-
-@Composable
-fun MiniPlayer(
-    playback: Playback,
-    currentPosition: Float,
-    artwork: ImageBitmap? = null,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(
-                start = Theme.padding.extraSmall,
-                top = Theme.padding.extraSmall,
-                end = Theme.padding.extraSmall
-            )
-            .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
-            .background(Theme.colors.tertiary, shape = Theme.shapes.medium)
-    ) {
-        if (artwork != null)
-            Image(
-                bitmap = artwork,
-                contentDescription = "Album Artwork",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(48.dp, 48.dp)
-                    .clip(Theme.shapes.medium)
-            )
-        else
-            Image(
-                painterResource(R.drawable.artwork_image_placeholder),
-                "Album Artwork Placeholder",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(48.dp, 48.dp)
-                    .clip(Theme.shapes.medium)
-            )
-
-        Row(
-            modifier = Modifier.padding(start = Theme.padding.small),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text(
-                    modifier = Modifier.padding(top = Theme.padding.small),
-                    text = playback.title ?: "No Title",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    maxLines = 2
-                )
-
-                Text(
-                    modifier = Modifier.padding(
-                        start = Theme.padding.small,
-                        bottom = Theme.padding.small
-                    ),
-                    text = playback.artist ?: "No Artist",
-                    fontSize = 12.sp,
-                    maxLines = 1
-                )
-            }
-
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(painterResource(R.drawable.ic_play), contentDescription = "Play")
-            }
-        }
-    }
-
-    ProgressIndicator(
-        progress = currentPosition,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = Theme.padding.medium, end = Theme.padding.medium),
-        color = Theme.colors.orange,
-        backgroundColor = Theme.colors.partialOrange
-    )
-}
-
-
-@Composable
-fun ProgressIndicator(
-    progress: Float,
-    color: Color,
-    backgroundColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Canvas(modifier = modifier) {
-        val width = size.width
-
-        drawRoundRect(
-            color = backgroundColor,
-            topLeft = Offset(x = 0f, y = -10f),
-            size = Size(width = width, height = 10f),
-            cornerRadius = CornerRadius(100f, 100f)
-        )
-
-        drawRoundRect(
-            color = color,
-            topLeft = Offset(x = 0f, y = -10f),
-            size = Size(width = width * progress, height = 10f),
-            cornerRadius = CornerRadius(100f, 100f)
         )
     }
 }

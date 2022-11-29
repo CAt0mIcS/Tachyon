@@ -14,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
@@ -24,7 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.*
-import com.tachyonmusic.presentation.main.component.BottomNavigationItem
+import com.tachyonmusic.presentation.BottomNavigationItem
+import com.tachyonmusic.presentation.library.component.FilterItem
+import com.tachyonmusic.presentation.library.component.PlaybackView
 import com.tachyonmusic.presentation.theme.NoRippleTheme
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
@@ -151,82 +152,3 @@ object LibraryScreen :
     }
 }
 
-
-@Composable
-private fun FilterItem(text: String, selected: Boolean = false, onClick: () -> Unit) {
-
-    val selectedColor = Theme.colors.blue
-    val unselectedColor = Theme.colors.primary
-
-    val color by animateColorAsState(
-        if (selected) selectedColor else unselectedColor,
-        tween(Theme.animation.medium)
-    )
-
-    CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
-        Button(
-            shape = Theme.shapes.medium,
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = color,
-                contentColor = Theme.colors.contrastHigh
-            ),
-            onClick = {
-                onClick()
-            }
-        ) {
-            Text(text = text, fontSize = 14.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-
-@Composable
-fun PlaybackView(playback: Playback, artwork: ImageBitmap? = null) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = Theme.padding.extraSmall)
-            .shadow(Theme.shadow.extraSmall, shape = Theme.shapes.medium)
-            .background(Theme.colors.secondary, shape = Theme.shapes.medium)
-            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
-    ) {
-        if (artwork != null)
-            Image(
-                bitmap = artwork,
-                contentDescription = "Album Artwork",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(50.dp, 50.dp)
-                    .clip(Theme.shapes.medium)
-            )
-        else
-            Image(
-                painterResource(R.drawable.artwork_image_placeholder),
-                "Album Artwork Placeholder",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(50.dp, 50.dp)
-                    .clip(Theme.shapes.medium)
-            )
-
-        Column(modifier = Modifier.padding(start = Theme.padding.small)) {
-            Text(
-                modifier = Modifier.padding(top = Theme.padding.small),
-                text = playback.title ?: "No Title",
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
-                maxLines = 2
-            )
-
-            Text(
-                modifier = Modifier.padding(
-                    start = Theme.padding.small,
-                    bottom = Theme.padding.small
-                ),
-                text = playback.artist ?: "No Artist",
-                fontSize = 12.sp,
-                maxLines = 1
-            )
-        }
-    }
-}

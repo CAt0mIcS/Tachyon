@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation.main.component
+package com.tachyonmusic.presentation
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
