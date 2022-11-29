@@ -5,6 +5,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorPalette = darkColors(
@@ -14,31 +15,54 @@ private val DarkColorPalette = darkColors(
 )
 
 private val LightColorPalette = lightColors(
-    primary = LightWight,
+    primary = LightWhite,
     primaryVariant = LightSecondary,
     secondary = LightTertiary,
 
     background = Color.White,
     surface = LightSecondary,
-    onPrimary = Color.Black,
+    onPrimary = LightContrastHigh,
     onSecondary = LightBlue,
     onBackground = LightContrastLow,
     onSurface = LightContrastHigh,
 )
 
+// TODO: Dark palette
+private val DarkCustomColorPalette = Colors(
+    primary = LightWhite,
+    secondary = LightSecondary,
+    tertiary = LightTertiary,
+    blue = LightBlue,
+    orange = LightOrange,
+    partialOrange = LightOrangePartial,
+    contrastHigh = LightContrastHigh,
+    contrastLow = LightContrastLow,
+    border = LightBorderColor
+)
+
+private val LightCustomColorPalette = Colors(
+    primary = LightWhite,
+    secondary = LightSecondary,
+    tertiary = LightTertiary,
+    blue = LightBlue,
+    orange = LightOrange,
+    partialOrange = LightOrangePartial,
+    contrastHigh = LightContrastHigh,
+    contrastLow = LightContrastLow,
+    border = LightBorderColor
+)
+
 
 @Composable
 fun TachyonTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    val colors = if (darkTheme) {
-        DarkColorPalette
-    } else {
-        LightColorPalette
-    }
+    val colors = if (darkTheme) DarkColorPalette else LightColorPalette
+    val customColors = if (darkTheme) DarkCustomColorPalette else LightCustomColorPalette
 
     CompositionLocalProvider(
         LocalPadding provides Padding(),
         LocalShadow provides Shadow(),
-        LocalAnimation provides Animation()
+        LocalAnimation provides Animation(),
+        LocalCustomColors provides customColors
     ) {
         MaterialTheme(
             colors = colors,
@@ -49,11 +73,27 @@ fun TachyonTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composabl
     }
 }
 
+
+class Colors(
+    val primary: Color,
+    val secondary: Color,
+    val tertiary: Color,
+    val blue: Color,
+    val orange: Color,
+    val partialOrange: Color,
+    val contrastHigh: Color,
+    val contrastLow: Color,
+    val border: Color,
+)
+
+val LocalCustomColors = compositionLocalOf { LightCustomColorPalette }
+
+
 object Theme {
     val colors: Colors
         @Composable
         @ReadOnlyComposable
-        get() = MaterialTheme.colors
+        get() = LocalCustomColors.current
 
     val typography: Typography
         @Composable

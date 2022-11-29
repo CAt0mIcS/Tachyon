@@ -32,7 +32,7 @@ fun BottomNavigation(
     )
 
     CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
-        androidx.compose.material.BottomNavigation(backgroundColor = Theme.colors.surface) {
+        androidx.compose.material.BottomNavigation(backgroundColor = Theme.colors.secondary) {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
@@ -47,8 +47,8 @@ fun BottomNavigation(
                             modifier = Modifier.scale(1.6f) // TODO: Good practice? What happens if icons overlap?
                         )
                     },
-                    selectedContentColor = Theme.colors.onSurface,
-                    unselectedContentColor = Theme.colors.onBackground,
+                    selectedContentColor = Theme.colors.contrastHigh,
+                    unselectedContentColor = Theme.colors.contrastLow,
                     selected = selected,
                     onClick = {
                         navController.navigate(item.route) {

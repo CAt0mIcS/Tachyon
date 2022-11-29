@@ -1,13 +1,16 @@
 package com.tachyonmusic.presentation.main
 
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.*
+import com.tachyonmusic.domain.use_case.main.GetCurrentPositionNormalized
 import com.tachyonmusic.domain.use_case.main.GetHistory
-import com.tachyonmusic.util.Resource
+import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
+import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +18,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration
 
 
 @HiltViewModel
@@ -24,6 +28,9 @@ class HomeViewModel @Inject constructor(
     getLoops: GetLoops,
     getPlaylists: GetPlaylists,
     getHistory: GetHistory,
+    private val playerListener: PlayerListenerHandler,
+    private val getCurrentPositionNormalized: GetCurrentPositionNormalized,
+    private val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val loadPlaybackArtwork: LoadPlaybackArtwork,
 ) : ViewModel() {
 
@@ -31,9 +38,18 @@ class HomeViewModel @Inject constructor(
     val loops = getLoops()
     val playlists = getPlaylists()
 
+    val isPlaying = playerListener.isPlaying
+    val currentPositionNormalized: Float
+        get() = .5f
+    val audioUpdateInterval: Duration
+        get() = getAudioUpdateInterval()
+
 //    val history = getHistory()
 
     val history = MutableStateFlow(listOf<Playback>())
+
+    private val _recentlyPlayed = mutableStateOf<Playback?>(null)
+    val recentlyPlayed: State<Playback?> = _recentlyPlayed
 
 
     init {
@@ -67,6 +83,16 @@ class HomeViewModel @Inject constructor(
             loadPlaybackArtwork(listOf(history.value[0] as Song)).map { res ->
             }.collect()
         }
+
+        _recentlyPlayed.value = history.value[0]
+    }
+
+    fun registerPlayerListener() {
+        playerListener.register()
+    }
+
+    fun unregisterPlayerListener() {
+        playerListener.unregister()
     }
 
     fun onItemClicked(playback: Playback) {

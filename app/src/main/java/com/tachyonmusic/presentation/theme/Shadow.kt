@@ -6,9 +6,10 @@ import androidx.compose.ui.unit.dp
 
 data class Shadow(
     val none: Dp = 0.dp,
-    val small: Dp = 12.dp,
-    val medium: Dp = 18.dp,
-    val large: Dp = 24.dp,
+    val extraSmall: Dp = 2.dp,
+    val small: Dp = 4.dp,
+    val medium: Dp = 8.dp,
+    val large: Dp = 12.dp,
     val default: Dp = none
 )
 

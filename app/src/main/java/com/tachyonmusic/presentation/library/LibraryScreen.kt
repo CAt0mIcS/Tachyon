@@ -57,7 +57,7 @@ object LibraryScreen :
                             shape = Theme.shapes.extraLarge
                         ) // TODO: Shadow not working?
                         .horizontalScroll(rememberScrollState())
-                        .background(Theme.colors.surface, shape = Theme.shapes.extraLarge)
+                        .background(Theme.colors.secondary, shape = Theme.shapes.extraLarge)
                         .padding(
                             start = Theme.padding.medium,
                             top = Theme.padding.extraSmall,
@@ -95,7 +95,7 @@ object LibraryScreen :
                     }
                 ) {
                     val iconAndTextColor by animateColorAsState(
-                        if (sortOptionsExpanded) Theme.colors.onSurface else Theme.colors.onBackground,
+                        if (sortOptionsExpanded) Theme.colors.contrastHigh else Theme.colors.contrastLow,
                         tween(Theme.animation.short)
                     )
 
@@ -155,7 +155,7 @@ object LibraryScreen :
 @Composable
 private fun FilterItem(text: String, selected: Boolean = false, onClick: () -> Unit) {
 
-    val selectedColor = Theme.colors.onSecondary
+    val selectedColor = Theme.colors.blue
     val unselectedColor = Theme.colors.primary
 
     val color by animateColorAsState(
@@ -168,7 +168,7 @@ private fun FilterItem(text: String, selected: Boolean = false, onClick: () -> U
             shape = Theme.shapes.medium,
             colors = ButtonDefaults.buttonColors(
                 backgroundColor = color,
-                contentColor = Theme.colors.onSurface
+                contentColor = Theme.colors.contrastHigh
             ),
             onClick = {
                 onClick()
@@ -186,19 +186,9 @@ fun PlaybackView(playback: Playback, artwork: ImageBitmap? = null) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = Theme.padding.extraSmall)
-            .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
-            .background(Theme.colors.surface, shape = Theme.shapes.medium)
-            .border(
-                BorderStroke(
-                    1.dp,
-                    Color(
-                        Theme.colors.secondary.red,
-                        Theme.colors.secondary.green,
-                        Theme.colors.secondary.blue,
-                        Theme.colors.secondary.alpha * .7f
-                    )
-                ), shape = Theme.shapes.medium
-            )
+            .shadow(Theme.shadow.extraSmall, shape = Theme.shapes.medium)
+            .background(Theme.colors.secondary, shape = Theme.shapes.medium)
+            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
     ) {
         if (artwork != null)
             Image(
@@ -224,7 +214,8 @@ fun PlaybackView(playback: Playback, artwork: ImageBitmap? = null) {
                 modifier = Modifier.padding(top = Theme.padding.small),
                 text = playback.title ?: "No Title",
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
+                fontSize = 14.sp,
+                maxLines = 2
             )
 
             Text(
@@ -233,10 +224,9 @@ fun PlaybackView(playback: Playback, artwork: ImageBitmap? = null) {
                     bottom = Theme.padding.small
                 ),
                 text = playback.artist ?: "No Artist",
-                fontSize = 12.sp
+                fontSize = 12.sp,
+                maxLines = 1
             )
         }
-
-
     }
 }

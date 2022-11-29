@@ -78,6 +78,11 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideGetCurrentPositionNormalizedUseCase(browser: MediaBrowserController) =
+        GetCurrentPositionNormalized(browser)
+
+    @Provides
+    @Singleton
     fun provideGetAudioUpdateIntervalUseCase(userRepository: UserRepository) =
         GetAudioUpdateInterval(userRepository)
 

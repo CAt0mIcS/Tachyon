@@ -1,30 +1,30 @@
 package com.tachyonmusic.presentation.main
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
-import androidx.compose.material.TextFieldDefaults.indicatorLine
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -36,6 +36,7 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.presentation.main.component.BottomNavigationItem
 import com.tachyonmusic.presentation.theme.Theme
+import kotlinx.coroutines.delay
 
 
 object HomeScreen :
@@ -49,148 +50,282 @@ object HomeScreen :
     ) {
         var searchText by remember { mutableStateOf("") }
         val history by viewModel.history.collectAsState()
+        val recentlyPlayed by viewModel.recentlyPlayed
 
-//        LaunchedEffect(true) {
-//            // Load album art when the view is active, TODO: Unload when view becomes inactive and don't load on main coroutine
-//            viewModel.loadArtworkState(history.filterIsInstance<Song>())
+        val isPlaying by viewModel.isPlaying
+        var currentPosition by remember { mutableStateOf(viewModel.currentPositionNormalized) }
+
+        DisposableEffect(Unit) {
+            viewModel.registerPlayerListener()
+            onDispose {
+                viewModel.unregisterPlayerListener()
+            }
+        }
+
+        if (isPlaying) {
+            LaunchedEffect(Unit) {
+                while (true) {
+                    currentPosition = viewModel.currentPositionNormalized
+                    delay(viewModel.audioUpdateInterval)
+                }
+            }
+        }
+
+//        CustomColumn(
+//            modifier = Modifier.fillMaxSize(),
+//        ) {
+//
+//            Column(
+//                modifier = Modifier
+//                    .padding(start = 16.dp)
+//                    .border(BorderStroke(2.dp, Color.Black))
+//                    .verticalScroll(rememberScrollState())
+//            ) {
+//                repeat(50) {
+//                    Text(it.toString())
+//                }
+//            }
+//
+//            MiniPlayer(
+//                playback = history[0],
+//                currentPosition = currentPosition,
+//                artwork = (history[0] as Song).artwork?.asImageBitmap()
+//            )
+//
 //        }
 
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(Theme.padding.small)
-                .verticalScroll(rememberScrollState())
-        ) {
+        CustomColumn(modifier = Modifier.fillMaxSize()) {
 
-
-            val interactionSource: MutableInteractionSource =
-                remember { MutableInteractionSource() }
-
-            BasicTextField(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(Theme.shadow.large, shape = Theme.shapes.medium)
-                    .background(Theme.colors.surface, shape = Theme.shapes.medium)
-                    .defaultMinSize(
-                        minWidth = TextFieldDefaults.MinWidth,
-                        minHeight = TextFieldDefaults.MinHeight
-                    ),
-                value = searchText,
-                onValueChange = { searchText = it },
-                textStyle = TextStyle.Default.copy(fontSize = 25.sp),
-                singleLine = true,
-            ) { innerTextField ->
-                TextFieldDefaults.TextFieldDecorationBox(
-                    value = searchText,
-                    innerTextField = innerTextField,
-                    placeholder = { //
-                        Text(
-                            text = stringResource(androidx.appcompat.R.string.search_menu_title),
-                            fontSize = 25.sp
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            painterResource(R.drawable.ic_search),
-                            contentDescription = "Search Playbacks",
-                            modifier = Modifier.scale(1.6f)
-                        )
-                    },
-                    interactionSource = interactionSource,
-                    visualTransformation = VisualTransformation.None,
-                    singleLine = true,
-                    enabled = true,
-                    isError = false,
-                    colors = TextFieldDefaults.textFieldColors(
-                        backgroundColor = Theme.colors.surface,
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        cursorColor = Theme.colors.onSurface
-                    ),
-                    contentPadding = PaddingValues(0.dp)
-                )
-            }
-
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
-                    .padding(top = Theme.padding.large),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(bottom = 60.dp) // TODO: The end wouldn't be visible due to the min player otherwise
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
 
-                Text(
-                    text = "Recently Played",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
 
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    TextButton(
-                        onClick = {},
-                    ) {
-                        Text(
-                            "View All",
-                            color = Theme.colors.onSecondary,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                val interactionSource: MutableInteractionSource =
+                    remember { MutableInteractionSource() }
+
+                BasicTextField(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = Theme.padding.small,
+                            end = Theme.padding.small,
+                            top = Theme.padding.medium
                         )
+                        .shadow(Theme.shadow.medium, shape = Theme.shapes.medium)
+                        .background(Theme.colors.secondary, shape = Theme.shapes.medium)
+                        .defaultMinSize(
+                            minWidth = TextFieldDefaults.MinWidth,
+                            minHeight = TextFieldDefaults.MinHeight
+                        ),
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    textStyle = TextStyle.Default.copy(
+                        fontSize = 25.sp,
+                        color = Theme.colors.contrastLow
+                    ),
+                    singleLine = true,
+                    cursorBrush = SolidColor(Theme.colors.contrastLow)
+                ) { innerTextField ->
+                    TextFieldDefaults.TextFieldDecorationBox(
+                        value = searchText,
+                        innerTextField = innerTextField,
+                        placeholder = { //
+                            Text(
+                                text = stringResource(androidx.appcompat.R.string.search_menu_title),
+                                fontSize = 25.sp
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painterResource(R.drawable.ic_search),
+                                contentDescription = "Search Playbacks",
+                                modifier = Modifier.scale(1.4f)
+                            )
+                        },
+                        interactionSource = interactionSource,
+                        visualTransformation = VisualTransformation.None,
+                        singleLine = true,
+                        enabled = true,
+                        isError = false,
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = Theme.colors.secondary,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            cursorColor = Theme.colors.contrastLow
+                        ),
+                        contentPadding = PaddingValues(0.dp)
+                    )
+                }
+
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min)
+                        .padding(
+                            start = Theme.padding.medium,
+                            top = Theme.padding.large,
+                            end = Theme.padding.small
+                        ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Text(
+                        text = "Recently Played",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        TextButton(
+                            onClick = {},
+                        ) {
+                            Text(
+                                "View All",
+                                color = Theme.colors.blue,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
-            }
 
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = Theme.padding.extraSmall)
-            ) {
-                items(history) { playback ->
-                    PlaybackView(
-                        playback,
-                        (playback as Song).artwork?.asImageBitmap()
-                    )
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = Theme.padding.small, top = Theme.padding.extraSmall)
+                ) {
+                    playbacksView(history)
                 }
+
+                Text(
+                    "Recommended for You",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(
+                        start = Theme.padding.medium,
+                        top = Theme.padding.large,
+                        end = Theme.padding.medium
+                    )
+                )
+
+                // TODO: Recommendations
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = Theme.padding.small, top = Theme.padding.small)
+                ) {
+                    playbacksView(playbacks = history)
+                }
+
+                // This ensures that the shadow isn't cut off by the BottomNavigationBar's padding
+                // TODO: Maybe use LazyColum.contentPadding(bottom)
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(Theme.shadow.large)
+                )
             }
 
-            Text(
-                "Recommended for You",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = Theme.padding.large)
+            MiniPlayer(
+                playback = recentlyPlayed ?: return@CustomColumn,
+                artwork = (recentlyPlayed as Song).artwork?.asImageBitmap(),
+                currentPosition = currentPosition
             )
+        }
+    }
+}
 
-            // TODO: Recommendations
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = Theme.padding.small)
-            ) {
-                items(history) { playback ->
-                    PlaybackView(
-                        playback,
-                        (playback as Song).artwork?.asImageBitmap()
-                    )
+@Composable
+fun CustomColumn(modifier: Modifier, content: @Composable () -> Unit) {
+    Layout(
+        modifier = modifier,
+        content = content
+    ) { measurables, constraints ->
+
+        val looseConstraints = constraints.copy(
+            minWidth = 0,
+            maxWidth = constraints.maxWidth,
+            minHeight = 0,
+            maxHeight = constraints.maxHeight
+        )
+
+        // Don't constrain child views further, measure them with given constraints
+        // List of measured children
+        val placeables = measurables.map { measurable ->
+            // Measure each child
+            measurable.measure(looseConstraints)
+        }
+
+        // Track the y co-ord we have placed children up to
+        var yPosition = 0
+
+
+        // Set the size of the layout as big as it can
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            // Place children in the parent layout
+            placeables.forEachIndexed { index, placeable ->
+
+                println("Placeable width: ${placeable.width}, measuredWidth: ${placeable.measuredWidth}")
+                // Position item on the screen
+                if (index == placeables.size - 1 || index == placeables.size - 2) {
+                    placeable.placeRelative(x = 0, y = constraints.maxHeight - placeable.height)
+                } else {
+                    placeable.placeRelative(x = 0, y = yPosition)
                 }
+
+                // Record the y co-ord placed up to
+                yPosition += placeable.height
             }
         }
     }
 }
 
 
+fun LazyListScope.playbacksView(playbacks: List<Playback>) {
+    items(playbacks.size) { i ->
+
+        // Apply extra padding to the start of the first playback and to the end of the last
+        val padding = if (i == 0) {
+            PaddingValues(start = Theme.padding.medium, end = Theme.padding.extraSmall / 2f)
+        } else if (i > 0 && i < playbacks.size - 1) {
+            PaddingValues(
+                start = Theme.padding.extraSmall / 2f,
+                end = Theme.padding.extraSmall / 2f
+            )
+        } else {
+            PaddingValues(
+                start = Theme.padding.extraSmall / 2f,
+                end = Theme.padding.medium
+            )
+        }
+
+        PlaybackView(
+            modifier = Modifier.padding(padding),
+            playback = playbacks[i],
+            artwork = (playbacks[i] as Song).artwork?.asImageBitmap()
+        )
+    }
+}
+
+
 @Composable
-fun PlaybackView(playback: Playback, artwork: ImageBitmap? = null) {
+fun PlaybackView(playback: Playback, artwork: ImageBitmap? = null, modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
-            .padding(start = Theme.padding.extraSmall)
+        modifier = modifier
             .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
-            .background(Theme.colors.surface, shape = Theme.shapes.medium)
-            .border(BorderStroke(1.dp, Theme.colors.secondary), shape = Theme.shapes.medium)
+            .background(Theme.colors.secondary, shape = Theme.shapes.medium)
+            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
     ) {
         if (artwork != null)
             Image(
@@ -225,6 +360,111 @@ fun PlaybackView(playback: Playback, artwork: ImageBitmap? = null) {
             ),
             text = playback.artist ?: "No Artist",
             fontSize = 12.sp
+        )
+    }
+}
+
+
+@Composable
+fun MiniPlayer(
+    playback: Playback,
+    currentPosition: Float,
+    artwork: ImageBitmap? = null,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(
+                start = Theme.padding.extraSmall,
+                top = Theme.padding.extraSmall,
+                end = Theme.padding.extraSmall
+            )
+            .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
+            .background(Theme.colors.tertiary, shape = Theme.shapes.medium)
+    ) {
+        if (artwork != null)
+            Image(
+                bitmap = artwork,
+                contentDescription = "Album Artwork",
+                modifier = Modifier
+                    .padding(Theme.padding.extraSmall)
+                    .size(48.dp, 48.dp)
+                    .clip(Theme.shapes.medium)
+            )
+        else
+            Image(
+                painterResource(R.drawable.artwork_image_placeholder),
+                "Album Artwork Placeholder",
+                modifier = Modifier
+                    .padding(Theme.padding.extraSmall)
+                    .size(48.dp, 48.dp)
+                    .clip(Theme.shapes.medium)
+            )
+
+        Row(
+            modifier = Modifier.padding(start = Theme.padding.small),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(
+                    modifier = Modifier.padding(top = Theme.padding.small),
+                    text = playback.title ?: "No Title",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    maxLines = 2
+                )
+
+                Text(
+                    modifier = Modifier.padding(
+                        start = Theme.padding.small,
+                        bottom = Theme.padding.small
+                    ),
+                    text = playback.artist ?: "No Artist",
+                    fontSize = 12.sp,
+                    maxLines = 1
+                )
+            }
+
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(painterResource(R.drawable.ic_play), contentDescription = "Play")
+            }
+        }
+    }
+
+    ProgressIndicator(
+        progress = currentPosition,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = Theme.padding.medium, end = Theme.padding.medium),
+        color = Theme.colors.orange,
+        backgroundColor = Theme.colors.partialOrange
+    )
+}
+
+
+@Composable
+fun ProgressIndicator(
+    progress: Float,
+    color: Color,
+    backgroundColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Canvas(modifier = modifier) {
+        val width = size.width
+
+        drawRoundRect(
+            color = backgroundColor,
+            topLeft = Offset(x = 0f, y = -10f),
+            size = Size(width = width, height = 10f),
+            cornerRadius = CornerRadius(100f, 100f)
+        )
+
+        drawRoundRect(
+            color = color,
+            topLeft = Offset(x = 0f, y = -10f),
+            size = Size(width = width * progress, height = 10f),
+            cornerRadius = CornerRadius(100f, 100f)
         )
     }
 }
