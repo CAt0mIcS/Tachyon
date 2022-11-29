@@ -46,7 +46,12 @@ object LibraryScreen :
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(Theme.padding.medium)
+                .padding(
+                    start = Theme.padding.medium,
+                    top = Theme.padding.medium,
+                    end = Theme.padding.medium
+                ),
+            contentPadding = PaddingValues(bottom = Theme.padding.small)
         ) {
 
             item {
