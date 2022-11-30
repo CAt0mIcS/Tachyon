@@ -92,6 +92,6 @@ fun MiniPlayer(
             .fillMaxWidth()
             .padding(start = Theme.padding.medium, end = Theme.padding.medium),
         color = Theme.colors.orange,
-        backgroundColor = Theme.colors.partialOrange
+        backgroundColor = Theme.colors.partialOrange2
     )
 }

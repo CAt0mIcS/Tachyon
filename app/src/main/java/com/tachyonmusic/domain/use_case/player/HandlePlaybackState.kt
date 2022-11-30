@@ -5,11 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.presentation.player.PlaybackState
+import com.tachyonmusic.presentation.player.data.PlaybackState
 
 class HandlePlaybackState(
     browser: MediaBrowserController,
-    private val millisecondsToReadableString: MillisecondsToReadableString
 ) : MediaStateHandler(browser) {
     private val _playbackState = mutableStateOf(PlaybackState())
     val playbackState: State<PlaybackState> = _playbackState
@@ -19,8 +18,8 @@ class HandlePlaybackState(
             playback?.title ?: "",
             playback?.artist ?: "",
             playback?.duration ?: 0L,
-            millisecondsToReadableString(playback?.duration),
-            if (playback is SinglePlayback) playback.artwork else null
+            if (playback is SinglePlayback) playback.artwork else null,
+            if (playback is SinglePlayback) listOf(playback) else emptyList()
         )
     }
 }

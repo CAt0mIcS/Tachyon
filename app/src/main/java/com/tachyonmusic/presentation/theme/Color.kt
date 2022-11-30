@@ -10,7 +10,8 @@ val LightTertiary = Color(0xFFA2A2A2)
 
 val LightBlue = Color(0xFF3498DB)
 val LightOrange = Color(0xFFFA7000)
-val LightOrangePartial = LightOrange.copy(alpha = 0.2f)
+val LightOrangePartial1 = LightOrange.copy(alpha = 0.42f)
+val LightOrangePartial2 = LightOrange.copy(alpha = 0.2f)
 
 val LightContrastHigh = Color(0xFF252525)
 val LightContrastLow = Color(0xB3252525)

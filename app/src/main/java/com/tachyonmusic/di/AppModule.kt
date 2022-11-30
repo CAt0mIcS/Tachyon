@@ -1,5 +1,6 @@
 package com.tachyonmusic.di
 
+import android.app.Application
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.*
@@ -68,6 +69,11 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun providePauseResumePlaybackUseCase(browser: MediaBrowserController) =
+        PauseResumePlayback(browser)
+
+    @Provides
+    @Singleton
     fun providePlayerListenerHandlerUseCase(browser: MediaBrowserController) =
         PlayerListenerHandler(browser)
 
@@ -88,10 +94,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideHandlePlaybackStateUseCase(
-        browser: MediaBrowserController,
-        millisecondsToReadableString: MillisecondsToReadableString
-    ) = HandlePlaybackState(browser, millisecondsToReadableString)
+    fun provideHandlePlaybackStateUseCase(browser: MediaBrowserController) =
+        HandlePlaybackState(browser)
 
     @Provides
     @Singleton

@@ -2,10 +2,11 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 buildscript {
-
     repositories {
         google()
         mavenCentral()
+
+        maven { url = uri("https://jitpack.io") }
     }
 
     dependencies {

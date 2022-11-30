@@ -10,12 +10,14 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+
+        maven { url = uri("https://jitpack.io") }
     }
 }
 rootProject.name = "Tachyon"
-include ':app'
-include ':media'
-include ':user'
-include ':util'
-include ':core'
-include ':testutils'
+include(":app")
+include(":media")
+include(":user")
+include(":util")
+include(":core")
+include(":testutils")

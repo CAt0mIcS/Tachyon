@@ -33,7 +33,8 @@ import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.main.component.MiniPlayer
 import com.tachyonmusic.presentation.theme.Theme
 import kotlinx.coroutines.delay
-import com.tachyonmusic.presentation.main.component.PlaybackView
+import com.tachyonmusic.presentation.main.component.VerticalPlaybackView
+import com.tachyonmusic.presentation.player.PlayerScreen
 
 
 object HomeScreen :
@@ -180,7 +181,10 @@ object HomeScreen :
                         .fillMaxWidth()
                         .padding(start = Theme.padding.small, top = Theme.padding.extraSmall),
                 ) {
-                    playbacksView(history)
+                    playbacksView(history) {
+                        viewModel.onItemClicked(it)
+                        navController.navigate(PlayerScreen.route)
+                    }
                 }
             }
 
@@ -204,7 +208,10 @@ object HomeScreen :
                         .fillMaxWidth()
                         .padding(start = Theme.padding.small, top = Theme.padding.small)
                 ) {
-                    playbacksView(playbacks = history)
+                    playbacksView(playbacks = history) {
+                        viewModel.onItemClicked(it)
+                        navController.navigate(PlayerScreen.route)
+                    }
                 }
             }
         }
@@ -253,7 +260,7 @@ object HomeScreen :
 }
 
 
-fun LazyListScope.playbacksView(playbacks: List<Playback>) {
+fun LazyListScope.playbacksView(playbacks: List<Playback>, onClick: (Playback) -> Unit) {
     items(playbacks.size) { i ->
 
         // Apply extra padding to the start of the first playback and to the end of the last
@@ -271,10 +278,14 @@ fun LazyListScope.playbacksView(playbacks: List<Playback>) {
             )
         }
 
-        PlaybackView(
-            modifier = Modifier.padding(padding),
+        VerticalPlaybackView(
+            modifier = Modifier
+                .padding(padding)
+                .clickable {
+                    onClick(playbacks[i])
+                },
             playback = playbacks[i],
-            artwork = (playbacks[i] as Song).artwork?.asImageBitmap()
+            artwork = (playbacks[i] as Song).artwork?.asImageBitmap(),
         )
     }
 }

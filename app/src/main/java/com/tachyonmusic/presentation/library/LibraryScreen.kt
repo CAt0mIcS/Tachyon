@@ -8,25 +8,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
-import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.*
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.library.component.FilterItem
-import com.tachyonmusic.presentation.library.component.PlaybackView
-import com.tachyonmusic.presentation.theme.NoRippleTheme
+import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
 
@@ -145,12 +139,15 @@ object LibraryScreen :
 
             items(playbackItems) { playback ->
 
-                PlaybackView(
+                HorizontalPlaybackView(
                     playback,
                     if (playback is SinglePlayback)
                         playback.artwork?.asImageBitmap()
                     else
-                        (playback as Playlist).playbacks.firstOrNull()?.artwork?.asImageBitmap()
+                        (playback as Playlist).playbacks.firstOrNull()?.artwork?.asImageBitmap(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = Theme.padding.extraSmall)
                 )
             }
         }

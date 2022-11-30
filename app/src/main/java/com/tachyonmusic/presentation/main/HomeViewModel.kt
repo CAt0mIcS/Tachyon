@@ -30,7 +30,6 @@ class HomeViewModel @Inject constructor(
     getPlaylists: GetPlaylists,
     getHistory: GetHistory,
     private val playerListener: PlayerListenerHandler,
-    private val getCurrentPositionNormalized: GetCurrentPositionNormalized,
     private val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val loadPlaybackArtwork: LoadPlaybackArtwork,
 ) : ViewModel() {
