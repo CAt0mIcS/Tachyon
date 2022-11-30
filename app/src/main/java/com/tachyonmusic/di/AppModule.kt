@@ -73,7 +73,6 @@ object AppModule {
         PauseResumePlayback(browser)
 
     @Provides
-    @Singleton
     fun providePlayerListenerHandlerUseCase(browser: MediaBrowserController) =
         PlayerListenerHandler(browser)
 
@@ -93,12 +92,10 @@ object AppModule {
         GetAudioUpdateInterval(userRepository)
 
     @Provides
-    @Singleton
     fun provideHandlePlaybackStateUseCase(browser: MediaBrowserController) =
         HandlePlaybackState(browser)
 
     @Provides
-    @Singleton
     fun provideHandleLoopStateUseCase(browser: MediaBrowserController) = HandleLoopState(browser)
 
     @Provides

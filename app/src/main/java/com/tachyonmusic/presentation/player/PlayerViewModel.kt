@@ -37,8 +37,6 @@ class PlayerViewModel @Inject constructor(
 ) : ViewModel(), MediaBrowserController.EventListener {
 
     val isPlaying = playerListener.isPlaying
-//    private var _isPlaying = mutableStateOf(false)
-//    val isPlaying: State<Boolean> = _isPlaying
 
     val currentPosition: Long
         get() = getCurrentPosition()
@@ -51,10 +49,6 @@ class PlayerViewModel @Inject constructor(
     private var _repeatMode = mutableStateOf<RepeatMode>(RepeatMode.One)
     val repeatMode: State<RepeatMode> = _repeatMode
 
-    init {
-//        browser.registerEventListener(this)
-
-    }
 
     fun registerPlayerListeners() {
         handlePlaybackState.register()
@@ -67,11 +61,6 @@ class PlayerViewModel @Inject constructor(
         handleLoopState.unregister()
         playerListener.unregister()
     }
-
-//    override fun onIsPlayingChanged(isPlaying: Boolean) {
-//        Log.d("PlayerViewModel", "onIsPlayingChanged with isPlaying = $isPlaying")
-//        _isPlaying.value = isPlaying
-//    }
 
     fun getTextForPosition(position: Long) = millisecondsToReadableString(position)
 

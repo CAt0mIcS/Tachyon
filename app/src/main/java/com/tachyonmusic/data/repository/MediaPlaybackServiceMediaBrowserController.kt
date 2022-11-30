@@ -147,6 +147,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         }
     }
 
+    // TODO: Only emit if it doesn't come from e.g. a seek which changes isPlaying to false and then to true quickly
     override fun onIsPlayingChanged(isPlaying: Boolean) = invokeEvent {
         it.onIsPlayingChanged(isPlaying)
     }
