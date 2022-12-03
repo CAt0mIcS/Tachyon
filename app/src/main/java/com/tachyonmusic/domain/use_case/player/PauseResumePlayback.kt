@@ -10,11 +10,12 @@ class PauseResumePlayback(
     }
 
     operator fun invoke(action: Action) {
-        if (action == Action.Pause)
-            browser.pause()
-        else if (action == Action.Resume)
-            browser.play()
-        else
-            TODO("Invalid action $action")
+        if (browser.playback == null)
+            return
+
+        when (action) {
+            Action.Pause -> browser.pause()
+            Action.Resume -> browser.play()
+        }
     }
 }

@@ -62,12 +62,10 @@ object HomeScreen :
             }
         }
 
-        if (isPlaying) {
-            LaunchedEffect(Unit) {
-                while (true) {
-                    currentPosition = viewModel.currentPositionNormalized
-                    delay(viewModel.audioUpdateInterval)
-                }
+        LaunchedEffect(Unit) {
+            while (true) {
+                currentPosition = viewModel.currentPositionNormalized
+                delay(viewModel.audioUpdateInterval)
             }
         }
 
@@ -223,7 +221,13 @@ object HomeScreen :
                     MiniPlayer(
                         playback = recentlyPlayed ?: return,
                         artwork = (recentlyPlayed as Song).artwork?.asImageBitmap(),
-                        currentPosition = currentPosition
+                        currentPosition = currentPosition,
+                        isPlaying = isPlaying,
+                        onPlayPauseClicked = { viewModel.onPlayPauseClicked(recentlyPlayed) },
+                        onClick = {
+                            viewModel.onMiniPlayerClicked(recentlyPlayed)
+                            navController.navigate(PlayerScreen.route)
+                        }
                     )
                 }
             ) { measurables, constraints ->

@@ -11,7 +11,9 @@ import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.main.GetCurrentPositionNormalized
 import com.tachyonmusic.domain.use_case.main.GetHistory
 import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
+import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
+import com.tachyonmusic.domain.use_case.player.SetCurrentPlayback
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +34,9 @@ class HomeViewModel @Inject constructor(
     private val playerListener: PlayerListenerHandler,
     private val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val loadPlaybackArtwork: LoadPlaybackArtwork,
+    private val setCurrentPlayback: SetCurrentPlayback,
+    private val pauseResumePlayback: PauseResumePlayback,
+    private val getCurrentPositionNormalized: GetCurrentPositionNormalized
 ) : ViewModel() {
 
     val songs = getSongs()
@@ -40,7 +45,7 @@ class HomeViewModel @Inject constructor(
 
     val isPlaying = playerListener.isPlaying
     val currentPositionNormalized: Float
-        get() = .5f
+        get() = getCurrentPositionNormalized()
     val audioUpdateInterval: Duration
         get() = getAudioUpdateInterval()
 
@@ -91,5 +96,16 @@ class HomeViewModel @Inject constructor(
 //        for (song in songs.value) {
 //            song.unloadArtwork()
 //        }
+    }
+
+    fun onPlayPauseClicked(playback: Playback?) {
+        if (isPlaying.value)
+            pauseResumePlayback(PauseResumePlayback.Action.Pause)
+        else if (!setCurrentPlayback(playback))
+            pauseResumePlayback(PauseResumePlayback.Action.Resume)
+    }
+
+    fun onMiniPlayerClicked(playback: Playback?) {
+        setCurrentPlayback(playback, false)
     }
 }

@@ -39,7 +39,7 @@ object PlayerScreen : NavigationItem("player_screen") {
         navController: NavController,
         viewModel: PlayerViewModel = hiltViewModel()
     ) {
-        var currentPosition by remember { mutableStateOf(0L) }
+        var currentPosition by remember { mutableStateOf(viewModel.currentPosition) }
         val isPlaying by viewModel.isPlaying
 
         var loopName by remember { mutableStateOf("") }
@@ -59,14 +59,12 @@ object PlayerScreen : NavigationItem("player_screen") {
             }
         }
 
-        if (isPlaying) {
-            LaunchedEffect(Unit) {
-                Log.d("PlayerScreen", "Entered currentPosition update effect composition")
-                while (true) {
-                    if (!isSeeking)
-                        currentPosition = viewModel.currentPosition
-                    delay(viewModel.audioUpdateInterval)
-                }
+        LaunchedEffect(Unit) {
+            Log.d("PlayerScreen", "Entered currentPosition update effect composition")
+            while (true) {
+                if (!isSeeking)
+                    currentPosition = viewModel.currentPosition
+                delay(viewModel.audioUpdateInterval)
             }
         }
 

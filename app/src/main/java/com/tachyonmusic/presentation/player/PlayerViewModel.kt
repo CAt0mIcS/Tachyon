@@ -49,7 +49,6 @@ class PlayerViewModel @Inject constructor(
     private var _repeatMode = mutableStateOf<RepeatMode>(RepeatMode.One)
     val repeatMode: State<RepeatMode> = _repeatMode
 
-
     fun registerPlayerListeners() {
         handlePlaybackState.register()
         handleLoopState.register()

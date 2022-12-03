@@ -28,4 +28,8 @@ class HandleLoopState(browser: MediaBrowserController) : MediaStateHandler(brows
         loopState.clear()
         loopState.addAll(playback?.timingData?.timingData ?: emptyList())
     }
+
+    override fun onRegister() {
+        onPlaybackTransition(browser.playback ?: return)
+    }
 }

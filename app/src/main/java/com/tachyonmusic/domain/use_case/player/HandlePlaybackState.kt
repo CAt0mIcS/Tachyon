@@ -22,4 +22,9 @@ class HandlePlaybackState(
             if (playback is SinglePlayback) listOf(playback) else emptyList()
         )
     }
+
+    override fun onRegister() {
+        // Ensure that state is up to date if there's already a playback playing
+        onPlaybackTransition(browser.playback)
+    }
 }

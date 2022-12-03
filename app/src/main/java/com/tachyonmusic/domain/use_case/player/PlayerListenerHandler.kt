@@ -14,4 +14,9 @@ class PlayerListenerHandler(browser: MediaBrowserController) : MediaStateHandler
         _isPlaying.value = isPlaying
         Log.d("PlayerListenerHandler", "onIsPlayingChanged with isPlaying = $isPlaying")
     }
+
+    override fun onRegister() {
+        // Ensure that state is up to date if there's already a playback playing
+        onIsPlayingChanged(browser.isPlaying)
+    }
 }
