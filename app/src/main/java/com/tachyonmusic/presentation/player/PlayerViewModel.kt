@@ -1,22 +1,14 @@
 package com.tachyonmusic.presentation.player
 
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.presentation.player.data.RepeatMode
 import com.tachyonmusic.domain.use_case.ItemClicked
-import com.tachyonmusic.domain.use_case.LoadPlaybackArtwork
 import com.tachyonmusic.domain.use_case.player.*
+import com.tachyonmusic.presentation.player.data.RepeatMode
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import java.lang.Long.max
 import javax.inject.Inject
 import kotlin.math.min

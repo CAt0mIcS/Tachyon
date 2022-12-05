@@ -142,9 +142,9 @@ object LibraryScreen :
                 HorizontalPlaybackView(
                     playback,
                     if (playback is SinglePlayback)
-                        playback.artwork?.asImageBitmap()
+                        playback.artwork?.painter
                     else
-                        (playback as Playlist).playbacks.firstOrNull()?.artwork?.asImageBitmap(),
+                        (playback as Playlist).playbacks.firstOrNull()?.artwork?.painter,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall)

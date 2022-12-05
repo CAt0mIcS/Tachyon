@@ -28,6 +28,14 @@ android {
         }
     }
 
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.3.0"
+    }
+
     compileOptions {
         sourceCompatibility = Version.JAVA
         targetCompatibility = Version.JAVA

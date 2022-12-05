@@ -1,7 +1,8 @@
 <resources>
     <string name="encoder_error_no_arguments">ArtworkDownloader: The url encoder received no arguments</string>
-    <string name="unknown_encoder_error">ArtworkDownloader: Unknown exception occurred while encoding url "%1$s"</string>
-    <string name="artwork_api_invalid_json">ArtworkDownloader: Invalid JSON returned from Artwork API: "%1$s"</string>
+    <string name="unknown_encoder_error">ArtworkDownloader: Unknown exception occurred while encoding url \"%1$s\"</string>
+    <string name="artwork_api_invalid_json">ArtworkDownloader: Invalid JSON returned from Artwork API: \"%1$s\"</string>
     <string name="invalid_image_size">ArtworkDownloader: The provided image size (%1$s) is invalid</string>
     <string name="invalid_media_metadata">ArtworkDownloader: The provided title (%1$s) or artist (%2$s) is invalid</string>
+    <string name="request_to_url_failed">ArtworkDownloader: Request to URL \"%1$s\" failed.</string>
 </resources>

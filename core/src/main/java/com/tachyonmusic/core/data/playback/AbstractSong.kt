@@ -35,7 +35,7 @@ abstract class AbstractSong(
         artwork = null
     }
 
-    override suspend fun loadBitmap(imageSize: Int) = flow<Resource<Unit>> {
+    override suspend fun loadArtwork(imageSize: Int) = flow<Resource<Unit>> {
         getArtwork(this@AbstractSong, imageSize).map {
             when (it) {
                 is Resource.Success -> {

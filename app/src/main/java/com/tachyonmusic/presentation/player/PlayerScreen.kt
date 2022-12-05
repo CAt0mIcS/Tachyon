@@ -6,15 +6,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -87,7 +86,7 @@ object PlayerScreen : NavigationItem("player_screen") {
                 if (playbackState.artwork != null) {
                     Image(
                         modifier = artworkModifier,
-                        bitmap = playbackState.artwork!!.asImageBitmap(),
+                        painter = playbackState.artwork!!.painter,
                         contentDescription = null,
                     )
                 } else {
@@ -331,7 +330,7 @@ object PlayerScreen : NavigationItem("player_screen") {
                 items(playbackState.children) { playback ->
                     HorizontalPlaybackView(
                         playback,
-                        playback.artwork?.asImageBitmap(),
+                        playback.artwork?.painter,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(

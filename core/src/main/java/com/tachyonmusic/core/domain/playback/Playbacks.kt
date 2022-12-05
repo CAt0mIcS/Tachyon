@@ -1,6 +1,5 @@
 package com.tachyonmusic.core.domain.playback
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Parcelable
 import androidx.media3.common.MediaItem
@@ -30,8 +29,6 @@ interface Playback : Parcelable {
 
     fun toHashMap(): HashMap<String, Any?>
 
-    suspend fun loadBitmap(imageSize: Int): Flow<Resource<Unit>>
-
     override fun equals(other: Any?): Boolean
 
     override fun toString(): String
@@ -45,6 +42,7 @@ interface SinglePlayback : Playback {
     val artwork: Artwork?
 
     fun unloadArtwork()
+    suspend fun loadArtwork(imageSize: Int): Flow<Resource<Unit>>
 
     override var timingData: TimingDataController
 

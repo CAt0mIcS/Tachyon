@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -29,7 +30,7 @@ fun MiniPlayer(
     isPlaying: Boolean,
     onClick: () -> Unit,
     onPlayPauseClicked: () -> Unit,
-    artwork: ImageBitmap? = null,
+    painter: Painter? = null,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier
@@ -44,8 +45,8 @@ fun MiniPlayer(
         .clickable {
             onClick()
         }) {
-        if (artwork != null) Image(
-            bitmap = artwork,
+        if (painter != null) Image(
+            painter = painter,
             contentDescription = "Album Artwork",
             modifier = Modifier
                 .padding(Theme.padding.extraSmall)

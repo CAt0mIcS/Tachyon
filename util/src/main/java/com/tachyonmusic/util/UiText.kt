@@ -8,6 +8,6 @@ sealed class UiText {
 
     fun asString(context: Context) = when (this) {
         is DynamicString -> value
-        is StringResource -> context.getString(resId, arguments)
+        is StringResource -> context.getString(resId, *arguments)
     }
 }

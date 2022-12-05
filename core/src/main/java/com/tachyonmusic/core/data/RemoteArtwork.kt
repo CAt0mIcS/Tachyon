@@ -15,5 +15,5 @@ class RemoteArtwork(
 ) : Artwork {
     override val painter: Painter
         @Composable
-        get() = rememberAsyncImagePainter(uri)
+        get() = rememberAsyncImagePainter(uri.toURL().toString())
 }

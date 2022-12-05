@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -19,7 +20,7 @@ import com.tachyonmusic.presentation.theme.Theme
 @Composable
 fun HorizontalPlaybackView(
     playback: Playback,
-    artwork: ImageBitmap? = null,
+    painter: Painter? = null,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -28,9 +29,9 @@ fun HorizontalPlaybackView(
             .background(Theme.colors.secondary, shape = Theme.shapes.medium)
             .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
     ) {
-        if (artwork != null)
+        if (painter != null)
             Image(
-                bitmap = artwork,
+                painter = painter,
                 contentDescription = "Album Artwork",
                 modifier = Modifier
                     .padding(Theme.padding.extraSmall)

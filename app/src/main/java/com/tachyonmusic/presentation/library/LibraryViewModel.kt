@@ -8,7 +8,6 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.use_case.GetLoops
 import com.tachyonmusic.domain.use_case.GetPlaylists
 import com.tachyonmusic.domain.use_case.GetSongs
-import com.tachyonmusic.domain.use_case.LoadPlaybackArtwork
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -20,7 +19,6 @@ class LibraryViewModel @Inject constructor(
     getSongs: GetSongs,
     getLoops: GetLoops,
     getPlaylists: GetPlaylists,
-    loadPlaybackArtwork: LoadPlaybackArtwork
 ) : ViewModel() {
 
     private val songs = getSongs()
@@ -32,7 +30,9 @@ class LibraryViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            loadPlaybackArtwork(songs.value).collect()
+            for(song in songs.value) {
+                song.loadArtwork(100).collect()
+            }
         }
     }
 

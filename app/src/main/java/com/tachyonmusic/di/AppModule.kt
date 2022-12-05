@@ -51,10 +51,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideLoadAlbumArtUseCase() = LoadPlaybackArtwork()
-
-    @Provides
-    @Singleton
     fun provideSearchStoredPlaybacksUseCase(userRepository: UserRepository) =
         SearchStoredPlaybacks(userRepository)
 

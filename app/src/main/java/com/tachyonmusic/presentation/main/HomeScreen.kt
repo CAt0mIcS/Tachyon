@@ -220,7 +220,7 @@ object HomeScreen :
                 content = {
                     MiniPlayer(
                         playback = recentlyPlayed ?: return,
-                        artwork = (recentlyPlayed as Song).artwork?.asImageBitmap(),
+                        painter = (recentlyPlayed as Song).artwork?.painter,
                         currentPosition = currentPosition,
                         isPlaying = isPlaying,
                         onPlayPauseClicked = { viewModel.onPlayPauseClicked(recentlyPlayed) },
@@ -264,7 +264,7 @@ object HomeScreen :
 }
 
 
-fun LazyListScope.playbacksView(playbacks: List<Playback>, onClick: (Playback) -> Unit) {
+private fun LazyListScope.playbacksView(playbacks: List<Playback>, onClick: (Playback) -> Unit) {
     items(playbacks.size) { i ->
 
         // Apply extra padding to the start of the first playback and to the end of the last
@@ -289,7 +289,7 @@ fun LazyListScope.playbacksView(playbacks: List<Playback>, onClick: (Playback) -
                     onClick(playbacks[i])
                 },
             playback = playbacks[i],
-            artwork = (playbacks[i] as Song).artwork?.asImageBitmap(),
+            painter = (playbacks[i] as Song).artwork?.painter,
         )
     }
 }

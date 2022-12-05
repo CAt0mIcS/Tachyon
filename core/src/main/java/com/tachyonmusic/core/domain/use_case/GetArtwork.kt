@@ -29,7 +29,7 @@ class GetArtwork(
                 if (it is Resource.Error)
                     emit(Resource.Error(it.message))
                 else if (it.data != null)
-                    emit(Resource.Success(RemoteArtwork(URI.create(it.data!!))))
+                    emit(Resource.Success(RemoteArtwork(URI(it.data!!))))
                 else
                     emit(Resource.Loading())
             }.collect()
