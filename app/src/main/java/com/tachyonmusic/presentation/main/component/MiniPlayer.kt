@@ -45,26 +45,29 @@ fun MiniPlayer(
         .clickable {
             onClick()
         }) {
-        if (painter != null) Image(
-            painter = painter,
-            contentDescription = "Album Artwork",
-            modifier = Modifier
-                .padding(Theme.padding.extraSmall)
-                .size(48.dp, 48.dp)
-                .clip(Theme.shapes.medium)
-        )
-        else Image(
-            painterResource(R.drawable.artwork_image_placeholder),
-            "Album Artwork Placeholder",
-            modifier = Modifier
-                .padding(Theme.padding.extraSmall)
-                .size(48.dp, 48.dp)
-                .clip(Theme.shapes.medium)
-        )
+        if (painter != null)
+            Image(
+                painter = painter,
+                contentDescription = "Album Artwork",
+                modifier = Modifier
+                    .padding(Theme.padding.extraSmall)
+                    .size(48.dp, 48.dp)
+                    .clip(Theme.shapes.medium)
+            )
+        else
+            Image(
+                painterResource(R.drawable.artwork_image_placeholder),
+                "Album Artwork Placeholder",
+                modifier = Modifier
+                    .padding(Theme.padding.extraSmall)
+                    .size(48.dp, 48.dp)
+                    .clip(Theme.shapes.medium)
+            )
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .align(Alignment.CenterVertically)
                 .padding(start = Theme.padding.small),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -87,8 +90,7 @@ fun MiniPlayer(
             IconButton(
                 modifier = Modifier
                     .padding(start = Theme.padding.medium, end = Theme.padding.medium)
-                    .align(Alignment.CenterVertically)
-                    .scale(1.3f),
+                    .scale(1.4f),
                 onClick = onPlayPauseClicked
             ) {
                 Icon(

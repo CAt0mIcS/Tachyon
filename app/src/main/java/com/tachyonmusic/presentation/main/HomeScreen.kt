@@ -28,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.main.component.MiniPlayer
@@ -215,12 +216,15 @@ object HomeScreen :
         }
 
         if (recentlyPlayed != null) {
+
+            val artwork by (recentlyPlayed as SinglePlayback).artwork.collectAsState()
+
             Layout(
                 modifier = Modifier.fillMaxSize(),
                 content = {
                     MiniPlayer(
                         playback = recentlyPlayed ?: return,
-                        painter = (recentlyPlayed as Song).artwork?.painter,
+                        painter = artwork?.painter,
                         currentPosition = currentPosition,
                         isPlaying = isPlaying,
                         onPlayPauseClicked = { viewModel.onPlayPauseClicked(recentlyPlayed) },
@@ -282,6 +286,8 @@ private fun LazyListScope.playbacksView(playbacks: List<Playback>, onClick: (Pla
             )
         }
 
+        val artwork by (playbacks[i] as SinglePlayback).artwork.collectAsState()
+
         VerticalPlaybackView(
             modifier = Modifier
                 .padding(padding)
@@ -289,7 +295,7 @@ private fun LazyListScope.playbacksView(playbacks: List<Playback>, onClick: (Pla
                     onClick(playbacks[i])
                 },
             playback = playbacks[i],
-            painter = (playbacks[i] as Song).artwork?.painter,
+            painter = artwork?.painter,
         )
     }
 }

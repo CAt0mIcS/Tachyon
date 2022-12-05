@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.MediaStateHandler
 import com.tachyonmusic.presentation.player.data.PlaybackState
 
 class HandlePlaybackState(
@@ -18,7 +19,6 @@ class HandlePlaybackState(
             playback?.title ?: "",
             playback?.artist ?: "",
             playback?.duration ?: 0L,
-            if (playback is SinglePlayback) playback.artwork else null,
             if (playback is SinglePlayback) listOf(playback) else emptyList()
         )
     }

@@ -7,6 +7,5 @@ data class PlaybackState(
     var title: String = "",
     var artist: String = "",
     var duration: Long = 0,
-    var artwork: Artwork? = null,
     var children: List<SinglePlayback> = emptyList()
 )

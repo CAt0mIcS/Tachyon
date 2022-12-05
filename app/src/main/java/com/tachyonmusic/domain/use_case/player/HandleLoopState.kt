@@ -4,6 +4,7 @@ import androidx.compose.runtime.mutableStateListOf
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.MediaStateHandler
 
 class HandleLoopState(browser: MediaBrowserController) : MediaStateHandler(browser) {
     val loopState = mutableStateListOf<TimingData>()

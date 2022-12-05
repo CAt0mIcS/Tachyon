@@ -10,6 +10,7 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 interface Playback : Parcelable {
     val title: String?
@@ -39,7 +40,7 @@ interface SinglePlayback : Playback {
     override val artist: String
     override val duration: Long
 
-    val artwork: Artwork?
+    val artwork: StateFlow<Artwork?>
 
     fun unloadArtwork()
     suspend fun loadArtwork(imageSize: Int): Flow<Resource<Unit>>

@@ -41,7 +41,7 @@ class HomeViewModel @Inject constructor(
     private val setCurrentPlayback: SetCurrentPlayback,
     private val pauseResumePlayback: PauseResumePlayback,
     private val getCurrentPositionNormalized: GetCurrentPositionNormalized,
-    private val application: Application
+    private val application: Application // TODO: Shouldn't be here
 ) : ViewModel() {
 
     val songs = getSongs()
@@ -68,7 +68,7 @@ class HomeViewModel @Inject constructor(
 
             viewModelScope.launch(Dispatchers.IO) {
                 for (song in history.value.filterIsInstance<Song>()) {
-                    song.loadArtwork(1000).map {
+                    song.loadArtwork(100).map {
                         when (it) {
                             is Resource.Error -> Log.e(
                                 "HomeViewModel",
@@ -81,7 +81,6 @@ class HomeViewModel @Inject constructor(
                             else -> {}
                         }
                     }.collect()
-                    delay(1000) // Otherwise ITunes will lock us
                 }
                 Log.d("HomeViewModel", "Finished loading song artwork")
             }

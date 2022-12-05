@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +28,7 @@ import com.github.krottv.compose.sliders.DefaultTrack
 import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.NavigationItem
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
 import kotlinx.coroutines.delay
@@ -43,6 +45,7 @@ object PlayerScreen : NavigationItem("player_screen") {
 
         var loopName by remember { mutableStateOf("") }
         val playbackState by viewModel.playbackState
+        val artwork by viewModel.artwork
         val repeatMode by viewModel.repeatMode
 
         var isSeeking by remember { mutableStateOf(false) }
@@ -78,15 +81,14 @@ object PlayerScreen : NavigationItem("player_screen") {
             item {
                 val artworkModifier = Modifier
                     .fillMaxWidth()
-                    .padding(Theme.padding.medium)
-                    .clip(Theme.shapes.medium)
+                    .padding(Theme.padding.small)
                     .aspectRatio(1f)
-//                    .shadow(Theme.shadow.medium)
+                    .shadow(Theme.shadow.small, shape = Theme.shapes.large)
 
-                if (playbackState.artwork != null) {
+                if (artwork != null) {
                     Image(
                         modifier = artworkModifier,
-                        painter = playbackState.artwork!!.painter,
+                        painter = artwork!!.painter,
                         contentDescription = null,
                     )
                 } else {
@@ -328,9 +330,12 @@ object PlayerScreen : NavigationItem("player_screen") {
                 }
 
                 items(playbackState.children) { playback ->
+
+                    val artwork by playback.artwork.collectAsState()
+
                     HorizontalPlaybackView(
                         playback,
-                        playback.artwork?.painter,
+                        artwork?.painter,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(

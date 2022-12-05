@@ -139,12 +139,14 @@ object LibraryScreen :
 
             items(playbackItems) { playback ->
 
+                val artwork by if (playback is SinglePlayback)
+                    playback.artwork.collectAsState()
+                else
+                    (playback as Playlist).playbacks.first().artwork.collectAsState()
+
                 HorizontalPlaybackView(
                     playback,
-                    if (playback is SinglePlayback)
-                        playback.artwork?.painter
-                    else
-                        (playback as Playlist).playbacks.firstOrNull()?.artwork?.painter,
+                    artwork?.painter,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall)

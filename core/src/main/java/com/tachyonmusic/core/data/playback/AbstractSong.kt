@@ -2,6 +2,7 @@ package com.tachyonmusic.core.data.playback
 
 import android.os.Bundle
 import android.os.Parcel
+import androidx.compose.runtime.MutableState
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.MetadataKeys
@@ -12,9 +13,7 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.core.domain.use_case.GetArtwork
 import com.tachyonmusic.util.Resource
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 
 abstract class AbstractSong(
     final override val mediaId: MediaId,
@@ -28,18 +27,19 @@ abstract class AbstractSong(
 
     abstract override val playbackType: PlaybackType.Song
 
-    override var artwork: Artwork? = null
-        protected set
+    private val _artwork = MutableStateFlow<Artwork?>(null)
+    override val artwork: StateFlow<Artwork?>
+        get() = _artwork
 
     override fun unloadArtwork() {
-        artwork = null
+        _artwork.value = null
     }
 
     override suspend fun loadArtwork(imageSize: Int) = flow<Resource<Unit>> {
         getArtwork(this@AbstractSong, imageSize).map {
             when (it) {
                 is Resource.Success -> {
-                    artwork = it.data
+                    _artwork.value = it.data
                     emit(Resource.Success())
                 }
                 is Resource.Loading -> emit(Resource.Loading())

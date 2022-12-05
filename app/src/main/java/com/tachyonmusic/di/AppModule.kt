@@ -92,6 +92,12 @@ object AppModule {
         HandlePlaybackState(browser)
 
     @Provides
+    fun provideHandleArtworkStateUseCase(
+        browser: MediaBrowserController,
+        application: Application
+    ) = HandleArtworkState(browser, application)
+
+    @Provides
     fun provideHandleLoopStateUseCase(browser: MediaBrowserController) = HandleLoopState(browser)
 
     @Provides
