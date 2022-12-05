@@ -4,7 +4,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.media.domain.use_case.getItemsOnPageWithPageSize
 import com.tachyonmusic.user.domain.UserRepository

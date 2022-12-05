@@ -16,15 +16,20 @@ object Dependency {
     object Compose {
         const val APP_COMPAT = "androidx.appcompat:appcompat:1.5.1"
         const val ANDROID_MATERIAL = "com.google.android.material:material:1.7.0"
+        const val COMPOSE_SLIDERS = "com.github.krottv:compose-sliders:0.1.14"
         const val UI = "androidx.compose.ui:ui:${Version.COMPOSE}"
         const val COMPOSE_MATERIAL = "androidx.compose.material:material:${Version.COMPOSE}"
         const val UI_TOOLING_PREVIEW = "androidx.compose.ui:ui-tooling-preview:${Version.COMPOSE}"
         const val NAVIGATION = "androidx.navigation:navigation-compose:2.5.3"
         const val LIVEDATA = "androidx.compose.runtime:runtime-livedata:${Version.COMPOSE}"
-        const val JUNIT4 = "androidx.compose.ui:ui-test-junit4:${Version.COMPOSE}"
         const val ACTIVITY = "androidx.activity:activity-compose:1.6.1"
         const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Version.COMPOSE}"
-        const val TEST_MANIFEST = "androidx.compose.ui:ui-test-manifest:${Version.COMPOSE}"
+        const val COIL = "io.coil-kt:coil-compose:2.2.2"
+
+        object Accompanist {
+            const val NAVIGATION_ANIMATION =
+                "com.google.accompanist:accompanist-navigation-animation:0.28.0"
+        }
     }
 
     object Lifecycle {
@@ -57,6 +62,9 @@ object Dependency {
         const val ARCH_CORE_TESTING = "androidx.arch.core:core-testing:2.1.0"
         const val COROUTINES_TEST = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
 
+        const val COMPOSE_TEST = "androidx.compose.ui:ui-test-junit4:${Version.COMPOSE}"
+        const val TEST_MANIFEST = "androidx.compose.ui:ui-test-manifest:${Version.COMPOSE}"
+
         const val DAGGER_TEST = "com.google.dagger:hilt-android-testing:2.37"
         const val DAGGER_TEST_COMPILER = "com.google.dagger:hilt-android-compiler:2.37"
         const val JUNIT_EXT = "androidx.test.ext:junit:1.1.3"
@@ -87,6 +95,8 @@ fun DependencyHandler.compose() {
     implementation(Dependency.Compose.APP_COMPAT)
     implementation(Dependency.Compose.ANDROID_MATERIAL)
 
+    implementation(Dependency.Compose.COMPOSE_SLIDERS)
+
     implementation(Dependency.Compose.UI)
     implementation(Dependency.Compose.COMPOSE_MATERIAL)
     implementation(Dependency.Compose.UI_TOOLING_PREVIEW)
@@ -94,12 +104,14 @@ fun DependencyHandler.compose() {
     implementation(Dependency.Compose.NAVIGATION)
 
     implementation(Dependency.Compose.LIVEDATA)
-    kapt(Dependency.Compose.JUNIT4)
+//    kapt(Dependency.Compose.JUNIT4)
 
     implementation(Dependency.Compose.ACTIVITY)
 
+    implementation(Dependency.Compose.Accompanist.NAVIGATION_ANIMATION)
+
     debugImplementation(Dependency.Compose.UI_TOOLING)
-    debugImplementation(Dependency.Compose.TEST_MANIFEST)
+//    debugImplementation(Dependency.Compose.TEST_MANIFEST)
 }
 
 fun DependencyHandler.lifecycle() {
@@ -137,6 +149,10 @@ fun DependencyHandler.projectUser() {
     implementation(project(":user"))
 }
 
+fun DependencyHandler.projectArtworkDownloader() {
+    implementation(project(":artworkDownloader"))
+}
+
 fun DependencyHandler.projectUtil() {
     implementation(project(":util"))
 }
@@ -162,6 +178,8 @@ fun DependencyHandler.androidTest(
     kaptAndroidTest(Dependency.Test.DAGGER_TEST_COMPILER)
 
     add(configName, Dependency.Test.JUNIT)
+    add(configName, Dependency.Test.COMPOSE_TEST)
+    add(configName, Dependency.Test.TEST_MANIFEST)
     add(configName, Dependency.Test.DAGGER_TEST)
     add(configName, Dependency.Test.COROUTINES_TEST)
     add(configName, Dependency.Test.ARCH_CORE_TESTING)

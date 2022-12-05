@@ -2,8 +2,7 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import com.google.gson.Gson
-import com.tachyonmusic.core.data.playback.RemoteLoop
-import com.tachyonmusic.core.data.playback.RemotePlaylist
+import com.tachyonmusic.core.data.playback.*
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
@@ -39,13 +38,15 @@ object TestAppModule {
         MutableList(3) { i ->
             val song = repository.songs.value[i]
 
-            RemoteLoop(
+            // TODO: Don't use Impl here
+
+            RemoteLoopImpl(
                 MediaId.ofRemoteLoop(i.toString(), song.mediaId),
                 i.toString(),
                 TimingDataController(
                     listOf(
-                        TimingData(1, 10).toString(),
-                        TimingData(100, 1000).toString()
+                        TimingData(1, 10),
+                        TimingData(100, 1000)
                     )
                 ),
                 song
@@ -57,7 +58,7 @@ object TestAppModule {
     @Singleton
     fun providePlaylists(repository: UserRepository): MutableList<Playlist> = runBlocking {
         MutableList(2) { i ->
-            RemotePlaylist(
+            RemotePlaylistImpl(
                 MediaId.ofRemotePlaylist(i.toString()),
                 i.toString(),
                 repository.songs.value.filter {

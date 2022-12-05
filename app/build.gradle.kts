@@ -91,6 +91,7 @@ dependencies {
     implementation(Dependency.DaggerHilt.NAVIGATION_COMPOSE)
 
     implementation(Dependency.Media3.MEDIA_SESSION)
+    implementation(Dependency.Compose.COIL)
 
     projectCore()
     projectMedia()

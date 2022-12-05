@@ -9,8 +9,6 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.media.R
 import com.tachyonmusic.user.domain.UserRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class LoadPlaylistForPlayback(
     private val repository: UserRepository
@@ -58,6 +56,9 @@ class LoadPlaylistForPlayback(
                 }
             }
         }
+
+        if (items == null || initialWindowIndex == null)
+            return Resource.Error(UiText.StringResource(R.string.invalid_arguments))
 
         return Resource.Success(items to initialWindowIndex)
     }

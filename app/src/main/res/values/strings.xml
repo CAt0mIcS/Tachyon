@@ -6,8 +6,8 @@
     <string name="storage_permission_rationale">We need to access your external storage to play your local device files. Denying this permission will disable local audio playback</string>
 
     <string name="btmNav_home">Home</string>
-    <string name="btmNav_search">Search</string>
-    <string name="btmNav_recommended">Recommended</string>
+    <string name="btmNav_library">Library</string>
+    <string name="btmNav_profile">Profile</string>
 
     <string name="sign_in">Sign In</string>
     <string name="register">Register</string>

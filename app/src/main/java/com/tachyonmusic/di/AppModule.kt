@@ -1,13 +1,13 @@
 package com.tachyonmusic.di
 
+import android.app.Application
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.main.*
-import com.tachyonmusic.domain.use_case.player.CreateNewLoop
-import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
+import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
@@ -51,17 +51,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideLoadAlbumArtUseCase() = LoadPlaybackArtwork()
-
-    @Provides
-    @Singleton
     fun provideSearchStoredPlaybacksUseCase(userRepository: UserRepository) =
         SearchStoredPlaybacks(userRepository)
 
     @Provides
     @Singleton
     fun provideCreateNewLoopUseCase(userRepo: UserRepository, browser: MediaBrowserController) =
-        CreateNewLoop(userRepo, browser)
+        CreateAndSaveNewLoop(userRepo, browser)
 
     @Provides
     @Singleton
@@ -69,7 +65,52 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMediaBrowserController(repository: UserRepository): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController(repository)
+    fun providePauseResumePlaybackUseCase(browser: MediaBrowserController) =
+        PauseResumePlayback(browser)
+
+    @Provides
+    fun providePlayerListenerHandlerUseCase(browser: MediaBrowserController) =
+        PlayerListenerHandler(browser)
+
+    @Provides
+    @Singleton
+    fun provideGetCurrentPositionUseCase(browser: MediaBrowserController) =
+        GetCurrentPosition(browser)
+
+    @Provides
+    @Singleton
+    fun provideGetCurrentPositionNormalizedUseCase(browser: MediaBrowserController) =
+        GetCurrentPositionNormalized(browser)
+
+    @Provides
+    @Singleton
+    fun provideGetAudioUpdateIntervalUseCase(userRepository: UserRepository) =
+        GetAudioUpdateInterval(userRepository)
+
+    @Provides
+    fun provideHandlePlaybackStateUseCase(browser: MediaBrowserController) =
+        HandlePlaybackState(browser)
+
+    @Provides
+    fun provideHandleArtworkStateUseCase(
+        browser: MediaBrowserController,
+        application: Application
+    ) = HandleArtworkState(browser, application)
+
+    @Provides
+    fun provideHandleLoopStateUseCase(browser: MediaBrowserController) = HandleLoopState(browser)
+
+    @Provides
+    @Singleton
+    fun provideSeekToPositionUseCase(browser: MediaBrowserController) = SeekToPosition(browser)
+
+    @Provides
+    @Singleton
+    fun provideSetCurrentPlayback(browser: MediaBrowserController) = SetCurrentPlayback(browser)
+
+    @Provides
+    @Singleton
+    fun provideMediaBrowserController(): MediaBrowserController =
+        MediaPlaybackServiceMediaBrowserController()
 }
 

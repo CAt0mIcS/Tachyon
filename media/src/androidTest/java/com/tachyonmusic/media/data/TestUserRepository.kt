@@ -1,6 +1,7 @@
 package com.tachyonmusic.media.data
 
 import com.tachyonmusic.util.Resource
+import com.tachyonmusic.core.data.playback.AbstractLoop
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
@@ -36,7 +37,7 @@ class TestUserRepository : UserRepository,
 
     fun complete(
         songs: List<Song>,
-        loops: List<Loop>,
+        loops: List<AbstractLoop>,
         playlists: List<Playlist>,
         delay: Long? = null
     ) {

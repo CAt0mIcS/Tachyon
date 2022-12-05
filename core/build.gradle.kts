@@ -28,6 +28,14 @@ android {
         }
     }
 
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.3.0"
+    }
+
     compileOptions {
         sourceCompatibility = Version.JAVA
         targetCompatibility = Version.JAVA
@@ -43,8 +51,12 @@ dependencies {
     gson()
     dagger()
 
+    projectArtworkDownloader()
+    projectUtil()
+
     implementation(Dependency.Media3.MEDIA_SESSION)
     implementation(Dependency.Compose.UI)
+    implementation(Dependency.Compose.COIL)
 
     localTest()
     androidTest()

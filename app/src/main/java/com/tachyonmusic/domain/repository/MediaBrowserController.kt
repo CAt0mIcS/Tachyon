@@ -2,20 +2,13 @@ package com.tachyonmusic.domain.repository
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LiveData
 import androidx.media3.common.MediaItem
 import androidx.media3.session.LibraryResult
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListenableFuture
-import com.tachyonmusic.core.ListenableMutableList
 import com.tachyonmusic.core.domain.TimingData
-import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.IListenable
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 
 interface MediaBrowserController : IListenable<MediaBrowserController.EventListener>,
     DefaultLifecycleObserver {
@@ -60,5 +53,6 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
     interface EventListener {
         fun onConnected() {}
         fun onPlaybackTransition(playback: Playback?) {}
+        fun onIsPlayingChanged(isPlaying: Boolean) {}
     }
 }

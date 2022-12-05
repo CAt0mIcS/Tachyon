@@ -4,7 +4,8 @@ import android.Manifest.permission.*
 
 sealed class Permission(vararg val permissions: String) {
     // Individual permissions
-    object ReadStorage : Permission(READ_EXTERNAL_STORAGE)
+    object ReadMediaAudio : Permission(READ_MEDIA_AUDIO)
+    object ReadExternalStorage : Permission(READ_EXTERNAL_STORAGE)
 
     // Bundled permissions
 //    object MandatoryForFeatureOne : Permission(WRITE_EXTERNAL_STORAGE, ACCESS_FINE_LOCATION)
@@ -18,7 +19,8 @@ sealed class Permission(vararg val permissions: String) {
         fun from(permission: String) = when (permission) {
 //            ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION -> Location
 //            WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE -> Storage
-            READ_EXTERNAL_STORAGE -> ReadStorage
+            READ_EXTERNAL_STORAGE -> ReadExternalStorage
+            READ_MEDIA_AUDIO -> ReadMediaAudio
 //            CAMERA -> Camera
             else -> throw IllegalArgumentException("Unknown permission: $permission")
         }

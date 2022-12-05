@@ -1,54 +1,51 @@
 package com.tachyonmusic.core.domain.playback
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Parcelable
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.PlaybackType
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.util.Resource
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
-sealed class Playback(val mediaId: MediaId) : Parcelable {
-    abstract val title: String?
-    abstract val artist: String?
-    abstract val duration: Long?
+interface Playback : Parcelable {
+    val title: String?
+    val artist: String?
+    val duration: Long?
 
-    abstract val timingData: TimingDataController?
+    val mediaId: MediaId
 
-    abstract val uri: Uri?
+    val timingData: TimingDataController?
 
-    abstract val playbackType: PlaybackType
+    val uri: Uri?
 
-    abstract fun toMediaItem(): MediaItem
-    abstract fun toMediaMetadata(): MediaMetadata
+    val playbackType: PlaybackType
 
-    abstract fun toHashMap(): HashMap<String, Any?>
+    fun toMediaItem(): MediaItem
+    fun toMediaMetadata(): MediaMetadata
 
-    abstract suspend fun loadBitmap(onDone: suspend () -> Unit = {})
+    fun toHashMap(): HashMap<String, Any?>
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Playback) return false
+    override fun equals(other: Any?): Boolean
 
-        if (mediaId != other.mediaId) return false
-
-        return true
-    }
-
-    override fun toString() = mediaId.toString()
+    override fun toString(): String
 }
 
-sealed class SinglePlayback(mediaId: MediaId) : Playback(mediaId) {
-    abstract override val title: String
-    abstract override val artist: String
-    abstract override val duration: Long
+interface SinglePlayback : Playback {
+    override val title: String
+    override val artist: String
+    override val duration: Long
 
-    var artwork: Bitmap? = null
-        protected set
+    val artwork: StateFlow<Artwork?>
 
-    abstract override val timingData: TimingDataController
+    fun unloadArtwork()
+    suspend fun loadArtwork(imageSize: Int): Flow<Resource<Unit>>
 
-    abstract override val uri: Uri
+    override var timingData: TimingDataController
+
+    override val uri: Uri
 }

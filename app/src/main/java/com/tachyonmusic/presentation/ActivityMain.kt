@@ -3,15 +3,16 @@ package com.tachyonmusic.presentation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Scaffold
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.Modifier
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
-import com.tachyonmusic.presentation.main.component.BottomNavigation
+import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.util.Permission
 import com.tachyonmusic.presentation.util.PermissionManager
-import com.tachyonmusic.presentation.theme.TachyonTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -24,13 +25,16 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PermissionManager.from(this).apply {
-            request(Permission.ReadStorage)
+            request(Permission.ReadExternalStorage)
+            request(Permission.ReadMediaAudio)
             rationale(getString(R.string.storage_permission_rationale))
             checkPermission { result: Boolean ->
-                if (result) {
+                if (result)
                     println("Storage permission granted")
-                } else
+                else {
                     println("Storage permission NOT granted")
+                }
+
             }
         }
 
@@ -38,14 +42,21 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
         mediaBrowser.registerEventListener(this)
     }
 
+    @OptIn(ExperimentalAnimationApi::class)
     override fun onConnected() {
         setContent {
             TachyonTheme {
-                val navController = rememberNavController()
+                val navController = rememberAnimatedNavController()
                 Scaffold(
                     bottomBar = { BottomNavigation(navController) }
-                ) {
-                    NavigationGraph(navController)
+                ) { innerPadding ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    ) {
+                        NavigationGraph(navController)
+                    }
                 }
             }
         }

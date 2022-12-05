@@ -1,13 +1,11 @@
 package com.tachyonmusic.user.data
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
-import com.tachyonmusic.core.data.playback.LocalSong
-import com.tachyonmusic.core.data.playback.RemoteLoop
-import com.tachyonmusic.core.data.playback.RemotePlaylist
+import com.tachyonmusic.core.data.playback.LocalSongImpl
+import com.tachyonmusic.core.data.playback.RemoteLoopImpl
+import com.tachyonmusic.core.data.playback.RemotePlaylistImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
@@ -49,15 +47,17 @@ class Metadata(private val gson: Gson) {
         audioUpdateInterval = (data["audioUpdateInterval"] as Long? ?: 100L).toInt()
         maxPlaybacksInHistory = (data["maxPlaybacksInHistory"] as Long? ?: 25L).toInt()
 
+        // TODO: Don't use [Playback]Impl here
+
         val loadedLoops =
             ((data["loops"] as List<Map<String, Any?>?>?)?.map {
-                RemoteLoop.build(it!!)
+                RemoteLoopImpl.build(it!!)
             } as ArrayList<Loop>?)
                 ?: arrayListOf()
         _loops.value = loadedLoops
 
         val loadedPlaylists = ((data["playlists"] as List<Map<String, Any?>?>?)?.map {
-            RemotePlaylist.build(it!!)
+            RemotePlaylistImpl.build(it!!)
         } as ArrayList<Playlist>?)
             ?: arrayListOf()
         _playlists.value = loadedPlaylists
@@ -67,7 +67,7 @@ class Metadata(private val gson: Gson) {
             val mediaId = MediaId.deserializeIfValid(mediaIdStr)
             if (mediaId != null) {
                 if (mediaId.isLocalSong)
-                    _history.value += LocalSong.build(mediaId)
+                    _history.value += LocalSongImpl.build(mediaId)
                 else if (mediaId.isRemoteLoop)
                     loadedLoops.find { it.mediaId == mediaId }?.let { _history.value += it }
                 else

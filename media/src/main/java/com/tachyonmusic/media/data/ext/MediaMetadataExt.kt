@@ -2,7 +2,6 @@ package com.tachyonmusic.media.data.ext
 
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.MetadataKeys
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 

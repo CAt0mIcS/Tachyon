@@ -18,18 +18,18 @@ import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.media.data.ext.*
+import com.tachyonmusic.media.data.ext.duration
+import com.tachyonmusic.media.data.ext.name
+import com.tachyonmusic.media.data.ext.playback
+import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.service.MediaPlaybackService
-import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
-class MediaPlaybackServiceMediaBrowserController(
-    private val userRepository: UserRepository
-) : MediaBrowserController,
+class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
     Player.Listener,
     ListenableMutableList.EventListener<TimingData>,
     IListenable<MediaBrowserController.EventListener> by Listenable() {
@@ -147,12 +147,17 @@ class MediaPlaybackServiceMediaBrowserController(
         }
     }
 
+    // TODO: Only emit if it doesn't come from e.g. a seek which changes isPlaying to false and then to true quickly
+    override fun onIsPlayingChanged(isPlaying: Boolean) = invokeEvent {
+        it.onIsPlayingChanged(isPlaying)
+    }
+
     override fun onChanged(list: List<TimingData>) {
         if (browser == null)
             return
         MediaAction.updateTimingDataEvent(
             browser!!,
-            TimingDataController(list.map { it.toString() })
+            TimingDataController(list)
         )
     }
 }

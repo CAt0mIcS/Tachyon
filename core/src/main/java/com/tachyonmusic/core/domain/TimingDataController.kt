@@ -20,9 +20,9 @@ class TimingDataController(
         get() = _timingData.map { TimingData.deserialize(it) }.toMutableList()
 
     constructor(
-        timingData: List<String>,
+        timingData: List<TimingData>,
         currentIndex: Int = 0
-    ) : this(timingData.toMutableList() as ArrayList<String>, currentIndex)
+    ) : this(timingData.map { it.toString() } as ArrayList<String>, currentIndex)
 
     init {
         this.currentIndex = currentIndex
@@ -95,7 +95,7 @@ class TimingDataController(
 //            val list = parcel.readParcelableArray(TimingData::class.java.classLoader)
 //                ?.map { it as TimingData } ?: emptyList()
 
-            val str = parcel.createStringArray()!!.toList()
+            val str = parcel.createStringArray()!!.toMutableList() as ArrayList<String>
 
             val index = parcel.readInt()
             return TimingDataController(str, index)
@@ -109,6 +109,6 @@ class TimingDataController(
     fun isNotEmpty() = _timingData.isNotEmpty()
     val size get() = _timingData.size
     val indices get() = _timingData.indices
-    operator fun get(index: Int) = _timingData[index]
+    operator fun get(index: Int) = TimingData.deserialize(_timingData[index])
 }
 

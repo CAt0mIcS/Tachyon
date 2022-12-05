@@ -2,14 +2,9 @@ package com.tachyonmusic.user.data.repository
 
 import android.os.Environment
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.liveData
-import com.tachyonmusic.core.data.playback.LocalSong
+import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.user.domain.FileRepository
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
@@ -27,7 +22,8 @@ class FileRepositoryImpl : FileRepository {
         val songs = arrayListOf<Song>()
         for (file in files) {
             if (file.extension == "mp3") {
-                songs += LocalSong.build(file)
+                // TODO: Don't use Impl here
+                songs += LocalSongImpl.build(file)
             }
         }
         Log.d("FirebaseRepository", "Finished loading songs")
