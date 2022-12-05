@@ -17,8 +17,6 @@ class RemoteLoopImpl(
 
     override val playbackType = PlaybackType.Loop.Remote()
 
-    override suspend fun loadBitmap(onDone: suspend () -> Unit) = song.loadBitmap(onDone)
-
     companion object {
         @JvmField
         val CREATOR = object : Parcelable.Creator<RemoteLoopImpl> {

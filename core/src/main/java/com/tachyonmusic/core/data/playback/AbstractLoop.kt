@@ -9,9 +9,12 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.constants.PlaybackType
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.*
+import com.tachyonmusic.util.Resource
+import kotlinx.coroutines.flow.Flow
 
 abstract class AbstractLoop(
     final override val mediaId: MediaId,
@@ -32,12 +35,14 @@ abstract class AbstractLoop(
 
     abstract override val playbackType: PlaybackType.Loop
 
-    override var artwork: Bitmap? = null
+    override var artwork: Artwork? = null
         protected set
 
     override fun unloadArtwork() {
         artwork = null
     }
+
+    override suspend fun loadBitmap(imageSize: Int) = song.loadBitmap(imageSize)
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
         "mediaId" to mediaId.toString(),

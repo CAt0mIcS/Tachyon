@@ -24,6 +24,7 @@ object Dependency {
         const val LIVEDATA = "androidx.compose.runtime:runtime-livedata:${Version.COMPOSE}"
         const val ACTIVITY = "androidx.activity:activity-compose:1.6.1"
         const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Version.COMPOSE}"
+        const val COIL = "io.coil-kt:coil-compose:2.2.2"
 
         object Accompanist {
             const val NAVIGATION_ANIMATION =
@@ -146,6 +147,10 @@ fun DependencyHandler.projectCore() {
 
 fun DependencyHandler.projectUser() {
     implementation(project(":user"))
+}
+
+fun DependencyHandler.projectArtworkDownloader() {
+    implementation(project(":artworkDownloader"))
 }
 
 fun DependencyHandler.projectUtil() {
