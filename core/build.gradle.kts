@@ -43,8 +43,12 @@ dependencies {
     gson()
     dagger()
 
+    projectArtworkDownloader()
+    projectUtil()
+
     implementation(Dependency.Media3.MEDIA_SESSION)
     implementation(Dependency.Compose.UI)
+    implementation(Dependency.Compose.COIL)
 
     localTest()
     androidTest()

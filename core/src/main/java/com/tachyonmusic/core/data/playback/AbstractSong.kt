@@ -1,34 +1,52 @@
 package com.tachyonmusic.core.data.playback
 
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.constants.PlaybackType
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.core.domain.use_case.GetArtwork
+import com.tachyonmusic.util.Resource
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 
 abstract class AbstractSong(
     final override val mediaId: MediaId,
     final override val title: String,
     final override val artist: String,
-    final override val duration: Long
+    final override val duration: Long,
+    private val getArtwork: GetArtwork = GetArtwork()
 ) : Song, AbstractPlayback() {
 
     final override var timingData = TimingDataController(emptyList())
 
     abstract override val playbackType: PlaybackType.Song
 
-    override var artwork: Bitmap? = null
+    override var artwork: Artwork? = null
         protected set
 
     override fun unloadArtwork() {
         artwork = null
+    }
+
+    override suspend fun loadBitmap(imageSize: Int) = flow<Resource<Unit>> {
+        getArtwork(this@AbstractSong, imageSize).map {
+            when (it) {
+                is Resource.Success -> {
+                    artwork = it.data
+                    emit(Resource.Success())
+                }
+                is Resource.Loading -> emit(Resource.Loading())
+                is Resource.Error -> emit(Resource.Error(it.message))
+            }
+
+        }.collect()
     }
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(

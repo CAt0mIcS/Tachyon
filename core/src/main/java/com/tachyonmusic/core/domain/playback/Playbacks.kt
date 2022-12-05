@@ -6,8 +6,11 @@ import android.os.Parcelable
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.PlaybackType
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.util.Resource
+import kotlinx.coroutines.flow.Flow
 
 interface Playback : Parcelable {
     val title: String?
@@ -27,7 +30,7 @@ interface Playback : Parcelable {
 
     fun toHashMap(): HashMap<String, Any?>
 
-    suspend fun loadBitmap(onDone: suspend () -> Unit = {})
+    suspend fun loadBitmap(imageSize: Int): Flow<Resource<Unit>>
 
     override fun equals(other: Any?): Boolean
 
@@ -39,7 +42,7 @@ interface SinglePlayback : Playback {
     override val artist: String
     override val duration: Long
 
-    val artwork: Bitmap?
+    val artwork: Artwork?
 
     fun unloadArtwork()
 

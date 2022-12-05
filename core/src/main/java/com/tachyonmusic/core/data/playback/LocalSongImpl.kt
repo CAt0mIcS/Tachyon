@@ -34,12 +34,6 @@ class LocalSongImpl(
         parcel.readLong()
     )
 
-    override suspend fun loadBitmap(onDone: suspend () -> Unit) {
-        if (artwork == null)
-            artwork = SongMetadata.loadBitmap(path)
-        onDone()
-    }
-
     companion object {
         @JvmField
         val CREATOR = object : Parcelable.Creator<LocalSongImpl> {
