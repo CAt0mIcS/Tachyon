@@ -76,6 +76,12 @@ object Dependency {
         const val MEDIA_SESSION = "androidx.media3:media3-session:${Version.MEDIA3}"
         const val CAST = "androidx.media3:media3-cast:${Version.MEDIA3}"
     }
+
+    object Room {
+        const val RUNTIME = "androidx.room:room-runtime:${Version.ROOM}"
+        const val COMPILER = "androidx.room:room-compiler:${Version.ROOM}"
+        const val COROUTINES = "androidx.room:room-ktx:${Version.ROOM}"
+    }
 }
 
 fun DependencyHandler.firebase() {
@@ -129,6 +135,34 @@ fun DependencyHandler.dagger() {
     kapt(Dependency.DaggerHilt.COMPILER)
 }
 
+fun DependencyHandler.room() {
+    implementation(Dependency.Room.RUNTIME)
+    annotationProcessor(Dependency.Room.COMPILER)
+
+    // To use Kotlin annotation processing tool (kapt)
+    kapt(Dependency.Room.COMPILER)
+    // To use Kotlin Symbol Processing (KSP)
+//    ksp(Dependency.Room.COMPILER)
+
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation(Dependency.Room.COROUTINES)
+
+    // optional - RxJava2 support for Room
+//    implementation("androidx.room:room-rxjava2:$room_version")
+
+    // optional - RxJava3 support for Room
+//    implementation("androidx.room:room-rxjava3:$room_version")
+
+    // optional - Guava support for Room, including Optional and ListenableFuture
+//    implementation("androidx.room:room-guava:$room_version")
+
+    // optional - Test helpers
+//    testImplementation("androidx.room:room-testing:$room_version")
+
+    // optional - Paging 3 Integration
+//    implementation("androidx.room:room-paging:$room_version")
+}
+
 fun DependencyHandler.googleCast() {
     implementation(Dependency.Cast.CAST_FRAMEWORK)
 }
@@ -155,6 +189,10 @@ fun DependencyHandler.projectArtworkDownloader() {
 
 fun DependencyHandler.projectUtil() {
     implementation(project(":util"))
+}
+
+fun DependencyHandler.projectDatabase() {
+    implementation(project(":database"))
 }
 
 
@@ -210,6 +248,14 @@ private fun DependencyHandler.debugImplementation(depName: String) {
 
 private fun DependencyHandler.kapt(depName: String) {
     add("kapt", depName)
+}
+
+private fun DependencyHandler.ksp(depName: String) {
+    add("ksp", depName)
+}
+
+private fun DependencyHandler.annotationProcessor(depName: String) {
+    add("annotationProcessor", depName)
 }
 
 private fun DependencyHandler.testImplementation(depName: String) {

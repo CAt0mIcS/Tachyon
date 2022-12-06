@@ -1,10 +1,12 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
+
+    id("kotlin-kapt")
 }
 
 android {
-    namespace = "com.daton.artworkdownloader"
+    namespace = "com.daton.database"
     compileSdk = Version.COMPILE_SDK
 
     defaultConfig {
@@ -25,7 +27,6 @@ android {
             )
         }
     }
-
     compileOptions {
         sourceCompatibility = Version.JAVA
         targetCompatibility = Version.JAVA
@@ -37,10 +38,10 @@ android {
 }
 
 dependencies {
+    room()
+    dagger()
+
     coroutines()
-    gson()
 
-    projectUtil()
-
-    localTest()
+    projectCore()
 }

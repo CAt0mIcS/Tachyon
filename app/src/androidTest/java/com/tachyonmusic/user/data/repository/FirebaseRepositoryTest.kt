@@ -7,7 +7,7 @@ import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.assertResource
 import com.tachyonmusic.testutils.tryInject
 import com.tachyonmusic.user.data.LocalCache
-import com.tachyonmusic.user.di.AppModule
+import com.tachyonmusic.user.di.UserModule
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.*
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -22,7 +22,7 @@ import javax.inject.Inject
 
 @SuppressLint("CheckResult")
 @HiltAndroidTest
-@UninstallModules(AppModule::class)
+@UninstallModules(UserModule::class)
 class FirebaseRepositoryTest {
     @get:Rule(order = 0)
     val hiltRule = HiltAndroidRule(this)

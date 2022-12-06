@@ -4,7 +4,7 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.tryInject
-import com.tachyonmusic.user.di.AppModule
+import com.tachyonmusic.user.di.UserModule
 import com.tachyonmusic.user.domain.UserRepository
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -17,7 +17,7 @@ import org.junit.Test
 import javax.inject.Inject
 
 @HiltAndroidTest
-@UninstallModules(AppModule::class)
+@UninstallModules(UserModule::class)
 class LocalCacheTest {
     @get:Rule
     val hiltRule = HiltAndroidRule(this)
