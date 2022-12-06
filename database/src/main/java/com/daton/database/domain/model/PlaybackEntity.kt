@@ -5,5 +5,5 @@ import androidx.room.PrimaryKey
 
 @Entity
 open class PlaybackEntity(
-    @PrimaryKey val id: Int? = null
+    @PrimaryKey var id: Int? = null
 )

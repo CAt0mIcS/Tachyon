@@ -95,6 +95,7 @@ dependencies {
 
     projectCore()
     projectMedia()
+    projectDatabase()
     projectUser()
     projectUtil()
 

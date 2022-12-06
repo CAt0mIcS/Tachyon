@@ -4,4 +4,6 @@ import com.daton.database.domain.model.SettingsEntity
 
 interface SettingsRepository {
     suspend fun getSettings(): SettingsEntity
+
+    suspend fun removeExcludedFilesRange(toRemove: List<String>)
 }

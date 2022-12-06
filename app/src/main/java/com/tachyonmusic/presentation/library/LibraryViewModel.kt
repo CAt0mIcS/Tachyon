@@ -5,12 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.GetLoops
 import com.tachyonmusic.domain.use_case.GetPlaylists
 import com.tachyonmusic.domain.use_case.GetSongs
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toCollection
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,24 +24,24 @@ class LibraryViewModel @Inject constructor(
     getPlaylists: GetPlaylists,
 ) : ViewModel() {
 
-    private val songs = getSongs()
+    private var songs = emptyList<Song>()
     private val loops = getLoops()
     private val playlists = getPlaylists()
 
-    private val _items = mutableStateOf<List<Playback>>(songs.value)
+    private val _items = mutableStateOf<List<Playback>>(emptyList())
     val items: State<List<Playback>> = _items
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            for(song in songs.value) {
-                song.loadArtwork(100).collect()
-            }
+            songs = getSongs()
         }
+
+        onFilterSongs()
     }
 
 
     fun onFilterSongs() {
-        _items.value = songs.value
+        _items.value = songs
     }
 
     fun onFilterLoops() {

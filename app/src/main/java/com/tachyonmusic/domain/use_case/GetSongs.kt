@@ -1,9 +1,12 @@
 package com.tachyonmusic.domain.use_case
 
-import com.tachyonmusic.user.domain.UserRepository
+import com.daton.database.domain.repository.SongRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class GetSongs(
-    private val userRepository: UserRepository
+    private val repository: SongRepository
 ) {
-    operator fun invoke() = userRepository.songs
+    suspend operator fun invoke() =
+        withContext(Dispatchers.IO) { return@withContext repository.getAll() }
 }

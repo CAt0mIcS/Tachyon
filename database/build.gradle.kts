@@ -40,6 +40,7 @@ android {
 dependencies {
     room()
     dagger()
+    gson()
 
     coroutines()
 

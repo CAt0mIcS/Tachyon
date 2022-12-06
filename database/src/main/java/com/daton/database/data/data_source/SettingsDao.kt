@@ -12,4 +12,7 @@ interface SettingsDao {
      */
     @Query("SELECT * FROM settingsEntity ORDER BY ROWID ASC LIMIT 1")
     suspend fun getSettings(): SettingsEntity?
+
+    @Query("UPDATE settingsEntity SET excludedSongFiles=:excludedFiles")
+    suspend fun updateExcludedSongFiles(excludedFiles: List<String>)
 }

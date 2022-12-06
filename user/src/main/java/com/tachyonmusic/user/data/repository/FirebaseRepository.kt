@@ -6,34 +6,24 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
-import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.UiText
-import com.tachyonmusic.core.data.playback.AbstractLoop
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.user.R
 import com.tachyonmusic.user.data.LocalCache
 import com.tachyonmusic.user.data.Metadata
-import com.tachyonmusic.user.domain.FileRepository
 import com.tachyonmusic.user.domain.UserRepository
-import com.tachyonmusic.util.IListenable
-import com.tachyonmusic.util.Listenable
-import com.tachyonmusic.util.launch
+import com.tachyonmusic.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.StateFlow
 
 class FirebaseRepository(
-    private var fileRepository: FileRepository,
     val localCache: LocalCache,
     private val gson: Gson,
     private val auth: FirebaseAuth = Firebase.auth,
     private val firestore: FirebaseFirestore = Firebase.firestore
 ) : UserRepository, IListenable<UserRepository.EventListener> by Listenable() {
 
-    override val songs: StateFlow<List<Song>>
-        get() = fileRepository.songs
     override val loops: StateFlow<List<Loop>>
         get() = metadata.loops
     override val playlists: StateFlow<List<Playlist>>
@@ -207,20 +197,12 @@ class FirebaseRepository(
 
     override fun addHistory(playback: Playback) = metadata.addHistory(playback)
 
-    override operator fun plusAssign(song: Song) {
-        fileRepository += song
-    }
-
     override operator fun plusAssign(loop: Loop) {
         metadata += loop
     }
 
     override operator fun plusAssign(playlist: Playlist) {
         metadata += playlist
-    }
-
-    override operator fun minusAssign(song: Song) {
-        fileRepository -= song
     }
 
     override operator fun minusAssign(loop: Loop) {
