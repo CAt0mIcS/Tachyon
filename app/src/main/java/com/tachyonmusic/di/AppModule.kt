@@ -3,7 +3,9 @@ package com.tachyonmusic.di
 import android.app.Application
 import com.daton.database.domain.repository.SettingsRepository
 import com.daton.database.domain.repository.SongRepository
+import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
+import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
@@ -43,13 +45,18 @@ object AppModule {
     @Singleton
     fun provideUpdateSongDatabaseUseCase(
         songRepository: SongRepository,
-        settingsRepository: SettingsRepository
-    ) = UpdateSongDatabase(songRepository, settingsRepository)
+        settingsRepository: SettingsRepository,
+        fileRepository: FileRepository
+    ) = UpdateSongDatabase(songRepository, settingsRepository, fileRepository)
 
     @Provides
     @Singleton
     fun provideUpdateSettingsDatabaseUseCase(settingsRepository: SettingsRepository) =
         UpdateSettingsDatabase(settingsRepository)
+
+    @Provides
+    @Singleton
+    fun provideFileRepository(): FileRepository = FileRepositoryImpl()
 
     @Provides
     @Singleton
@@ -65,8 +72,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSearchStoredPlaybacksUseCase(userRepository: UserRepository) =
-        SearchStoredPlaybacks(userRepository)
+    fun provideSearchStoredPlaybacksUseCase(
+        userRepository: UserRepository,
+        songRepository: SongRepository
+    ) = SearchStoredPlaybacks(userRepository, songRepository)
 
     @Provides
     @Singleton

@@ -101,4 +101,7 @@ dependencies {
 
     localTest()
     androidTest()
+
+    androidTestImplementation(Dependency.Room.RUNTIME)
+    kaptAndroidTest(Dependency.Room.COMPILER)
 }

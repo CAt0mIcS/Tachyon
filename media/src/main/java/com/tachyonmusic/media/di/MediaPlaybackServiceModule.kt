@@ -7,6 +7,7 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
+import com.daton.database.domain.repository.SongRepository
 import com.google.android.gms.cast.framework.CastContext
 import com.tachyonmusic.media.CAST_PLAYER_NAME
 import com.tachyonmusic.media.EXO_PLAYER_NAME
@@ -34,7 +35,10 @@ class MediaPlaybackServiceModule {
 
     @Provides
     @ServiceScoped
-    fun provideBrowserTree(repository: UserRepository): BrowserTree = BrowserTree(repository)
+    fun provideBrowserTree(
+        repository: UserRepository,
+        songRepository: SongRepository
+    ): BrowserTree = BrowserTree(repository, songRepository)
 
     @Provides
     @ServiceScoped
@@ -64,9 +68,10 @@ class MediaPlaybackServiceModule {
     @ServiceScoped
     fun provideServiceUseCases(
         repository: UserRepository,
-        @Named(EXO_PLAYER_NAME) player: CustomPlayer
+        @Named(EXO_PLAYER_NAME) player: CustomPlayer,
+        songRepository: SongRepository,
     ) = ServiceUseCases(
-        LoadPlaylistForPlayback(repository),
+        LoadPlaylistForPlayback(repository, songRepository),
         ConfirmAddedMediaItems(repository),
         PreparePlayer(player),
         GetSupportedCommands(),

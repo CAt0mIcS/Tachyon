@@ -2,6 +2,7 @@ package com.tachyonmusic.media.data
 
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import com.daton.database.domain.repository.SongRepository
 import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
@@ -11,7 +12,8 @@ import kotlinx.coroutines.*
 
 
 class BrowserTree(
-    private val repository: UserRepository
+    private val repository: UserRepository,
+    private val songRepository: SongRepository
 ) {
     companion object {
         /**
@@ -73,9 +75,9 @@ class BrowserTree(
 
 
     // TODO: Nullable?
-    private fun getSongs() = repository.songs.value.map { it.toMediaItem() }
-    private fun getLoops() = repository.loops.value.map { it.toMediaItem() }
-    private fun getPlaylists() = repository.playlists.value.map { it.toMediaItem() }
+    private suspend fun getSongs() = songRepository.getSongs().map { it.toMediaItem() }
+    private suspend fun getLoops() = repository.loops.value.map { it.toMediaItem() }
+    private suspend fun getPlaylists() = repository.playlists.value.map { it.toMediaItem() }
 
     private fun constraintItems(
         playbacks: List<MediaItem>,

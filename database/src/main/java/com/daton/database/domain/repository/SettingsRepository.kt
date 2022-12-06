@@ -6,4 +6,5 @@ interface SettingsRepository {
     suspend fun getSettings(): SettingsEntity
 
     suspend fun removeExcludedFilesRange(toRemove: List<String>)
+    suspend fun addExcludedFilesRange(toAdd: List<String>)
 }

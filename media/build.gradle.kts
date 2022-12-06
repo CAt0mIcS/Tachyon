@@ -47,6 +47,7 @@ dependencies {
     dagger()
 
     projectCore()
+    projectDatabase()
     projectUser()
     projectUtil()
 

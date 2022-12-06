@@ -6,12 +6,11 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.daton.database.domain.model.SongEntity
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SongDao {
     @Query("SELECT * FROM songEntity")
-    fun getAll(): List<SongEntity>
+    suspend fun getSongs(): List<SongEntity>
 
     // TODO: Handle abort
     @Insert(onConflict = OnConflictStrategy.ABORT)

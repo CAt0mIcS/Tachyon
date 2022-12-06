@@ -1,6 +1,9 @@
 package com.tachyonmusic.di
 
 import android.app.Application
+import androidx.room.Room
+import com.daton.database.data.data_source.Database
+import com.daton.database.domain.repository.SongRepository
 import com.google.gson.Gson
 import com.tachyonmusic.core.data.playback.*
 import com.tachyonmusic.core.domain.MediaId
@@ -11,7 +14,6 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.user.data.LocalCache
 import com.tachyonmusic.user.data.repository.FirebaseRepository
-import com.tachyonmusic.user.data.repository.TestFileRepositoryImpl
 import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -26,7 +28,12 @@ object TestAppModule {
     @Provides
     @Singleton
     fun provideUserRepository(localCache: LocalCache, gson: Gson): UserRepository =
-        FirebaseRepository(TestFileRepositoryImpl(), localCache, gson)
+        FirebaseRepository(localCache, gson)
+
+    @Provides
+    @Singleton
+    fun provideDatabase(app: Application): Database =
+        Room.inMemoryDatabaseBuilder(app, Database::class.java).build()
 
     @Provides
     @Singleton
@@ -34,12 +41,9 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun provideLoops(repository: UserRepository): MutableList<Loop> = runBlocking {
+    fun provideLoops(repository: SongRepository): MutableList<Loop> = runBlocking {
         MutableList(3) { i ->
-            val song = repository.songs.value[i]
-
-            // TODO: Don't use Impl here
-
+            val song = repository.getSongs()[i]
             RemoteLoopImpl(
                 MediaId.ofRemoteLoop(i.toString(), song.mediaId),
                 i.toString(),
@@ -56,12 +60,12 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun providePlaylists(repository: UserRepository): MutableList<Playlist> = runBlocking {
+    fun providePlaylists(repository: SongRepository): MutableList<Playlist> = runBlocking {
         MutableList(2) { i ->
             RemotePlaylistImpl(
                 MediaId.ofRemotePlaylist(i.toString()),
                 i.toString(),
-                repository.songs.value.filter {
+                repository.getSongs().filter {
                     it.title == "Cosmic Storm" || it.title == "Awake" || it.title == "Last Time"
                 } as MutableList<SinglePlayback>
             )

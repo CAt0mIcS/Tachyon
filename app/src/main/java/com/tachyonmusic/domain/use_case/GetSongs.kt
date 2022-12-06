@@ -8,5 +8,5 @@ class GetSongs(
     private val repository: SongRepository
 ) {
     suspend operator fun invoke() =
-        withContext(Dispatchers.IO) { return@withContext repository.getAll() }
+        withContext(Dispatchers.IO) { return@withContext repository.getSongs() }
 }

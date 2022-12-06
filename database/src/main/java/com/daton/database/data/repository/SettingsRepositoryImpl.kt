@@ -12,7 +12,13 @@ class SettingsRepositoryImpl(
 
     override suspend fun removeExcludedFilesRange(toRemove: List<String>) {
         val settings = getSettings()
-        settings.excludedSongFiles.toMutableList().removeAll(toRemove)
-        settingsDao.updateExcludedSongFiles(settings.excludedSongFiles)
+        val newRange = settings.excludedSongFiles.toMutableList().apply { removeAll(toRemove) }
+        settingsDao.updateExcludedSongFiles(newRange)
+    }
+
+    override suspend fun addExcludedFilesRange(toAdd: List<String>) {
+        val settings = getSettings()
+        val newRange = settings.excludedSongFiles.toMutableSet().apply { addAll(toAdd) }
+        settingsDao.updateExcludedSongFiles(newRange.toList())
     }
 }

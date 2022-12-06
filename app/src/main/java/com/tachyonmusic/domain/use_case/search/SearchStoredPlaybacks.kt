@@ -1,5 +1,6 @@
 package com.tachyonmusic.domain.use_case.search
 
+import com.daton.database.domain.repository.SongRepository
 import com.tachyonmusic.app.R
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.Resource
@@ -11,7 +12,8 @@ import java.util.*
  * Searches through all playbacks that don't come from Spotify/Soundcloud/...
  */
 class SearchStoredPlaybacks(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val songRepository: SongRepository,
 ) {
     operator fun invoke(query: String?) = flow {
         if (query == null || query.isEmpty()) {
@@ -27,7 +29,7 @@ class SearchStoredPlaybacks(
         }
 
         val playbacks =
-            userRepository.songs.value + userRepository.loops.value + userRepository.playlists.value
+            songRepository.getSongs() + userRepository.loops.value + userRepository.playlists.value
 
         // TODO: Better string searches?
         for (playback in playbacks) {

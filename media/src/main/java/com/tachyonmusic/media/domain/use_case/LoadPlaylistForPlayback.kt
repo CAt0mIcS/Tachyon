@@ -1,6 +1,7 @@
 package com.tachyonmusic.media.domain.use_case
 
 import androidx.media3.common.MediaItem
+import com.daton.database.domain.repository.SongRepository
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.core.domain.playback.Loop
@@ -11,23 +12,26 @@ import com.tachyonmusic.media.R
 import com.tachyonmusic.user.domain.UserRepository
 
 class LoadPlaylistForPlayback(
-    private val repository: UserRepository
+    private val repository: UserRepository,
+    private val songRepository: SongRepository
 ) {
-    operator fun invoke(playback: Playback?): Resource<Pair<List<MediaItem>, Int>> {
+    suspend operator fun invoke(playback: Playback?): Resource<Pair<List<MediaItem>, Int>> {
         var initialWindowIndex: Int? = null
         var items: List<MediaItem>? = null
 
         if (/*repository.combinePlaybackTypes*/false) {
             when (playback) {
                 is Song -> {
-                    initialWindowIndex = repository.songs.value.indexOf(playback)
+                    initialWindowIndex = songRepository.getSongs().indexOf(playback)
                     items =
-                        repository.songs.value.map { it.toMediaItem() } + repository.loops.value.map { it.toMediaItem() }
+                        songRepository.getSongs()
+                            .map { it.toMediaItem() } + repository.loops.value.map { it.toMediaItem() }
                 }
                 is Loop -> {
                     initialWindowIndex = repository.loops.value.indexOf(playback)
                     items =
-                        repository.loops.value.map { it.toMediaItem() } + repository.songs.value.map { it.toMediaItem() }
+                        repository.loops.value.map { it.toMediaItem() } + songRepository.getSongs()
+                            .map { it.toMediaItem() }
                 }
                 is Playlist -> {
                     initialWindowIndex = playback.currentPlaylistIndex
@@ -40,8 +44,8 @@ class LoadPlaylistForPlayback(
         } else {
             when (playback) {
                 is Song -> {
-                    initialWindowIndex = repository.songs.value.indexOf(playback)
-                    items = repository.songs.value.map { it.toMediaItem() }
+                    initialWindowIndex = songRepository.getSongs().indexOf(playback)
+                    items = songRepository.getSongs().map { it.toMediaItem() }
                 }
                 is Loop -> {
                     initialWindowIndex = repository.loops.value.indexOf(playback)
