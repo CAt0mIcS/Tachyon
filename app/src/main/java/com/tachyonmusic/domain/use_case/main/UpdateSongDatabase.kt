@@ -58,5 +58,7 @@ class UpdateSongDatabase(
             songRepo.addAll(
                 songs.awaitAll().map { SongEntity(it.mediaId, it.title, it.artist, it.duration) })
         }
+
+        songRepo.loadArtworks()
     }
 }

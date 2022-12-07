@@ -44,8 +44,7 @@ class HomeViewModel @Inject constructor(
     private val pauseResumePlayback: PauseResumePlayback,
     private val getCurrentPositionNormalized: GetCurrentPositionNormalized,
     updateSettingsDatabase: UpdateSettingsDatabase,
-    updateSongDatabase: UpdateSongDatabase,
-    private val application: Application // TODO: Shouldn't be here
+    updateSongDatabase: UpdateSongDatabase
 ) : ViewModel() {
 
     var songs = emptyList<Song>()
@@ -67,33 +66,6 @@ class HomeViewModel @Inject constructor(
 
 
     init {
-//        if (songs.value.isNotEmpty()) {
-//            history.value = mutableListOf<Playback>().apply { addAll(songs.value) }
-//
-//            viewModelScope.launch(Dispatchers.IO) {
-//                for (song in history.value.filterIsInstance<Song>()) {
-//                    song.loadArtwork(100).map {
-//                        when (it) {
-//                            is Resource.Error -> Log.e(
-//                                "HomeViewModel",
-//                                "${song.title} - ${song.artist}: ${it.message!!.asString(application)}"
-//                            )
-//                            is Resource.Success -> Log.d(
-//                                "HomeViewModel",
-//                                "Successfully loaded cover art for ${song.title} - ${song.artist}"
-//                            )
-//                            else -> {}
-//                        }
-//                    }.collect()
-//                }
-//                Log.d("HomeViewModel", "Finished loading song artwork")
-//            }
-//
-//            _recentlyPlayed.value =
-//                history.value.find { (it as LocalSongImpl).path.absolutePath == "/storage/emulated/0/Music/Don't Play - JAEGER.mp3" }
-//                    ?: history.value[0]
-//        }
-
         viewModelScope.launch(Dispatchers.IO) {
             updateSettingsDatabase()
             updateSongDatabase()

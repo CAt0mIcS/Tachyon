@@ -28,8 +28,8 @@ class ArtworkSourceImpl : ArtworkSource {
     }
 
     private fun getRemoteArtwork(playback: SinglePlaybackEntity): RemoteArtwork? {
-        if (playback.artwork?.isNotEmpty() == true) {
-            return RemoteArtwork(URI(playback.artwork!!))
+        if (playback.artworkUrl?.isNotEmpty() == true) {
+            return RemoteArtwork(URI(playback.artworkUrl!!))
         }
         return null
     }
