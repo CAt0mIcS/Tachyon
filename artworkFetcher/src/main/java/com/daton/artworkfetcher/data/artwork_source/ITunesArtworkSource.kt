@@ -7,6 +7,7 @@ import com.daton.artworkfetcher.domain.artwork_source.ArtworkSource
 import com.google.gson.JsonObject
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
+import java.net.URL
 
 class ITunesArtworkSource(
     private val urlEncoder: UrlEncoder = UrlEncoderImpl()
@@ -27,25 +28,36 @@ class ITunesArtworkSource(
         return urlEncoder.encode(SEARCH_URL, urlParams)
     }
 
-    override fun parseSearchResult(result: String, imageSize: Int): Resource<String> {
-        val obj = GSON.fromJson(result, JsonObject::class.java)
+    override fun executeSearch(url: String, imageSize: Int): Resource<String> {
+        val response = URL(url).readText()
+        val obj = GSON.fromJson(response, JsonObject::class.java)
 
         if (!obj.has("results") ||
             !obj.has("resultCount") ||
             obj["resultCount"].asInt == 0 ||
             !obj["results"].isJsonArray
         )
-            return Resource.Error(UiText.StringResource(R.string.artwork_api_invalid_json, result))
+            return Resource.Error(
+                UiText.StringResource(
+                    R.string.artwork_api_invalid_json,
+                    response
+                )
+            )
 
         val results = obj["results"].asJsonArray
         if (!results[0].isJsonObject || !results[0].asJsonObject.has(DEFAULT_RESOLUTION_KEY))
-            return Resource.Error(UiText.StringResource(R.string.artwork_api_invalid_json, result))
+            return Resource.Error(
+                UiText.StringResource(
+                    R.string.artwork_api_invalid_json,
+                    response
+                )
+            )
 
-        var url = results[0].asJsonObject[DEFAULT_RESOLUTION_KEY].asString
-        if (DEFAULT_RESOLUTION != imageSize && url.lastIndexOf(DEFAULT_RESOLUTION_URL) != -1) {
-            url = url.replace(DEFAULT_RESOLUTION_URL, "${imageSize}x$imageSize")
+        var imageUrl = results[0].asJsonObject[DEFAULT_RESOLUTION_KEY].asString
+        if (DEFAULT_RESOLUTION != imageSize && imageUrl.lastIndexOf(DEFAULT_RESOLUTION_URL) != -1) {
+            imageUrl = imageUrl.replace(DEFAULT_RESOLUTION_URL, "${imageSize}x$imageSize")
         }
 
-        return Resource.Success(url)
+        return Resource.Success(imageUrl)
     }
 }

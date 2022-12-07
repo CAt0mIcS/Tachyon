@@ -34,9 +34,8 @@ class LibraryViewModel @Inject constructor(
     init {
         viewModelScope.launch(Dispatchers.IO) {
             songs = getSongs()
+            onFilterSongs()
         }
-
-        onFilterSongs()
     }
 
 

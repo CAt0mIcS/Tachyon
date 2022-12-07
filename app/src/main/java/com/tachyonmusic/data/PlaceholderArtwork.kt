@@ -1,5 +1,7 @@
 package com.tachyonmusic.data
 
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -18,4 +20,12 @@ class PlaceholderArtwork(
         )
     }
 
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+    }
+
+    companion object CREATOR : Parcelable.Creator<PlaceholderArtwork> {
+        override fun createFromParcel(parcel: Parcel) = PlaceholderArtwork(parcel.readInt())
+        override fun newArray(size: Int) = arrayOfNulls<PlaceholderArtwork?>(size)
+    }
 }

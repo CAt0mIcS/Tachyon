@@ -40,6 +40,8 @@ dependencies {
     coroutines()
     gson()
 
+    jsoup()
+
     projectUtil()
 
     localTest()

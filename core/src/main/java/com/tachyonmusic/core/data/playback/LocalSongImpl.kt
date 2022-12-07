@@ -1,10 +1,12 @@
 package com.tachyonmusic.core.data.playback
 
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.data.SongMetadata
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Song
 import java.io.File
@@ -32,7 +34,9 @@ class LocalSongImpl(
         parcel.readString()!!,
         parcel.readString()!!,
         parcel.readLong()
-    )
+    ) {
+        artwork.value = parcel.readParcelable(Artwork::class.java.classLoader)
+    }
 
     companion object {
         @JvmField

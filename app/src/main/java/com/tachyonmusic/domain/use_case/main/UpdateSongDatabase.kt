@@ -59,6 +59,7 @@ class UpdateSongDatabase(
                 songs.awaitAll().map { SongEntity(it.mediaId, it.title, it.artist, it.duration) })
         }
 
+        // TODO: Only do when starting the app for the first time
         songRepo.loadArtworks()
     }
 }

@@ -1,15 +1,19 @@
 package com.tachyonmusic.core.data.playback
 
+import android.net.Uri
 import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.constants.PlaybackType
+import com.tachyonmusic.core.data.EmbeddedArtwork
+import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.core.ext.toByteArray
 import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class AbstractSong(
@@ -38,6 +42,16 @@ abstract class AbstractSong(
     override fun toMediaMetadata() = MediaMetadata.Builder().apply {
         setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
         setIsPlayable(true)
+
+        when (val artworkVal = artwork.value) {
+            null -> {}
+            is EmbeddedArtwork -> setArtworkData(
+                artworkVal.bitmap.toByteArray(),
+                MediaMetadata.PICTURE_TYPE_FRONT_COVER
+            )
+            is RemoteArtwork -> setArtworkUri(Uri.parse(artworkVal.uri.toURL().toString()))
+        }
+
         setTitle(title)
         setArtist(artist)
         setExtras(Bundle().apply {
@@ -54,5 +68,6 @@ abstract class AbstractSong(
         parcel.writeString(title)
         parcel.writeString(artist)
         parcel.writeLong(duration)
+        parcel.writeParcelable(artwork.value, flags)
     }
 }

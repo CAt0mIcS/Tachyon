@@ -6,7 +6,6 @@ import com.google.gson.GsonBuilder
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import java.io.FileNotFoundException
-import java.net.URL
 
 abstract class ArtworkSource {
     companion object {
@@ -14,21 +13,6 @@ abstract class ArtworkSource {
     }
 
     fun search(title: String, artist: String, imageSize: Int): Resource<String> {
-        if (imageSize <= 0)
-            return Resource.Error(
-                UiText.StringResource(
-                    R.string.invalid_image_size,
-                    imageSize.toString()
-                )
-            )
-        if (title.isBlank() || artist.isBlank())
-            return Resource.Error(
-                UiText.StringResource(
-                    R.string.invalid_media_metadata,
-                    title, artist
-                )
-            )
-
         val url = getSearchUrl(title, artist)
         if (url is Resource.Error)
             return url
@@ -42,7 +26,7 @@ abstract class ArtworkSource {
 
         // TODO: Maybe replace [URL.readText] with something better?
         return try {
-            parseSearchResult(URL(url.data!!).readText(), imageSize)
+            executeSearch(url.data!!, imageSize)
         } catch (e: FileNotFoundException) {
             Resource.Error(
                 if (e.localizedMessage != null)
@@ -54,5 +38,5 @@ abstract class ArtworkSource {
     }
 
     abstract fun getSearchUrl(title: String, artist: String): Resource<String>
-    abstract fun parseSearchResult(result: String, imageSize: Int): Resource<String>
+    abstract fun executeSearch(url: String, imageSize: Int): Resource<String>
 }

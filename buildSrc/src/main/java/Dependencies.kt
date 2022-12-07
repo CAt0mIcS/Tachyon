@@ -56,6 +56,10 @@ object Dependency {
         const val GSON = "com.google.code.gson:gson:2.9.0"
     }
 
+    object Jsoup {
+        const val JSOUP = "org.jsoup:jsoup:1.15.3"
+    }
+
     object Glide {
         const val GLIDE = "com.github.bumptech.glide:glide:4.14.2"
         const val GLIDE_COMPOSE = "com.github.bumptech.glide:compose:1.0.0-alpha.1"
@@ -174,6 +178,10 @@ fun DependencyHandler.googleCast() {
 
 fun DependencyHandler.gson() {
     implementation(Dependency.GSON.GSON)
+}
+
+fun DependencyHandler.jsoup() {
+    implementation(Dependency.Jsoup.JSOUP)
 }
 
 fun DependencyHandler.glide() {
