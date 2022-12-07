@@ -56,6 +56,10 @@ object Dependency {
         const val GSON = "com.google.code.gson:gson:2.9.0"
     }
 
+    object Glide {
+        const val GLIDE = "com.github.bumptech.glide:glide:4.14.2"
+    }
+
     object Test {
         const val ANDROIDX_CORE = "androidx.test:core:1.4.0"
         const val JUNIT = "junit:junit:4.13.2"
@@ -169,6 +173,10 @@ fun DependencyHandler.googleCast() {
 
 fun DependencyHandler.gson() {
     implementation(Dependency.GSON.GSON)
+}
+
+fun DependencyHandler.glide() {
+    implementation(Dependency.Glide.GLIDE)
 }
 
 fun DependencyHandler.projectMedia() {

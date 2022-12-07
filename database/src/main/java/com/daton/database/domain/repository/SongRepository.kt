@@ -6,6 +6,6 @@ import com.tachyonmusic.core.domain.playback.Song
 interface SongRepository {
     suspend fun getSongs(): List<Song>
     suspend fun removeIf(pred: (Song) -> Boolean)
-    suspend fun addAll(songs: List<Song>)
-    suspend fun addAllEntity(songs: List<SongEntity>)
+    suspend fun addAll(songs: List<SongEntity>)
+    suspend fun updateArtwork(song: SongEntity, artwork: String?)
 }

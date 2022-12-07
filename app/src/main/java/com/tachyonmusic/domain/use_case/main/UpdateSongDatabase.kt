@@ -2,6 +2,7 @@ package com.tachyonmusic.domain.use_case.main
 
 import android.os.Environment
 import android.util.Log
+import com.daton.database.domain.model.SongEntity
 import com.daton.database.domain.repository.SettingsRepository
 import com.daton.database.domain.repository.SongRepository
 import com.tachyonmusic.core.data.playback.LocalSongImpl
@@ -53,7 +54,8 @@ class UpdateSongDatabase(
 
             Log.d("UpdateSongDatabase", "Loaded ${paths.size} songs")
 
-            songRepo.addAll(songs.awaitAll())
+            songRepo.addAll(
+                songs.awaitAll().map { SongEntity(it.mediaId, it.title, it.artist, it.duration) })
         }
     }
 }

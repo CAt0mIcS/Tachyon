@@ -10,8 +10,9 @@ import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.*
-import kotlinx.coroutines.flow.StateFlow
+import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Song
+import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class AbstractLoop(
     final override val mediaId: MediaId,
@@ -32,12 +33,9 @@ abstract class AbstractLoop(
 
     abstract override val playbackType: PlaybackType.Loop
 
-    override val artwork: StateFlow<Artwork?>
+    override val artwork: MutableStateFlow<Artwork?>
         get() = song.artwork
 
-    override fun unloadArtwork() = song.unloadArtwork()
-
-    override suspend fun loadArtwork(imageSize: Int) = song.loadArtwork(imageSize)
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
         "mediaId" to mediaId.toString(),

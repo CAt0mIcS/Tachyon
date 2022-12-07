@@ -44,5 +44,10 @@ dependencies {
 
     coroutines()
 
+    implementation(Dependency.Compose.UI)
+    implementation(Dependency.Compose.COIL)
+
     projectCore()
+    projectArtworkDownloader()
+    projectUtil()
 }

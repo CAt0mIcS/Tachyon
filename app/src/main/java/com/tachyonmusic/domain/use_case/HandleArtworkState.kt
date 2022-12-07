@@ -27,25 +27,25 @@ class HandleArtworkState(
             return
         }
 
-        launch(Dispatchers.IO) {
-            // TODO: Shouldn't use hard-coded size
-            // TODO: Better way of updating state here? (StateFlow in [SinglePlayback.artwork], State in [HandleArtworkState]
-            playback.loadArtwork(1000).map {
-                when (it) {
-                    is Resource.Error -> Log.e(
-                        "PlayerViewModel",
-                        "${playback.title} - ${playback.artist}: ${it.message!!.asString(application)}"
-                    )
-                    is Resource.Success -> {
-                        Log.d(
-                            "PlayerViewModel",
-                            "Successfully loaded cover art for ${playback.title} - ${playback.artist}"
-                        )
-                    }
-                    else -> {}
-                }
-            }.collect()
-            _artwork.value = playback.artwork.value
-        }
+//        launch(Dispatchers.IO) {
+//            // TODO: Shouldn't use hard-coded size
+//            // TODO: Better way of updating state here? (StateFlow in [SinglePlayback.artwork], State in [HandleArtworkState]
+//            playback.loadArtwork(1000).map {
+//                when (it) {
+//                    is Resource.Error -> Log.e(
+//                        "PlayerViewModel",
+//                        "${playback.title} - ${playback.artist}: ${it.message!!.asString(application)}"
+//                    )
+//                    is Resource.Success -> {
+//                        Log.d(
+//                            "PlayerViewModel",
+//                            "Successfully loaded cover art for ${playback.title} - ${playback.artist}"
+//                        )
+//                    }
+//                    else -> {}
+//                }
+//            }.collect()
+//            _artwork.value = playback.artwork.value
+//        }
     }
 }

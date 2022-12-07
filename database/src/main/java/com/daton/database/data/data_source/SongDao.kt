@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.daton.database.domain.model.SongEntity
+import com.tachyonmusic.core.domain.Artwork
 
 @Dao
 interface SongDao {
@@ -21,4 +22,7 @@ interface SongDao {
 
     @Delete
     suspend fun delete(song: SongEntity)
+
+    @Query("UPDATE songEntity SET artwork=:artwork WHERE id=:id")
+    suspend fun updateArtwork(id: Int, artwork: String?)
 }
