@@ -1,12 +1,12 @@
-package com.daton.artworkdownloader
+package com.daton.artworkfetcher
 
-import com.daton.artworkdownloader.data.artwork_source.ITunesArtworkSource
-import com.daton.artworkdownloader.domain.artwork_source.ArtworkSource
+import com.daton.artworkfetcher.data.artwork_source.ITunesArtworkSource
+import com.daton.artworkfetcher.domain.artwork_source.ArtworkSource
 import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.flow.flow
 
 
-class ArtworkDownloader(
+class ArtworkFetcher(
     private val sources: List<ArtworkSource> = listOf(ITunesArtworkSource())
 ) {
 

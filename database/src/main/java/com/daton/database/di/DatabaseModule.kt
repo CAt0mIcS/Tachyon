@@ -2,11 +2,10 @@ package com.daton.database.di
 
 import android.app.Application
 import androidx.room.Room
-import com.daton.artworkdownloader.ArtworkDownloader
+import com.daton.artworkfetcher.ArtworkFetcher
 import com.daton.database.data.data_source.*
 import com.daton.database.data.repository.*
 import com.daton.database.domain.ArtworkSource
-import com.daton.database.domain.ImageDownloader
 import com.daton.database.domain.repository.*
 import dagger.Module
 import dagger.Provides
@@ -36,17 +35,12 @@ object DatabaseModule {
     fun provideSongRepository(
         database: Database,
         artworkSource: ArtworkSource
-    ): SongRepository = SongRepositoryImpl(database.songDao, artworkSource, ArtworkDownloader())
+    ): SongRepository = SongRepositoryImpl(database.songDao, artworkSource, ArtworkFetcher())
 
     @Provides
     @Singleton
     fun provideLoopRepository(database: Database): LoopRepository =
         LoopRepositoryImpl(database.loopDao)
-
-    @Provides
-    @Singleton
-    fun provideImageDownloader(app: Application): ImageDownloader =
-        ImageDownloaderDownloadManager(app)
 
     @Provides
     @Singleton
@@ -60,8 +54,5 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideArtworkSource(
-        settingsRepository: SettingsRepository,
-        imageDownloader: ImageDownloader
-    ): ArtworkSource = ArtworkSourceImpl(settingsRepository, imageDownloader)
+    fun provideArtworkSource(): ArtworkSource = ArtworkSourceImpl()
 }

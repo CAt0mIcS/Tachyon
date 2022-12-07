@@ -1,9 +1,9 @@
-package com.daton.artworkdownloader.data.artwork_source
+package com.daton.artworkfetcher.data.artwork_source
 
-import com.daton.artworkdownloader.R
-import com.daton.artworkdownloader.data.UrlEncoderImpl
-import com.daton.artworkdownloader.domain.UrlEncoder
-import com.daton.artworkdownloader.domain.artwork_source.ArtworkSource
+import com.daton.artworkfetcher.R
+import com.daton.artworkfetcher.data.UrlEncoderImpl
+import com.daton.artworkfetcher.domain.UrlEncoder
+import com.daton.artworkfetcher.domain.artwork_source.ArtworkSource
 import com.google.gson.JsonObject
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText

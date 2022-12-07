@@ -58,6 +58,7 @@ object Dependency {
 
     object Glide {
         const val GLIDE = "com.github.bumptech.glide:glide:4.14.2"
+        const val GLIDE_COMPOSE = "com.github.bumptech.glide:compose:1.0.0-alpha.1"
     }
 
     object Test {
@@ -177,6 +178,7 @@ fun DependencyHandler.gson() {
 
 fun DependencyHandler.glide() {
     implementation(Dependency.Glide.GLIDE)
+    implementation(Dependency.Glide.GLIDE_COMPOSE)
 }
 
 fun DependencyHandler.projectMedia() {
@@ -191,8 +193,8 @@ fun DependencyHandler.projectUser() {
     implementation(project(":user"))
 }
 
-fun DependencyHandler.projectArtworkDownloader() {
-    implementation(project(":artworkDownloader"))
+fun DependencyHandler.projectArtworkFetcher() {
+    implementation(project(":artworkFetcher"))
 }
 
 fun DependencyHandler.projectUtil() {

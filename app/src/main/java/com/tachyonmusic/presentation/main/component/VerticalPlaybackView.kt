@@ -15,13 +15,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.tachyonmusic.app.R
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.presentation.theme.Theme
 
 @Composable
 fun VerticalPlaybackView(
     playback: Playback,
-    painter: Painter? = null,
+    artwork: Artwork,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -33,25 +34,14 @@ fun VerticalPlaybackView(
             .background(Theme.colors.secondary, shape = Theme.shapes.medium)
             .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
     ) {
-        if (painter != null)
-            Image(
-                painter = painter,
-                contentDescription = "Album Artwork",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .width(100.dp)
-                    .height(100.dp)
-                    .clip(Theme.shapes.medium)
-            )
-        else
-            Image(
-                painterResource(R.drawable.artwork_image_placeholder),
-                "Album Artwork Placeholder",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(100.dp, 100.dp)
-                    .clip(Theme.shapes.medium)
-            )
+        artwork.Image(
+            contentDescription = "Album Artwork",
+            modifier = Modifier
+                .padding(Theme.padding.extraSmall)
+                .width(100.dp)
+                .height(100.dp)
+                .clip(Theme.shapes.medium)
+        )
 
         Text(
             modifier = Modifier.padding(start = Theme.padding.small, end = Theme.padding.small),

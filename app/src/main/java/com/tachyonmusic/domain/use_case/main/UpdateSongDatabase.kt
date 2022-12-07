@@ -33,12 +33,13 @@ class UpdateSongDatabase(
 
         val settings = settingsRepo.getSettings()
         songRepo.removeIf {
-            // TODO: Shouldn't use LocalSongImpl here!
-            if (it is LocalSongImpl) {
-                paths.remove(it.path)
-                settings.excludedSongFiles.contains(it.path.absolutePath) ||
-                        !it.path.exists() || !it.path.isFile
-            } else TODO("It is not LocalSongImpl")
+            val path = it.mediaId.path
+            if (path != null) {
+                paths.remove(path)
+                settings.excludedSongFiles.contains(path.absolutePath) ||
+                        !path.exists() || !path.isFile
+            } else TODO("Invalid path null")
+
         }
 
         // TODO: Shouldn't use LocalSongImpl here!

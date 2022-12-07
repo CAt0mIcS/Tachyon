@@ -8,7 +8,6 @@ data class SettingsEntity(
     val ignoreAudioFocus: Boolean = false,
     val autoDownloadAlbumArtwork: Boolean = true,
     val autoDownloadAlbumArtworkWifiOnly: Boolean = true,
-    val cacheDownloadedAlbumArtwork: Boolean = true,
     val combineDifferentPlaybackTypes: Boolean = false,
     val songIncDecInterval: Int = 100,
     val audioUpdateInterval: Int = 100,

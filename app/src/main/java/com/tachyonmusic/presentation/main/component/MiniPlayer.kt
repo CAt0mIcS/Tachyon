@@ -1,6 +1,5 @@
 package com.tachyonmusic.presentation.main.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -13,13 +12,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.app.R
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.presentation.theme.Theme
 
@@ -30,7 +28,7 @@ fun MiniPlayer(
     isPlaying: Boolean,
     onClick: () -> Unit,
     onPlayPauseClicked: () -> Unit,
-    painter: Painter? = null,
+    artwork: Artwork,
     modifier: Modifier = Modifier
 ) {
     Row(modifier = modifier
@@ -45,24 +43,13 @@ fun MiniPlayer(
         .clickable {
             onClick()
         }) {
-        if (painter != null)
-            Image(
-                painter = painter,
-                contentDescription = "Album Artwork",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(48.dp, 48.dp)
-                    .clip(Theme.shapes.medium)
-            )
-        else
-            Image(
-                painterResource(R.drawable.artwork_image_placeholder),
-                "Album Artwork Placeholder",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(48.dp, 48.dp)
-                    .clip(Theme.shapes.medium)
-            )
+        artwork.Image(
+            contentDescription = "Album Artwork",
+            modifier = Modifier
+                .padding(Theme.padding.extraSmall)
+                .size(48.dp, 48.dp)
+                .clip(Theme.shapes.medium)
+        )
 
         Row(
             modifier = Modifier

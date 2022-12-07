@@ -1,6 +1,6 @@
-package com.daton.artworkdownloader.domain.artwork_source
+package com.daton.artworkfetcher.domain.artwork_source
 
-import com.daton.artworkdownloader.R
+import com.daton.artworkfetcher.R
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.tachyonmusic.util.Resource

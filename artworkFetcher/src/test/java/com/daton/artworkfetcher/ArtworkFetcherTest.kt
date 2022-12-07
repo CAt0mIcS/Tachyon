@@ -1,4 +1,4 @@
-package com.daton.artworkdownloader
+package com.daton.artworkfetcher
 
 import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.flow.collect
@@ -7,12 +7,12 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 
-class ArtworkDownloaderTest {
-    private lateinit var downloader: ArtworkDownloader
+class ArtworkFetcherTest {
+    private lateinit var downloader: ArtworkFetcher
 
     @Before
     fun setUp() {
-        downloader = ArtworkDownloader()
+        downloader = ArtworkFetcher()
     }
 
     @Test

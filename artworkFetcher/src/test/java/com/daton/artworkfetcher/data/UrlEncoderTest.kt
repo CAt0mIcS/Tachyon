@@ -1,6 +1,6 @@
-package com.daton.artworkdownloader.data
+package com.daton.artworkfetcher.data
 
-import com.daton.artworkdownloader.domain.UrlEncoder
+import com.daton.artworkfetcher.domain.UrlEncoder
 import com.tachyonmusic.util.Resource
 import org.junit.Test
 

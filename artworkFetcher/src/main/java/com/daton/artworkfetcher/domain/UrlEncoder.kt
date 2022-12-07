@@ -1,4 +1,4 @@
-package com.daton.artworkdownloader.domain
+package com.daton.artworkfetcher.domain
 
 import com.tachyonmusic.util.Resource
 

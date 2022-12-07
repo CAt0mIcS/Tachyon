@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.daton.artworkdownloader"
+    namespace = "com.daton.artworkfetcher"
     compileSdk = Version.COMPILE_SDK
 
     defaultConfig {

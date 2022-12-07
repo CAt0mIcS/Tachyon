@@ -48,6 +48,6 @@ dependencies {
     implementation(Dependency.Compose.COIL)
 
     projectCore()
-    projectArtworkDownloader()
+    projectArtworkFetcher()
     projectUtil()
 }

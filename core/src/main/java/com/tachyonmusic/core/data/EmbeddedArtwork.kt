@@ -2,6 +2,7 @@ package com.tachyonmusic.core.data
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.BitmapPainter
@@ -20,9 +21,14 @@ import java.io.File
 class EmbeddedArtwork(
     val bitmap: ImageBitmap
 ) : Artwork {
-    override val painter: Painter
-        @Composable
-        get() = remember(bitmap) { BitmapPainter(bitmap) }
+    @Composable
+    override fun Image(contentDescription: String?, modifier: Modifier) {
+        androidx.compose.foundation.Image(
+            bitmap = bitmap,
+            contentDescription = contentDescription,
+            modifier = modifier
+        )
+    }
 
     companion object {
         fun load(path: File) = SongMetadata.loadBitmap(path)?.asImageBitmap()

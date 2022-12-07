@@ -30,6 +30,7 @@ import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.data.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.main.component.MiniPlayer
 import com.tachyonmusic.presentation.theme.Theme
@@ -224,7 +225,8 @@ object HomeScreen :
                 content = {
                     MiniPlayer(
                         playback = recentlyPlayed ?: return,
-                        painter = artwork?.painter,
+                        artwork = artwork
+                            ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
                         currentPosition = currentPosition,
                         isPlaying = isPlaying,
                         onPlayPauseClicked = { viewModel.onPlayPauseClicked(recentlyPlayed) },
@@ -295,7 +297,7 @@ private fun LazyListScope.playbacksView(playbacks: List<Playback>, onClick: (Pla
                     onClick(playbacks[i])
                 },
             playback = playbacks[i],
-            painter = artwork?.painter,
+            artwork = artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
         )
     }
 }

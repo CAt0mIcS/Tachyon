@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.*
+import com.tachyonmusic.data.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
@@ -146,7 +147,7 @@ object LibraryScreen :
 
                 HorizontalPlaybackView(
                     playback,
-                    artwork?.painter,
+                    artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall)

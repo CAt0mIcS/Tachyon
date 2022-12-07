@@ -1,7 +1,7 @@
-package com.daton.artworkdownloader.data
+package com.daton.artworkfetcher.data
 
-import com.daton.artworkdownloader.R
-import com.daton.artworkdownloader.domain.UrlEncoder
+import com.daton.artworkfetcher.R
+import com.daton.artworkfetcher.domain.UrlEncoder
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import java.io.UnsupportedEncodingException
