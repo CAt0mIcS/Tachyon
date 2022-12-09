@@ -1,6 +1,9 @@
 package com.tachyonmusic.di
 
 import android.app.Application
+import com.daton.database.data.repository.shared_action.LoadArtwork
+import com.daton.database.data.repository.shared_action.UpdateArtwork
+import com.daton.database.domain.repository.HistoryRepository
 import com.daton.database.domain.repository.SettingsRepository
 import com.daton.database.domain.repository.SongRepository
 import com.tachyonmusic.data.repository.FileRepositoryImpl
@@ -62,9 +65,9 @@ object AppModule {
     @Singleton
     fun provideUpdateArtworksUseCase(
         songRepository: SongRepository,
-        isFirstAppStart: IsFirstAppStart
-    ) =
-        UpdateArtworks(songRepository, isFirstAppStart)
+        isFirstAppStart: IsFirstAppStart,
+        loadArtwork: LoadArtwork
+    ) = UpdateArtworks(songRepository, isFirstAppStart, loadArtwork)
 
     @Provides
     @Singleton
@@ -80,7 +83,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGetHistoryUseCase(userRepository: UserRepository) = GetHistory(userRepository)
+    fun provideGetHistoryUseCase(historyRepository: HistoryRepository) =
+        GetPagedHistory(historyRepository)
 
     @Provides
     @Singleton

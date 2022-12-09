@@ -2,9 +2,9 @@ package com.daton.database.di
 
 import android.app.Application
 import androidx.room.Room
-import com.daton.artworkfetcher.ArtworkFetcher
 import com.daton.database.data.data_source.*
 import com.daton.database.data.repository.*
+import com.daton.database.data.repository.shared_action.*
 import com.daton.database.domain.ArtworkSource
 import com.daton.database.domain.repository.*
 import dagger.Module
@@ -34,8 +34,9 @@ object DatabaseModule {
     @Singleton
     fun provideSongRepository(
         database: Database,
-        artworkSource: ArtworkSource
-    ): SongRepository = SongRepositoryImpl(database.songDao, artworkSource, ArtworkFetcher())
+        convertEntityToSong: ConvertEntityToSong
+    ): SongRepository =
+        SongRepositoryImpl(database.songDao, convertEntityToSong)
 
     @Provides
     @Singleton
@@ -49,10 +50,61 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideHistoryRepository(database: Database): HistoryRepository =
-        HistoryRepositoryImpl(database.historyDao)
+    fun provideHistoryRepository(
+        database: Database,
+        convertEntityToPlayback: ConvertEntityToPlayback
+    ): HistoryRepository = HistoryRepositoryImpl(database.historyDao, convertEntityToPlayback)
 
     @Provides
     @Singleton
     fun provideArtworkSource(): ArtworkSource = ArtworkSourceImpl()
+
+    @Provides
+    @Singleton
+    fun provideGetArtworkForPlayback() = GetArtworkForPlayback()
+
+    @Provides
+    @Singleton
+    fun provideConvertEntityToPlayback(
+        convertEntityToSong: ConvertEntityToSong,
+        convertEntityToLoop: ConvertEntityToLoop,
+        convertEntityToPlaylist: ConvertEntityToPlaylist
+    ) = ConvertEntityToPlayback(convertEntityToSong, convertEntityToLoop, convertEntityToPlaylist)
+
+    @Provides
+    @Singleton
+    fun provideConvertEntityToSong(getArtworkForPlayback: GetArtworkForPlayback) =
+        ConvertEntityToSong(getArtworkForPlayback)
+
+    @Provides
+    @Singleton
+    fun provideConvertEntityToLoop(getArtworkForPlayback: GetArtworkForPlayback) =
+        ConvertEntityToLoop(getArtworkForPlayback)
+
+    @Provides
+    @Singleton
+    fun provideConvertEntityToPlaylist(
+        songRepository: SongRepository,
+        loopRepository: LoopRepository,
+        convertEntityToSong: ConvertEntityToSong,
+        convertEntityToLoop: ConvertEntityToLoop
+    ) = ConvertEntityToPlaylist(
+        songRepository,
+        loopRepository,
+        convertEntityToSong,
+        convertEntityToLoop
+    )
+
+    @Provides
+    @Singleton
+    fun provideLoadArtwork(artworkSource: ArtworkSource, updateArtwork: UpdateArtwork) =
+        LoadArtwork(artworkSource, updateArtwork)
+
+    @Provides
+    @Singleton
+    fun provideUpdateArtwork(
+        songRepository: SongRepository,
+        loopRepository: LoopRepository,
+        historyRepository: HistoryRepository
+    ) = UpdateArtwork(songRepository, loopRepository, historyRepository)
 }

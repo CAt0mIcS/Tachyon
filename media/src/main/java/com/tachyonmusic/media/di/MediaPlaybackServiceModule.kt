@@ -7,6 +7,8 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
+import com.daton.database.domain.repository.HistoryRepository
+import com.daton.database.domain.repository.SettingsRepository
 import com.daton.database.domain.repository.SongRepository
 import com.google.android.gms.cast.framework.CastContext
 import com.tachyonmusic.media.CAST_PLAYER_NAME
@@ -68,6 +70,8 @@ class MediaPlaybackServiceModule {
     @ServiceScoped
     fun provideServiceUseCases(
         repository: UserRepository,
+        historyRepository: HistoryRepository,
+        settingsRepository: SettingsRepository,
         @Named(EXO_PLAYER_NAME) player: CustomPlayer,
         songRepository: SongRepository,
     ) = ServiceUseCases(
@@ -76,6 +80,6 @@ class MediaPlaybackServiceModule {
         PreparePlayer(player),
         GetSupportedCommands(),
         UpdateTimingDataOfCurrentPlayback(player),
-        AddNewPlaybackToHistory(repository)
+        AddNewPlaybackToHistory(historyRepository, settingsRepository)
     )
 }

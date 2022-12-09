@@ -1,13 +1,9 @@
 package com.tachyonmusic.presentation.main
 
-import android.app.Application
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.app.R
-import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.*
@@ -16,13 +12,9 @@ import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
 import com.tachyonmusic.domain.use_case.player.SetCurrentPlayback
-import com.tachyonmusic.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration
@@ -34,7 +26,7 @@ class HomeViewModel @Inject constructor(
     getSongs: GetSongs,
     getLoops: GetLoops,
     getPlaylists: GetPlaylists,
-    getHistory: GetHistory,
+    getHistory: GetPagedHistory,
     private val playerListener: PlayerListenerHandler,
     private val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val setCurrentPlayback: SetCurrentPlayback,

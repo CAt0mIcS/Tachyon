@@ -1,4 +1,19 @@
 package com.daton.database.domain.repository
 
+import androidx.paging.PagingData
+import com.daton.database.domain.model.PlaybackEntity
+import com.tachyonmusic.core.domain.playback.Playback
+import kotlinx.coroutines.flow.Flow
+
 interface HistoryRepository {
+    suspend fun getHistoryEntities(): List<PlaybackEntity>
+    fun getPagedHistory(
+        pageSize: Int,
+        prefetchDistance: Int = pageSize,
+        initialLoadSize: Int = pageSize
+    ): Flow<PagingData<Playback>>
+    suspend operator fun plusAssign(playback: PlaybackEntity)
+    suspend operator fun minusAssign(playback: PlaybackEntity)
+    suspend operator fun minusAssign(playbacks: List<PlaybackEntity>)
+    suspend fun clear()
 }

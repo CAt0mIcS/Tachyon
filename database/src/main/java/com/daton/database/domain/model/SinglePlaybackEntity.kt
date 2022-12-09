@@ -1,6 +1,5 @@
 package com.daton.database.domain.model
 
-import com.daton.database.domain.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 
 open class SinglePlaybackEntity(
@@ -9,7 +8,6 @@ open class SinglePlaybackEntity(
     var artist: String,
     var duration: Long,
 
-    var artworkType: String = ArtworkType.NO_ARTWORK,
-
-    var artworkUrl: String? = null
+    var artworkType: String,
+    var artworkUrl: String?
 ) : PlaybackEntity()

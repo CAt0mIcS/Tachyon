@@ -1,6 +1,7 @@
 package com.daton.database.domain.model
 
 import androidx.room.Entity
+import com.daton.database.domain.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 
@@ -12,4 +13,6 @@ class LoopEntity(
     val songDuration: Long,
     val timingData: List<TimingData>,
     val currentTimingDataIndex: Int = 0,
-) : SinglePlaybackEntity(mediaId, songTitle, songArtist, songDuration)
+    artworkType: String = ArtworkType.NO_ARTWORK,
+    artworkUrl: String? = null
+) : SinglePlaybackEntity(mediaId, songTitle, songArtist, songDuration, artworkType, artworkUrl)
