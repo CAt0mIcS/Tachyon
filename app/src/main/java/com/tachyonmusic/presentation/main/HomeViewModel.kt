@@ -4,6 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.*
@@ -14,7 +15,9 @@ import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
 import com.tachyonmusic.domain.use_case.player.SetCurrentPlayback
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration
@@ -23,10 +26,7 @@ import kotlin.time.Duration
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val itemClicked: ItemClicked,
-    getSongs: GetSongs,
-    getLoops: GetLoops,
-    getPlaylists: GetPlaylists,
-    getHistory: GetPagedHistory,
+    private val getHistory: GetHistory,
     private val playerListener: PlayerListenerHandler,
     private val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val setCurrentPlayback: SetCurrentPlayback,
@@ -37,19 +37,13 @@ class HomeViewModel @Inject constructor(
     updateArtworks: UpdateArtworks
 ) : ViewModel() {
 
-    var songs = emptyList<Song>()
-    val loops = getLoops()
-    val playlists = getPlaylists()
-
     val isPlaying = playerListener.isPlaying
     val currentPositionNormalized: Float
         get() = getCurrentPositionNormalized()
     val audioUpdateInterval: Duration
         get() = getAudioUpdateInterval()
 
-//    val history = getHistory()
-
-    val history = MutableStateFlow(listOf<Playback>())
+    var history = mutableStateOf(emptyList<Playback>())
 
     private val _recentlyPlayed = mutableStateOf<Playback?>(null)
     val recentlyPlayed: State<Playback?> = _recentlyPlayed
@@ -60,8 +54,7 @@ class HomeViewModel @Inject constructor(
             updateSettingsDatabase()
             updateSongDatabase()
 
-            songs = getSongs()
-            history.value = songs
+            history.value = getHistory()
 
             updateArtworks()
         }
@@ -77,12 +70,6 @@ class HomeViewModel @Inject constructor(
 
     fun onItemClicked(playback: Playback) {
         itemClicked(playback)
-
-        // TODO: Unload artwork in not used songs to save memory
-        // TODO: Don't unload now playing artwork, currently is reloaded again in [PlayerViewModel]
-//        for (song in songs.value) {
-//            song.unloadArtwork()
-//        }
     }
 
     fun onPlayPauseClicked(playback: Playback?) {

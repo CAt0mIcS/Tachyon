@@ -41,7 +41,7 @@ fun Playback.toEntity() = when (this) {
     }
     is Playlist -> {
         PlaylistEntity(
-            name,
+            mediaId,
             playbacks.map { it.mediaId },
             currentPlaylistIndex
         )

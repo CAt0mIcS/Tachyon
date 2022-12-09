@@ -6,30 +6,30 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.daton.database.domain.model.PlaybackEntity
-import com.daton.database.domain.model.SongEntity
+import com.daton.database.domain.model.HistoryEntity
+import com.tachyonmusic.core.domain.MediaId
 
 @Dao
 interface HistoryDao {
 
-    @Query("SELECT * FROM playbackEntity")
-    suspend fun getHistory(): List<PlaybackEntity>
+    @Query("SELECT * FROM historyEntity ORDER BY timestamp DESC")
+    suspend fun getHistory(): List<HistoryEntity>
 
-    @Query("SELECT * FROM playbackEntity")
-    fun getPagedHistory(): PagingSource<Int, PlaybackEntity>
+    @Query("SELECT * FROM historyEntity ORDER BY timestamp DESC")
+    fun getPagedHistory(): PagingSource<Int, HistoryEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun addHistory(history: PlaybackEntity)
+    suspend fun addHistory(history: HistoryEntity)
 
-    @Delete
-    suspend fun removeHistory(history: PlaybackEntity)
+    @Query("DELETE FROM historyEntity WHERE mediaId=:mediaId")
+    suspend fun removeHistory(mediaId: MediaId)
 
-    @Delete
-    suspend fun removeHistory(histories: List<PlaybackEntity>)
+    @Query("DELETE FROM historyEntity WHERE mediaId IN (:mediaIds)")
+    suspend fun removeHistory(mediaIds: List<MediaId>)
 
-    @Query("DELETE FROM playbackEntity")
+    @Query("DELETE FROM historyEntity")
     suspend fun clear()
 
-    @Query("SELECT * FROM playbackEntity ORDER BY ROWID ASC LIMIT 1")
-    suspend fun getMostRecent(): PlaybackEntity?
+    @Query("SELECT * FROM historyEntity ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getMostRecent(): HistoryEntity?
 }

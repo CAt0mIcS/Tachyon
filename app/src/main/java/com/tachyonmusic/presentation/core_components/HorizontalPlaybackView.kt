@@ -22,13 +22,15 @@ import com.tachyonmusic.presentation.theme.Theme
 fun HorizontalPlaybackView(
     playback: Playback,
     artwork: Artwork,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     Row(
         modifier = modifier
             .shadow(Theme.shadow.extraSmall, shape = Theme.shapes.medium)
             .background(Theme.colors.secondary, shape = Theme.shapes.medium)
             .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
+            .clickable { onClick() }
     ) {
         artwork.Image(
             contentDescription = "Album Artwork",

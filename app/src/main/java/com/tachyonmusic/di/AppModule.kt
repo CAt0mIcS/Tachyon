@@ -83,8 +83,13 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGetHistoryUseCase(historyRepository: HistoryRepository) =
+    fun provideGetPagedHistoryUseCase(historyRepository: HistoryRepository) =
         GetPagedHistory(historyRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetHistoryUseCase(historyRepository: HistoryRepository) =
+        GetHistory(historyRepository)
 
     @Provides
     @Singleton

@@ -14,6 +14,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -23,6 +24,7 @@ import com.tachyonmusic.data.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
+import com.tachyonmusic.presentation.player.PlayerScreen
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
 
@@ -31,6 +33,7 @@ object LibraryScreen :
 
     @Composable
     operator fun invoke(
+        navController: NavController,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
         var selectedFilter by remember { mutableStateOf(0) }
@@ -152,7 +155,11 @@ object LibraryScreen :
                         artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = Theme.padding.extraSmall)
+                            .padding(bottom = Theme.padding.extraSmall),
+                        onClick = {
+                            viewModel.onItemClicked(playback)
+                            navController.navigate(PlayerScreen.route)
+                        }
                     )
                 }
 

@@ -6,21 +6,25 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.daton.database.data.data_source.HistoryDao
 import com.daton.database.data.repository.shared_action.ConvertEntityToPlayback
+import com.daton.database.data.repository.shared_action.FindPlaybackByMediaId
 import com.daton.database.data.repository.shared_action.UpdateArtwork
-import com.daton.database.domain.model.PlaybackEntity
+import com.daton.database.domain.model.*
 import com.daton.database.domain.repository.HistoryRepository
 import com.daton.database.domain.repository.LoopRepository
 import com.daton.database.domain.repository.SongRepository
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playback
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class HistoryRepositoryImpl(
     private val dao: HistoryDao,
-    private val convertEntityToPlayback: ConvertEntityToPlayback
+    private val convertEntityToPlayback: ConvertEntityToPlayback,
+    private val findPlaybackByMediaId: FindPlaybackByMediaId
 ) : HistoryRepository {
 
-    override suspend fun getHistoryEntities(): List<PlaybackEntity> = dao.getHistory()
+    override suspend fun getHistoryEntities(): List<PlaybackEntity> =
+        dao.getHistory().map { findPlaybackByMediaId(it.mediaId)!! }
 
     override fun getPagedHistory(
         pageSize: Int,
@@ -34,21 +38,24 @@ class HistoryRepositoryImpl(
             pagingSourceFactory = pagingSourceFactory
         ).flow.map { historyData ->
             historyData.map { playback ->
-                convertEntityToPlayback(playback)
+                convertEntityToPlayback(findPlaybackByMediaId(playback.mediaId)!!)
             }
         }
     }
 
+    override suspend fun getHistory(): List<Playback> =
+        dao.getHistory().map { convertEntityToPlayback(findPlaybackByMediaId(it.mediaId)!!) }
+
     override suspend fun plusAssign(playback: PlaybackEntity) {
-        dao.addHistory(playback)
+        dao.addHistory(HistoryEntity(playback.mediaId))
     }
 
     override suspend fun minusAssign(playback: PlaybackEntity) {
-        dao.removeHistory(playback)
+        dao.removeHistory(playback.mediaId)
     }
 
     override suspend fun minusAssign(playbacks: List<PlaybackEntity>) {
-        dao.removeHistory(playbacks)
+        dao.removeHistory(playbacks.map { it.mediaId })
     }
 
     override suspend fun clear() {

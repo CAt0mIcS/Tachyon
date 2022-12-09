@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
@@ -37,6 +39,7 @@ import com.tachyonmusic.presentation.theme.Theme
 import kotlinx.coroutines.delay
 import com.tachyonmusic.presentation.main.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.player.PlayerScreen
+import kotlinx.coroutines.flow.emptyFlow
 
 
 object HomeScreen :
@@ -49,8 +52,9 @@ object HomeScreen :
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var searchText by remember { mutableStateOf("") }
-        val history by viewModel.history.collectAsState()
         val recentlyPlayed by viewModel.recentlyPlayed
+
+        val history by viewModel.history
 
         val isPlaying by viewModel.isPlaying
         var currentPosition by remember { mutableStateOf(viewModel.currentPositionNormalized) }
@@ -175,6 +179,7 @@ object HomeScreen :
             }
 
 
+
             item {
                 LazyRow(
                     modifier = Modifier
@@ -189,6 +194,7 @@ object HomeScreen :
             }
 
             item {
+
                 Text(
                     "Recommended for You",
                     fontSize = 24.sp,
@@ -213,6 +219,7 @@ object HomeScreen :
                         navController.navigate(PlayerScreen.route)
                     }
                 }
+
             }
         }
 
@@ -261,7 +268,10 @@ object HomeScreen :
                         }
 
                         // Position items at the bottom of the screen, excluding BottomNavBar
-                        placeable.placeRelative(x = 0, y = constraints.maxHeight - placeable.height)
+                        placeable.placeRelative(
+                            x = 0,
+                            y = constraints.maxHeight - placeable.height
+                        )
                     }
                 }
             }
@@ -270,7 +280,10 @@ object HomeScreen :
 }
 
 
-private fun LazyListScope.playbacksView(playbacks: List<Playback>, onClick: (Playback) -> Unit) {
+private fun LazyListScope.playbacksView(
+    playbacks: List<Playback>,
+    onClick: (Playback) -> Unit
+) {
     items(playbacks.size) { i ->
 
         // Apply extra padding to the start of the first playback and to the end of the last

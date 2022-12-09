@@ -39,7 +39,7 @@ class AddNewPlaybackToHistory(
         val history = repository.getHistoryEntities()
         if (history.size > settings.maxPlaybacksInHistory) {
             val toRemove =
-                history.toMutableList().subList(settings.maxPlaybacksInHistory + 1, history.size)
+                history.toMutableList().subList(settings.maxPlaybacksInHistory, history.size)
             repository -= toRemove
         }
     }

@@ -4,10 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.domain.use_case.GetLoops
-import com.tachyonmusic.domain.use_case.GetPagedSongs
-import com.tachyonmusic.domain.use_case.GetPlaylists
-import com.tachyonmusic.domain.use_case.GetSongs
+import com.tachyonmusic.domain.use_case.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -19,7 +16,8 @@ import javax.inject.Inject
 class LibraryViewModel @Inject constructor(
     getSongs: GetPagedSongs,
     getLoops: GetLoops,
-    getPlaylists: GetPlaylists
+    getPlaylists: GetPlaylists,
+    private val itemClicked: ItemClicked
 ) : ViewModel() {
 
     private var songs = getSongs(5, 0)
@@ -43,4 +41,7 @@ class LibraryViewModel @Inject constructor(
         items = emptyFlow()
     }
 
+    fun onItemClicked(playback: Playback) {
+        itemClicked(playback)
+    }
 }

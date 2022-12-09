@@ -52,8 +52,10 @@ object DatabaseModule {
     @Singleton
     fun provideHistoryRepository(
         database: Database,
-        convertEntityToPlayback: ConvertEntityToPlayback
-    ): HistoryRepository = HistoryRepositoryImpl(database.historyDao, convertEntityToPlayback)
+        convertEntityToPlayback: ConvertEntityToPlayback,
+        findPlaybackByMediaId: FindPlaybackByMediaId
+    ): HistoryRepository =
+        HistoryRepositoryImpl(database.historyDao, convertEntityToPlayback, findPlaybackByMediaId)
 
     @Provides
     @Singleton
@@ -80,6 +82,14 @@ object DatabaseModule {
     @Singleton
     fun provideConvertEntityToLoop(getArtworkForPlayback: GetArtworkForPlayback) =
         ConvertEntityToLoop(getArtworkForPlayback)
+
+    @Provides
+    @Singleton
+    fun provideFindPlaybackByMediaId(
+        songRepository: SongRepository,
+        loopRepository: LoopRepository,
+        playlistRepository: PlaylistRepository
+    ) = FindPlaybackByMediaId(songRepository, loopRepository, playlistRepository)
 
     @Provides
     @Singleton

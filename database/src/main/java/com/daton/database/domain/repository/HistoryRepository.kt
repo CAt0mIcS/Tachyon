@@ -12,6 +12,7 @@ interface HistoryRepository {
         prefetchDistance: Int = pageSize,
         initialLoadSize: Int = pageSize
     ): Flow<PagingData<Playback>>
+    suspend fun getHistory(): List<Playback>
     suspend operator fun plusAssign(playback: PlaybackEntity)
     suspend operator fun minusAssign(playback: PlaybackEntity)
     suspend operator fun minusAssign(playbacks: List<PlaybackEntity>)

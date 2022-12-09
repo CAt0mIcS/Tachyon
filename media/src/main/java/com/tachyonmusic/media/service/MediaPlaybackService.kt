@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.media3.cast.DefaultCastOptionsProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Player.MediaItemTransitionReason
 import androidx.media3.session.*
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
@@ -148,8 +149,14 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     }
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        ioScope.launch {
-            useCases.addNewPlaybackToHistory(mediaItem?.mediaMetadata?.playback)
-        }
+        /**
+         * When changing playlist [onMediaItemTransition] is also called with the bellow reason
+         * this would mean having the first item in the playlist in history as well as the one
+         * we actually want to play
+         */
+        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
+            ioScope.launch {
+                useCases.addNewPlaybackToHistory(mediaItem?.mediaMetadata?.playback)
+            }
     }
 }

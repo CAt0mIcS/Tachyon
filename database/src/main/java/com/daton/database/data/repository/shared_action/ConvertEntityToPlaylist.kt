@@ -14,7 +14,7 @@ class ConvertEntityToPlaylist(
 ) {
     suspend operator fun invoke(playlist: PlaylistEntity): Playlist =
         RemotePlaylistImpl.build(
-            playlist.name,
+            playlist.mediaId,
             playlist.items.map {
                 val song = songRepository.findByMediaId(it)
                 if (song != null)

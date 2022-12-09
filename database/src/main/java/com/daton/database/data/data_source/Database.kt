@@ -11,7 +11,8 @@ import com.daton.database.domain.model.*
         SongEntity::class,
         LoopEntity::class,
         PlaylistEntity::class,
-        PlaybackEntity::class
+        PlaybackEntity::class,
+        HistoryEntity::class
     ],
     version = 1,
     exportSchema = false
