@@ -46,8 +46,9 @@ object AppModule {
     fun provideUpdateSongDatabaseUseCase(
         songRepository: SongRepository,
         settingsRepository: SettingsRepository,
-        fileRepository: FileRepository
-    ) = UpdateSongDatabase(songRepository, settingsRepository, fileRepository)
+        fileRepository: FileRepository,
+        isFirstAppStart: IsFirstAppStart
+    ) = UpdateSongDatabase(songRepository, settingsRepository, fileRepository, isFirstAppStart)
 
     @Provides
     @Singleton
@@ -128,6 +129,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSetCurrentPlayback(browser: MediaBrowserController) = SetCurrentPlayback(browser)
+
+    @Provides
+    @Singleton
+    fun provideIsFirstAppStartUseCase(app: Application) = IsFirstAppStart(app)
 
     @Provides
     @Singleton
