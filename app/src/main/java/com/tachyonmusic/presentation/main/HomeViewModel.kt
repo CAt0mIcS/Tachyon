@@ -26,7 +26,7 @@ import kotlin.time.Duration
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val itemClicked: ItemClicked,
-    private val getHistory: GetHistory,
+    private val getHistory: GetPagedHistory,
     private val playerListener: PlayerListenerHandler,
     private val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val setCurrentPlayback: SetCurrentPlayback,
@@ -43,19 +43,13 @@ class HomeViewModel @Inject constructor(
     val audioUpdateInterval: Duration
         get() = getAudioUpdateInterval()
 
-    var history = mutableStateOf(emptyList<Playback>())
-
-    private val _recentlyPlayed = mutableStateOf<Playback?>(null)
-    val recentlyPlayed: State<Playback?> = _recentlyPlayed
+    var history = getHistory(5)
 
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             updateSettingsDatabase()
             updateSongDatabase()
-
-            history.value = getHistory()
-
             updateArtworks()
         }
     }

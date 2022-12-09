@@ -52,9 +52,9 @@ object HomeScreen :
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var searchText by remember { mutableStateOf("") }
-        val recentlyPlayed by viewModel.recentlyPlayed
 
-        val history by viewModel.history
+        val history = viewModel.history.collectAsLazyPagingItems()
+        val recentlyPlayed = if (history.itemCount > 0) history[0] else null
 
         val isPlaying by viewModel.isPlaying
         var currentPosition by remember { mutableStateOf(viewModel.currentPositionNormalized) }
@@ -281,15 +281,15 @@ object HomeScreen :
 
 
 private fun LazyListScope.playbacksView(
-    playbacks: List<Playback>,
+    playbacks: LazyPagingItems<Playback>,
     onClick: (Playback) -> Unit
 ) {
-    items(playbacks.size) { i ->
+    items(playbacks.itemCount) { i ->
 
         // Apply extra padding to the start of the first playback and to the end of the last
         val padding = if (i == 0) {
             PaddingValues(start = Theme.padding.medium, end = Theme.padding.extraSmall / 2f)
-        } else if (i > 0 && i < playbacks.size - 1) {
+        } else if (i > 0 && i < playbacks.itemCount - 1) {
             PaddingValues(
                 start = Theme.padding.extraSmall / 2f,
                 end = Theme.padding.extraSmall / 2f
@@ -301,16 +301,21 @@ private fun LazyListScope.playbacksView(
             )
         }
 
-        val artwork by (playbacks[i] as SinglePlayback).artwork.collectAsState()
+        val playback = playbacks[i]
+        if (playback != null) {
+            val artwork by (playback as SinglePlayback).artwork.collectAsState()
 
-        VerticalPlaybackView(
-            modifier = Modifier
-                .padding(padding)
-                .clickable {
-                    onClick(playbacks[i])
-                },
-            playback = playbacks[i],
-            artwork = artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
-        )
+            VerticalPlaybackView(
+                modifier = Modifier
+                    .padding(padding)
+                    .clickable {
+                        onClick(playback)
+                    },
+                playback = playback,
+                artwork = artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+            )
+        }
+
+
     }
 }
