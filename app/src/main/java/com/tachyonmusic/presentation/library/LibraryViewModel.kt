@@ -1,53 +1,46 @@
 package com.tachyonmusic.presentation.library
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.map
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.GetLoops
+import com.tachyonmusic.domain.use_case.GetPagedSongs
 import com.tachyonmusic.domain.use_case.GetPlaylists
 import com.tachyonmusic.domain.use_case.GetSongs
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toCollection
-import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    getSongs: GetSongs,
+    getSongs: GetPagedSongs,
     getLoops: GetLoops,
-    getPlaylists: GetPlaylists,
+    getPlaylists: GetPlaylists
 ) : ViewModel() {
 
-    private var songs = emptyList<Song>()
+    private var songs = getSongs(5, 0)
     private val loops = getLoops()
     private val playlists = getPlaylists()
 
-    private val _items = mutableStateOf<List<Playback>>(emptyList())
-    val items: State<List<Playback>> = _items
-
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            songs = getSongs()
-            onFilterSongs()
-        }
-    }
-
+    var items: Flow<PagingData<Playback>> = songs.map { it.map { song -> song } }
+        private set
 
     fun onFilterSongs() {
-        _items.value = songs
+        items = songs.map { it.map { song -> song } }
     }
 
     fun onFilterLoops() {
-        _items.value = loops.value
+//        items = loops
+        items = emptyFlow()
     }
 
     fun onFilterPlaylists() {
-        _items.value = playlists.value
+//        items = playlists
+        items = emptyFlow()
     }
+
 }

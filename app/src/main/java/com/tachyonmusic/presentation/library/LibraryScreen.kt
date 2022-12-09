@@ -6,16 +6,17 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.items
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.*
 import com.tachyonmusic.data.PlaceholderArtwork
@@ -36,7 +37,7 @@ object LibraryScreen :
         var sortOptionsExpanded by remember { mutableStateOf(false) }
         var sortText by remember { mutableStateOf("Alphabetically") }
 
-        val playbackItems by viewModel.items
+        val playbackItems: LazyPagingItems<Playback> = viewModel.items.collectAsLazyPagingItems()
 
         LazyColumn(
             modifier = Modifier
@@ -140,18 +141,21 @@ object LibraryScreen :
 
             items(playbackItems) { playback ->
 
-                val artwork by if (playback is SinglePlayback)
-                    playback.artwork.collectAsState()
-                else
-                    (playback as Playlist).playbacks.first().artwork.collectAsState()
+                if(playback != null) {
+                    val artwork by if (playback is SinglePlayback)
+                        playback.artwork.collectAsState()
+                    else
+                        (playback as Playlist).playbacks.first().artwork.collectAsState()
 
-                HorizontalPlaybackView(
-                    playback,
-                    artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = Theme.padding.extraSmall)
-                )
+                    HorizontalPlaybackView(
+                        playback,
+                        artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = Theme.padding.extraSmall)
+                    )
+                }
+
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.daton.database.data.data_source
 
+import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -10,6 +12,9 @@ import com.tachyonmusic.core.domain.Artwork
 
 @Dao
 interface SongDao {
+    @Query("SELECT * FROM songEntity")
+    fun getPagedSongs(): PagingSource<Int, SongEntity>
+
     @Query("SELECT * FROM songEntity")
     suspend fun getSongs(): List<SongEntity>
 

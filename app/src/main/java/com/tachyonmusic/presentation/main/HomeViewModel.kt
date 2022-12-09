@@ -11,10 +11,7 @@ import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.*
-import com.tachyonmusic.domain.use_case.main.GetCurrentPositionNormalized
-import com.tachyonmusic.domain.use_case.main.GetHistory
-import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
-import com.tachyonmusic.domain.use_case.main.UpdateSongDatabase
+import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
@@ -44,7 +41,8 @@ class HomeViewModel @Inject constructor(
     private val pauseResumePlayback: PauseResumePlayback,
     private val getCurrentPositionNormalized: GetCurrentPositionNormalized,
     updateSettingsDatabase: UpdateSettingsDatabase,
-    updateSongDatabase: UpdateSongDatabase
+    updateSongDatabase: UpdateSongDatabase,
+    updateArtworks: UpdateArtworks
 ) : ViewModel() {
 
     var songs = emptyList<Song>()
@@ -72,6 +70,8 @@ class HomeViewModel @Inject constructor(
 
             songs = getSongs()
             history.value = songs
+
+            updateArtworks()
         }
     }
 

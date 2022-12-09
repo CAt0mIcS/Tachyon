@@ -20,8 +20,7 @@ import java.io.File
 class UpdateSongDatabase(
     private val songRepo: SongRepository,
     private val settingsRepo: SettingsRepository,
-    private val fileRepository: FileRepository,
-    private val isFirstAppStart: IsFirstAppStart
+    private val fileRepository: FileRepository
 ) {
     suspend operator fun invoke() = withContext(Dispatchers.IO) {
 
@@ -59,11 +58,5 @@ class UpdateSongDatabase(
             songRepo.addAll(
                 songs.awaitAll().map { SongEntity(it.mediaId, it.title, it.artist, it.duration) })
         }
-
-        if (isFirstAppStart()) {
-            Log.d("UpdateSongDatabase", "Loading song artworks")
-            songRepo.loadArtworks()
-        }
-
     }
 }

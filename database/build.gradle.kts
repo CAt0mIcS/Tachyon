@@ -43,9 +43,9 @@ dependencies {
     gson()
 
     coroutines()
+    paging()
 
     implementation(Dependency.Compose.UI)
-    implementation(Dependency.Compose.COIL)
 
     projectCore()
     projectArtworkFetcher()

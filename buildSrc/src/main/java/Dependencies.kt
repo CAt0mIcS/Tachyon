@@ -25,11 +25,17 @@ object Dependency {
         const val ACTIVITY = "androidx.activity:activity-compose:1.6.1"
         const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Version.COMPOSE}"
         const val COIL = "io.coil-kt:coil-compose:2.2.2"
+        const val PAGING = "androidx.paging:paging-compose:1.0.0-alpha17"
 
         object Accompanist {
             const val NAVIGATION_ANIMATION =
                 "com.google.accompanist:accompanist-navigation-animation:0.28.0"
         }
+    }
+
+    object Paging {
+        const val PAGING = "androidx.paging:paging-runtime:${Version.PAGING}"
+        const val COMPOSE = Compose.PAGING
     }
 
     object Lifecycle {
@@ -90,6 +96,7 @@ object Dependency {
         const val RUNTIME = "androidx.room:room-runtime:${Version.ROOM}"
         const val COMPILER = "androidx.room:room-compiler:${Version.ROOM}"
         const val COROUTINES = "androidx.room:room-ktx:${Version.ROOM}"
+        const val PAGING = "androidx.room:room-paging:${Version.ROOM}"
     }
 }
 
@@ -111,6 +118,7 @@ fun DependencyHandler.compose() {
     implementation(Dependency.Compose.ANDROID_MATERIAL)
 
     implementation(Dependency.Compose.COMPOSE_SLIDERS)
+    implementation(Dependency.Compose.PAGING)
 
     implementation(Dependency.Compose.UI)
     implementation(Dependency.Compose.COMPOSE_MATERIAL)
@@ -144,9 +152,16 @@ fun DependencyHandler.dagger() {
     kapt(Dependency.DaggerHilt.COMPILER)
 }
 
+fun DependencyHandler.paging() {
+    implementation(Dependency.Paging.PAGING)
+    implementation(Dependency.Paging.COMPOSE)
+}
+
 fun DependencyHandler.room() {
     implementation(Dependency.Room.RUNTIME)
     annotationProcessor(Dependency.Room.COMPILER)
+
+    implementation(Dependency.Room.PAGING)
 
     // To use Kotlin annotation processing tool (kapt)
     kapt(Dependency.Room.COMPILER)
@@ -167,9 +182,6 @@ fun DependencyHandler.room() {
 
     // optional - Test helpers
 //    testImplementation("androidx.room:room-testing:$room_version")
-
-    // optional - Paging 3 Integration
-//    implementation("androidx.room:room-paging:$room_version")
 }
 
 fun DependencyHandler.googleCast() {

@@ -43,17 +43,28 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideGetPagedSongsUseCase(songRepository: SongRepository) = GetPagedSongs(songRepository)
+
+    @Provides
+    @Singleton
     fun provideUpdateSongDatabaseUseCase(
         songRepository: SongRepository,
         settingsRepository: SettingsRepository,
         fileRepository: FileRepository,
-        isFirstAppStart: IsFirstAppStart
-    ) = UpdateSongDatabase(songRepository, settingsRepository, fileRepository, isFirstAppStart)
+    ) = UpdateSongDatabase(songRepository, settingsRepository, fileRepository)
 
     @Provides
     @Singleton
     fun provideUpdateSettingsDatabaseUseCase(settingsRepository: SettingsRepository) =
         UpdateSettingsDatabase(settingsRepository)
+
+    @Provides
+    @Singleton
+    fun provideUpdateArtworksUseCase(
+        songRepository: SongRepository,
+        isFirstAppStart: IsFirstAppStart
+    ) =
+        UpdateArtworks(songRepository, isFirstAppStart)
 
     @Provides
     @Singleton
