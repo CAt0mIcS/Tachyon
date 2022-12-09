@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import java.io.FileNotFoundException
+import java.net.UnknownHostException
 
 abstract class ArtworkSource {
     companion object {
@@ -28,15 +29,20 @@ abstract class ArtworkSource {
         return try {
             executeSearch(url.data!!, imageSize)
         } catch (e: FileNotFoundException) {
-            Resource.Error(
-                if (e.localizedMessage != null)
-                    UiText.DynamicString(e.localizedMessage!!)
-                else
-                    UiText.StringResource(R.string.request_to_url_failed, url.data!!)
-            )
+            requestFailed(e, url.data)
+        } catch (e: UnknownHostException) {
+            requestFailed(e, url.data)
         }
     }
 
     abstract fun getSearchUrl(title: String, artist: String): Resource<String>
     abstract fun executeSearch(url: String, imageSize: Int): Resource<String>
+
+    private fun requestFailed(e: Exception, url: String?) =
+        Resource.Error<String>(
+            if (e.localizedMessage != null)
+                UiText.DynamicString(e.localizedMessage!!)
+            else
+                UiText.StringResource(R.string.request_to_url_failed, url ?: "Unknown URL")
+        )
 }
