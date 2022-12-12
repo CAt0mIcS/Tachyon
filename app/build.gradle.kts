@@ -100,6 +100,7 @@ dependencies {
     projectDatabase()
     projectUser()
     projectUtil()
+    projectLogger()
 
     localTest()
     androidTest()

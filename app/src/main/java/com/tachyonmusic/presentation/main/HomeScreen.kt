@@ -15,7 +15,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -31,15 +30,13 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.data.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.main.component.MiniPlayer
-import com.tachyonmusic.presentation.theme.Theme
-import kotlinx.coroutines.delay
 import com.tachyonmusic.presentation.main.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.player.PlayerScreen
-import kotlinx.coroutines.flow.emptyFlow
+import com.tachyonmusic.presentation.theme.Theme
+import kotlinx.coroutines.delay
 
 
 object HomeScreen :
@@ -71,7 +68,7 @@ object HomeScreen :
         LaunchedEffect(Unit) {
             while (true) {
                 currentPosition = viewModel.currentPositionNormalized
-                delay(viewModel.audioUpdateInterval)
+                delay(viewModel.getAudioUpdateInterval())
             }
         }
 

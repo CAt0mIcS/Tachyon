@@ -5,7 +5,7 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import java.io.File
 
-class SongMetadata(path: File) {
+class SongMetadata(val path: File) {
 
     val title: String
     val artist: String

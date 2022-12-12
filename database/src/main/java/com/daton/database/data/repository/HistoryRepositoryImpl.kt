@@ -7,12 +7,9 @@ import androidx.paging.map
 import com.daton.database.data.data_source.HistoryDao
 import com.daton.database.data.repository.shared_action.ConvertEntityToPlayback
 import com.daton.database.data.repository.shared_action.FindPlaybackByMediaId
-import com.daton.database.data.repository.shared_action.UpdateArtwork
-import com.daton.database.domain.model.*
+import com.daton.database.domain.model.HistoryEntity
+import com.daton.database.domain.model.PlaybackEntity
 import com.daton.database.domain.repository.HistoryRepository
-import com.daton.database.domain.repository.LoopRepository
-import com.daton.database.domain.repository.SongRepository
-import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playback
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map

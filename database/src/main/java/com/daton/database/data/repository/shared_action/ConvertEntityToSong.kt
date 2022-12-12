@@ -5,7 +5,6 @@ import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.launch
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 
 class ConvertEntityToSong(
     private val getArtworkForPlayback: GetArtworkForPlayback

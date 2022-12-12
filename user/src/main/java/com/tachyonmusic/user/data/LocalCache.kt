@@ -2,12 +2,17 @@ package com.tachyonmusic.user.data
 
 import android.content.Context
 import com.google.gson.Gson
-import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.UiText
 import com.tachyonmusic.user.R
 import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
 import org.json.JSONException
-import java.io.*
+import java.io.BufferedReader
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileReader
+import java.io.FileWriter
+import java.io.IOException
 
 class LocalCache(
     context: Context,

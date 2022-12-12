@@ -94,22 +94,25 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         browser?.seekTo(pos)
     }
 
-    override fun getChildren(
+    override suspend fun getChildren(
         parentId: String,
         page: Int,
         pageSize: Int
-    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
-        browser?.getChildren(parentId, page, pageSize, null) ?: Futures.immediateFuture(
-            LibraryResult.ofItemList(listOf(), null)
-        )
+    ): LibraryResult<ImmutableList<MediaItem>> =
+        browser?.getChildren(parentId, page, pageSize, null)?.await()
+            ?: LibraryResult.ofItemList(listOf(), null)
 
-    override fun getPlaybacksNative(parentId: String, page: Int, pageSize: Int): List<Playback> =
-        runBlocking {
-            val children = getChildren(parentId, page, pageSize).await().value ?: emptyList()
-            List(children.size) { i ->
-                children[i].mediaMetadata.playback!!
-            }
+
+    override suspend fun getPlaybacksNative(
+        parentId: String,
+        page: Int,
+        pageSize: Int
+    ): List<Playback> {
+        val children = getChildren(parentId, page, pageSize).value ?: emptyList()
+        return List(children.size) { i ->
+            children[i].mediaMetadata.playback!!
         }
+    }
 
     override val isPlaying: Boolean
         get() = browser?.isPlaying ?: false

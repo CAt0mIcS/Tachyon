@@ -24,13 +24,13 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
 
     var playWhenReady: Boolean
 
-    fun getChildren(
+    suspend fun getChildren(
         parentId: String,
         page: Int = 0,
         pageSize: Int = Int.MAX_VALUE
-    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>>
+    ): LibraryResult<ImmutableList<MediaItem>>
 
-    fun getPlaybacksNative(
+    suspend fun getPlaybacksNative(
         parentId: String,
         page: Int = 0,
         pageSize: Int = Int.MAX_VALUE

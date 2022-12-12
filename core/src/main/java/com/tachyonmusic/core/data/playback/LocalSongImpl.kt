@@ -1,6 +1,5 @@
 package com.tachyonmusic.core.data.playback
 
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable

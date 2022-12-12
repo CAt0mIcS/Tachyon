@@ -6,8 +6,6 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.util.launch
-import kotlinx.coroutines.Dispatchers
 
 class HandleArtworkState(
     browser: MediaBrowserController

@@ -2,7 +2,6 @@ package com.tachyonmusic.presentation
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import androidx.compose.ui.unit.dp
 import com.tachyonmusic.core.NavigationItem
 
 abstract class BottomNavigationItem(

@@ -55,6 +55,7 @@ dependencies {
 
     projectArtworkFetcher()
     projectUtil()
+    projectLogger()
 
     implementation(Dependency.Media3.MEDIA_SESSION)
     implementation(Dependency.Compose.UI)

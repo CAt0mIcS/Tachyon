@@ -4,7 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.use_case.ItemClicked
-import com.tachyonmusic.domain.use_case.main.*
+import com.tachyonmusic.domain.use_case.main.GetCurrentPositionNormalized
+import com.tachyonmusic.domain.use_case.main.GetPagedHistory
+import com.tachyonmusic.domain.use_case.main.UnloadArtworks
+import com.tachyonmusic.domain.use_case.main.UpdateArtworks
+import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
+import com.tachyonmusic.domain.use_case.main.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
@@ -21,7 +26,7 @@ class HomeViewModel @Inject constructor(
     private val itemClicked: ItemClicked,
     getHistory: GetPagedHistory,
     private val playerListener: PlayerListenerHandler,
-    private val getAudioUpdateInterval: GetAudioUpdateInterval,
+    val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val setCurrentPlayback: SetCurrentPlayback,
     private val pauseResumePlayback: PauseResumePlayback,
     private val getCurrentPositionNormalized: GetCurrentPositionNormalized,
@@ -34,8 +39,6 @@ class HomeViewModel @Inject constructor(
     val isPlaying = playerListener.isPlaying
     val currentPositionNormalized: Float
         get() = getCurrentPositionNormalized()
-    val audioUpdateInterval: Duration
-        get() = getAudioUpdateInterval()
 
     var history = getHistory(5)
 

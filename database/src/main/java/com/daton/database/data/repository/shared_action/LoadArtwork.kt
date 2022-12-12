@@ -1,6 +1,6 @@
 package com.daton.database.data.repository.shared_action
 
-import android.util.Log
+import android.content.Context
 import com.daton.artworkfetcher.ArtworkFetcher
 import com.daton.database.domain.ArtworkSource
 import com.daton.database.domain.ArtworkType
@@ -8,6 +8,8 @@ import com.daton.database.domain.model.PlaybackEntity
 import com.daton.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
+import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -20,6 +22,8 @@ import kotlinx.coroutines.flow.onEach
 class LoadArtwork(
     private val artworkSource: ArtworkSource,
     private val updateArtwork: UpdateArtwork,
+    private val appContext: Context,
+    private val log: Logger = Log(),
     private val artworkFetcher: ArtworkFetcher = ArtworkFetcher()
 ) {
     suspend operator fun invoke(playback: PlaybackEntity?) {
@@ -32,22 +36,24 @@ class LoadArtwork(
                 ArtworkType.REMOTE,
                 artwork.uri.toURL().toString()
             )
+
             is EmbeddedArtwork -> updateArtwork(playback, ArtworkType.EMBEDDED)
             null -> {
                 /**
                  * We haven't yet found any artwork for this song, search the web if there's anything
                  * we can find
                  */
-                Log.d(
-                    "LoadArtwork",
-                    "Searching web for artwork for ${playback.title} - ${playback.artist}"
-                )
+                log.info("Searching web for artwork for ${playback.title} - ${playback.artist}")
                 artworkFetcher.query(playback.title, playback.artist, 1000)
                     .onEach { res ->
                         if (res is Resource.Success)
                             updateArtwork(playback, ArtworkType.REMOTE, res.data ?: return@onEach)
+                        else if (res is Resource.Error) {
+                            log.exception(res.exception, res.message?.asString(appContext))
+                        }
                     }.collect()
             }
+
             else -> TODO("Unknown artwork type")
         }
     }

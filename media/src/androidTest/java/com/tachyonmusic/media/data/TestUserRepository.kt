@@ -1,6 +1,5 @@
 package com.tachyonmusic.media.data
 
-import com.tachyonmusic.util.Resource
 import com.tachyonmusic.core.data.playback.AbstractLoop
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
@@ -9,6 +8,7 @@ import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
+import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

@@ -43,6 +43,7 @@ dependencies {
     jsoup()
 
     projectUtil()
+    projectLogger()
 
     localTest()
 }

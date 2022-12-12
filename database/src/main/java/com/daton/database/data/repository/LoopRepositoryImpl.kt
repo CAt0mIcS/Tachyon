@@ -1,7 +1,6 @@
 package com.daton.database.data.repository
 
 import com.daton.database.data.data_source.LoopDao
-import com.daton.database.data.repository.shared_action.UpdateArtwork
 import com.daton.database.domain.model.LoopEntity
 import com.daton.database.domain.model.SongEntity
 import com.daton.database.domain.repository.LoopRepository

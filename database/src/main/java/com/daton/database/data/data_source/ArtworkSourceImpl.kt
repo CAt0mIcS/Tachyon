@@ -2,11 +2,9 @@ package com.daton.database.data.data_source
 
 import com.daton.database.domain.ArtworkSource
 import com.daton.database.domain.model.SinglePlaybackEntity
-import com.daton.database.domain.repository.SettingsRepository
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.Artwork
-import java.io.File
 import java.net.URI
 
 class ArtworkSourceImpl : ArtworkSource {

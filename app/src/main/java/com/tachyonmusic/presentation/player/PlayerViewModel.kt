@@ -1,28 +1,23 @@
 package com.tachyonmusic.presentation.player
 
 import android.app.Application
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.HandleArtworkState
 import com.tachyonmusic.domain.use_case.ItemClicked
-import com.tachyonmusic.domain.use_case.MediaStateHandler
-import com.tachyonmusic.domain.use_case.player.*
+import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
+import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
+import com.tachyonmusic.domain.use_case.player.HandleLoopState
+import com.tachyonmusic.domain.use_case.player.HandlePlaybackState
+import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
+import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
+import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
+import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.presentation.player.data.RepeatMode
-import com.tachyonmusic.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.lang.Long.max
 import javax.inject.Inject
 import kotlin.math.min
@@ -33,7 +28,7 @@ import kotlin.time.Duration
 class PlayerViewModel @Inject constructor(
     private val playerListener: PlayerListenerHandler,
     private val getCurrentPosition: GetCurrentPosition,
-    private val getAudioUpdateInterval: GetAudioUpdateInterval,
+    val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val handlePlaybackState: HandlePlaybackState,
     private val handleLoopState: HandleLoopState,
     private val seekToPosition: SeekToPosition,
@@ -48,8 +43,6 @@ class PlayerViewModel @Inject constructor(
 
     val currentPosition: Long
         get() = getCurrentPosition()
-    val audioUpdateInterval: Duration
-        get() = getAudioUpdateInterval()
 
     val playbackState = handlePlaybackState.playbackState
     val loopState = handleLoopState.loopState

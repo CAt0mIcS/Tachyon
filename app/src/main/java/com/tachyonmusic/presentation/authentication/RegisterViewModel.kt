@@ -5,9 +5,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.app.R
+import com.tachyonmusic.domain.use_case.authentication.RegisterUser
+import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
-import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -16,7 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    private val registerUser: RegisterUser
+    private val registerUser: RegisterUser,
+    private val log: Logger
 ) : ViewModel() {
 
     private val _email = mutableStateOf("")
@@ -31,10 +34,12 @@ class RegisterViewModel @Inject constructor(
 
     fun onRegisterClicked() {
         registerUser(email.value, password.value).onEach { resource ->
-            _error.value = if (resource is Resource.Error)
-                resource.message ?: UiText.StringResource(R.string.unknown_error)
-            else
-                null
+            if (resource is Resource.Error) {
+                _error.value = resource.message ?: UiText.StringResource(R.string.unknown_error)
+//                log.exception(resource.exception, resource.message) TODO
+            } else {
+                _error.value = null
+            }
         }.launchIn(viewModelScope)
     }
 

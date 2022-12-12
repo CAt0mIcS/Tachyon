@@ -6,7 +6,7 @@ import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.flow.flow
-import java.util.*
+import java.util.Arrays
 
 /**
  * Searches through all playbacks that don't come from Spotify/Soundcloud/...
@@ -16,7 +16,7 @@ class SearchStoredPlaybacks(
     private val songRepository: SongRepository,
 ) {
     operator fun invoke(query: String?) = flow {
-        if (query == null || query.isEmpty()) {
+        if (query.isNullOrEmpty()) {
             emit(
                 Resource.Error(
                     UiText.StringResource(

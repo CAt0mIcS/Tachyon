@@ -50,4 +50,5 @@ dependencies {
     projectCore()
     projectArtworkFetcher()
     projectUtil()
+    projectLogger()
 }

@@ -34,7 +34,10 @@ class CreateAndSaveNewLoop(
             TimingDataController(browser.timingData!!)
         )
         userRepo += loop
-        userRepo.save()
-        return Resource.Success(loop)
+        val res = userRepo.save()
+        return if (res is Resource.Error)
+            Resource.Error(res.message, loop, res.exception)
+        else
+            Resource.Success(loop)
     }
 }

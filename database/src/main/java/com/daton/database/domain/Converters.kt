@@ -1,7 +1,6 @@
 package com.daton.database.domain
 
 import androidx.room.TypeConverter
-import androidx.room.TypeConverters
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import com.tachyonmusic.core.domain.MediaId

@@ -5,7 +5,6 @@ import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.data.SongMetadata
 import com.tachyonmusic.core.data.playback.AbstractSong
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Song
 import java.io.File
 
 class TestSong(

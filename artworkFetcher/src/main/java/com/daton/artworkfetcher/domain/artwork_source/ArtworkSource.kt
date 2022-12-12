@@ -27,16 +27,15 @@ abstract class ArtworkSource {
                 )
             )
 
-        // TODO: Maybe replace [URL.readText] with something better?
         return try {
             executeSearch(url.data!!, imageSize)
         } catch (e: FileNotFoundException) {
             requestFailed(e, url.data)
         } catch (e: UnknownHostException) {
             requestFailed(e, url.data)
-        } catch(e: HttpStatusException) {
+        } catch (e: HttpStatusException) {
             requestFailed(e, url.data)
-        } catch(e: SocketException) {
+        } catch (e: SocketException) {
             requestFailed(e, url.data)
         }
     }
@@ -46,9 +45,7 @@ abstract class ArtworkSource {
 
     private fun requestFailed(e: Exception, url: String?) =
         Resource.Error<String>(
-            if (e.localizedMessage != null)
-                UiText.DynamicString(e.localizedMessage!!)
-            else
-                UiText.StringResource(R.string.request_to_url_failed, url ?: "Unknown URL")
+            message = UiText.StringResource(R.string.request_to_url_failed, url ?: "Unknown URL"),
+            exception = e
         )
 }

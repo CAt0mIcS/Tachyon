@@ -1,10 +1,10 @@
 package com.tachyonmusic.domain.use_case.authentication
 
 import com.tachyonmusic.app.R
-import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.UiText
 import com.tachyonmusic.domain.util.AccountVerificator
 import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 

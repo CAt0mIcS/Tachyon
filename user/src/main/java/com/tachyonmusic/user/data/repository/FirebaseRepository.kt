@@ -13,9 +13,17 @@ import com.tachyonmusic.user.R
 import com.tachyonmusic.user.data.LocalCache
 import com.tachyonmusic.user.data.Metadata
 import com.tachyonmusic.user.domain.UserRepository
-import com.tachyonmusic.util.*
-import kotlinx.coroutines.*
+import com.tachyonmusic.util.IListenable
+import com.tachyonmusic.util.Listenable
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.launch
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class FirebaseRepository(
     val localCache: LocalCache,
@@ -54,12 +62,9 @@ class FirebaseRepository(
                         job.complete(Resource.Success())
                     }
                 } else
-                    job.complete(
-                        Resource.Error(
-                            if (it.exception?.localizedMessage != null)
-                                UiText.DynamicString(it.exception!!.localizedMessage!!)
-                            else UiText.StringResource(R.string.unknown_error)
-                        )
+                    Resource.Error<Unit>(
+                        exception = it.exception,
+                        message = if (it.exception == null) UiText.StringResource(R.string.unknown_error) else null
                     )
             }
         return@withContext job.await()
@@ -75,16 +80,17 @@ class FirebaseRepository(
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     launch(Dispatchers.IO) {
-                        save()
+                        val res = save()
+                        if(res is Resource.Error)
+                            job.complete(res)
                         initialize()
                         job.complete(Resource.Success())
                     }
                 } else
                     job.complete(
                         Resource.Error(
-                            if (it.exception?.localizedMessage != null)
-                                UiText.DynamicString(it.exception!!.localizedMessage!!)
-                            else UiText.StringResource(R.string.unknown_error)
+                            exception = it.exception,
+                            message = if (it.exception == null) UiText.StringResource(R.string.unknown_error) else null
                         )
                     )
             }
@@ -116,9 +122,8 @@ class FirebaseRepository(
             } else
                 job.complete(
                     Resource.Error(
-                        if (task.exception?.localizedMessage != null)
-                            UiText.DynamicString(task.exception!!.localizedMessage!!)
-                        else UiText.StringResource(R.string.unknown_error)
+                        exception = task.exception,
+                        message = if (task.exception == null) UiText.StringResource(R.string.unknown_error) else null
                     )
                 )
         }
@@ -143,8 +148,8 @@ class FirebaseRepository(
                     job.complete(
                         if (it.isSuccessful) Resource.Success()
                         else Resource.Error(
-                            if (it.exception?.localizedMessage != null) UiText.DynamicString(it.exception!!.localizedMessage!!)
-                            else UiText.StringResource(R.string.unknown_error)
+                            exception = it.exception,
+                            message = if (it.exception == null) UiText.StringResource(R.string.unknown_error) else null
                         )
                     )
                 }

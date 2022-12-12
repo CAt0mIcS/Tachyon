@@ -3,7 +3,6 @@ package com.tachyonmusic.di
 import android.app.Application
 import com.daton.database.data.repository.shared_action.ConvertEntityToSong
 import com.daton.database.data.repository.shared_action.LoadArtwork
-import com.daton.database.data.repository.shared_action.UpdateArtwork
 import com.daton.database.domain.repository.HistoryRepository
 import com.daton.database.domain.repository.SettingsRepository
 import com.daton.database.domain.repository.SongRepository
@@ -17,6 +16,8 @@ import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
+import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
 import dagger.Provides
@@ -136,8 +137,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGetAudioUpdateIntervalUseCase(userRepository: UserRepository) =
-        GetAudioUpdateInterval(userRepository)
+    fun provideGetAudioUpdateIntervalUseCase(settingsRepository: SettingsRepository) =
+        GetAudioUpdateInterval(settingsRepository)
 
     @Provides
     fun provideHandlePlaybackStateUseCase(browser: MediaBrowserController) =
@@ -166,5 +167,9 @@ object AppModule {
     @Singleton
     fun provideMediaBrowserController(): MediaBrowserController =
         MediaPlaybackServiceMediaBrowserController()
+
+    @Provides
+    @Singleton
+    fun provideLogger(): Logger = Log()
 }
 

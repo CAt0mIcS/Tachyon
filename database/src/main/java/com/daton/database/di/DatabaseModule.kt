@@ -1,6 +1,7 @@
 package com.daton.database.di
 
 import android.app.Application
+import android.content.Context
 import androidx.room.Room
 import com.daton.database.data.data_source.*
 import com.daton.database.data.repository.*
@@ -10,6 +11,7 @@ import com.daton.database.domain.repository.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -107,8 +109,11 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideLoadArtwork(artworkSource: ArtworkSource, updateArtwork: UpdateArtwork) =
-        LoadArtwork(artworkSource, updateArtwork)
+    fun provideLoadArtwork(
+        artworkSource: ArtworkSource,
+        updateArtwork: UpdateArtwork,
+        @ApplicationContext context: Context
+    ) = LoadArtwork(artworkSource, updateArtwork, context)
 
     @Provides
     @Singleton

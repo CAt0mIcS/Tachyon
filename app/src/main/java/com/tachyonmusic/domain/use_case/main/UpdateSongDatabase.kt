@@ -1,16 +1,19 @@
 package com.tachyonmusic.domain.use_case.main
 
 import android.os.Environment
-import android.util.Log
 import com.daton.database.domain.model.SongEntity
 import com.daton.database.domain.repository.SettingsRepository
 import com.daton.database.domain.repository.SongRepository
-import com.tachyonmusic.core.data.playback.LocalSongImpl
-import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.core.data.SongMetadata
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.domain.repository.FileRepository
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
+import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.domain.Logger
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
@@ -20,7 +23,8 @@ import java.io.File
 class UpdateSongDatabase(
     private val songRepo: SongRepository,
     private val settingsRepo: SettingsRepository,
-    private val fileRepository: FileRepository
+    private val fileRepository: FileRepository,
+    private val log: Logger = Log()
 ) {
     suspend operator fun invoke() = withContext(Dispatchers.IO) {
 
@@ -42,21 +46,27 @@ class UpdateSongDatabase(
 
         }
 
-        // TODO: Shouldn't use LocalSongImpl here!
         // TODO: Better async song loading?
         if (paths.isNotEmpty()) {
-            Log.d("UpdateSongDatabase", "Loading ${paths.size} songs...")
-            val songs = mutableListOf<Deferred<Song>>()
+            log.debug("Loading ${paths.size} songs...")
+            val songs = mutableListOf<Deferred<SongMetadata>>()
             for (path in paths) {
                 songs += async(Dispatchers.IO) {
-                    LocalSongImpl.build(path)
+                    SongMetadata(path)
                 }
             }
 
-            Log.d("UpdateSongDatabase", "Loaded ${paths.size} songs")
+            log.debug("Loaded ${paths.size} songs")
 
             songRepo.addAll(
-                songs.awaitAll().map { SongEntity(it.mediaId, it.title, it.artist, it.duration) })
+                songs.awaitAll().map {
+                    SongEntity(
+                        MediaId.ofLocalSong(it.path),
+                        it.title,
+                        it.artist,
+                        it.duration
+                    )
+                })
         }
     }
 }
