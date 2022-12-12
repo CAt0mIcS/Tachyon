@@ -1,14 +1,9 @@
 package com.tachyonmusic.presentation.main
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.paging.PagingData
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.domain.use_case.*
+import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
@@ -16,9 +11,6 @@ import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
 import com.tachyonmusic.domain.use_case.player.SetCurrentPlayback
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration
@@ -35,7 +27,8 @@ class HomeViewModel @Inject constructor(
     private val getCurrentPositionNormalized: GetCurrentPositionNormalized,
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
-    private val updateArtworks: UpdateArtworks
+    private val updateArtworks: UpdateArtworks,
+    private val unloadArtworks: UnloadArtworks
 ) : ViewModel() {
 
     val isPlaying = playerListener.isPlaying
@@ -80,6 +73,7 @@ class HomeViewModel @Inject constructor(
 
     fun refreshArtwork() {
         viewModelScope.launch(Dispatchers.IO) {
+            unloadArtworks()
             updateArtworks(ignoreAppStart = true)
         }
     }

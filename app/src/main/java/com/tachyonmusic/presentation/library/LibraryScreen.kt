@@ -150,9 +150,12 @@ object LibraryScreen :
                     else
                         (playback as Playlist).playbacks.first().artwork.collectAsState()
 
+                    val isArtworkLoading by playback.isArtworkLoading.collectAsState()
+
                     HorizontalPlaybackView(
                         playback,
                         artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+                        isArtworkLoading,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = Theme.padding.extraSmall),

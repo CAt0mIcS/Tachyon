@@ -17,8 +17,8 @@ interface SongDao {
     @Query("SELECT * FROM songEntity WHERE mediaId=:mediaId")
     suspend fun getSongWithMediaId(mediaId: String): SongEntity?
 
-    @Query("SELECT * FROM songEntity WHERE artworkType=:artworkType")
-    suspend fun getSongsWithArtworkType(artworkType: String): List<SongEntity>
+    @Query("SELECT * FROM songEntity WHERE artworkType IN (:artworkTypes)")
+    suspend fun getSongsWithArtworkTypes(artworkTypes: Array<out String>): List<SongEntity>
 
     // TODO: Handle abort
     @Insert(onConflict = OnConflictStrategy.ABORT)

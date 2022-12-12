@@ -321,10 +321,12 @@ object PlayerScreen : NavigationItem("player_screen") {
                 items(playbackState.children) { playback ->
 
                     val artwork by playback.artwork.collectAsState()
+                    val isArtworkLoading by playback.isArtworkLoading.collectAsState()
 
                     HorizontalPlaybackView(
                         playback,
                         artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+                        isArtworkLoading,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(

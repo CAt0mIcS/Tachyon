@@ -2,6 +2,7 @@ package com.tachyonmusic.presentation.core_components
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,6 +23,7 @@ import com.tachyonmusic.presentation.theme.Theme
 fun HorizontalPlaybackView(
     playback: Playback,
     artwork: Artwork,
+    isArtworkLoading: Boolean,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
@@ -32,13 +34,21 @@ fun HorizontalPlaybackView(
             .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
             .clickable { onClick() }
     ) {
-        artwork.Image(
-            contentDescription = "Album Artwork",
-            modifier = Modifier
-                .padding(Theme.padding.extraSmall)
-                .size(50.dp, 50.dp)
-                .clip(Theme.shapes.medium)
-        )
+        if (isArtworkLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .padding(Theme.padding.extraSmall)
+                    .size(50.dp, 50.dp)
+                    .clip(Theme.shapes.medium)
+            )
+        } else
+            artwork.Image(
+                contentDescription = "Album Artwork",
+                modifier = Modifier
+                    .padding(Theme.padding.extraSmall)
+                    .size(50.dp, 50.dp)
+                    .clip(Theme.shapes.medium)
+            )
 
         Column(modifier = Modifier.padding(start = Theme.padding.small)) {
             Text(

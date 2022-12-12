@@ -21,6 +21,9 @@ interface Playback : Parcelable {
 
     val uri: Uri?
 
+    val artwork: MutableStateFlow<Artwork?>
+    val isArtworkLoading: MutableStateFlow<Boolean>
+
     val playbackType: PlaybackType
 
     fun toMediaItem(): MediaItem
@@ -31,14 +34,15 @@ interface Playback : Parcelable {
     override fun equals(other: Any?): Boolean
 
     override fun toString(): String
+
+    val hasArtwork: Boolean
+        get() = artwork.value != null || isArtworkLoading.value
 }
 
 interface SinglePlayback : Playback {
     override val title: String
     override val artist: String
     override val duration: Long
-
-    val artwork: MutableStateFlow<Artwork?>
 
     override var timingData: TimingDataController
 

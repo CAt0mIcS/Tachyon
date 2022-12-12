@@ -30,6 +30,7 @@ abstract class AbstractSong(
     abstract override val playbackType: PlaybackType.Song
 
     override val artwork = MutableStateFlow<Artwork?>(null)
+    override val isArtworkLoading = MutableStateFlow(false)
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
         "mediaId" to mediaId.toString()

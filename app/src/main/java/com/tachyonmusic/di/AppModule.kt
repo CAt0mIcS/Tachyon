@@ -1,6 +1,7 @@
 package com.tachyonmusic.di
 
 import android.app.Application
+import com.daton.database.data.repository.shared_action.ConvertEntityToSong
 import com.daton.database.data.repository.shared_action.LoadArtwork
 import com.daton.database.data.repository.shared_action.UpdateArtwork
 import com.daton.database.domain.repository.HistoryRepository
@@ -68,6 +69,13 @@ object AppModule {
         isFirstAppStart: IsFirstAppStart,
         loadArtwork: LoadArtwork
     ) = UpdateArtworks(songRepository, isFirstAppStart, loadArtwork)
+
+    @Provides
+    @Singleton
+    fun provideUnloadArtworksUseCase(
+        songRepository: SongRepository,
+        convertEntityToSong: ConvertEntityToSong
+    ) = UnloadArtworks(songRepository, convertEntityToSong)
 
     @Provides
     @Singleton

@@ -35,6 +35,7 @@ abstract class AbstractLoop(
 
     override val artwork: MutableStateFlow<Artwork?>
         get() = song.artwork
+    override val isArtworkLoading = song.isArtworkLoading
 
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(

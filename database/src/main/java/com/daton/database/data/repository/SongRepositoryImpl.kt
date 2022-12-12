@@ -64,7 +64,8 @@ class SongRepositoryImpl(
         dao.updateArtwork(song.id ?: return, artworkType, artworkUrl)
     }
 
-    override suspend fun getSongsWithArtworkType(artworkType: String) =
-        dao.getSongsWithArtworkType(artworkType)
+    override suspend fun getSongsWithArtworkTypes(vararg artworkTypes: String) =
+        dao.getSongsWithArtworkTypes(artworkTypes)
+
 
 }

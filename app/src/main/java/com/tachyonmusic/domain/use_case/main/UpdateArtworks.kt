@@ -16,7 +16,7 @@ class UpdateArtworks(
     suspend operator fun invoke(ignoreAppStart: Boolean = false) = withContext(Dispatchers.IO) {
         if (ignoreAppStart || isFirstAppStart()) {
             Log.d("UpdateSongDatabase", "Loading song artworks")
-            songRepo.getSongsWithArtworkType(ArtworkType.NO_ARTWORK).forEach { song ->
+            songRepo.getSongsWithArtworkTypes(ArtworkType.NO_ARTWORK).forEach { song ->
                 loadArtwork(song)
             }
         }

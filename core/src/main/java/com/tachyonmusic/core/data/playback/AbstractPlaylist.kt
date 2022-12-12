@@ -7,10 +7,12 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.constants.MetadataKeys
 import com.tachyonmusic.core.constants.PlaybackType
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class AbstractPlaylist(
     final override val mediaId: MediaId,
@@ -34,6 +36,12 @@ abstract class AbstractPlaylist(
     override val duration: Long?
         get() = current?.duration
 
+    /**
+     * Updated when the next/previous item is played (TODO)
+     */
+    override val artwork = MutableStateFlow(current?.artwork?.value)
+    override val isArtworkLoading = MutableStateFlow(false)
+
     override val uri: Uri?
         get() = current?.uri
 
@@ -42,7 +50,7 @@ abstract class AbstractPlaylist(
 
     abstract override val playbackType: PlaybackType.Playlist
 
-    override val current: SinglePlayback?
+    final override val current: SinglePlayback?
         get() = if (currentPlaylistIndex != -1 && currentPlaylistIndex < playbacks.size) playbacks[currentPlaylistIndex] else null
 
     init {
