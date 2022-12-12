@@ -4,6 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.PagingData
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
@@ -34,7 +35,7 @@ class HomeViewModel @Inject constructor(
     private val getCurrentPositionNormalized: GetCurrentPositionNormalized,
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
-    updateArtworks: UpdateArtworks
+    private val updateArtworks: UpdateArtworks
 ) : ViewModel() {
 
     val isPlaying = playerListener.isPlaying
@@ -75,5 +76,11 @@ class HomeViewModel @Inject constructor(
 
     fun onMiniPlayerClicked(playback: Playback?) {
         setCurrentPlayback(playback, false)
+    }
+
+    fun refreshArtwork() {
+        viewModelScope.launch(Dispatchers.IO) {
+            updateArtworks(ignoreAppStart = true)
+        }
     }
 }

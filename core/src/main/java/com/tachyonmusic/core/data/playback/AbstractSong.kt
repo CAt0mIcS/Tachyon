@@ -14,6 +14,8 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.core.ext.toByteArray
+import com.tachyonmusic.util.launch
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class AbstractSong(
@@ -45,10 +47,12 @@ abstract class AbstractSong(
 
         when (val artworkVal = artwork.value) {
             null -> {}
-            is EmbeddedArtwork -> setArtworkData(
-                artworkVal.bitmap.toByteArray(),
-                MediaMetadata.PICTURE_TYPE_FRONT_COVER
-            )
+            is EmbeddedArtwork -> launch(Dispatchers.IO) {
+                setArtworkData(
+                    artworkVal.bitmap.toByteArray(),
+                    MediaMetadata.PICTURE_TYPE_FRONT_COVER
+                )
+            }
             is RemoteArtwork -> setArtworkUri(Uri.parse(artworkVal.uri.toURL().toString()))
         }
 

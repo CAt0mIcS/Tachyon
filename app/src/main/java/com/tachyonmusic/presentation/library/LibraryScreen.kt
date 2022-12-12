@@ -40,7 +40,7 @@ object LibraryScreen :
         var sortOptionsExpanded by remember { mutableStateOf(false) }
         var sortText by remember { mutableStateOf("Alphabetically") }
 
-        val playbackItems: LazyPagingItems<Playback> = viewModel.items.collectAsLazyPagingItems()
+        val playbackItems = viewModel.items.collectAsLazyPagingItems()
 
         LazyColumn(
             modifier = Modifier

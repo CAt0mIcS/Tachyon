@@ -75,7 +75,7 @@ class MediaPlaybackServiceModule {
         @Named(EXO_PLAYER_NAME) player: CustomPlayer,
         songRepository: SongRepository,
     ) = ServiceUseCases(
-        LoadPlaylistForPlayback(repository, songRepository),
+        LoadPlaylistForPlayback(repository, songRepository, settingsRepository),
         ConfirmAddedMediaItems(repository),
         PreparePlayer(player),
         GetSupportedCommands(),

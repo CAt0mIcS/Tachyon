@@ -13,8 +13,8 @@ class UpdateArtworks(
     private val isFirstAppStart: IsFirstAppStart,
     private val loadArtwork: LoadArtwork
 ) {
-    suspend operator fun invoke() = withContext(Dispatchers.IO) {
-        if (isFirstAppStart()) {
+    suspend operator fun invoke(ignoreAppStart: Boolean = false) = withContext(Dispatchers.IO) {
+        if (ignoreAppStart || isFirstAppStart()) {
             Log.d("UpdateSongDatabase", "Loading song artworks")
             songRepo.getSongsWithArtworkType(ArtworkType.NO_ARTWORK).forEach { song ->
                 loadArtwork(song)

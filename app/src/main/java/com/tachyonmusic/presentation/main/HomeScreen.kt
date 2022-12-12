@@ -165,7 +165,7 @@ object HomeScreen :
                         verticalArrangement = Arrangement.Center
                     ) {
                         TextButton(
-                            onClick = {},
+                            onClick = { viewModel.refreshArtwork() },
                         ) {
                             Text(
                                 "View All",

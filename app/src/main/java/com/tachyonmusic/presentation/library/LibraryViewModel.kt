@@ -20,7 +20,7 @@ class LibraryViewModel @Inject constructor(
     private val itemClicked: ItemClicked
 ) : ViewModel() {
 
-    private var songs = getSongs(5, 0)
+    private var songs = getSongs(5)
     private val loops = getLoops()
     private val playlists = getPlaylists()
 
