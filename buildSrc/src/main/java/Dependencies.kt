@@ -153,6 +153,10 @@ fun DependencyHandler.projectArtworkDownloader() {
     implementation(project(":artworkDownloader"))
 }
 
+fun DependencyHandler.projectLogger() {
+    implementation(project(":logger"))
+}
+
 fun DependencyHandler.projectUtil() {
     implementation(project(":util"))
 }
