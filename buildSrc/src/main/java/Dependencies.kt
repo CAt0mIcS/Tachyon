@@ -217,6 +217,10 @@ fun DependencyHandler.projectArtworkFetcher() {
     implementation(project(":artworkFetcher"))
 }
 
+fun DependencyHandler.projectLogger() {
+    implementation(project(":logger"))
+}
+
 fun DependencyHandler.projectUtil() {
     implementation(project(":util"))
 }
