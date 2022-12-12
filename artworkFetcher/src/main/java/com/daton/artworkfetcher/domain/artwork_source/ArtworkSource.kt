@@ -5,7 +5,9 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
+import org.jsoup.HttpStatusException
 import java.io.FileNotFoundException
+import java.net.SocketException
 import java.net.UnknownHostException
 
 abstract class ArtworkSource {
@@ -31,6 +33,10 @@ abstract class ArtworkSource {
         } catch (e: FileNotFoundException) {
             requestFailed(e, url.data)
         } catch (e: UnknownHostException) {
+            requestFailed(e, url.data)
+        } catch(e: HttpStatusException) {
+            requestFailed(e, url.data)
+        } catch(e: SocketException) {
             requestFailed(e, url.data)
         }
     }

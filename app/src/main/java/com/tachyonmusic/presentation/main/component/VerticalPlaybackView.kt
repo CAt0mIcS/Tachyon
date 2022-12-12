@@ -2,6 +2,7 @@ package com.tachyonmusic.presentation.main.component
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,6 +24,7 @@ import com.tachyonmusic.presentation.theme.Theme
 fun VerticalPlaybackView(
     playback: Playback,
     artwork: Artwork,
+    isArtworkLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -34,14 +36,23 @@ fun VerticalPlaybackView(
             .background(Theme.colors.secondary, shape = Theme.shapes.medium)
             .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
     ) {
-        artwork.Image(
-            contentDescription = "Album Artwork",
-            modifier = Modifier
-                .padding(Theme.padding.extraSmall)
-                .width(100.dp)
-                .height(100.dp)
-                .clip(Theme.shapes.medium)
-        )
+        if (isArtworkLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .padding(Theme.padding.extraSmall)
+                    .width(100.dp)
+                    .height(100.dp)
+                    .clip(Theme.shapes.medium)
+            )
+        } else
+            artwork.Image(
+                contentDescription = "Album Artwork",
+                modifier = Modifier
+                    .padding(Theme.padding.extraSmall)
+                    .width(100.dp)
+                    .height(100.dp)
+                    .clip(Theme.shapes.medium)
+            )
 
         Text(
             modifier = Modifier.padding(start = Theme.padding.small, end = Theme.padding.small),

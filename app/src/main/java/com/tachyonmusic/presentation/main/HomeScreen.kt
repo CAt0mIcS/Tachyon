@@ -303,7 +303,8 @@ private fun LazyListScope.playbacksView(
 
         val playback = playbacks[i]
         if (playback != null) {
-            val artwork by (playback as SinglePlayback).artwork.collectAsState()
+            val artwork by playback.artwork.collectAsState()
+            val isArtworkLoading by playback.isArtworkLoading.collectAsState()
 
             VerticalPlaybackView(
                 modifier = Modifier
@@ -313,6 +314,7 @@ private fun LazyListScope.playbacksView(
                     },
                 playback = playback,
                 artwork = artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+                isArtworkLoading = isArtworkLoading
             )
         }
 
