@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 class HandleArtworkState(
     browser: MediaBrowserController
 ) : MediaStateHandler(browser) {
-    private val _artwork = mutableStateOf<Artwork?>(null)
+    private val _artwork = mutableStateOf(browser.playback?.artwork?.value)
     val artwork: State<Artwork?> = _artwork
 
     override fun onPlaybackTransition(playback: Playback?) {

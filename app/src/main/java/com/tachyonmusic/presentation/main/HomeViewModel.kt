@@ -19,7 +19,7 @@ import kotlin.time.Duration
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val itemClicked: ItemClicked,
-    private val getHistory: GetPagedHistory,
+    getHistory: GetPagedHistory,
     private val playerListener: PlayerListenerHandler,
     private val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val setCurrentPlayback: SetCurrentPlayback,
@@ -74,7 +74,7 @@ class HomeViewModel @Inject constructor(
     fun refreshArtwork() {
         viewModelScope.launch(Dispatchers.IO) {
             unloadArtworks()
-            updateArtworks(ignoreAppStart = true)
+            updateArtworks(ignoreIsFirstAppStart = true)
         }
     }
 }
