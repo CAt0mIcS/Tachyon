@@ -1,9 +1,11 @@
 package com.tachyonmusic.media.service
 
 import android.os.Bundle
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.*
+import com.daton.database.domain.repository.RecentlyPlayed
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -161,5 +163,18 @@ class MediaPlaybackService(
             ioScope.launch {
                 useCases.addNewPlaybackToHistory(mediaItem?.mediaMetadata?.playback)
             }
+    }
+
+    // TODO: Check if the position is saved every time, e.g. when the playback is terminated another way
+    override fun onIsPlayingChanged(isPlaying: Boolean) {
+        if (!isPlaying) {
+            val currentPos = exoPlayer.currentPosition
+            val duration = exoPlayer.duration
+            if (duration != C.TIME_UNSET)
+                ioScope.launch {
+                    useCases.saveRecentlyPlayed(RecentlyPlayed(currentPos, duration))
+                }
+        }
+
     }
 }

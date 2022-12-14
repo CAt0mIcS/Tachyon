@@ -7,6 +7,7 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
+import com.daton.database.domain.repository.DataRepository
 import com.daton.database.domain.repository.HistoryRepository
 import com.daton.database.domain.repository.SettingsRepository
 import com.daton.database.domain.repository.SongRepository
@@ -73,12 +74,14 @@ class MediaPlaybackServiceModule {
         settingsRepository: SettingsRepository,
         @Named(EXO_PLAYER_NAME) player: CustomPlayer,
         songRepository: SongRepository,
+        dataRepository: DataRepository
     ) = ServiceUseCases(
         LoadPlaylistForPlayback(repository, songRepository, settingsRepository),
         ConfirmAddedMediaItems(repository),
         PreparePlayer(player),
         GetSupportedCommands(),
         UpdateTimingDataOfCurrentPlayback(player),
-        AddNewPlaybackToHistory(historyRepository, settingsRepository)
+        AddNewPlaybackToHistory(historyRepository, settingsRepository),
+        SaveRecentlyPlayed(dataRepository)
     )
 }

@@ -54,7 +54,11 @@ object HomeScreen :
         val recentlyPlayed = if (history.itemCount > 0) history[0] else null
 
         val isPlaying by viewModel.isPlaying
-        var currentPosition by remember { mutableStateOf(viewModel.currentPositionNormalized) }
+        var currentPosition by remember {
+            mutableStateOf(
+                viewModel.currentPositionNormalized ?: viewModel.recentlyPlayedPositionNormalized
+            )
+        }
 
         var bottomPaddingRequiredByMiniPlayer by remember { mutableStateOf(0.dp) }
 
@@ -68,6 +72,7 @@ object HomeScreen :
         LaunchedEffect(Unit) {
             while (true) {
                 currentPosition = viewModel.currentPositionNormalized
+                    ?: viewModel.recentlyPlayedPositionNormalized
                 delay(viewModel.getAudioUpdateInterval())
             }
         }

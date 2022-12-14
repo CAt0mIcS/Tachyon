@@ -61,6 +61,12 @@ object DatabaseModule {
 
     @Provides
     @Singleton
+    fun provideDataRepository(
+        database: Database,
+    ): DataRepository = DataRepositoryImpl(database.dataDao)
+
+    @Provides
+    @Singleton
     fun provideArtworkSource(): ArtworkSource = ArtworkSourceImpl()
 
     @Provides

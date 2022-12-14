@@ -3,6 +3,7 @@ package com.tachyonmusic.di
 import android.app.Application
 import com.daton.database.data.repository.shared_action.ConvertEntityToSong
 import com.daton.database.data.repository.shared_action.LoadArtwork
+import com.daton.database.domain.repository.DataRepository
 import com.daton.database.domain.repository.HistoryRepository
 import com.daton.database.domain.repository.SettingsRepository
 import com.daton.database.domain.repository.SongRepository
@@ -133,7 +134,7 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGetCurrentPositionNormalizedUseCase(browser: MediaBrowserController) =
-        GetCurrentPositionNormalized(browser)
+        NormalizePosition(browser)
 
     @Provides
     @Singleton
@@ -162,6 +163,11 @@ object AppModule {
     @Provides
     @Singleton
     fun provideIsFirstAppStartUseCase(app: Application) = IsFirstAppStart(app)
+
+    @Provides
+    @Singleton
+    fun provideGetRecentlyPlayedPositionUseCase(dataRepository: DataRepository) =
+        GetRecentlyPlayed(dataRepository)
 
     @Provides
     @Singleton

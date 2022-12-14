@@ -7,16 +7,16 @@ import com.daton.database.domain.model.SongEntity
 
 @Dao
 interface SongDao {
-    @Query("SELECT * FROM songEntity")
+    @Query("SELECT * FROM SongEntity")
     fun getPagedSongs(): PagingSource<Int, SongEntity>
 
-    @Query("SELECT * FROM songEntity")
+    @Query("SELECT * FROM SongEntity")
     suspend fun getSongs(): List<SongEntity>
 
-    @Query("SELECT * FROM songEntity WHERE mediaId=:mediaId")
+    @Query("SELECT * FROM SongEntity WHERE mediaId=:mediaId")
     suspend fun getSongWithMediaId(mediaId: String): SongEntity?
 
-    @Query("SELECT * FROM songEntity WHERE artworkType IN (:artworkTypes)")
+    @Query("SELECT * FROM SongEntity WHERE artworkType IN (:artworkTypes)")
     suspend fun getSongsWithArtworkTypes(artworkTypes: Array<out String>): List<SongEntity>
 
     // TODO: Handle abort
@@ -30,6 +30,6 @@ interface SongDao {
     @Delete
     suspend fun delete(song: SongEntity)
 
-    @Query("UPDATE songEntity SET artworkType=:artworkType, artworkUrl=:artworkUrl WHERE id=:id")
+    @Query("UPDATE SongEntity SET artworkType=:artworkType, artworkUrl=:artworkUrl WHERE id=:id")
     suspend fun updateArtwork(id: Int, artworkType: String?, artworkUrl: String? = null)
 }

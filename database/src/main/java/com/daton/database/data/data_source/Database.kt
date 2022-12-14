@@ -12,7 +12,8 @@ import com.daton.database.domain.model.*
         LoopEntity::class,
         PlaylistEntity::class,
         PlaybackEntity::class,
-        HistoryEntity::class
+        HistoryEntity::class,
+        DataEntity::class
     ],
     version = 1,
     exportSchema = false
@@ -24,4 +25,5 @@ abstract class Database : RoomDatabase() {
     abstract val loopDao: LoopDao
     abstract val playlistDao: PlaylistDao
     abstract val historyDao: HistoryDao
+    abstract val dataDao: DataDao
 }

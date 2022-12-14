@@ -11,24 +11,24 @@ import com.tachyonmusic.core.domain.MediaId
 @Dao
 interface HistoryDao {
 
-    @Query("SELECT * FROM historyEntity ORDER BY timestamp DESC")
+    @Query("SELECT * FROM HistoryEntity ORDER BY timestamp DESC")
     suspend fun getHistory(): List<HistoryEntity>
 
-    @Query("SELECT * FROM historyEntity ORDER BY timestamp DESC")
+    @Query("SELECT * FROM HistoryEntity ORDER BY timestamp DESC")
     fun getPagedHistory(): PagingSource<Int, HistoryEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addHistory(history: HistoryEntity)
 
-    @Query("DELETE FROM historyEntity WHERE mediaId=:mediaId")
+    @Query("DELETE FROM HistoryEntity WHERE mediaId=:mediaId")
     suspend fun removeHistory(mediaId: MediaId)
 
-    @Query("DELETE FROM historyEntity WHERE mediaId IN (:mediaIds)")
+    @Query("DELETE FROM HistoryEntity WHERE mediaId IN (:mediaIds)")
     suspend fun removeHistory(mediaIds: List<MediaId>)
 
-    @Query("DELETE FROM historyEntity")
+    @Query("DELETE FROM HistoryEntity")
     suspend fun clear()
 
-    @Query("SELECT * FROM historyEntity ORDER BY timestamp DESC LIMIT 1")
+    @Query("SELECT * FROM HistoryEntity ORDER BY timestamp DESC LIMIT 1")
     suspend fun getMostRecent(): HistoryEntity?
 }

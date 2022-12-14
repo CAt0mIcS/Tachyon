@@ -13,5 +13,5 @@ data class SettingsEntity(
     val audioUpdateInterval: Int = 100,
     val maxPlaybacksInHistory: Int = 25,
     val excludedSongFiles: List<String> = emptyList(),
-    @PrimaryKey val id: Int? = null
+    @PrimaryKey val id: Int = 0
 )

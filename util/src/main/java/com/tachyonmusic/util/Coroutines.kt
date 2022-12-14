@@ -4,11 +4,13 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.util.concurrent.Callable
 import kotlin.coroutines.CoroutineContext
 
@@ -44,3 +46,24 @@ fun <T> future(
         }
 
     }, context.asExecutor())
+
+fun runOnUiThread(block: suspend CoroutineScope.() -> Unit) =
+    launch(Dispatchers.Main) {
+        block()
+    }
+
+/**
+ * Dispatches [block] to UI thread while suspending current coroutine until [block] finishes
+ */
+suspend fun <T> CoroutineScope.runOnUiThread(block: suspend CoroutineScope.() -> T) =
+    withContext(Dispatchers.Main) {
+        block()
+    }
+
+/**
+ * Dispatches [block] to UI thread without suspending current coroutine
+ */
+fun CoroutineScope.runOnUiThreadAsync(block: suspend CoroutineScope.() -> Unit) =
+    launch(Dispatchers.Main) {
+        block()
+    }
