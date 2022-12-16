@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.HandleArtworkState
@@ -17,7 +18,11 @@ import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.presentation.player.data.RepeatMode
+import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.lang.Long.max
 import javax.inject.Inject
 import kotlin.math.min
@@ -35,8 +40,7 @@ class PlayerViewModel @Inject constructor(
     private val millisecondsToReadableString: MillisecondsToReadableString,
     private val itemClicked: ItemClicked,
     private val pauseResumePlayback: PauseResumePlayback,
-    private val handleArtworkState: HandleArtworkState,
-    private val application: Application //// TODO: Shouldn't be here
+    private val handleArtworkState: HandleArtworkState
 ) : ViewModel(), MediaBrowserController.EventListener {
 
     val isPlaying = playerListener.isPlaying
@@ -78,6 +82,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     // TODO: Don't hard-code 10000 back/forward seek time, should be a user setting
+    // TODO: Use Player.onSeek(Back/Forward)IncrementChanged...
     fun onSeekBack() {
         seekToPosition(max(currentPosition - 10000, 0L))
     }
@@ -86,12 +91,11 @@ class PlayerViewModel @Inject constructor(
         seekToPosition(min(currentPosition + 10000, playbackState.value.duration))
     }
 
-    fun pause() {
-        pauseResumePlayback(PauseResumePlayback.Action.Pause)
-    }
-
-    fun resume() {
-        pauseResumePlayback(PauseResumePlayback.Action.Resume)
+    fun pauseResume() {
+        if (isPlaying.value)
+            pauseResumePlayback(PauseResumePlayback.Action.Pause)
+        else
+            pauseResumePlayback(PauseResumePlayback.Action.Resume)
     }
 
     fun onRepeatModeChange() {

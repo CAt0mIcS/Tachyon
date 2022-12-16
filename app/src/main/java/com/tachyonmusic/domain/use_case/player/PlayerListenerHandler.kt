@@ -2,6 +2,7 @@ package com.tachyonmusic.domain.use_case.player
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.MediaStateHandler
 import com.tachyonmusic.logger.Log
@@ -22,6 +23,6 @@ class PlayerListenerHandler(
 
     override fun onRegister() {
         // Ensure that state is up to date if there's already a playback playing
-        onIsPlayingChanged(browser.isPlaying)
+        onIsPlayingChanged(browser.playWhenReady)
     }
 }

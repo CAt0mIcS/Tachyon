@@ -245,12 +245,7 @@ object PlayerScreen : NavigationItem("player_screen") {
                     // TODO: IconToggleButton?
                     IconButton(
                         modifier = Modifier.scale(buttonScale),
-                        onClick = {
-                            if (isPlaying)
-                                viewModel.pause()
-                            else
-                                viewModel.resume()
-                        }
+                        onClick = { viewModel.pauseResume() }
                     ) {
                         Icon(
                             painterResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play),

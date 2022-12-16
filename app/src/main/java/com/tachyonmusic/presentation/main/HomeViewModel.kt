@@ -75,6 +75,14 @@ class HomeViewModel @Inject constructor(
         itemClicked(playback)
     }
 
+    /**
+     * TODO: BUG
+     *   Reproduce:
+     *     * Start playback (using MiniPlayer)
+     *     * Pause (using notification/MiniPlayer)
+     *     * Swipe notification
+     *     * Try to press play using the MiniPlayer (doesn't start playback)
+     */
     fun onPlayPauseClicked(playback: Playback?) {
         if (isPlaying.value)
             pauseResumePlayback(PauseResumePlayback.Action.Pause)
