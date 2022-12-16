@@ -13,7 +13,7 @@ import com.tachyonmusic.core.domain.playback.Song
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class SongRepositoryImpl(
+class RoomSongRepository(
     private val dao: SongDao,
     private val convertEntityToSong: ConvertEntityToSong,
 ) : SongRepository {

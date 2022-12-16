@@ -5,7 +5,7 @@ import com.daton.database.domain.model.DataEntity
 import com.daton.database.domain.repository.DataRepository
 import com.daton.database.domain.repository.RecentlyPlayed
 
-class DataRepositoryImpl(
+class RoomDataRepository(
     private val dao: DataDao
 ) : DataRepository {
     override suspend fun getData(): DataEntity = dao.getData() ?: setData(DataEntity())

@@ -4,7 +4,7 @@ import com.daton.database.data.data_source.SettingsDao
 import com.daton.database.domain.model.SettingsEntity
 import com.daton.database.domain.repository.SettingsRepository
 
-class SettingsRepositoryImpl(
+class RoomSettingsRepository(
     private val dao: SettingsDao
 ) : SettingsRepository {
 

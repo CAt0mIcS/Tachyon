@@ -6,7 +6,7 @@ import com.daton.database.domain.model.SongEntity
 import com.daton.database.domain.repository.LoopRepository
 import com.tachyonmusic.core.domain.MediaId
 
-class LoopRepositoryImpl(
+class RoomLoopRepository(
     private val dao: LoopDao
 ) : LoopRepository {
 

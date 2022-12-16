@@ -1,9 +1,9 @@
 package com.tachyonmusic.domain.use_case.main
 
 import android.os.Environment
-import com.daton.database.data.data_source.Database
-import com.daton.database.data.repository.SettingsRepositoryImpl
-import com.daton.database.data.repository.SongRepositoryImpl
+import com.daton.database.data.data_source.room.RoomDatabase
+import com.daton.database.data.repository.RoomSettingsRepository
+import com.daton.database.data.repository.RoomSongRepository
 import com.daton.database.di.DatabaseModule
 import com.tachyonmusic.core.di.CoreModule
 import com.tachyonmusic.domain.repository.FileRepository
@@ -34,7 +34,7 @@ class UpdateSongDatabaseTest {
     val hiltRule = HiltAndroidRule(this)
 
     @Inject
-    lateinit var database: Database
+    lateinit var database: RoomDatabase
 
     @Inject
     lateinit var fileRepository: FileRepository
@@ -60,8 +60,8 @@ class UpdateSongDatabaseTest {
     @Test
     fun allSongsAreAddedToEmptyDatabaseWithNoExclusions(): Unit = runBlocking {
         val updateSongDatabase = UpdateSongDatabase(
-            SongRepositoryImpl(database.songDao),
-            SettingsRepositoryImpl(database.settingsDao),
+            RoomSongRepository(database.songDao),
+            RoomSettingsRepository(database.settingsDao),
             fileRepository
         )
 
@@ -81,8 +81,8 @@ class UpdateSongDatabaseTest {
         val expectedFiles = mutableListOf<File>().apply { addAll(allFiles) }
 
         val updateSongDatabase = UpdateSongDatabase(
-            SongRepositoryImpl(database.songDao),
-            SettingsRepositoryImpl(database.settingsDao).apply {
+            RoomSongRepository(database.songDao),
+            RoomSettingsRepository(database.settingsDao).apply {
                 val toAdd = mutableListOf<String>()
                 for (i in excludedIndices) {
                     toAdd += allFiles[i].absolutePath
@@ -103,7 +103,7 @@ class UpdateSongDatabaseTest {
 
     @Test
     fun newExclusionsAreRemovedFromPopulatedDatabase(): Unit = runBlocking {
-        val settingsRepo = SettingsRepositoryImpl(database.settingsDao)
+        val settingsRepo = RoomSettingsRepository(database.settingsDao)
 
         val expectedFiles = mutableListOf<File>().apply {
             addAll(allFiles)
@@ -112,7 +112,7 @@ class UpdateSongDatabaseTest {
         }
 
         val updateSongDatabase = UpdateSongDatabase(
-            SongRepositoryImpl(database.songDao),
+            RoomSongRepository(database.songDao),
             settingsRepo,
             fileRepository
         )
@@ -127,7 +127,7 @@ class UpdateSongDatabaseTest {
 
     @Test
     fun removingExclusionsAddsThemToDatabase(): Unit = runBlocking {
-        val settingsRepo = SettingsRepositoryImpl(database.settingsDao)
+        val settingsRepo = RoomSettingsRepository(database.settingsDao)
 
         val expectedFiles = mutableListOf<File>().apply {
             addAll(allFiles)
@@ -135,7 +135,7 @@ class UpdateSongDatabaseTest {
         }
 
         val updateSongDatabase = UpdateSongDatabase(
-            SongRepositoryImpl(database.songDao),
+            RoomSongRepository(database.songDao),
             settingsRepo.apply {
                 val toAdd = mutableListOf<String>()
                 for (i in excludedIndices) {

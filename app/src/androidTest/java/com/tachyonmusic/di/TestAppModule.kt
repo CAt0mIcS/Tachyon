@@ -2,7 +2,7 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import androidx.room.Room
-import com.daton.database.data.data_source.Database
+import com.daton.database.data.data_source.room.RoomDatabase
 import com.daton.database.domain.repository.SongRepository
 import com.google.gson.Gson
 import com.tachyonmusic.core.data.playback.*
@@ -32,8 +32,8 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun provideDatabase(app: Application): Database =
-        Room.inMemoryDatabaseBuilder(app, Database::class.java).build()
+    fun provideDatabase(app: Application): RoomDatabase =
+        Room.inMemoryDatabaseBuilder(app, RoomDatabase::class.java).build()
 
     @Provides
     @Singleton

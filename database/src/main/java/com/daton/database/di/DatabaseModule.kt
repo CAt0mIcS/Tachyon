@@ -4,9 +4,11 @@ import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.daton.database.data.data_source.*
+import com.daton.database.data.data_source.room.RoomDatabase
 import com.daton.database.data.repository.*
 import com.daton.database.data.repository.shared_action.*
 import com.daton.database.domain.ArtworkSource
+import com.daton.database.data.data_source.Database
 import com.daton.database.domain.repository.*
 import dagger.Module
 import dagger.Provides
@@ -22,15 +24,15 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(app: Application): Database = Room.databaseBuilder(
         app,
-        Database::class.java,
-        Database::class.java.name
+        RoomDatabase::class.java,
+        RoomDatabase::class.java.name
     ).build()
 
 
     @Provides
     @Singleton
     fun provideSettingsRepository(database: Database): SettingsRepository =
-        SettingsRepositoryImpl(database.settingsDao)
+        RoomSettingsRepository(database.settingsDao)
 
     @Provides
     @Singleton
@@ -38,17 +40,17 @@ object DatabaseModule {
         database: Database,
         convertEntityToSong: ConvertEntityToSong
     ): SongRepository =
-        SongRepositoryImpl(database.songDao, convertEntityToSong)
+        RoomSongRepository(database.songDao, convertEntityToSong)
 
     @Provides
     @Singleton
     fun provideLoopRepository(database: Database): LoopRepository =
-        LoopRepositoryImpl(database.loopDao)
+        RoomLoopRepository(database.loopDao)
 
     @Provides
     @Singleton
     fun providePlaylistRepository(database: Database): PlaylistRepository =
-        PlaylistRepositoryImpl(database.playlistDao)
+        RoomPlaylistRepository(database.playlistDao)
 
     @Provides
     @Singleton
@@ -57,13 +59,13 @@ object DatabaseModule {
         convertEntityToPlayback: ConvertEntityToPlayback,
         findPlaybackByMediaId: FindPlaybackByMediaId
     ): HistoryRepository =
-        HistoryRepositoryImpl(database.historyDao, convertEntityToPlayback, findPlaybackByMediaId)
+        RoomHistoryRepository(database.historyDao, convertEntityToPlayback, findPlaybackByMediaId)
 
     @Provides
     @Singleton
     fun provideDataRepository(
         database: Database,
-    ): DataRepository = DataRepositoryImpl(database.dataDao)
+    ): DataRepository = RoomDataRepository(database.dataDao)
 
     @Provides
     @Singleton

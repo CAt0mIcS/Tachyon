@@ -14,7 +14,7 @@ import com.tachyonmusic.core.domain.playback.Playback
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class HistoryRepositoryImpl(
+class RoomHistoryRepository(
     private val dao: HistoryDao,
     private val convertEntityToPlayback: ConvertEntityToPlayback,
     private val findPlaybackByMediaId: FindPlaybackByMediaId

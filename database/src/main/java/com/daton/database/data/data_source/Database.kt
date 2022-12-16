@@ -1,29 +1,17 @@
 package com.daton.database.data.data_source
 
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import com.daton.database.domain.Converters
-import com.daton.database.domain.model.*
+import com.daton.database.data.data_source.DataDao
+import com.daton.database.data.data_source.HistoryDao
+import com.daton.database.data.data_source.LoopDao
+import com.daton.database.data.data_source.PlaylistDao
+import com.daton.database.data.data_source.SettingsDao
+import com.daton.database.data.data_source.SongDao
 
-@androidx.room.Database(
-    entities = [
-        SettingsEntity::class,
-        SongEntity::class,
-        LoopEntity::class,
-        PlaylistEntity::class,
-        PlaybackEntity::class,
-        HistoryEntity::class,
-        DataEntity::class
-    ],
-    version = 1,
-    exportSchema = false
-)
-@TypeConverters(Converters::class)
-abstract class Database : RoomDatabase() {
-    abstract val settingsDao: SettingsDao
-    abstract val songDao: SongDao
-    abstract val loopDao: LoopDao
-    abstract val playlistDao: PlaylistDao
-    abstract val historyDao: HistoryDao
-    abstract val dataDao: DataDao
+interface Database {
+    val settingsDao: SettingsDao
+    val songDao: SongDao
+    val loopDao: LoopDao
+    val playlistDao: PlaylistDao
+    val historyDao: HistoryDao
+    val dataDao: DataDao
 }
