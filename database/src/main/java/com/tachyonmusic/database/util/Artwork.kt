@@ -79,7 +79,11 @@ suspend fun updateArtwork(
                 artworkType,
                 artworkUrl
             )
-            loopRepository.updateArtwork(playback, artworkType, artworkUrl)
+            loopRepository.updateArtworkBySong(
+                playback.mediaId.underlyingMediaId ?: return false,
+                artworkType,
+                artworkUrl
+            )
         }
 
         else -> return false

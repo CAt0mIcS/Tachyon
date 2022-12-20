@@ -115,7 +115,6 @@ internal class UpdateArtworkTest {
             ArtworkType.EMBEDDED
         )) {
             assert(updateArtwork(songRepo, loopRepo, entityToEdit, artworkType, url))
-            // TODO: Fails!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             val databaseSong = songRepo.findByMediaId(songMediaId)!!
             assert(databaseSong.artworkType == artworkType)
