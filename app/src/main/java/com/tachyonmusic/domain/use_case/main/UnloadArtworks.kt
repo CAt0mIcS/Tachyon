@@ -1,8 +1,8 @@
 package com.tachyonmusic.domain.use_case.main
 
-import com.daton.database.domain.ArtworkType
-import com.daton.database.domain.repository.SongRepository
-import com.daton.database.util.toSong
+import com.tachyonmusic.database.domain.ArtworkType
+import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.util.toSong
 
 class UnloadArtworks(
     private val repository: SongRepository

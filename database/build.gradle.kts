@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.daton.database"
+    namespace = "com.tachyonmusic.database"
     compileSdk = Version.COMPILE_SDK
 
     defaultConfig {

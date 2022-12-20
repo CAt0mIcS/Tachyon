@@ -2,13 +2,13 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import androidx.room.Room
-import com.daton.database.data.data_source.Database
-import com.daton.database.data.data_source.room.RoomDatabase
-import com.daton.database.data.repository.RoomHistoryRepository
-import com.daton.database.data.repository.shared_action.ConvertEntityToPlayback
-import com.daton.database.domain.use_case.FindPlaybackByMediaId
-import com.daton.database.domain.repository.HistoryRepository
-import com.daton.database.domain.repository.SongRepository
+import com.tachyonmusic.database.data.data_source.Database
+import com.tachyonmusic.database.data.data_source.room.RoomDatabase
+import com.tachyonmusic.database.data.repository.RoomHistoryRepository
+import com.tachyonmusic.database.data.repository.shared_action.ConvertEntityToPlayback
+import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
+import com.tachyonmusic.database.domain.repository.HistoryRepository
+import com.tachyonmusic.database.domain.repository.SongRepository
 import com.google.gson.Gson
 import com.tachyonmusic.core.data.playback.*
 import com.tachyonmusic.core.domain.MediaId

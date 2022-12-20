@@ -1,7 +1,7 @@
 package com.tachyonmusic.domain.use_case.main
 
-import com.daton.database.domain.repository.DataRepository
-import com.daton.database.domain.repository.RecentlyPlayed
+import com.tachyonmusic.database.domain.repository.DataRepository
+import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 
 class GetRecentlyPlayed(
     private val dataRepository: DataRepository

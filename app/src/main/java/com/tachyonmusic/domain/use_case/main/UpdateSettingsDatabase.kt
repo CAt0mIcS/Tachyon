@@ -1,6 +1,6 @@
 package com.tachyonmusic.domain.use_case.main
 
-import com.daton.database.domain.repository.SettingsRepository
+import com.tachyonmusic.database.domain.repository.SettingsRepository
 import java.io.File
 
 /**

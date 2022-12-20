@@ -1,6 +1,6 @@
 package com.tachyonmusic.domain.use_case
 
-import com.daton.database.domain.repository.SongRepository
+import com.tachyonmusic.database.domain.repository.SongRepository
 
 class GetSongs(
     private val repository: SongRepository

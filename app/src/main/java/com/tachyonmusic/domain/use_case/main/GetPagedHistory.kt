@@ -1,6 +1,6 @@
 package com.tachyonmusic.domain.use_case.main
 
-import com.daton.database.domain.repository.HistoryRepository
+import com.tachyonmusic.database.domain.repository.HistoryRepository
 
 class GetPagedHistory(
     private val historyRepository: HistoryRepository

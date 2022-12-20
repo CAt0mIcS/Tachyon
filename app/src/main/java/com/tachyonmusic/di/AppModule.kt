@@ -1,11 +1,11 @@
 package com.tachyonmusic.di
 
 import android.app.Application
-import com.daton.database.domain.repository.DataRepository
-import com.daton.database.domain.repository.HistoryRepository
-import com.daton.database.domain.repository.SettingsRepository
-import com.daton.database.domain.repository.SongRepository
-import com.daton.database.domain.use_case.LoadArtwork
+import com.tachyonmusic.database.domain.repository.DataRepository
+import com.tachyonmusic.database.domain.repository.HistoryRepository
+import com.tachyonmusic.database.domain.repository.SettingsRepository
+import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.domain.use_case.LoadArtwork
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.domain.repository.FileRepository

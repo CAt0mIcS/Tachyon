@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.daton.artworkfetcher"
+    namespace = "com.tachyonmusic.artworkfetcher"
     compileSdk = Version.COMPILE_SDK
 
     defaultConfig {

@@ -1,6 +1,6 @@
 package com.tachyonmusic.domain.use_case.search
 
-import com.daton.database.domain.repository.SongRepository
+import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.app.R
 import com.tachyonmusic.user.domain.UserRepository
 import com.tachyonmusic.util.Resource
