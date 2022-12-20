@@ -3,6 +3,7 @@ package com.daton.database.data.data_source
 import androidx.paging.PagingSource
 import androidx.room.*
 import com.daton.database.domain.model.SongEntity
+import com.tachyonmusic.core.domain.MediaId
 
 
 @Dao
@@ -14,7 +15,7 @@ interface SongDao {
     suspend fun getSongs(): List<SongEntity>
 
     @Query("SELECT * FROM SongEntity WHERE mediaId=:mediaId")
-    suspend fun getSongWithMediaId(mediaId: String): SongEntity?
+    suspend fun getSongWithMediaId(mediaId: MediaId): SongEntity?
 
     @Query("SELECT * FROM SongEntity WHERE artworkType IN (:artworkTypes)")
     suspend fun getSongsWithArtworkTypes(artworkTypes: Array<out String>): List<SongEntity>
@@ -25,7 +26,6 @@ interface SongDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun addAll(songs: List<SongEntity>)
-
 
     @Delete
     suspend fun delete(song: SongEntity)

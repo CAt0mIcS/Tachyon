@@ -41,7 +41,7 @@ class RoomSongRepository(
     }
 
     override suspend fun findByMediaId(mediaId: MediaId): SongEntity? =
-        dao.getSongWithMediaId(mediaId.toString())
+        dao.getSongWithMediaId(mediaId)
 
     override suspend fun getSongEntities(): List<SongEntity> = dao.getSongs()
 

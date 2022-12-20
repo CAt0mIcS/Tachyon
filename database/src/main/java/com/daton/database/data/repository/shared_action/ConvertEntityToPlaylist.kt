@@ -12,7 +12,7 @@ class ConvertEntityToPlaylist(
     private val convertEntityToSong: ConvertEntityToSong,
     private val convertEntityToLoop: ConvertEntityToLoop
 ) {
-    suspend operator fun invoke(playlist: PlaylistEntity): Playlist =
+    suspend operator fun invoke(playlist: PlaylistEntity): Playlist? =
         RemotePlaylistImpl.build(
             playlist.mediaId,
             playlist.items.map {
@@ -24,7 +24,7 @@ class ConvertEntityToPlaylist(
                 if (loop != null)
                     convertEntityToLoop(loop)
                 else
-                    TODO("Unable to find item for media id $it")
+                    return null
             }.toMutableList(),
             playlist.currentItemIndex
         )

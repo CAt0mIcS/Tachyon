@@ -44,13 +44,19 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideLoopRepository(database: Database): LoopRepository =
-        RoomLoopRepository(database.loopDao)
+    fun provideLoopRepository(
+        database: Database,
+        convertEntityToLoop: ConvertEntityToLoop
+    ): LoopRepository =
+        RoomLoopRepository(database.loopDao, convertEntityToLoop)
 
     @Provides
     @Singleton
-    fun providePlaylistRepository(database: Database): PlaylistRepository =
-        RoomPlaylistRepository(database.playlistDao)
+    fun providePlaylistRepository(
+        database: Database,
+        convertEntityToPlaylist: ConvertEntityToPlaylist
+    ): PlaylistRepository =
+        RoomPlaylistRepository(database.playlistDao, convertEntityToPlaylist)
 
     @Provides
     @Singleton

@@ -20,13 +20,7 @@ class RoomLoopRepository(
     private val convertEntityToLoop: ConvertEntityToLoop
 ) : LoopRepository {
     override suspend fun getLoops(): List<Loop> = dao.getLoops().map {
-        RemoteLoopImpl.build(
-            it.mediaId,
-            TimingDataController(it.timingData, it.currentTimingDataIndex),
-            it.songTitle,
-            it.songArtist,
-            it.songDuration
-        ) ?: TODO("Invalid remote loop media id ${it.mediaId}")
+        convertEntityToLoop(it)
     }
 
     override fun getPagedLoops(
