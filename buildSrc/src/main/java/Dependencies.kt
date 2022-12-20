@@ -230,7 +230,7 @@ fun DependencyHandler.projectDatabase() {
 }
 
 
-fun DependencyHandler.localTest(
+fun DependencyHandler.unitTest(
     configName: String = "testImplementation",
     addTestUtilsProject: Boolean = true
 ) {

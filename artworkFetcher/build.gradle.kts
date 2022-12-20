@@ -45,5 +45,5 @@ dependencies {
     projectUtil()
     projectLogger()
 
-    localTest()
+    unitTest()
 }

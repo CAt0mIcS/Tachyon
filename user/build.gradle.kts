@@ -56,6 +56,6 @@ dependencies {
     projectUtil()
 
 
-    localTest()
+    unitTest()
     androidTest()
 }

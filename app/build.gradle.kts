@@ -102,7 +102,7 @@ dependencies {
     projectUtil()
     projectLogger()
 
-    localTest()
+    unitTest()
     androidTest()
 
     androidTestImplementation(Dependency.Room.RUNTIME)

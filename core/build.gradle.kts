@@ -60,6 +60,6 @@ dependencies {
     implementation(Dependency.Media3.MEDIA_SESSION)
     implementation(Dependency.Compose.UI)
 
-    localTest()
+    unitTest()
     androidTest()
 }

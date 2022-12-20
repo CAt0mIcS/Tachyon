@@ -13,4 +13,8 @@ class FirebaseCrashlyticsLogger : Logger {
             }
         Firebase.crashlytics.recordException(e ?: Exception("Unknown Exception"))
     }
+
+    override fun error(message: String) {
+        exception(null, message)
+    }
 }

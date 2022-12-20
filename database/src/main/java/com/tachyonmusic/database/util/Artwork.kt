@@ -10,9 +10,11 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.Artwork
+import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.domain.Logger
 import java.net.URI
 
-fun getArtworkForPlayback(playback: PlaybackEntity?): Artwork? =
+fun getArtworkForPlayback(playback: PlaybackEntity?, log: Logger = Log()): Artwork? =
     when (playback) {
         is SinglePlaybackEntity -> {
             when (playback.artworkType) {
@@ -40,7 +42,10 @@ fun getArtworkForPlayback(playback: PlaybackEntity?): Artwork? =
                         RemoteArtwork(URI(playback.artworkUrl!!))
                 }
 
-                else -> TODO("Invalid artwork type ${playback.artworkType}")
+                else -> {
+                    log.error("Invalid artwork type ${playback.artworkType}")
+                    null
+                }
             }
         }
 

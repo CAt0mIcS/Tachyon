@@ -27,4 +27,8 @@ class ConsoleLogger : Logger {
             "Exception occurred: ${e?.message.toString()}\n\tMessage: $message\n${e?.stackTraceToString() ?: "No Exception"}"
         )
     }
+
+    override fun error(message: String) {
+        Log.e(CallerClassName(), message)
+    }
 }
