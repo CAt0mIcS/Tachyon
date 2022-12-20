@@ -2,10 +2,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 
-    id("com.google.gms.google-services")
-    id("com.google.firebase.firebase-perf")
-    id("com.google.firebase.crashlytics")
-
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("dagger.hilt.android.plugin")
@@ -80,7 +76,6 @@ android {
 }
 
 dependencies {
-    firebase()
     googleCast()
     gson()
     coroutines()
@@ -98,7 +93,6 @@ dependencies {
     projectCore()
     projectMedia()
     projectDatabase()
-    projectUser()
     projectUtil()
     projectLogger()
 

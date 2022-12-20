@@ -1,17 +1,14 @@
 package com.tachyonmusic.domain.use_case.main
 
 import android.os.Environment
+import com.tachyonmusic.core.di.CoreModule
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.database.data.repository.RoomSettingsRepository
 import com.tachyonmusic.database.data.repository.RoomSongRepository
-import com.tachyonmusic.database.data.repository.shared_action.ConvertEntityToSong
-import com.tachyonmusic.database.data.repository.shared_action.GetArtworkForPlayback
 import com.tachyonmusic.database.di.DatabaseModule
-import com.tachyonmusic.core.di.CoreModule
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.media.di.MediaPlaybackServiceModule
 import com.tachyonmusic.testutils.tryInject
-import com.tachyonmusic.user.di.UserModule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
@@ -26,7 +23,6 @@ import javax.inject.Inject
 @HiltAndroidTest
 @UninstallModules(
     DatabaseModule::class,
-    UserModule::class,
     MediaPlaybackServiceModule::class,
     CoreModule::class
 )
@@ -62,7 +58,7 @@ class UpdateSongDatabaseTest {
     @Test
     fun allSongsAreAddedToEmptyDatabaseWithNoExclusions(): Unit = runBlocking {
         val updateSongDatabase = UpdateSongDatabase(
-            RoomSongRepository(database.songDao, ConvertEntityToSong(GetArtworkForPlayback())),
+            RoomSongRepository(database.songDao),
             RoomSettingsRepository(database.settingsDao),
             fileRepository
         )
@@ -83,7 +79,7 @@ class UpdateSongDatabaseTest {
         val expectedFiles = mutableListOf<File>().apply { addAll(allFiles) }
 
         val updateSongDatabase = UpdateSongDatabase(
-            RoomSongRepository(database.songDao, ConvertEntityToSong(GetArtworkForPlayback())),
+            RoomSongRepository(database.songDao),
             RoomSettingsRepository(database.settingsDao).apply {
                 val toAdd = mutableListOf<String>()
                 for (i in excludedIndices) {
@@ -114,7 +110,7 @@ class UpdateSongDatabaseTest {
         }
 
         val updateSongDatabase = UpdateSongDatabase(
-            RoomSongRepository(database.songDao, ConvertEntityToSong(GetArtworkForPlayback())),
+            RoomSongRepository(database.songDao),
             settingsRepo,
             fileRepository
         )
@@ -137,7 +133,7 @@ class UpdateSongDatabaseTest {
         }
 
         val updateSongDatabase = UpdateSongDatabase(
-            RoomSongRepository(database.songDao, ConvertEntityToSong(GetArtworkForPlayback())),
+            RoomSongRepository(database.songDao),
             settingsRepo.apply {
                 val toAdd = mutableListOf<String>()
                 for (i in excludedIndices) {
@@ -150,7 +146,8 @@ class UpdateSongDatabaseTest {
         )
         updateSongDatabase()
 
-        settingsRepo.removeExcludedFilesRange(excludedIndices.subList(1, excludedIndices.size).map { allFiles[it].absolutePath })
+        settingsRepo.removeExcludedFilesRange(
+            excludedIndices.subList(1, excludedIndices.size).map { allFiles[it].absolutePath })
         updateSongDatabase()
 
         assert(database.songDao.getSongs().size == expectedFiles.size)

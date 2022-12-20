@@ -63,7 +63,7 @@ suspend fun updateArtwork(
     playback: PlaybackEntity?,
     artworkType: String,
     artworkUrl: String? = null
-) {
+): Boolean {
 
     when (playback) {
         is SongEntity -> {
@@ -74,15 +74,15 @@ suspend fun updateArtwork(
         is LoopEntity -> {
             songRepository.updateArtwork(
                 songRepository.findByMediaId(
-                    playback.mediaId.underlyingMediaId ?: return
-                ) ?: return,
+                    playback.mediaId.underlyingMediaId ?: return false
+                ) ?: return false,
                 artworkType,
                 artworkUrl
             )
             loopRepository.updateArtwork(playback, artworkType, artworkUrl)
         }
 
-        else -> {}
+        else -> return false
     }
-
+    return true
 }

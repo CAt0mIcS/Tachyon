@@ -17,10 +17,6 @@ class ConsoleLogger : Logger {
         Log.w(CallerClassName(), message)
     }
 
-    override fun event(event: String, message: String) {
-        info("Event logged \"$event\": $message")
-    }
-
     override fun exception(e: Throwable?, message: String?) {
         Log.e(
             CallerClassName(),

@@ -209,10 +209,6 @@ fun DependencyHandler.projectCore() {
     implementation(project(":core"))
 }
 
-fun DependencyHandler.projectUser() {
-    implementation(project(":user"))
-}
-
 fun DependencyHandler.projectArtworkFetcher() {
     implementation(project(":artworkFetcher"))
 }

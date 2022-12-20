@@ -30,7 +30,8 @@ internal class UpdateArtworkTest {
     lateinit var loopRepo: LoopRepository
 
     val songMediaId = MediaId("test-song")
-    val loopMediaId = MediaId("test-loop", songMediaId)
+    val loopMediaId1 = MediaId("test-loop1", songMediaId)
+    val loopMediaId2 = MediaId("test-loop2", songMediaId)
 
     @Before
     fun setUp() {
@@ -50,15 +51,26 @@ internal class UpdateArtworkTest {
                 )
             )
 
-            loopRepo.add(
-                LoopEntity(
-                    loopMediaId,
-                    "",
-                    "",
-                    0,
-                    listOf(),
-                    artworkType = ArtworkType.NO_ARTWORK,
-                    artworkUrl = null
+            loopRepo.addAll(
+                listOf(
+                    LoopEntity(
+                        loopMediaId1,
+                        "",
+                        "",
+                        0,
+                        listOf(),
+                        artworkType = ArtworkType.NO_ARTWORK,
+                        artworkUrl = null
+                    ),
+                    LoopEntity(
+                        loopMediaId2,
+                        "",
+                        "",
+                        0,
+                        listOf(),
+                        artworkType = ArtworkType.NO_ARTWORK,
+                        artworkUrl = null
+                    )
                 )
             )
         }
@@ -75,17 +87,48 @@ internal class UpdateArtworkTest {
             ArtworkType.REMOTE,
             ArtworkType.EMBEDDED
         )) {
-            updateArtwork(songRepo, loopRepo, entityToEdit, artworkType, url)
+            assert(updateArtwork(songRepo, loopRepo, entityToEdit, artworkType, url))
 
             val databaseSong = songRepo.findByMediaId(songMediaId)!!
             assert(databaseSong.artworkType == artworkType)
             assert(databaseSong.artworkUrl == url)
 
-            val databaseLoop = loopRepo.findByMediaId(loopMediaId)!!
+            var databaseLoop = loopRepo.findByMediaId(loopMediaId1)!!
+            assert(databaseLoop.artworkType == artworkType)
+            assert(databaseLoop.artworkUrl == url)
+
+            databaseLoop = loopRepo.findByMediaId(loopMediaId2)!!
             assert(databaseLoop.artworkType == artworkType)
             assert(databaseLoop.artworkUrl == url)
         }
+    }
 
+
+    @Test
+    fun updatingLoopEntityUpdatesAllOccurrencesOfArtwork(): Unit = runBlocking {
+        val url = "ExampleUrl.com/example-search"
+
+        val entityToEdit = loopRepo.findByMediaId(loopMediaId2)!!
+        for (artworkType in listOf(
+            ArtworkType.NO_ARTWORK,
+            ArtworkType.REMOTE,
+            ArtworkType.EMBEDDED
+        )) {
+            assert(updateArtwork(songRepo, loopRepo, entityToEdit, artworkType, url))
+            // TODO: Fails!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            val databaseSong = songRepo.findByMediaId(songMediaId)!!
+            assert(databaseSong.artworkType == artworkType)
+            assert(databaseSong.artworkUrl == url)
+
+            var databaseLoop = loopRepo.findByMediaId(loopMediaId1)!!
+            assert(databaseLoop.artworkType == artworkType)
+            assert(databaseLoop.artworkUrl == url)
+
+            databaseLoop = loopRepo.findByMediaId(loopMediaId2)!!
+            assert(databaseLoop.artworkType == artworkType)
+            assert(databaseLoop.artworkUrl == url)
+        }
     }
 
 }

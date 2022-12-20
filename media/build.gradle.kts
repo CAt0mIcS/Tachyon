@@ -48,7 +48,6 @@ dependencies {
 
     projectCore()
     projectDatabase()
-    projectUser()
     projectUtil()
     projectLogger()
 

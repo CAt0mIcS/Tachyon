@@ -2,14 +2,6 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import androidx.room.Room
-import com.tachyonmusic.database.data.data_source.Database
-import com.tachyonmusic.database.data.data_source.room.RoomDatabase
-import com.tachyonmusic.database.data.repository.RoomHistoryRepository
-import com.tachyonmusic.database.data.repository.shared_action.ConvertEntityToPlayback
-import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
-import com.tachyonmusic.database.domain.repository.HistoryRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
-import com.google.gson.Gson
 import com.tachyonmusic.core.data.playback.*
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
@@ -17,9 +9,13 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.user.data.LocalCache
-import com.tachyonmusic.user.data.repository.FirebaseRepository
-import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.database.data.data_source.Database
+import com.tachyonmusic.database.data.data_source.room.RoomDatabase
+import com.tachyonmusic.database.data.repository.RoomHistoryRepository
+import com.tachyonmusic.database.domain.repository.HistoryRepository
+import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,26 +28,18 @@ import javax.inject.Singleton
 object TestAppModule {
     @Provides
     @Singleton
-    fun provideUserRepository(localCache: LocalCache, gson: Gson): UserRepository =
-        FirebaseRepository(localCache, gson)
-
-    @Provides
-    @Singleton
     fun provideHistoryRepository(
         db: Database,
-        convertEntityToPlayback: ConvertEntityToPlayback,
-        findPlaybackByMediaId: FindPlaybackByMediaId
+        findPlaybackByMediaId: FindPlaybackByMediaId,
+        songRepository: SongRepository,
+        loopRepository: LoopRepository
     ): HistoryRepository =
-        RoomHistoryRepository(db.historyDao, convertEntityToPlayback, findPlaybackByMediaId)
+        RoomHistoryRepository(db.historyDao, findPlaybackByMediaId, songRepository, loopRepository)
 
     @Provides
     @Singleton
     fun provideDatabase(app: Application): Database =
         Room.inMemoryDatabaseBuilder(app, RoomDatabase::class.java).build()
-
-    @Provides
-    @Singleton
-    fun provideLocalCache(app: Application, gson: Gson) = LocalCache(app, gson)
 
     @Provides
     @Singleton

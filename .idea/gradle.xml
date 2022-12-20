@@ -19,7 +19,6 @@
             <option value="$PROJECT_DIR$/logger" />
             <option value="$PROJECT_DIR$/media" />
             <option value="$PROJECT_DIR$/testutils" />
-            <option value="$PROJECT_DIR$/user" />
             <option value="$PROJECT_DIR$/util" />
           </set>
         </option>
