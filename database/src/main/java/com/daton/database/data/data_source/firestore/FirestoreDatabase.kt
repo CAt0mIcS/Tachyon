@@ -23,4 +23,8 @@ class FirestoreDatabase : Database {
         get() = TODO("Not yet implemented")
     override val dataDao: DataDao
         get() = TODO("Not yet implemented")
+
+    override fun clearAllTables() {
+        TODO("Not yet implemented")
+    }
 }

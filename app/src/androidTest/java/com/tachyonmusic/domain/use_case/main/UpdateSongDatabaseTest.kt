@@ -1,9 +1,12 @@
 package com.tachyonmusic.domain.use_case.main
 
 import android.os.Environment
+import com.daton.database.data.data_source.Database
 import com.daton.database.data.data_source.room.RoomDatabase
 import com.daton.database.data.repository.RoomSettingsRepository
 import com.daton.database.data.repository.RoomSongRepository
+import com.daton.database.data.repository.shared_action.ConvertEntityToSong
+import com.daton.database.data.repository.shared_action.GetArtworkForPlayback
 import com.daton.database.di.DatabaseModule
 import com.tachyonmusic.core.di.CoreModule
 import com.tachyonmusic.domain.repository.FileRepository
@@ -34,7 +37,7 @@ class UpdateSongDatabaseTest {
     val hiltRule = HiltAndroidRule(this)
 
     @Inject
-    lateinit var database: RoomDatabase
+    lateinit var database: Database
 
     @Inject
     lateinit var fileRepository: FileRepository
@@ -60,7 +63,7 @@ class UpdateSongDatabaseTest {
     @Test
     fun allSongsAreAddedToEmptyDatabaseWithNoExclusions(): Unit = runBlocking {
         val updateSongDatabase = UpdateSongDatabase(
-            RoomSongRepository(database.songDao),
+            RoomSongRepository(database.songDao, ConvertEntityToSong(GetArtworkForPlayback())),
             RoomSettingsRepository(database.settingsDao),
             fileRepository
         )
@@ -81,7 +84,7 @@ class UpdateSongDatabaseTest {
         val expectedFiles = mutableListOf<File>().apply { addAll(allFiles) }
 
         val updateSongDatabase = UpdateSongDatabase(
-            RoomSongRepository(database.songDao),
+            RoomSongRepository(database.songDao, ConvertEntityToSong(GetArtworkForPlayback())),
             RoomSettingsRepository(database.settingsDao).apply {
                 val toAdd = mutableListOf<String>()
                 for (i in excludedIndices) {
@@ -112,7 +115,7 @@ class UpdateSongDatabaseTest {
         }
 
         val updateSongDatabase = UpdateSongDatabase(
-            RoomSongRepository(database.songDao),
+            RoomSongRepository(database.songDao, ConvertEntityToSong(GetArtworkForPlayback())),
             settingsRepo,
             fileRepository
         )
@@ -135,7 +138,7 @@ class UpdateSongDatabaseTest {
         }
 
         val updateSongDatabase = UpdateSongDatabase(
-            RoomSongRepository(database.songDao),
+            RoomSongRepository(database.songDao, ConvertEntityToSong(GetArtworkForPlayback())),
             settingsRepo.apply {
                 val toAdd = mutableListOf<String>()
                 for (i in excludedIndices) {

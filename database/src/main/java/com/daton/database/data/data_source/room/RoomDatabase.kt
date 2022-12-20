@@ -32,4 +32,8 @@ abstract class RoomDatabase : androidx.room.RoomDatabase(), Database {
     abstract override val playlistDao: PlaylistDao
     abstract override val historyDao: HistoryDao
     abstract override val dataDao: DataDao
+
+    override fun clearAllTables() {
+        TODO()
+    }
 }
