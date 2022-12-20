@@ -5,22 +5,19 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.daton.database.data.data_source.LoopDao
-import com.daton.database.data.repository.shared_action.ConvertEntityToLoop
 import com.daton.database.domain.model.LoopEntity
 import com.daton.database.domain.repository.LoopRepository
-import com.tachyonmusic.core.data.playback.RemoteLoopImpl
+import com.daton.database.util.toLoop
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class RoomLoopRepository(
-    private val dao: LoopDao,
-    private val convertEntityToLoop: ConvertEntityToLoop
+    private val dao: LoopDao
 ) : LoopRepository {
     override suspend fun getLoops(): List<Loop> = dao.getLoops().map {
-        convertEntityToLoop(it)
+        it.toLoop()
     }
 
     override fun getPagedLoops(
@@ -35,7 +32,7 @@ class RoomLoopRepository(
             pagingSourceFactory = pagingSourceFactory
         ).flow.map { loopData ->
             loopData.map { loop ->
-                convertEntityToLoop(loop)
+                loop.toLoop()
             }
         }
     }
@@ -68,5 +65,15 @@ class RoomLoopRepository(
 
     override suspend fun updateArtwork(loop: LoopEntity, artworkType: String, artworkUrl: String?) {
         dao.updateArtwork(loop.id ?: return, artworkType, artworkUrl)
+    }
+
+    override suspend fun updateArtworkBySong(
+        songMediaId: MediaId,
+        artworkType: String,
+        artworkUrl: String?
+    ) {
+        dao.getLoops().filter { it.mediaId.underlyingMediaId == songMediaId }.forEach {
+            updateArtwork(it, artworkType, artworkUrl)
+        }
     }
 }

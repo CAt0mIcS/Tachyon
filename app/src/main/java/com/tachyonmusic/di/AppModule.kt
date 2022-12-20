@@ -1,12 +1,11 @@
 package com.tachyonmusic.di
 
 import android.app.Application
-import com.daton.database.data.repository.shared_action.ConvertEntityToSong
-import com.daton.database.data.repository.shared_action.LoadArtwork
 import com.daton.database.domain.repository.DataRepository
 import com.daton.database.domain.repository.HistoryRepository
 import com.daton.database.domain.repository.SettingsRepository
 import com.daton.database.domain.repository.SongRepository
+import com.daton.database.domain.use_case.LoadArtwork
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.domain.repository.FileRepository
@@ -75,9 +74,8 @@ object AppModule {
     @Provides
     @Singleton
     fun provideUnloadArtworksUseCase(
-        songRepository: SongRepository,
-        convertEntityToSong: ConvertEntityToSong
-    ) = UnloadArtworks(songRepository, convertEntityToSong)
+        songRepository: SongRepository
+    ) = UnloadArtworks(songRepository)
 
     @Provides
     @Singleton

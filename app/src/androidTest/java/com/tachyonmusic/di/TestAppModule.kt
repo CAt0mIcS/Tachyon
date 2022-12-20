@@ -6,7 +6,7 @@ import com.daton.database.data.data_source.Database
 import com.daton.database.data.data_source.room.RoomDatabase
 import com.daton.database.data.repository.RoomHistoryRepository
 import com.daton.database.data.repository.shared_action.ConvertEntityToPlayback
-import com.daton.database.data.repository.shared_action.FindPlaybackByMediaId
+import com.daton.database.domain.use_case.FindPlaybackByMediaId
 import com.daton.database.domain.repository.HistoryRepository
 import com.daton.database.domain.repository.SongRepository
 import com.google.gson.Gson

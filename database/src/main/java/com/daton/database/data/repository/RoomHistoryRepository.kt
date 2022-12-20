@@ -5,23 +5,26 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.daton.database.data.data_source.HistoryDao
-import com.daton.database.data.repository.shared_action.ConvertEntityToPlayback
-import com.daton.database.data.repository.shared_action.FindPlaybackByMediaId
 import com.daton.database.domain.model.HistoryEntity
 import com.daton.database.domain.model.PlaybackEntity
 import com.daton.database.domain.repository.HistoryRepository
+import com.daton.database.domain.repository.LoopRepository
+import com.daton.database.domain.repository.SongRepository
+import com.daton.database.domain.use_case.FindPlaybackByMediaId
+import com.daton.database.util.toPlayback
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playback
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class RoomHistoryRepository(
     private val dao: HistoryDao,
-    private val convertEntityToPlayback: ConvertEntityToPlayback,
-    private val findPlaybackByMediaId: FindPlaybackByMediaId
+    private val findPlaybackByMediaId: FindPlaybackByMediaId,
+    private val songRepo: SongRepository,
+    private val loopRepo: LoopRepository
 ) : HistoryRepository {
 
-    override suspend fun getHistoryEntities(): List<PlaybackEntity> =
-        dao.getHistory().map { findPlaybackByMediaId(it.mediaId)!! }
+    override suspend fun getHistoryEntities(): List<HistoryEntity> = dao.getHistory()
 
     override fun getPagedHistory(
         pageSize: Int,
@@ -35,13 +38,17 @@ class RoomHistoryRepository(
             pagingSourceFactory = pagingSourceFactory
         ).flow.map { historyData ->
             historyData.map { playback ->
-                convertEntityToPlayback(findPlaybackByMediaId(playback.mediaId)!!)
+                findPlaybackByMediaId(playback.mediaId)?.toPlayback(songRepo, loopRepo)
+                    ?: TODO("Playback not found ${playback.mediaId}")
             }
         }
     }
 
     override suspend fun getHistory(): List<Playback> =
-        dao.getHistory().map { convertEntityToPlayback(findPlaybackByMediaId(it.mediaId)!!) }
+        dao.getHistory().map {
+            findPlaybackByMediaId(it.mediaId)?.toPlayback(songRepo, loopRepo)
+                ?: TODO("Playback not found ${it.mediaId}")
+        }
 
     override suspend fun plusAssign(playback: PlaybackEntity) {
         dao.addHistory(HistoryEntity(playback.mediaId))
@@ -51,8 +58,8 @@ class RoomHistoryRepository(
         dao.removeHistory(playback.mediaId)
     }
 
-    override suspend fun minusAssign(playbacks: List<PlaybackEntity>) {
-        dao.removeHistory(playbacks.map { it.mediaId })
+    override suspend fun minusAssign(playbacks: List<MediaId>) {
+        dao.removeHistory(playbacks)
     }
 
     override suspend fun clear() {

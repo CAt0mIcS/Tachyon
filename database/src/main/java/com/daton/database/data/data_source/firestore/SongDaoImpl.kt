@@ -3,6 +3,7 @@ package com.daton.database.data.data_source.firestore
 import androidx.paging.PagingSource
 import com.daton.database.data.data_source.SongDao
 import com.daton.database.domain.model.SongEntity
+import com.tachyonmusic.core.domain.MediaId
 
 class SongDaoImpl : SongDao {
     override fun getPagedSongs(): PagingSource<Int, SongEntity> {
@@ -13,7 +14,7 @@ class SongDaoImpl : SongDao {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getSongWithMediaId(mediaId: String): SongEntity? {
+    override suspend fun getSongWithMediaId(mediaId: MediaId): SongEntity? {
         TODO("Not yet implemented")
     }
 

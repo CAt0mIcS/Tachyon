@@ -1,4 +1,4 @@
-package com.daton.database.data.repository.shared_action
+package com.daton.database.domain.use_case
 
 import com.daton.database.domain.repository.LoopRepository
 import com.daton.database.domain.repository.PlaylistRepository

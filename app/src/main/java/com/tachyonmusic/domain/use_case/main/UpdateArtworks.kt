@@ -1,6 +1,6 @@
 package com.tachyonmusic.domain.use_case.main
 
-import com.daton.database.data.repository.shared_action.LoadArtwork
+import com.daton.database.domain.use_case.LoadArtwork
 import com.daton.database.domain.ArtworkType
 import com.daton.database.domain.repository.SongRepository
 import com.tachyonmusic.logger.Log

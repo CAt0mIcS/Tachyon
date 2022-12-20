@@ -227,13 +227,13 @@ object HomeScreen :
 
         if (recentlyPlayed != null) {
 
-            val artwork by (recentlyPlayed as SinglePlayback).artwork.collectAsState()
+            val artwork by recentlyPlayed.artwork.collectAsState()
 
             Layout(
                 modifier = Modifier.fillMaxSize(),
                 content = {
                     MiniPlayer(
-                        playback = recentlyPlayed ?: return,
+                        playback = recentlyPlayed,
                         artwork = artwork
                             ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
                         currentPosition = currentPosition,

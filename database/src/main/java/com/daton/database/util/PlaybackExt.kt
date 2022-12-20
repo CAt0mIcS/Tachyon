@@ -1,4 +1,4 @@
-package com.daton.database.data.ext
+package com.daton.database.util
 
 import com.daton.database.domain.ArtworkType
 import com.daton.database.domain.model.LoopEntity

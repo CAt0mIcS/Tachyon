@@ -5,23 +5,19 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.daton.database.data.data_source.SongDao
-import com.daton.database.data.repository.shared_action.ConvertEntityToSong
 import com.daton.database.domain.model.SongEntity
 import com.daton.database.domain.repository.SongRepository
+import com.daton.database.util.toSong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Song
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class RoomSongRepository(
-    private val dao: SongDao,
-    private val convertEntityToSong: ConvertEntityToSong,
+    private val dao: SongDao
 ) : SongRepository {
 
-    override suspend fun getSongs(): List<Song> =
-        dao.getSongs().map { song ->
-            convertEntityToSong(song)
-        }
+    override suspend fun getSongs(): List<Song> = dao.getSongs().map { it.toSong() }
 
     override fun getPagedSongs(
         pageSize: Int,
@@ -35,7 +31,7 @@ class RoomSongRepository(
             pagingSourceFactory = pagingSourceFactory
         ).flow.map { songData ->
             songData.map { song ->
-                convertEntityToSong(song)
+                song.toSong()
             }
         }
     }
@@ -63,6 +59,4 @@ class RoomSongRepository(
 
     override suspend fun getSongsWithArtworkTypes(vararg artworkTypes: String) =
         dao.getSongsWithArtworkTypes(artworkTypes)
-
-
 }

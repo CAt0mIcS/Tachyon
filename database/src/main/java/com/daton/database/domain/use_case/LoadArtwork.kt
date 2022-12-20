@@ -1,4 +1,4 @@
-package com.daton.database.data.repository.shared_action
+package com.daton.database.domain.use_case
 
 import android.content.Context
 import com.daton.artworkfetcher.ArtworkFetcher
@@ -6,6 +6,9 @@ import com.daton.database.domain.ArtworkSource
 import com.daton.database.domain.ArtworkType
 import com.daton.database.domain.model.PlaybackEntity
 import com.daton.database.domain.model.SinglePlaybackEntity
+import com.daton.database.domain.repository.LoopRepository
+import com.daton.database.domain.repository.SongRepository
+import com.daton.database.util.updateArtwork
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.logger.Log
@@ -21,8 +24,9 @@ import kotlinx.coroutines.flow.onEach
  */
 class LoadArtwork(
     private val artworkSource: ArtworkSource,
-    private val updateArtwork: UpdateArtwork,
     private val appContext: Context,
+    private val songRepo: SongRepository,
+    private val loopRepo: LoopRepository,
     private val log: Logger = Log(),
     private val artworkFetcher: ArtworkFetcher = ArtworkFetcher()
 ) {
@@ -32,12 +36,14 @@ class LoadArtwork(
 
         when (val artwork = artworkSource.get(playback)) {
             is RemoteArtwork -> updateArtwork(
+                songRepo,
+                loopRepo,
                 playback,
                 ArtworkType.REMOTE,
                 artwork.uri.toURL().toString()
             )
 
-            is EmbeddedArtwork -> updateArtwork(playback, ArtworkType.EMBEDDED)
+            is EmbeddedArtwork -> updateArtwork(songRepo, loopRepo, playback, ArtworkType.EMBEDDED)
             null -> {
                 /**
                  * We haven't yet found any artwork for this song, search the web if there's anything
@@ -47,7 +53,13 @@ class LoadArtwork(
                 artworkFetcher.query(playback.title, playback.artist, 1000)
                     .onEach { res ->
                         if (res is Resource.Success)
-                            updateArtwork(playback, ArtworkType.REMOTE, res.data ?: return@onEach)
+                            updateArtwork(
+                                songRepo,
+                                loopRepo,
+                                playback,
+                                ArtworkType.REMOTE,
+                                res.data ?: return@onEach
+                            )
                         else if (res is Resource.Error) {
                             log.exception(res.exception, res.message?.asString(appContext))
                         }

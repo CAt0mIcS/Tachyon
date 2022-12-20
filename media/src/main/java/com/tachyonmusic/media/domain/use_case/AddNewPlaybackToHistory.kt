@@ -1,6 +1,6 @@
 package com.tachyonmusic.media.domain.use_case
 
-import com.daton.database.data.ext.toEntity
+import com.daton.database.util.toEntity
 import com.daton.database.domain.repository.HistoryRepository
 import com.daton.database.domain.repository.SettingsRepository
 import com.tachyonmusic.core.domain.playback.Playback
@@ -31,7 +31,7 @@ class AddNewPlaybackToHistory(
         if (history.size > settings.maxPlaybacksInHistory) {
             val toRemove =
                 history.toMutableList().subList(settings.maxPlaybacksInHistory, history.size)
-            repository -= toRemove
+            repository -= toRemove.map { it.mediaId }
         }
     }
 }

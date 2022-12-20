@@ -1,33 +1,37 @@
-package com.daton.database.di
+package com.tachyonmusic.database.di
 
 import android.app.Application
-import android.content.Context
 import androidx.room.Room
-import com.daton.database.data.data_source.*
+import com.daton.database.data.data_source.Database
 import com.daton.database.data.data_source.room.RoomDatabase
-import com.daton.database.data.repository.*
-import com.daton.database.domain.ArtworkSource
-import com.daton.database.domain.repository.*
+import com.daton.database.data.repository.RoomDataRepository
+import com.daton.database.data.repository.RoomHistoryRepository
+import com.daton.database.data.repository.RoomLoopRepository
+import com.daton.database.data.repository.RoomPlaylistRepository
+import com.daton.database.data.repository.RoomSettingsRepository
+import com.daton.database.data.repository.RoomSongRepository
+import com.daton.database.domain.repository.DataRepository
+import com.daton.database.domain.repository.HistoryRepository
+import com.daton.database.domain.repository.LoopRepository
+import com.daton.database.domain.repository.PlaylistRepository
+import com.daton.database.domain.repository.SettingsRepository
+import com.daton.database.domain.repository.SongRepository
 import com.daton.database.domain.use_case.FindPlaybackByMediaId
-import com.daton.database.domain.use_case.LoadArtwork
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DatabaseModule {
+class DatabaseTestModule {
     @Provides
     @Singleton
-    fun provideDatabase(app: Application): Database = Room.databaseBuilder(
+    fun provideDatabase(app: Application): Database = Room.inMemoryDatabaseBuilder(
         app,
         RoomDatabase::class.java,
-        RoomDatabase::class.java.name
     ).build()
-
 
     @Provides
     @Singleton
@@ -59,13 +63,17 @@ object DatabaseModule {
     @Singleton
     fun provideHistoryRepository(
         database: Database,
-        findPlaybackByMediaId: FindPlaybackByMediaId,
         songRepository: SongRepository,
-        loopRepository: LoopRepository
+        loopRepository: LoopRepository,
+        playlistRepository: PlaylistRepository,
     ): HistoryRepository =
         RoomHistoryRepository(
             database.historyDao,
-            findPlaybackByMediaId,
+            FindPlaybackByMediaId(
+                songRepository,
+                loopRepository,
+                playlistRepository
+            ),
             songRepository,
             loopRepository
         )
@@ -75,26 +83,4 @@ object DatabaseModule {
     fun provideDataRepository(
         database: Database,
     ): DataRepository = RoomDataRepository(database.dataDao)
-
-    @Provides
-    @Singleton
-    fun provideArtworkSource(): ArtworkSource = ArtworkSourceImpl()
-
-    @Provides
-    @Singleton
-    fun provideFindPlaybackByMediaIdUseCase(
-        songRepository: SongRepository,
-        loopRepository: LoopRepository,
-        playlistRepository: PlaylistRepository
-    ) = FindPlaybackByMediaId(songRepository, loopRepository, playlistRepository)
-
-
-    @Provides
-    @Singleton
-    fun provideLoadArtworkUseCase(
-        artworkSource: ArtworkSource,
-        songRepository: SongRepository,
-        loopRepository: LoopRepository,
-        @ApplicationContext context: Context
-    ) = LoadArtwork(artworkSource, context, songRepository, loopRepository)
 }

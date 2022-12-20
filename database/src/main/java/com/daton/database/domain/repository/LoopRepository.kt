@@ -22,4 +22,9 @@ interface LoopRepository {
     suspend fun findBySong(songTitle: String, songArtist: String, songDuration: Long): LoopEntity?
     suspend fun findByMediaId(mediaId: MediaId): LoopEntity?
     suspend fun updateArtwork(loop: LoopEntity, artworkType: String, artworkUrl: String? = null)
+    suspend fun updateArtworkBySong(
+        songMediaId: MediaId,
+        artworkType: String,
+        artworkUrl: String? = null
+    )
 }
