@@ -1,11 +1,25 @@
 package com.daton.database.domain.repository
 
+import androidx.paging.PagingData
 import com.daton.database.domain.model.LoopEntity
-import com.daton.database.domain.model.SongEntity
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.playback.Loop
+import kotlinx.coroutines.flow.Flow
 
 interface LoopRepository {
-    suspend fun findBySong(song: SongEntity): LoopEntity?
+    suspend fun getLoops(): List<Loop>
+    fun getPagedLoops(
+        pageSize: Int,
+        prefetchDistance: Int = pageSize,
+        initialLoadSize: Int = pageSize
+    ): Flow<PagingData<Loop>>
+
+    suspend fun getLoopEntities(): List<LoopEntity>
+    suspend fun add(loop: LoopEntity)
+    suspend fun addAll(loops: List<LoopEntity>)
+    suspend fun removeIf(pred: (LoopEntity) -> Boolean)
+
+    suspend fun findBySong(songTitle: String, songArtist: String, songDuration: Long): LoopEntity?
     suspend fun findByMediaId(mediaId: MediaId): LoopEntity?
     suspend fun updateArtwork(loop: LoopEntity, artworkType: String, artworkUrl: String? = null)
 }

@@ -27,7 +27,7 @@ class UpdateArtwork(
             is SongEntity -> {
                 songRepository.updateArtwork(playback, artworkType, artworkUrl)
 
-                val loopWithSong = loopRepository.findBySong(playback)
+                val loopWithSong = loopRepository.findBySong(,,)
                 if (loopWithSong != null)
                     loopRepository.updateArtwork(loopWithSong, artworkType, artworkUrl)
             }

@@ -61,5 +61,25 @@ class RemoteLoopImpl(
 
         fun build(name: String, songMediaId: MediaId, timingData: TimingDataController) =
             build(MediaId.ofRemoteLoop(name, songMediaId), timingData)
+
+        fun build(
+            mediaId: MediaId,
+            timingData: TimingDataController,
+            songTitle: String,
+            songArtist: String,
+            songDuration: Long
+        ): RemoteLoopImpl? {
+            return RemoteLoopImpl(
+                mediaId,
+                mediaId.source.replace(PlaybackType.Loop.Remote().toString(), ""),
+                timingData,
+                LocalSongImpl(
+                    mediaId.underlyingMediaId ?: return null,
+                    songTitle,
+                    songArtist,
+                    songDuration
+                )
+            )
+        }
     }
 }
