@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import java.net.URI
 
-class TestSongMetadataExtractor : SongMetadataExtractor {
+internal class TestSongMetadataExtractor : SongMetadataExtractor {
     override fun loadMetadata(uri: URI): SongMetadataExtractor.SongMetadata {
         return SongMetadataExtractor.SongMetadata(
             "Title",

@@ -4,15 +4,11 @@ import android.os.Environment
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.database.data.repository.RoomSettingsRepository
 import com.tachyonmusic.database.data.repository.RoomSongRepository
-import com.tachyonmusic.database.di.DatabaseModule
-import com.tachyonmusic.di.AppRepositoryModule
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.testutils.tryInject
-import com.tachyonmusic.util.TestFileRepository
 import com.tachyonmusic.util.TestSongMetadataExtractor
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.UninstallModules
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before
@@ -22,7 +18,7 @@ import java.io.File
 import javax.inject.Inject
 
 @HiltAndroidTest
-class UpdateSongDatabaseTest {
+internal class UpdateSongDatabaseTest {
 
     @get:Rule
     val hiltRule = HiltAndroidRule(this)

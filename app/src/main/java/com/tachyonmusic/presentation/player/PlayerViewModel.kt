@@ -1,10 +1,8 @@
 package com.tachyonmusic.presentation.player
 
-import android.app.Application
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.HandleArtworkState
@@ -18,15 +16,10 @@ import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.presentation.player.data.RepeatMode
-import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.lang.Long.max
 import javax.inject.Inject
 import kotlin.math.min
-import kotlin.time.Duration
 
 
 @HiltViewModel

@@ -1,9 +1,9 @@
 package com.tachyonmusic.database.data.data_source.firestore
 
 import androidx.paging.PagingSource
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.data.data_source.SongDao
 import com.tachyonmusic.database.domain.model.SongEntity
-import com.tachyonmusic.core.domain.MediaId
 
 class SongDaoImpl : SongDao {
     override fun getPagedSongs(): PagingSource<Int, SongEntity> {

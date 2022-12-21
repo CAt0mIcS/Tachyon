@@ -1,9 +1,9 @@
 package com.tachyonmusic.database.domain.repository
 
 import androidx.paging.PagingData
-import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.database.domain.model.SongEntity
 import kotlinx.coroutines.flow.Flow
 
 interface SongRepository {

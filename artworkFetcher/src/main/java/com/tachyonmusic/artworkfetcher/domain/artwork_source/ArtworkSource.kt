@@ -1,8 +1,8 @@
 package com.tachyonmusic.artworkfetcher.domain.artwork_source
 
-import com.tachyonmusic.artworkfetcher.R
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.tachyonmusic.artworkfetcher.R
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import org.jsoup.HttpStatusException

@@ -14,7 +14,7 @@ import org.junit.Rule
 
 
 @HiltAndroidTest
-class PlayerScreenTest {
+internal class PlayerScreenTest {
     @get:Rule(order = 0)
     val hiltRule = HiltAndroidRule(this)
 

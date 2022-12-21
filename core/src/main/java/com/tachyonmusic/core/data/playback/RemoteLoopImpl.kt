@@ -2,7 +2,7 @@ package com.tachyonmusic.core.data.playback
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.tachyonmusic.core.constants.PlaybackType
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop

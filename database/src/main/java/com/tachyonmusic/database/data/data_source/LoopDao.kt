@@ -6,8 +6,8 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.database.domain.model.LoopEntity
 
 @Dao
 interface LoopDao {

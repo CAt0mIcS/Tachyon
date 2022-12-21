@@ -4,12 +4,12 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.database.data.data_source.LoopDao
 import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.util.toLoop
-import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Loop
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

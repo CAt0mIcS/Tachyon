@@ -1,10 +1,10 @@
 package com.tachyonmusic.database.data.data_source
 
-import com.tachyonmusic.database.domain.ArtworkSource
-import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.Artwork
+import com.tachyonmusic.database.domain.ArtworkSource
+import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import java.net.URI
 
 class ArtworkSourceImpl : ArtworkSource {

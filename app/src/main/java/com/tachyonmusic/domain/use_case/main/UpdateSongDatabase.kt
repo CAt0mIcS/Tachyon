@@ -1,11 +1,12 @@
 package com.tachyonmusic.domain.use_case.main
 
+import android.net.Uri
 import android.os.Environment
+import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.logger.Log
 import com.tachyonmusic.logger.domain.Logger
@@ -15,7 +16,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.net.URI
 
 /**
  * Checks if every song that is not excluded is saved in the database. If a song was removed by the
@@ -57,7 +57,7 @@ class UpdateSongDatabase(
             val songs = mutableListOf<Deferred<SongMetadataExtractor.SongMetadata?>>()
             for (path in paths) {
                 songs += async(Dispatchers.IO) {
-                    metadataExtractor.loadMetadata(URI(path.absolutePath))
+                    metadataExtractor.loadMetadata(Uri.fromFile(path))
                 }
             }
 
@@ -67,7 +67,7 @@ class UpdateSongDatabase(
                 songs.awaitAll().map {
                     return@map if (it != null)
                         SongEntity(
-                            MediaId.ofLocalSong(File(it.uri.path)),
+                            MediaId.ofLocalSong(File(it.uri.path!!)),
                             it.title,
                             it.artist,
                             it.duration

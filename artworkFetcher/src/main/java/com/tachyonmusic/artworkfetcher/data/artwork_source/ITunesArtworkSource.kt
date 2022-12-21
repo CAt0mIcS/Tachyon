@@ -1,10 +1,10 @@
 package com.tachyonmusic.artworkfetcher.data.artwork_source
 
+import com.google.gson.JsonObject
 import com.tachyonmusic.artworkfetcher.R
 import com.tachyonmusic.artworkfetcher.data.UrlEncoderImpl
 import com.tachyonmusic.artworkfetcher.domain.UrlEncoder
 import com.tachyonmusic.artworkfetcher.domain.artwork_source.ArtworkSource
-import com.google.gson.JsonObject
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import java.net.URL

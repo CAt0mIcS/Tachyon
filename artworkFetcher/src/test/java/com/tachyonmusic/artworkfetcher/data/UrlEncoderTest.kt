@@ -4,7 +4,7 @@ import com.tachyonmusic.artworkfetcher.domain.UrlEncoder
 import com.tachyonmusic.util.Resource
 import org.junit.Test
 
-class UrlEncoderTest {
+internal class UrlEncoderTest {
     val encoders = listOf<UrlEncoder>(
         UrlEncoderImpl()
     )

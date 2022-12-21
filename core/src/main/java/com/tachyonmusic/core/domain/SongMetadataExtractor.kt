@@ -1,16 +1,16 @@
 package com.tachyonmusic.core.domain
 
 import android.graphics.Bitmap
-import java.net.URI
+import android.net.Uri
 
 interface SongMetadataExtractor {
     data class SongMetadata(
         val title: String,
         val artist: String,
         val duration: Long,
-        val uri: URI
+        val uri: Uri
     )
 
-    fun loadMetadata(uri: URI): SongMetadata?
-    fun loadBitmap(uri: URI): Bitmap?
+    fun loadMetadata(uri: Uri): SongMetadata?
+    fun loadBitmap(uri: Uri): Bitmap?
 }

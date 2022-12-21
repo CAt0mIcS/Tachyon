@@ -1,5 +1,8 @@
 package com.tachyonmusic.database.util
 
+import com.tachyonmusic.core.data.EmbeddedArtwork
+import com.tachyonmusic.core.data.RemoteArtwork
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.database.domain.model.PlaybackEntity
@@ -7,9 +10,6 @@ import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.core.data.EmbeddedArtwork
-import com.tachyonmusic.core.data.RemoteArtwork
-import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.logger.Log
 import com.tachyonmusic.logger.domain.Logger
 import java.net.URI

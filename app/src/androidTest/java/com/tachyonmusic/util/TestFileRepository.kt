@@ -4,7 +4,7 @@ import android.os.Environment
 import com.tachyonmusic.domain.repository.FileRepository
 import java.io.File
 
-class TestFileRepository : FileRepository {
+internal class TestFileRepository : FileRepository {
     override fun getFilesInDirectoryWithExtensions(
         directory: File,
         extensions: List<String>

@@ -4,7 +4,7 @@ import com.tachyonmusic.testutils.assertEquals
 import org.junit.Test
 
 
-class TimingDataControllerTest {
+internal class TimingDataControllerTest {
     @Test
     fun `Advancing timing data advances to correct timing data`() {
         val timingData = loadInOrderTimingData()

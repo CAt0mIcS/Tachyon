@@ -3,14 +3,13 @@ package com.tachyonmusic.core.data.playback
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
-import com.tachyonmusic.core.constants.PlaybackType
 import com.tachyonmusic.core.data.FileSongMetadataExtractor
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.playback.Song
 import java.io.File
-import java.net.URI
 
 /**
  * Song stored in local storage with a path in the filesystem
@@ -50,7 +49,7 @@ class LocalSongImpl(
             path: File,
             metadataExtractor: SongMetadataExtractor = FileSongMetadataExtractor()
         ): Song =
-            metadataExtractor.loadMetadata(URI(path.absolutePath)).run {
+            metadataExtractor.loadMetadata(Uri.fromFile(path)).run {
                 if (this != null)
                     return@run LocalSongImpl(MediaId.ofLocalSong(path), title, artist, duration)
                 else TODO("Invalid playback $path")

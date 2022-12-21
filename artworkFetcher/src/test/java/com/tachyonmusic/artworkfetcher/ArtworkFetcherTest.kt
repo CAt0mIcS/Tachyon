@@ -7,7 +7,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 
-class ArtworkFetcherTest {
+internal class ArtworkFetcherTest {
     private lateinit var downloader: ArtworkFetcher
 
     @Before

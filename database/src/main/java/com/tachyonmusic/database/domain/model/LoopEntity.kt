@@ -1,9 +1,9 @@
 package com.tachyonmusic.database.domain.model
 
 import androidx.room.Entity
-import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.database.domain.ArtworkType
 
 @Entity
 class LoopEntity(

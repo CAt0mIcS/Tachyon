@@ -4,7 +4,7 @@ import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 
-class AmazonDigitalArtworkSourceTest {
+internal class AmazonDigitalArtworkSourceTest {
     @Test
     fun `Finds artwork on page with artwork`(): Unit = runBlocking {
         AmazonDigitalArtworkSource().apply {

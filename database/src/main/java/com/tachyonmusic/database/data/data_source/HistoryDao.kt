@@ -5,8 +5,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.tachyonmusic.database.domain.model.HistoryEntity
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.database.domain.model.HistoryEntity
 
 @Dao
 interface HistoryDao {

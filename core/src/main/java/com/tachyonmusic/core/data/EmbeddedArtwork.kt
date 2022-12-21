@@ -1,6 +1,7 @@
 package com.tachyonmusic.core.data
 
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.compose.runtime.Composable
@@ -9,7 +10,6 @@ import androidx.compose.ui.graphics.asImageBitmap
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import java.io.File
-import java.net.URI
 
 
 /**
@@ -36,7 +36,7 @@ class EmbeddedArtwork(
         fun load(
             path: File,
             metadataExtractor: SongMetadataExtractor = FileSongMetadataExtractor()
-        ) = metadataExtractor.loadBitmap(URI(path.absolutePath))
+        ) = metadataExtractor.loadBitmap(Uri.fromFile(path))
 
         @JvmField
         val CREATOR = object : Parcelable.Creator<EmbeddedArtwork> {

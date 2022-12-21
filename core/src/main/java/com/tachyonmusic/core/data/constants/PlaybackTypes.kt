@@ -1,4 +1,4 @@
-package com.tachyonmusic.core.constants
+package com.tachyonmusic.core.data.constants
 
 sealed class PlaybackType(val value: Int) {
     sealed class Song(value: Int) : PlaybackType(value) {

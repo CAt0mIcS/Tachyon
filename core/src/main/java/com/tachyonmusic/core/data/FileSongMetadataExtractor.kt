@@ -3,16 +3,16 @@ package com.tachyonmusic.core.data
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
+import android.net.Uri
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import java.io.File
-import java.net.URI
 
 class FileSongMetadataExtractor : SongMetadataExtractor {
-    override fun loadMetadata(uri: URI): SongMetadataExtractor.SongMetadata? {
-        if (!uri.isAbsolute || !File(uri.path).exists())
+    override fun loadMetadata(uri: Uri): SongMetadataExtractor.SongMetadata? {
+        if (!uri.isAbsolute || !File(uri.path!!).exists())
             return null
 
-        val path = File(uri.path)
+        val path = File(uri.path!!)
 
         val metaRetriever = MediaMetadataRetriever()
         try {
@@ -33,11 +33,11 @@ class FileSongMetadataExtractor : SongMetadataExtractor {
         )
     }
 
-    override fun loadBitmap(uri: URI): Bitmap? {
-        if (!uri.isAbsolute || !File(uri.path).exists())
+    override fun loadBitmap(uri: Uri): Bitmap? {
+        if (!uri.isAbsolute || !File(uri.path!!).exists())
             return null
 
-        val path = File(uri.path)
+        val path = File(uri.path!!)
 
         val metaRetriever = MediaMetadataRetriever()
         try {

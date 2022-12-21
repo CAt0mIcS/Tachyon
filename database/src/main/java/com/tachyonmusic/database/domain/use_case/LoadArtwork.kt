@@ -2,6 +2,8 @@ package com.tachyonmusic.database.domain.use_case
 
 import android.content.Context
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
+import com.tachyonmusic.core.data.EmbeddedArtwork
+import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.database.domain.ArtworkSource
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.model.PlaybackEntity
@@ -9,8 +11,6 @@ import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.util.updateArtwork
-import com.tachyonmusic.core.data.EmbeddedArtwork
-import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.logger.Log
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.Resource

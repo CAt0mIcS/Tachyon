@@ -1,4 +1,4 @@
-package com.tachyonmusic.core.constants
+package com.tachyonmusic.core.data.constants
 
 import android.os.Environment
 

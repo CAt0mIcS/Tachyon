@@ -1,7 +1,6 @@
 package com.tachyonmusic.database.util
 
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.database.di.DatabaseModule
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.database.domain.model.SongEntity
@@ -10,7 +9,6 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.testutils.tryInject
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import dagger.hilt.android.testing.UninstallModules
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Rule
@@ -18,7 +16,6 @@ import org.junit.Test
 import javax.inject.Inject
 
 @HiltAndroidTest
-@UninstallModules(DatabaseModule::class)
 internal class UpdateArtworkTest {
     @get:Rule
     val hiltRule = HiltAndroidRule(this)

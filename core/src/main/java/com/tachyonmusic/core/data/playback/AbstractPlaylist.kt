@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.tachyonmusic.core.constants.MetadataKeys
-import com.tachyonmusic.core.constants.PlaybackType
+import com.tachyonmusic.core.data.constants.MetadataKeys
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 abstract class AbstractPlaylist(
     final override val mediaId: MediaId,
     final override val name: String,
-    playbacks: MutableList<SinglePlayback>,
+    private val _playbacks: MutableList<SinglePlayback>,
     currentPlaylistIndex: Int = 0
 ) : Playlist, AbstractPlayback() {
 
@@ -25,8 +25,6 @@ abstract class AbstractPlaylist(
 
     final override var currentPlaylistIndex: Int = 0
         protected set
-
-    private val _playbacks: MutableList<SinglePlayback>
 
     override val title: String?
         get() = current?.title
@@ -53,7 +51,6 @@ abstract class AbstractPlaylist(
         get() = if (currentPlaylistIndex != -1 && currentPlaylistIndex < playbacks.size) playbacks[currentPlaylistIndex] else null
 
     init {
-        _playbacks = playbacks
         this.currentPlaylistIndex = currentPlaylistIndex
     }
 

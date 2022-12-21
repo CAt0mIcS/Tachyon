@@ -1,4 +1,4 @@
-package com.tachyonmusic.core.constants
+package com.tachyonmusic.core.data.constants
 
 object MetadataKeys {
     const val Duration = "com.tachyonmusic.DURATION"
