@@ -12,9 +12,14 @@ import androidx.media3.session.SessionToken
 import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.ListenableMutableList
 import com.tachyonmusic.core.data.constants.MediaAction
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
+import com.tachyonmusic.database.util.toPlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.data.ext.duration
 import com.tachyonmusic.media.data.ext.name
@@ -23,10 +28,18 @@ import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
+import com.tachyonmusic.util.launch
+import com.tachyonmusic.util.runOnUiThreadAsync
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
-class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
+class MediaPlaybackServiceMediaBrowserController(
+    private val findPlayback: FindPlaybackByMediaId,
+    private val songRepository: SongRepository,
+    private val loopRepository: LoopRepository
+) : MediaBrowserController,
     Player.Listener,
     ListenableMutableList.EventListener<TimingData>,
     IListenable<MediaBrowserController.EventListener> by Listenable() {
@@ -150,9 +163,20 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
 
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        val playback = mediaItem?.mediaMetadata?.playback
-        invokeEvent {
-            it.onPlaybackTransition(playback)
+//        val playback = mediaItem?.mediaMetadata?.playback
+        // TODO:
+        //   If the artwork is currently loading and we marshall that and send it to here where its
+        //   unmarshalled and then set artwork loading to false the state of this one here won't
+        //   be updated, since it's copied. (See com.tachyonmusic.database.util.toSong() where the
+        //   artwork is loaded, if this was runBlocking instead of Dispatchers.IO, it would work)
+        launch(Dispatchers.IO) {
+            val playback = findPlayback(MediaId.deserializeIfValid(mediaItem?.mediaId))
+                ?.toPlayback(songRepository, loopRepository)
+            invokeEvent {
+                runOnUiThreadAsync {
+                    it.onPlaybackTransition(playback)
+                }
+            }
         }
     }
 
