@@ -6,14 +6,17 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.repository.PlaylistRepository
+import com.tachyonmusic.database.util.toPlaylist
 import com.tachyonmusic.media.domain.use_case.getItemsOnPageWithPageSize
-import com.tachyonmusic.user.domain.UserRepository
 import kotlinx.coroutines.*
 
 
 class BrowserTree(
-    private val repository: UserRepository,
-    private val songRepository: SongRepository
+    private val songRepository: SongRepository,
+    private val loopRepository: LoopRepository,
+    private val playlistRepository: PlaylistRepository
 ) {
     companion object {
         /**
@@ -51,8 +54,9 @@ class BrowserTree(
                      */
                     val mediaId = MediaId.deserializeIfValid(parentId)
                     if (mediaId != null) {
-                        val playback = repository.find(mediaId)
-                        if (playback != null && playback is Playlist)
+                        val playback = playlistRepository.findByMediaId(mediaId)
+                            ?.toPlaylist(songRepository, loopRepository)
+                        if (playback != null)
                             return@withContext constraintItems(
                                 playback.toMediaItemList(),
                                 page,
@@ -76,8 +80,8 @@ class BrowserTree(
 
     // TODO: Nullable?
     private suspend fun getSongs() = songRepository.getSongs().map { it.toMediaItem() }
-    private suspend fun getLoops() = repository.loops.value.map { it.toMediaItem() }
-    private suspend fun getPlaylists() = repository.playlists.value.map { it.toMediaItem() }
+    private suspend fun getLoops() = loopRepository.getLoops().map { it.toMediaItem() }
+    private suspend fun getPlaylists() = playlistRepository.getPlaylists().map { it.toMediaItem() }
 
     private fun constraintItems(
         playbacks: List<MediaItem>,

@@ -1,4 +1,4 @@
-package com.tachyonmusic
+package com.tachyonmusic.testutils
 
 import android.app.Application
 import android.content.Context

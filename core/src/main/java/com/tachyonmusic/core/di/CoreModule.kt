@@ -3,7 +3,9 @@ package com.tachyonmusic.core.di
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.ToNumberPolicy
+import com.tachyonmusic.core.data.FileSongMetadataExtractor
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.TimingData
 import dagger.Module
 import dagger.Provides
@@ -23,4 +25,7 @@ class CoreModule {
         setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
     }.create()
 
+    @Provides
+    @Singleton
+    fun provideSongMetadataExtractor(): SongMetadataExtractor = FileSongMetadataExtractor()
 }

@@ -13,7 +13,7 @@ android {
         minSdk = Version.MIN_SDK
         targetSdk = Version.TARGET_SDK
 
-        testInstrumentationRunner = "com.tachyonmusic.database.HiltTestRunner"
+        testInstrumentationRunner = "com.tachyonmusic.testutils.HiltTestRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 

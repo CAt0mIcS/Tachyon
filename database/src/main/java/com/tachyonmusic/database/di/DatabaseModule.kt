@@ -27,7 +27,11 @@ object DatabaseModule {
         RoomDatabase::class.java,
         RoomDatabase::class.java.name
     ).build()
+}
 
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseRepositoryModule {
 
     @Provides
     @Singleton
@@ -75,6 +79,12 @@ object DatabaseModule {
     fun provideDataRepository(
         database: Database,
     ): DataRepository = RoomDataRepository(database.dataDao)
+}
+
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseUseCaseModule {
 
     @Provides
     @Singleton

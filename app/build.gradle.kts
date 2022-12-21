@@ -28,7 +28,7 @@ android {
         versionCode = Version.APP
         versionName = Version.APP_NAME
 
-        testInstrumentationRunner = "com.tachyonmusic.HiltTestRunner"
+        testInstrumentationRunner = "com.tachyonmusic.testutils.HiltTestRunner"
 
         vectorDrawables {
             useSupportLibrary = true

@@ -2,8 +2,8 @@ package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.database.domain.repository.LoopRepository
 
-class GetLoops(
+class GetPagedLoops(
     private val loopRepository: LoopRepository
 ) {
-    suspend operator fun invoke() = loopRepository.getLoops()
+    operator fun invoke(pageSize: Int) = loopRepository.getPagedLoops(pageSize)
 }

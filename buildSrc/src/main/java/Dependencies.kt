@@ -254,6 +254,7 @@ fun DependencyHandler.androidTest(
     add(configName, Dependency.Test.JUNIT_EXT)
     add(configName, Dependency.Test.ANDROIDX_CORE)
     add(configName, Dependency.Test.TEST_RUNNER)
+    add(configName, Dependency.Room.RUNTIME)
     if (addTestUtilsProject)
         add(configName, project(":testutils"))
 }

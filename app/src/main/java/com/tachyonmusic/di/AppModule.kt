@@ -1,13 +1,16 @@
 package com.tachyonmusic.di
 
 import android.app.Application
+import com.tachyonmusic.core.domain.SongMetadataExtractor
+import com.tachyonmusic.data.repository.FileRepositoryImpl
+import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.HistoryRepository
+import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.domain.use_case.LoadArtwork
-import com.tachyonmusic.data.repository.FileRepositoryImpl
-import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.*
@@ -18,7 +21,6 @@ import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.logger.Log
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,15 +30,14 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AppModule {
+object AppUseCaseModule {
+    @Provides
+    @Singleton
+    fun provideRegisterUserUseCase() = RegisterUser()
 
     @Provides
     @Singleton
-    fun provideRegisterUserUseCase(repository: UserRepository) = RegisterUser(repository)
-
-    @Provides
-    @Singleton
-    fun provideSignInUserUseCase(repository: UserRepository) = SignInUser(repository)
+    fun provideSignInUserUseCase() = SignInUser()
 
     @Provides
     @Singleton
@@ -56,7 +57,8 @@ object AppModule {
         songRepository: SongRepository,
         settingsRepository: SettingsRepository,
         fileRepository: FileRepository,
-    ) = UpdateSongDatabase(songRepository, settingsRepository, fileRepository)
+        metadataExtractor: SongMetadataExtractor
+    ) = UpdateSongDatabase(songRepository, settingsRepository, fileRepository, metadataExtractor)
 
     @Provides
     @Singleton
@@ -79,15 +81,21 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFileRepository(): FileRepository = FileRepositoryImpl()
+    fun provideGetLoopsUseCase(loopRepository: LoopRepository) = GetLoops(loopRepository)
 
     @Provides
     @Singleton
-    fun provideGetLoopsUseCase(userRepository: UserRepository) = GetLoops(userRepository)
+    fun provideGetPagedLoopsUseCase(loopRepository: LoopRepository) = GetPagedLoops(loopRepository)
 
     @Provides
     @Singleton
-    fun provideGetPlaylistsUseCase(userRepository: UserRepository) = GetPlaylists(userRepository)
+    fun provideGetPlaylistsUseCase(playlistRepository: PlaylistRepository) =
+        GetPlaylists(playlistRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetPagedPlaylistsUseCase(playlistRepository: PlaylistRepository) =
+        GetPagedPlaylists(playlistRepository)
 
     @Provides
     @Singleton
@@ -102,14 +110,18 @@ object AppModule {
     @Provides
     @Singleton
     fun provideSearchStoredPlaybacksUseCase(
-        userRepository: UserRepository,
-        songRepository: SongRepository
-    ) = SearchStoredPlaybacks(userRepository, songRepository)
+        songRepository: SongRepository,
+        loopRepository: LoopRepository,
+        playlistRepository: PlaylistRepository
+    ) = SearchStoredPlaybacks(songRepository, loopRepository, playlistRepository)
 
     @Provides
     @Singleton
-    fun provideCreateNewLoopUseCase(userRepo: UserRepository, browser: MediaBrowserController) =
-        CreateAndSaveNewLoop(userRepo, browser)
+    fun provideCreateNewLoopUseCase(
+        songRepository: SongRepository,
+        loopRepository: LoopRepository,
+        browser: MediaBrowserController
+    ) = CreateAndSaveNewLoop(songRepository, loopRepository, browser)
 
     @Provides
     @Singleton
@@ -156,7 +168,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSetCurrentPlayback(browser: MediaBrowserController) = SetCurrentPlayback(browser)
+    fun provideSetCurrentPlaybackUseCase(browser: MediaBrowserController) =
+        SetCurrentPlayback(browser)
 
     @Provides
     @Singleton
@@ -169,11 +182,19 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMediaBrowserController(): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController()
-
-    @Provides
-    @Singleton
     fun provideLogger(): Logger = Log()
 }
 
+
+@Module
+@InstallIn(SingletonComponent::class)
+object AppRepositoryModule {
+    @Provides
+    @Singleton
+    fun provideFileRepository(): FileRepository = FileRepositoryImpl()
+
+    @Provides
+    @Singleton
+    fun provideMediaBrowserController(): MediaBrowserController =
+        MediaPlaybackServiceMediaBrowserController()
+}

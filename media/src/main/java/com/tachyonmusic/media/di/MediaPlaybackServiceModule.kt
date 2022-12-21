@@ -7,18 +7,20 @@ import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
+import com.google.android.gms.cast.framework.CastContext
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.HistoryRepository
+import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.google.android.gms.cast.framework.CastContext
+import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.media.CAST_PLAYER_NAME
 import com.tachyonmusic.media.EXO_PLAYER_NAME
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.*
-import com.tachyonmusic.user.domain.UserRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,9 +40,10 @@ class MediaPlaybackServiceModule {
     @Provides
     @ServiceScoped
     fun provideBrowserTree(
-        repository: UserRepository,
-        songRepository: SongRepository
-    ): BrowserTree = BrowserTree(repository, songRepository)
+        songRepository: SongRepository,
+        loopRepository: LoopRepository,
+        playlistRepository: PlaylistRepository
+    ): BrowserTree = BrowserTree(songRepository, loopRepository, playlistRepository)
 
     @Provides
     @ServiceScoped
@@ -69,15 +72,16 @@ class MediaPlaybackServiceModule {
     @Provides
     @ServiceScoped
     fun provideServiceUseCases(
-        repository: UserRepository,
         historyRepository: HistoryRepository,
         settingsRepository: SettingsRepository,
         @Named(EXO_PLAYER_NAME) player: CustomPlayer,
         songRepository: SongRepository,
+        loopRepository: LoopRepository,
+        findPlaybackByMediaId: FindPlaybackByMediaId,
         dataRepository: DataRepository
     ) = ServiceUseCases(
-        LoadPlaylistForPlayback(repository, songRepository, settingsRepository),
-        ConfirmAddedMediaItems(repository),
+        LoadPlaylistForPlayback(songRepository, loopRepository, settingsRepository),
+        ConfirmAddedMediaItems(songRepository, loopRepository, findPlaybackByMediaId),
         PreparePlayer(player),
         GetSupportedCommands(),
         UpdateTimingDataOfCurrentPlayback(player),
