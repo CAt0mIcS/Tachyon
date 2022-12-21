@@ -1,51 +1,47 @@
 package com.tachyonmusic.presentation.library
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.map
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.domain.use_case.GetLoops
-import com.tachyonmusic.domain.use_case.GetPlaylists
-import com.tachyonmusic.domain.use_case.GetSongs
+import com.tachyonmusic.domain.use_case.GetPagedLoops
+import com.tachyonmusic.domain.use_case.GetPagedPlaylists
+import com.tachyonmusic.domain.use_case.GetPagedSongs
+import com.tachyonmusic.domain.use_case.ItemClicked
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    getSongs: GetSongs,
-    getLoops: GetLoops,
-    getPlaylists: GetPlaylists,
+    getSongs: GetPagedSongs,
+    getLoops: GetPagedLoops,
+    getPlaylists: GetPagedPlaylists,
+    private val itemClicked: ItemClicked
 ) : ViewModel() {
 
-    private val songs = getSongs()
-    private val loops = getLoops()
-    private val playlists = getPlaylists()
+    private var songs = getSongs(5)
+    private val loops = getLoops(5)
+    private val playlists = getPlaylists(5)
 
-    private val _items = mutableStateOf<List<Playback>>(songs.value)
-    val items: State<List<Playback>> = _items
-
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            for(song in songs.value) {
-                song.loadArtwork(100).collect()
-            }
-        }
-    }
-
+    var items: Flow<PagingData<Playback>> = songs.map { it.map { it } }
+        private set
 
     fun onFilterSongs() {
-        _items.value = songs.value
+        items = songs.map { it.map { it } }
     }
 
     fun onFilterLoops() {
-        _items.value = loops.value
+        items = loops.map { it.map { it } }
     }
 
     fun onFilterPlaylists() {
-        _items.value = playlists.value
+        items = playlists.map { it.map { it } }
+    }
+
+    fun onItemClicked(playback: Playback) {
+        itemClicked(playback)
     }
 }

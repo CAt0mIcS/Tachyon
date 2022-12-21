@@ -10,10 +10,8 @@ import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.SessionToken
 import com.google.common.collect.ImmutableList
-import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.ListenableMutableList
-import com.tachyonmusic.core.constants.MediaAction
+import com.tachyonmusic.core.data.constants.MediaAction
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
@@ -27,7 +25,6 @@ import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
     Player.Listener,
@@ -35,6 +32,12 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
     IListenable<MediaBrowserController.EventListener> by Listenable() {
 
     private var browser: MediaBrowser? = null
+
+    /**
+     * We might want to seek to the position while the player is still preparing. Cache
+     * the position and seek to it in [onMediaItemTransition]
+     */
+    private var cachedSeekPositionWhenAvailable: Long? = null
 
     override fun onCreate(owner: LifecycleOwner) {
         // TODO: Does this need to be done in onStart/onResume?
@@ -91,25 +94,31 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
     }
 
     override fun seekTo(pos: Long) {
-        browser?.seekTo(pos)
+        if (browser?.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) != true)
+            cachedSeekPositionWhenAvailable = pos
+        else
+            browser?.seekTo(pos)
     }
 
-    override fun getChildren(
+    override suspend fun getChildren(
         parentId: String,
         page: Int,
         pageSize: Int
-    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
-        browser?.getChildren(parentId, page, pageSize, null) ?: Futures.immediateFuture(
-            LibraryResult.ofItemList(listOf(), null)
-        )
+    ): LibraryResult<ImmutableList<MediaItem>> =
+        browser?.getChildren(parentId, page, pageSize, null)?.await()
+            ?: LibraryResult.ofItemList(listOf(), null)
 
-    override fun getPlaybacksNative(parentId: String, page: Int, pageSize: Int): List<Playback> =
-        runBlocking {
-            val children = getChildren(parentId, page, pageSize).await().value ?: emptyList()
-            List(children.size) { i ->
-                children[i].mediaMetadata.playback!!
-            }
+
+    override suspend fun getPlaybacksNative(
+        parentId: String,
+        page: Int,
+        pageSize: Int
+    ): List<Playback> {
+        val children = getChildren(parentId, page, pageSize).value ?: emptyList()
+        return List(children.size) { i ->
+            children[i].mediaMetadata.playback!!
         }
+    }
 
     override val isPlaying: Boolean
         get() = browser?.isPlaying ?: false
@@ -147,9 +156,17 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         }
     }
 
-    // TODO: Only emit if it doesn't come from e.g. a seek which changes isPlaying to false and then to true quickly
-    override fun onIsPlayingChanged(isPlaying: Boolean) = invokeEvent {
-        it.onIsPlayingChanged(isPlaying)
+    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) = invokeEvent {
+        it.onIsPlayingChanged(playWhenReady)
+    }
+
+    override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
+        if (cachedSeekPositionWhenAvailable != null &&
+            availableCommands.contains(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
+        ) {
+            browser?.seekTo(cachedSeekPositionWhenAvailable ?: 0)
+            cachedSeekPositionWhenAvailable = null
+        }
     }
 
     override fun onChanged(list: List<TimingData>) {

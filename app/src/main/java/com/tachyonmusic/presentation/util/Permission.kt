@@ -1,6 +1,7 @@
 package com.tachyonmusic.presentation.util
 
-import android.Manifest.permission.*
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.READ_MEDIA_AUDIO
 
 sealed class Permission(vararg val permissions: String) {
     // Individual permissions

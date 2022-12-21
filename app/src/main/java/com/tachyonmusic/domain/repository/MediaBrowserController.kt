@@ -5,7 +5,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.session.LibraryResult
 import com.google.common.collect.ImmutableList
-import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.util.IListenable
@@ -24,13 +23,13 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
 
     var playWhenReady: Boolean
 
-    fun getChildren(
+    suspend fun getChildren(
         parentId: String,
         page: Int = 0,
         pageSize: Int = Int.MAX_VALUE
-    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>>
+    ): LibraryResult<ImmutableList<MediaItem>>
 
-    fun getPlaybacksNative(
+    suspend fun getPlaybacksNative(
         parentId: String,
         page: Int = 0,
         pageSize: Int = Int.MAX_VALUE

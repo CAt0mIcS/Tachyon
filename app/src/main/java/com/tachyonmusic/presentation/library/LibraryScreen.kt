@@ -2,25 +2,46 @@ package com.tachyonmusic.presentation.library
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
 import com.tachyonmusic.app.R
-import com.tachyonmusic.core.domain.playback.*
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.data.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
-import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
+import com.tachyonmusic.presentation.library.component.FilterItem
+import com.tachyonmusic.presentation.player.PlayerScreen
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
 
@@ -29,13 +50,14 @@ object LibraryScreen :
 
     @Composable
     operator fun invoke(
+        navController: NavController,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
         var selectedFilter by remember { mutableStateOf(0) }
         var sortOptionsExpanded by remember { mutableStateOf(false) }
         var sortText by remember { mutableStateOf("Alphabetically") }
 
-        val playbackItems by viewModel.items
+        val playbackItems = viewModel.items.collectAsLazyPagingItems()
 
         LazyColumn(
             modifier = Modifier
@@ -139,18 +161,28 @@ object LibraryScreen :
 
             items(playbackItems) { playback ->
 
-                val artwork by if (playback is SinglePlayback)
-                    playback.artwork.collectAsState()
-                else
-                    (playback as Playlist).playbacks.first().artwork.collectAsState()
+                if (playback != null) {
+                    val artwork by if (playback is SinglePlayback)
+                        playback.artwork.collectAsState()
+                    else
+                        (playback as Playlist).playbacks.first().artwork.collectAsState()
 
-                HorizontalPlaybackView(
-                    playback,
-                    artwork?.painter,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = Theme.padding.extraSmall)
-                )
+                    val isArtworkLoading by playback.isArtworkLoading.collectAsState()
+
+                    HorizontalPlaybackView(
+                        playback,
+                        artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+                        isArtworkLoading,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = Theme.padding.extraSmall),
+                        onClick = {
+                            viewModel.onItemClicked(playback)
+                            navController.navigate(PlayerScreen.route)
+                        }
+                    )
+                }
+
             }
         }
     }

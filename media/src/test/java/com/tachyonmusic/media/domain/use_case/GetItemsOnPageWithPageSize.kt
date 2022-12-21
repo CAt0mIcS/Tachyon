@@ -7,7 +7,7 @@ import org.junit.Before
 import org.junit.Test
 
 @SuppressLint("CheckResult")
-class GetItemsOnPageWithPageSize {
+internal class GetItemsOnPageWithPageSize {
 
     private val items = mutableListOf<Int>()
 

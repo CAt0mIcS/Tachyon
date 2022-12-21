@@ -2,10 +2,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 
-    id("com.google.gms.google-services")
-    id("com.google.firebase.firebase-perf")
-    id("com.google.firebase.crashlytics")
-
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
     id("dagger.hilt.android.plugin")
@@ -32,7 +28,7 @@ android {
         versionCode = Version.APP
         versionName = Version.APP_NAME
 
-        testInstrumentationRunner = "com.tachyonmusic.HiltTestRunner"
+        testInstrumentationRunner = "com.tachyonmusic.testutils.HiltTestRunner"
 
         vectorDrawables {
             useSupportLibrary = true
@@ -80,24 +76,29 @@ android {
 }
 
 dependencies {
-    firebase()
     googleCast()
     gson()
     coroutines()
     lifecycle()
     compose()
 
+    paging()
     dagger()
     implementation(Dependency.DaggerHilt.NAVIGATION_COMPOSE)
 
     implementation(Dependency.Media3.MEDIA_SESSION)
     implementation(Dependency.Compose.COIL)
 
+
     projectCore()
     projectMedia()
-    projectUser()
+    projectDatabase()
     projectUtil()
+    projectLogger()
 
-    localTest()
+    unitTest()
     androidTest()
+
+    androidTestImplementation(Dependency.Room.RUNTIME)
+    kaptAndroidTest(Dependency.Room.COMPILER)
 }

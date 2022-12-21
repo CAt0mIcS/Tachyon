@@ -16,6 +16,19 @@
             </AndroidTestResultsTableState>
           </value>
         </entry>
+        <entry key="-826877910">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Samsung_S20_Plus_API_33" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
         <entry key="-582425887">
           <value>
             <AndroidTestResultsTableState>
@@ -23,6 +36,7 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Samsung_S20_API_31" value="120" />
+                  <entry key="Samsung_S20_Plus_API_33" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>
@@ -49,6 +63,34 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Samsung_S20_API_31" value="120" />
+                  <entry key="Samsung_S20_Plus_API_33" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="-326198205">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Samsung_S20_API_31" value="120" />
+                  <entry key="Samsung_S20_Plus_API_33" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="545034772">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Samsung_S20_Plus_API_33" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>
@@ -62,6 +104,59 @@
                 <map>
                   <entry key="Duration" value="90" />
                   <entry key="Samsung_S20_API_31" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1638678531">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Samsung_S20_Plus_API_33" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1652786682">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Samsung_S20_Plus_API_33" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1878024148">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Samsung_S20_API_31" value="120" />
+                  <entry key="Samsung_S20_Plus_API_33" value="120" />
+                  <entry key="Tests" value="360" />
+                </map>
+              </option>
+            </AndroidTestResultsTableState>
+          </value>
+        </entry>
+        <entry key="1883893125">
+          <value>
+            <AndroidTestResultsTableState>
+              <option name="preferredColumnWidths">
+                <map>
+                  <entry key="Duration" value="90" />
+                  <entry key="Samsung_S20_Plus_API_33" value="120" />
                   <entry key="Tests" value="360" />
                 </map>
               </option>

@@ -1,7 +1,17 @@
 package com.tachyonmusic.di
 
 import android.app.Application
+import com.tachyonmusic.core.domain.SongMetadataExtractor
+import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
+import com.tachyonmusic.database.domain.repository.DataRepository
+import com.tachyonmusic.database.domain.repository.HistoryRepository
+import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.repository.PlaylistRepository
+import com.tachyonmusic.database.domain.repository.SettingsRepository
+import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.domain.use_case.LoadArtwork
+import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
@@ -9,7 +19,8 @@ import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
-import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.domain.Logger
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,15 +30,14 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object AppModule {
+object AppUseCaseModule {
+    @Provides
+    @Singleton
+    fun provideRegisterUserUseCase() = RegisterUser()
 
     @Provides
     @Singleton
-    fun provideRegisterUserUseCase(repository: UserRepository) = RegisterUser(repository)
-
-    @Provides
-    @Singleton
-    fun provideSignInUserUseCase(repository: UserRepository) = SignInUser(repository)
+    fun provideSignInUserUseCase() = SignInUser()
 
     @Provides
     @Singleton
@@ -35,29 +45,83 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideGetSongsUseCase(userRepository: UserRepository) = GetSongs(userRepository)
+    fun provideGetSongsUseCase(songRepository: SongRepository) = GetSongs(songRepository)
 
     @Provides
     @Singleton
-    fun provideGetLoopsUseCase(userRepository: UserRepository) = GetLoops(userRepository)
+    fun provideGetPagedSongsUseCase(songRepository: SongRepository) = GetPagedSongs(songRepository)
 
     @Provides
     @Singleton
-    fun provideGetPlaylistsUseCase(userRepository: UserRepository) = GetPlaylists(userRepository)
+    fun provideUpdateSongDatabaseUseCase(
+        songRepository: SongRepository,
+        settingsRepository: SettingsRepository,
+        fileRepository: FileRepository,
+        metadataExtractor: SongMetadataExtractor
+    ) = UpdateSongDatabase(songRepository, settingsRepository, fileRepository, metadataExtractor)
 
     @Provides
     @Singleton
-    fun provideGetHistoryUseCase(userRepository: UserRepository) = GetHistory(userRepository)
+    fun provideUpdateSettingsDatabaseUseCase(settingsRepository: SettingsRepository) =
+        UpdateSettingsDatabase(settingsRepository)
 
     @Provides
     @Singleton
-    fun provideSearchStoredPlaybacksUseCase(userRepository: UserRepository) =
-        SearchStoredPlaybacks(userRepository)
+    fun provideUpdateArtworksUseCase(
+        songRepository: SongRepository,
+        isFirstAppStart: IsFirstAppStart,
+        loadArtwork: LoadArtwork
+    ) = UpdateArtworks(songRepository, isFirstAppStart, loadArtwork)
 
     @Provides
     @Singleton
-    fun provideCreateNewLoopUseCase(userRepo: UserRepository, browser: MediaBrowserController) =
-        CreateAndSaveNewLoop(userRepo, browser)
+    fun provideUnloadArtworksUseCase(
+        songRepository: SongRepository
+    ) = UnloadArtworks(songRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetLoopsUseCase(loopRepository: LoopRepository) = GetLoops(loopRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetPagedLoopsUseCase(loopRepository: LoopRepository) = GetPagedLoops(loopRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetPlaylistsUseCase(playlistRepository: PlaylistRepository) =
+        GetPlaylists(playlistRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetPagedPlaylistsUseCase(playlistRepository: PlaylistRepository) =
+        GetPagedPlaylists(playlistRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetPagedHistoryUseCase(historyRepository: HistoryRepository) =
+        GetPagedHistory(historyRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetHistoryUseCase(historyRepository: HistoryRepository) =
+        GetHistory(historyRepository)
+
+    @Provides
+    @Singleton
+    fun provideSearchStoredPlaybacksUseCase(
+        songRepository: SongRepository,
+        loopRepository: LoopRepository,
+        playlistRepository: PlaylistRepository
+    ) = SearchStoredPlaybacks(songRepository, loopRepository, playlistRepository)
+
+    @Provides
+    @Singleton
+    fun provideCreateNewLoopUseCase(
+        songRepository: SongRepository,
+        loopRepository: LoopRepository,
+        browser: MediaBrowserController
+    ) = CreateAndSaveNewLoop(songRepository, loopRepository, browser)
 
     @Provides
     @Singleton
@@ -80,22 +144,20 @@ object AppModule {
     @Provides
     @Singleton
     fun provideGetCurrentPositionNormalizedUseCase(browser: MediaBrowserController) =
-        GetCurrentPositionNormalized(browser)
+        NormalizePosition(browser)
 
     @Provides
     @Singleton
-    fun provideGetAudioUpdateIntervalUseCase(userRepository: UserRepository) =
-        GetAudioUpdateInterval(userRepository)
+    fun provideGetAudioUpdateIntervalUseCase(settingsRepository: SettingsRepository) =
+        GetAudioUpdateInterval(settingsRepository)
 
     @Provides
     fun provideHandlePlaybackStateUseCase(browser: MediaBrowserController) =
         HandlePlaybackState(browser)
 
     @Provides
-    fun provideHandleArtworkStateUseCase(
-        browser: MediaBrowserController,
-        application: Application
-    ) = HandleArtworkState(browser, application)
+    fun provideHandleArtworkStateUseCase(browser: MediaBrowserController) =
+        HandleArtworkState(browser)
 
     @Provides
     fun provideHandleLoopStateUseCase(browser: MediaBrowserController) = HandleLoopState(browser)
@@ -106,11 +168,33 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideSetCurrentPlayback(browser: MediaBrowserController) = SetCurrentPlayback(browser)
+    fun provideSetCurrentPlaybackUseCase(browser: MediaBrowserController) =
+        SetCurrentPlayback(browser)
+
+    @Provides
+    @Singleton
+    fun provideIsFirstAppStartUseCase(app: Application) = IsFirstAppStart(app)
+
+    @Provides
+    @Singleton
+    fun provideGetRecentlyPlayedPositionUseCase(dataRepository: DataRepository) =
+        GetRecentlyPlayed(dataRepository)
+
+    @Provides
+    @Singleton
+    fun provideLogger(): Logger = Log()
+}
+
+
+@Module
+@InstallIn(SingletonComponent::class)
+object AppRepositoryModule {
+    @Provides
+    @Singleton
+    fun provideFileRepository(): FileRepository = FileRepositoryImpl()
 
     @Provides
     @Singleton
     fun provideMediaBrowserController(): MediaBrowserController =
         MediaPlaybackServiceMediaBrowserController()
 }
-

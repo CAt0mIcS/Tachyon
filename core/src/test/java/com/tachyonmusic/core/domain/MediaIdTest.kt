@@ -5,7 +5,7 @@ import com.tachyonmusic.testutils.assertEquals
 import org.junit.Test
 
 @SuppressLint("CheckResult")
-class MediaIdTest {
+internal class MediaIdTest {
 
     @Test
     fun of_remote_loop_creates_correct_media_id() {

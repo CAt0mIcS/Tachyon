@@ -1,9 +1,9 @@
 package com.tachyonmusic.domain.use_case
 
-import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.database.domain.repository.LoopRepository
 
 class GetLoops(
-    private val userRepository: UserRepository
+    private val loopRepository: LoopRepository
 ) {
-    operator fun invoke() = userRepository.loops
+    suspend operator fun invoke() = loopRepository.getLoops()
 }

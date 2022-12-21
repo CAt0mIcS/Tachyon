@@ -1,93 +1,65 @@
 package com.tachyonmusic.presentation.main
 
-import android.app.Application
-import android.util.Log
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.app.R
-import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.domain.use_case.*
-import com.tachyonmusic.domain.use_case.main.GetCurrentPositionNormalized
-import com.tachyonmusic.domain.use_case.main.GetHistory
+import com.tachyonmusic.domain.use_case.ItemClicked
+import com.tachyonmusic.domain.use_case.main.GetPagedHistory
+import com.tachyonmusic.domain.use_case.main.GetRecentlyPlayed
+import com.tachyonmusic.domain.use_case.main.NormalizePosition
+import com.tachyonmusic.domain.use_case.main.UnloadArtworks
+import com.tachyonmusic.domain.use_case.main.UpdateArtworks
+import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
+import com.tachyonmusic.domain.use_case.main.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
 import com.tachyonmusic.domain.use_case.player.SetCurrentPlayback
-import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.runOnUiThread
+import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.time.Duration
 
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val itemClicked: ItemClicked,
-    getSongs: GetSongs,
-    getLoops: GetLoops,
-    getPlaylists: GetPlaylists,
-    getHistory: GetHistory,
+    getHistory: GetPagedHistory,
     private val playerListener: PlayerListenerHandler,
-    private val getAudioUpdateInterval: GetAudioUpdateInterval,
+    val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val setCurrentPlayback: SetCurrentPlayback,
     private val pauseResumePlayback: PauseResumePlayback,
-    private val getCurrentPositionNormalized: GetCurrentPositionNormalized,
-    private val application: Application // TODO: Shouldn't be here
+    private val normalizePosition: NormalizePosition,
+    updateSettingsDatabase: UpdateSettingsDatabase,
+    updateSongDatabase: UpdateSongDatabase,
+    private val updateArtworks: UpdateArtworks,
+    private val unloadArtworks: UnloadArtworks,
+    private val getRecentlyPlayed: GetRecentlyPlayed
 ) : ViewModel() {
 
-    val songs = getSongs()
-    val loops = getLoops()
-    val playlists = getPlaylists()
-
     val isPlaying = playerListener.isPlaying
-    val currentPositionNormalized: Float
-        get() = getCurrentPositionNormalized()
-    val audioUpdateInterval: Duration
-        get() = getAudioUpdateInterval()
+    val currentPositionNormalized: Float?
+        get() = normalizePosition()
+    var recentlyPlayedPositionNormalized: Float = 0f
+        private set
 
-//    val history = getHistory()
-
-    val history = MutableStateFlow(listOf<Playback>())
-
-    private val _recentlyPlayed = mutableStateOf<Playback?>(null)
-    val recentlyPlayed: State<Playback?> = _recentlyPlayed
+    var history = getHistory(5)
 
 
     init {
-        if (songs.value.isNotEmpty()) {
-            history.value = mutableListOf<Playback>().apply { addAll(songs.value) }
+        viewModelScope.launch(Dispatchers.IO) {
+            val recentlyPlayed = getRecentlyPlayed()
+            recentlyPlayedPositionNormalized = normalizePosition(
+                recentlyPlayed.positionMs,
+                recentlyPlayed.durationMs
+            )
 
-            viewModelScope.launch(Dispatchers.IO) {
-                for (song in history.value.filterIsInstance<Song>()) {
-                    song.loadArtwork(100).map {
-                        when (it) {
-                            is Resource.Error -> Log.e(
-                                "HomeViewModel",
-                                "${song.title} - ${song.artist}: ${it.message!!.asString(application)}"
-                            )
-                            is Resource.Success -> Log.d(
-                                "HomeViewModel",
-                                "Successfully loaded cover art for ${song.title} - ${song.artist}"
-                            )
-                            else -> {}
-                        }
-                    }.collect()
-                }
-                Log.d("HomeViewModel", "Finished loading song artwork")
-            }
-
-            _recentlyPlayed.value =
-                history.value.find { (it as LocalSongImpl).path.absolutePath == "/storage/emulated/0/Music/Don't Play - JAEGER.mp3" }
-                    ?: history.value[0]
+            updateSettingsDatabase()
+            updateSongDatabase()
+            updateArtworks()
         }
     }
 
@@ -101,22 +73,50 @@ class HomeViewModel @Inject constructor(
 
     fun onItemClicked(playback: Playback) {
         itemClicked(playback)
-
-        // TODO: Unload artwork in not used songs to save memory
-        // TODO: Don't unload now playing artwork, currently is reloaded again in [PlayerViewModel]
-//        for (song in songs.value) {
-//            song.unloadArtwork()
-//        }
     }
 
+    /**
+     * TODO: BUG
+     *   Reproduce:
+     *     * Start playback (using MiniPlayer)
+     *     * Pause (using notification/MiniPlayer)
+     *     * Swipe notification
+     *     * Try to press play using the MiniPlayer (doesn't start playback)
+     */
     fun onPlayPauseClicked(playback: Playback?) {
         if (isPlaying.value)
             pauseResumePlayback(PauseResumePlayback.Action.Pause)
-        else if (!setCurrentPlayback(playback))
-            pauseResumePlayback(PauseResumePlayback.Action.Resume)
+        else {
+            viewModelScope.launch(Dispatchers.IO) {
+                if (!setCurrentPlaybackToRecentlyPlayed(playback, playWhenReady = true)) {
+                    runOnUiThreadAsync {
+                        pauseResumePlayback(PauseResumePlayback.Action.Resume)
+                    }
+                }
+            }
+        }
     }
 
     fun onMiniPlayerClicked(playback: Playback?) {
-        setCurrentPlayback(playback, false)
+        viewModelScope.launch(Dispatchers.IO) {
+            setCurrentPlaybackToRecentlyPlayed(playback)
+        }
+    }
+
+    private suspend fun setCurrentPlaybackToRecentlyPlayed(
+        playback: Playback?,
+        playWhenReady: Boolean = false
+    ): Boolean = withContext(Dispatchers.IO) {
+        val recentlyPlayedPos = getRecentlyPlayed().positionMs
+        runOnUiThread {
+            setCurrentPlayback(playback, playWhenReady, recentlyPlayedPos)
+        }
+    }
+
+    fun refreshArtwork() {
+        viewModelScope.launch(Dispatchers.IO) {
+            unloadArtworks()
+            updateArtworks(ignoreIsFirstAppStart = true)
+        }
     }
 }

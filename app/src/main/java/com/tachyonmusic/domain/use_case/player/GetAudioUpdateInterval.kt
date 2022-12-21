@@ -1,8 +1,9 @@
 package com.tachyonmusic.domain.use_case.player
 
-import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.database.domain.repository.SettingsRepository
 import kotlin.time.Duration.Companion.milliseconds
 
-class GetAudioUpdateInterval(private val userRepository: UserRepository) {
-    operator fun invoke() = 100.milliseconds
+class GetAudioUpdateInterval(private val settingsRepository: SettingsRepository) {
+    suspend operator fun invoke() =
+        settingsRepository.getSettings().audioUpdateInterval.milliseconds
 }

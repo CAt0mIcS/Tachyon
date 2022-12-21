@@ -44,7 +44,7 @@ dependencies {
 
     dagger()
 
-    localTest("implementation", false)
+    unitTest("implementation", false)
     androidTest("implementation", false)
 //    kaptAndroidTest("com.google.dagger:hilt-android-compiler:2.37")
 }

@@ -2,10 +2,10 @@ package com.tachyonmusic.media.domain.use_case
 
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.UiText
 import com.tachyonmusic.media.R
 import com.tachyonmusic.media.domain.CustomPlayer
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
 
 class PreparePlayer(
     private val player: CustomPlayer

@@ -1,9 +1,9 @@
 package com.tachyonmusic.domain.use_case
 
-import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.database.domain.repository.PlaylistRepository
 
 class GetPlaylists(
-    private val userRepository: UserRepository
+    private val playlistRepository: PlaylistRepository
 ) {
-    operator fun invoke() = userRepository.playlists
+    suspend operator fun invoke() = playlistRepository.getPlaylists()
 }

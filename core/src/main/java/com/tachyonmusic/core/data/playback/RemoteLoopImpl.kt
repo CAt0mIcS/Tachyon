@@ -2,7 +2,7 @@ package com.tachyonmusic.core.data.playback
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.tachyonmusic.core.constants.PlaybackType
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
@@ -61,5 +61,25 @@ class RemoteLoopImpl(
 
         fun build(name: String, songMediaId: MediaId, timingData: TimingDataController) =
             build(MediaId.ofRemoteLoop(name, songMediaId), timingData)
+
+        fun build(
+            mediaId: MediaId,
+            timingData: TimingDataController,
+            songTitle: String,
+            songArtist: String,
+            songDuration: Long
+        ): RemoteLoopImpl? {
+            return RemoteLoopImpl(
+                mediaId,
+                mediaId.source.replace(PlaybackType.Loop.Remote().toString(), ""),
+                timingData,
+                LocalSongImpl(
+                    mediaId.underlyingMediaId ?: return null,
+                    songTitle,
+                    songArtist,
+                    songDuration
+                )
+            )
+        }
     }
 }

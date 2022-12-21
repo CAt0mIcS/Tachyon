@@ -2,15 +2,10 @@ package com.tachyonmusic.core.data.playback
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.tachyonmusic.core.constants.PlaybackType
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.util.Resource
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 
 class RemotePlaylistImpl(
     mediaId: MediaId,
@@ -74,6 +69,18 @@ class RemotePlaylistImpl(
             RemotePlaylistImpl(
                 mediaId,
                 mediaId.source.replace(PlaybackType.Playlist.Remote().toString(), ""),
+                playbacks,
+                currentPlaylistIndex
+            )
+
+        fun build(
+            name: String,
+            playbacks: MutableList<SinglePlayback>,
+            currentPlaylistIndex: Int
+        ): Playlist =
+            RemotePlaylistImpl(
+                MediaId.ofRemotePlaylist(name),
+                name,
                 playbacks,
                 currentPlaylistIndex
             )

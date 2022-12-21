@@ -1,9 +1,9 @@
 package com.tachyonmusic.domain.use_case.main
 
-import com.tachyonmusic.user.domain.UserRepository
+import com.tachyonmusic.database.domain.repository.HistoryRepository
 
 class GetHistory(
-    private val userRepository: UserRepository
+    private val historyRepository: HistoryRepository
 ) {
-    operator fun invoke() = userRepository.history
+    suspend operator fun invoke() = historyRepository.getHistory()
 }

@@ -20,7 +20,7 @@ fun NavigationGraph(navController: NavHostController) {
             HomeScreen(navController)
         }
         composable(LibraryScreen.route) {
-            LibraryScreen()
+            LibraryScreen(navController)
         }
         composable(ProfileScreen.route) {
             ProfileScreen()

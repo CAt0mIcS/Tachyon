@@ -17,14 +17,14 @@ class ConsoleLogger : Logger {
         Log.w(CallerClassName(), message)
     }
 
-    override fun event(event: String, message: String) {
-        info("Event logged \"$event\": $message")
-    }
-
     override fun exception(e: Throwable?, message: String?) {
         Log.e(
             CallerClassName(),
             "Exception occurred: ${e?.message.toString()}\n\tMessage: $message\n${e?.stackTraceToString() ?: "No Exception"}"
         )
+    }
+
+    override fun error(message: String) {
+        Log.e(CallerClassName(), message)
     }
 }

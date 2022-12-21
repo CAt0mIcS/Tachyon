@@ -13,7 +13,7 @@ android {
         minSdk = Version.MIN_SDK
         targetSdk = Version.TARGET_SDK
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.tachyonmusic.testutils.HiltTestRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -47,9 +47,10 @@ dependencies {
     dagger()
 
     projectCore()
-    projectUser()
+    projectDatabase()
     projectUtil()
+    projectLogger()
 
-    localTest()
+    unitTest()
     androidTest()
 }

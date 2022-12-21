@@ -25,11 +25,17 @@ object Dependency {
         const val ACTIVITY = "androidx.activity:activity-compose:1.6.1"
         const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Version.COMPOSE}"
         const val COIL = "io.coil-kt:coil-compose:2.2.2"
+        const val PAGING = "androidx.paging:paging-compose:1.0.0-alpha17"
 
         object Accompanist {
             const val NAVIGATION_ANIMATION =
                 "com.google.accompanist:accompanist-navigation-animation:0.28.0"
         }
+    }
+
+    object Paging {
+        const val PAGING = "androidx.paging:paging-runtime:${Version.PAGING}"
+        const val COMPOSE = Compose.PAGING
     }
 
     object Lifecycle {
@@ -56,6 +62,15 @@ object Dependency {
         const val GSON = "com.google.code.gson:gson:2.9.0"
     }
 
+    object Jsoup {
+        const val JSOUP = "org.jsoup:jsoup:1.15.3"
+    }
+
+    object Glide {
+        const val GLIDE = "com.github.bumptech.glide:glide:4.14.2"
+        const val GLIDE_COMPOSE = "com.github.bumptech.glide:compose:1.0.0-alpha.1"
+    }
+
     object Test {
         const val ANDROIDX_CORE = "androidx.test:core:1.4.0"
         const val JUNIT = "junit:junit:4.13.2"
@@ -75,6 +90,13 @@ object Dependency {
         const val EXOPLAYER = "androidx.media3:media3-exoplayer:${Version.MEDIA3}"
         const val MEDIA_SESSION = "androidx.media3:media3-session:${Version.MEDIA3}"
         const val CAST = "androidx.media3:media3-cast:${Version.MEDIA3}"
+    }
+
+    object Room {
+        const val RUNTIME = "androidx.room:room-runtime:${Version.ROOM}"
+        const val COMPILER = "androidx.room:room-compiler:${Version.ROOM}"
+        const val COROUTINES = "androidx.room:room-ktx:${Version.ROOM}"
+        const val PAGING = "androidx.room:room-paging:${Version.ROOM}"
     }
 }
 
@@ -96,6 +118,7 @@ fun DependencyHandler.compose() {
     implementation(Dependency.Compose.ANDROID_MATERIAL)
 
     implementation(Dependency.Compose.COMPOSE_SLIDERS)
+    implementation(Dependency.Compose.PAGING)
 
     implementation(Dependency.Compose.UI)
     implementation(Dependency.Compose.COMPOSE_MATERIAL)
@@ -129,12 +152,53 @@ fun DependencyHandler.dagger() {
     kapt(Dependency.DaggerHilt.COMPILER)
 }
 
+fun DependencyHandler.paging() {
+    implementation(Dependency.Paging.PAGING)
+    implementation(Dependency.Paging.COMPOSE)
+}
+
+fun DependencyHandler.room() {
+    implementation(Dependency.Room.RUNTIME)
+    annotationProcessor(Dependency.Room.COMPILER)
+
+    implementation(Dependency.Room.PAGING)
+
+    // To use Kotlin annotation processing tool (kapt)
+    kapt(Dependency.Room.COMPILER)
+    // To use Kotlin Symbol Processing (KSP)
+//    ksp(Dependency.Room.COMPILER)
+
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation(Dependency.Room.COROUTINES)
+
+    // optional - RxJava2 support for Room
+//    implementation("androidx.room:room-rxjava2:$room_version")
+
+    // optional - RxJava3 support for Room
+//    implementation("androidx.room:room-rxjava3:$room_version")
+
+    // optional - Guava support for Room, including Optional and ListenableFuture
+//    implementation("androidx.room:room-guava:$room_version")
+
+    // optional - Test helpers
+//    testImplementation("androidx.room:room-testing:$room_version")
+}
+
 fun DependencyHandler.googleCast() {
     implementation(Dependency.Cast.CAST_FRAMEWORK)
 }
 
 fun DependencyHandler.gson() {
     implementation(Dependency.GSON.GSON)
+}
+
+fun DependencyHandler.jsoup() {
+    implementation(Dependency.Jsoup.JSOUP)
+}
+
+fun DependencyHandler.glide() {
+    implementation(Dependency.Glide.GLIDE)
+    implementation(Dependency.Glide.GLIDE_COMPOSE)
 }
 
 fun DependencyHandler.projectMedia() {
@@ -145,12 +209,8 @@ fun DependencyHandler.projectCore() {
     implementation(project(":core"))
 }
 
-fun DependencyHandler.projectUser() {
-    implementation(project(":user"))
-}
-
-fun DependencyHandler.projectArtworkDownloader() {
-    implementation(project(":artworkDownloader"))
+fun DependencyHandler.projectArtworkFetcher() {
+    implementation(project(":artworkFetcher"))
 }
 
 fun DependencyHandler.projectLogger() {
@@ -161,8 +221,12 @@ fun DependencyHandler.projectUtil() {
     implementation(project(":util"))
 }
 
+fun DependencyHandler.projectDatabase() {
+    implementation(project(":database"))
+}
 
-fun DependencyHandler.localTest(
+
+fun DependencyHandler.unitTest(
     configName: String = "testImplementation",
     addTestUtilsProject: Boolean = true
 ) {
@@ -190,6 +254,7 @@ fun DependencyHandler.androidTest(
     add(configName, Dependency.Test.JUNIT_EXT)
     add(configName, Dependency.Test.ANDROIDX_CORE)
     add(configName, Dependency.Test.TEST_RUNNER)
+    add(configName, Dependency.Room.RUNTIME)
     if (addTestUtilsProject)
         add(configName, project(":testutils"))
 }
@@ -214,6 +279,14 @@ private fun DependencyHandler.debugImplementation(depName: String) {
 
 private fun DependencyHandler.kapt(depName: String) {
     add("kapt", depName)
+}
+
+private fun DependencyHandler.ksp(depName: String) {
+    add("ksp", depName)
+}
+
+private fun DependencyHandler.annotationProcessor(depName: String) {
+    add("annotationProcessor", depName)
 }
 
 private fun DependencyHandler.testImplementation(depName: String) {

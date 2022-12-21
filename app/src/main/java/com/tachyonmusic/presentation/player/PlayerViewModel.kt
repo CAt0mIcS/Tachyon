@@ -1,55 +1,45 @@
 package com.tachyonmusic.presentation.player
 
-import android.app.Application
-import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.HandleArtworkState
 import com.tachyonmusic.domain.use_case.ItemClicked
-import com.tachyonmusic.domain.use_case.MediaStateHandler
-import com.tachyonmusic.domain.use_case.player.*
+import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
+import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
+import com.tachyonmusic.domain.use_case.player.HandleLoopState
+import com.tachyonmusic.domain.use_case.player.HandlePlaybackState
+import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
+import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
+import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
+import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.presentation.player.data.RepeatMode
-import com.tachyonmusic.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.lang.Long.max
 import javax.inject.Inject
 import kotlin.math.min
-import kotlin.time.Duration
 
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val playerListener: PlayerListenerHandler,
     private val getCurrentPosition: GetCurrentPosition,
-    private val getAudioUpdateInterval: GetAudioUpdateInterval,
+    val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val handlePlaybackState: HandlePlaybackState,
     private val handleLoopState: HandleLoopState,
     private val seekToPosition: SeekToPosition,
     private val millisecondsToReadableString: MillisecondsToReadableString,
     private val itemClicked: ItemClicked,
     private val pauseResumePlayback: PauseResumePlayback,
-    private val handleArtworkState: HandleArtworkState,
-    private val application: Application //// TODO: Shouldn't be here
+    private val handleArtworkState: HandleArtworkState
 ) : ViewModel(), MediaBrowserController.EventListener {
 
     val isPlaying = playerListener.isPlaying
 
     val currentPosition: Long
         get() = getCurrentPosition()
-    val audioUpdateInterval: Duration
-        get() = getAudioUpdateInterval()
 
     val playbackState = handlePlaybackState.playbackState
     val loopState = handleLoopState.loopState
@@ -85,6 +75,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     // TODO: Don't hard-code 10000 back/forward seek time, should be a user setting
+    // TODO: Use Player.onSeek(Back/Forward)IncrementChanged...
     fun onSeekBack() {
         seekToPosition(max(currentPosition - 10000, 0L))
     }
@@ -93,12 +84,11 @@ class PlayerViewModel @Inject constructor(
         seekToPosition(min(currentPosition + 10000, playbackState.value.duration))
     }
 
-    fun pause() {
-        pauseResumePlayback(PauseResumePlayback.Action.Pause)
-    }
-
-    fun resume() {
-        pauseResumePlayback(PauseResumePlayback.Action.Resume)
+    fun pauseResume() {
+        if (isPlaying.value)
+            pauseResumePlayback(PauseResumePlayback.Action.Pause)
+        else
+            pauseResumePlayback(PauseResumePlayback.Action.Resume)
     }
 
     fun onRepeatModeChange() {

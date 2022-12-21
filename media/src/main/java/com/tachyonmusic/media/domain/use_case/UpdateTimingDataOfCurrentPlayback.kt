@@ -1,11 +1,11 @@
 package com.tachyonmusic.media.domain.use_case
 
-import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.UiText
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.media.R
 import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.domain.CustomPlayer
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
 
 class UpdateTimingDataOfCurrentPlayback(
     private val player: CustomPlayer

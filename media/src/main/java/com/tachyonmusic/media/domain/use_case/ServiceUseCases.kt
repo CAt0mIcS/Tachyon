@@ -6,5 +6,6 @@ data class ServiceUseCases(
     val preparePlayer: PreparePlayer,
     val getSupportedCommands: GetSupportedCommands,
     val updateTimingDataOfCurrentPlayback: UpdateTimingDataOfCurrentPlayback,
-    val addNewPlaybackToHistory: AddNewPlaybackToHistory
+    val addNewPlaybackToHistory: AddNewPlaybackToHistory,
+    val saveRecentlyPlayed: SaveRecentlyPlayed
 )
