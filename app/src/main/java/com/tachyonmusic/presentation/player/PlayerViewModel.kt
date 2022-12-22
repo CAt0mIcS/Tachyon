@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.use_case.HandleArtworkState
+import com.tachyonmusic.domain.use_case.HandleCurrentPlaybackState
 import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
 import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
@@ -33,7 +33,7 @@ class PlayerViewModel @Inject constructor(
     private val millisecondsToReadableString: MillisecondsToReadableString,
     private val itemClicked: ItemClicked,
     private val pauseResumePlayback: PauseResumePlayback,
-    private val handleArtworkState: HandleArtworkState
+    private val handleCurrentPlaybackState: HandleCurrentPlaybackState
 ) : ViewModel(), MediaBrowserController.EventListener {
 
     val isPlaying = playerListener.isPlaying
@@ -47,21 +47,21 @@ class PlayerViewModel @Inject constructor(
     private var _repeatMode = mutableStateOf<RepeatMode>(RepeatMode.One)
     val repeatMode: State<RepeatMode> = _repeatMode
 
-    val artwork = handleArtworkState.artwork
+    val playback = handleCurrentPlaybackState.currentPlayback
 
 
     fun registerPlayerListeners() {
         handlePlaybackState.register()
         handleLoopState.register()
         playerListener.register()
-        handleArtworkState.register()
+        handleCurrentPlaybackState.register()
     }
 
     fun unregisterPlayerListeners() {
         handlePlaybackState.unregister()
         handleLoopState.unregister()
         playerListener.unregister()
-        handleArtworkState.unregister()
+        handleCurrentPlaybackState.unregister()
     }
 
     fun getTextForPosition(position: Long) = millisecondsToReadableString(position)
