@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -24,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
@@ -58,7 +62,7 @@ object PlayerScreen : NavigationItem("player_screen") {
 
         var loopName by remember { mutableStateOf("") }
         val playbackState by viewModel.playbackState
-        val artwork by viewModel.artwork
+        val playback by viewModel.playback
         val repeatMode by viewModel.repeatMode
 
         var isSeeking by remember { mutableStateOf(false) }
@@ -98,11 +102,17 @@ object PlayerScreen : NavigationItem("player_screen") {
                     .aspectRatio(1f)
                     .shadow(Theme.shadow.small, shape = Theme.shapes.large)
 
-                artwork?.Image(modifier = artworkModifier, contentDescription = null)
-                    ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder).Image(
-                        contentDescription = null,
-                        modifier = artworkModifier
-                    )
+                val artwork = playback?.artwork?.collectAsState()?.value
+                val isArtworkLoading = playback?.isArtworkLoading?.collectAsState()?.value ?: true
+
+                if (isArtworkLoading)
+                    CircularProgressIndicator(modifier = artworkModifier)
+                else
+                    artwork?.Image(modifier = artworkModifier, contentDescription = null)
+                        ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder).Image(
+                            contentDescription = null,
+                            modifier = artworkModifier
+                        )
             }
 
             item {
