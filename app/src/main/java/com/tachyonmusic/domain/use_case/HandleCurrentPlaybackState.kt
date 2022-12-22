@@ -8,7 +8,7 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 class HandleCurrentPlaybackState(
     browser: MediaBrowserController
 ) : MediaStateHandler(browser) {
-    private var _currentPlayback = mutableStateOf<Playback?>(null)
+    private var _currentPlayback = mutableStateOf(browser.playback)
     val currentPlayback: State<Playback?> = _currentPlayback
 
     override fun onPlaybackTransition(playback: Playback?) {
