@@ -14,7 +14,9 @@ import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserControll
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.database.data.data_source.room.RoomDatabase
 import com.tachyonmusic.database.di.DatabaseModule
+import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.util.TestFileRepository
@@ -42,8 +44,16 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun provideMediaBrowserController(): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController()
+    fun provideMediaBrowserController(
+        findPlaybackByMediaId: FindPlaybackByMediaId,
+        songRepository: SongRepository,
+        loopRepository: LoopRepository
+    ): MediaBrowserController =
+        MediaPlaybackServiceMediaBrowserController(
+            findPlaybackByMediaId,
+            songRepository,
+            loopRepository
+        )
 
     @Provides
     @Singleton
