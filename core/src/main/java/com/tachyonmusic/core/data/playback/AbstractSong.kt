@@ -74,5 +74,6 @@ abstract class AbstractSong(
         parcel.writeString(artist)
         parcel.writeLong(duration)
         parcel.writeParcelable(artwork.value, flags)
+        parcel.writeBoolean(isArtworkLoading.value)
     }
 }
