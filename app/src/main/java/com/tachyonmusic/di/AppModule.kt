@@ -198,14 +198,6 @@ object AppRepositoryModule {
 
     @Provides
     @Singleton
-    fun provideMediaBrowserController(
-        findPlaybackByMediaId: FindPlaybackByMediaId,
-        songRepository: SongRepository,
-        loopRepository: LoopRepository
-    ): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController(
-            findPlaybackByMediaId,
-            songRepository,
-            loopRepository
-        )
+    fun provideMediaBrowserController(): MediaBrowserController =
+        MediaPlaybackServiceMediaBrowserController()
 }
