@@ -360,10 +360,6 @@ object PlayerScreen : NavigationItem("player_screen") {
                     )
                 }
             }
-
-            items(50) {
-                Text("$it")
-            }
         }
     }
 }
