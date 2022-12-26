@@ -63,8 +63,7 @@ object LibraryScreen :
                     start = Theme.padding.medium,
                     top = Theme.padding.medium,
                     end = Theme.padding.medium
-                ),
-            contentPadding = PaddingValues(bottom = Theme.padding.small)
+                ), contentPadding = PaddingValues(bottom = Theme.padding.small)
         ) {
 
             item {
@@ -72,8 +71,7 @@ object LibraryScreen :
                     modifier = Modifier
                         .fillMaxWidth()
                         .shadow(
-                            Theme.shadow.small,
-                            shape = Theme.shapes.extraLarge
+                            Theme.shadow.small, shape = Theme.shapes.extraLarge
                         ) // TODO: Shadow not working?
                         .horizontalScroll(rememberScrollState())
                         .background(Theme.colors.secondary, shape = Theme.shapes.extraLarge)
@@ -82,8 +80,7 @@ object LibraryScreen :
                             top = Theme.padding.extraSmall,
                             end = Theme.padding.medium,
                             bottom = Theme.padding.extraSmall
-                        ),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        ), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
 
                     FilterItem("Songs", selectedFilter == 0) {
@@ -111,8 +108,7 @@ object LibraryScreen :
                         indication = null,
                     ) {
                         sortOptionsExpanded = true
-                    }
-                ) {
+                    }) {
                     val iconAndTextColor by animateColorAsState(
                         if (sortOptionsExpanded) Theme.colors.contrastHigh else Theme.colors.contrastLow,
                         tween(Theme.animation.short)
@@ -127,10 +123,8 @@ object LibraryScreen :
                             modifier = Modifier.scale(1.3f)
                         )
 
-                        DropdownMenu(
-                            expanded = sortOptionsExpanded,
-                            onDismissRequest = { sortOptionsExpanded = false }
-                        ) {
+                        DropdownMenu(expanded = sortOptionsExpanded,
+                            onDismissRequest = { sortOptionsExpanded = false }) {
                             DropdownMenuItem(onClick = {
                                 sortText = "Alphabetically"
                                 sortOptionsExpanded = false
@@ -159,15 +153,12 @@ object LibraryScreen :
             items(playbackItems) { playback ->
 
                 if (playback != null) {
-                    val artwork by if (playback is SinglePlayback)
-                        playback.artwork.collectAsState()
-                    else
-                        (playback as Playlist).playbacks.first().artwork.collectAsState()
+                    val artwork by if (playback is SinglePlayback) playback.artwork.collectAsState()
+                    else (playback as Playlist).playbacks.first().artwork.collectAsState()
 
                     val isArtworkLoading by playback.isArtworkLoading.collectAsState()
 
-                    HorizontalPlaybackView(
-                        playback,
+                    HorizontalPlaybackView(playback,
                         artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
                         isArtworkLoading,
                         modifier = Modifier
@@ -178,8 +169,7 @@ object LibraryScreen :
                             scope.launch {
                                 sheetState.expand()
                             }
-                        }
-                    )
+                        })
                 }
             }
         }

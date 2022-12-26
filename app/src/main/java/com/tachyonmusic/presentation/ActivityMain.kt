@@ -9,6 +9,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -46,8 +47,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
             request(Permission.ReadMediaAudio)
             rationale(getString(R.string.storage_permission_rationale))
             checkPermission { result: Boolean ->
-                if (result)
-                    println("Storage permission granted")
+                if (result) println("Storage permission granted")
                 else {
                     println("Storage permission NOT granted")
                 }
@@ -65,53 +65,42 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
             TachyonTheme {
 
                 val sheetState = rememberBottomSheetState(
-                    initialValue = BottomSheetValue.Collapsed,
-                    animationSpec = tween(
-                        durationMillis = Theme.animation.medium,
-                        easing = LinearEasing
+                    initialValue = BottomSheetValue.Collapsed, animationSpec = tween(
+                        durationMillis = Theme.animation.medium, easing = LinearEasing
                     )
                 )
                 val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
                 val navController = rememberAnimatedNavController()
 
-                Scaffold(
-                    bottomBar = {
-                        val animationSpec = tween<IntOffset>(
-                            durationMillis = Theme.animation.long,
-                            easing = LinearEasing
-                        )
+                Scaffold(bottomBar = {
+                    val animationSpec = tween<IntOffset>(
+                        durationMillis = Theme.animation.long, easing = LinearEasing
+                    )
 
-                        // TODO: Shouldn't be hard-coded: Used to make BottomNavigation disappear
-                        val offset = Int.MAX_VALUE
+                    // TODO: Shouldn't be hard-coded: Used to make BottomNavigation disappear
+                    val offset = Int.MAX_VALUE
 
-                        AnimatedVisibility(
-                            visible = sheetState.progress.fraction == 1.0f && sheetState.isCollapsed,
-                            enter = slideInVertically(
-                                animationSpec,
-                                initialOffsetY = { offset }
-                            ),
-                            exit = slideOutVertically(
-                                animationSpec,
-                                targetOffsetY = { offset }
-                            )
-                        ) {
-                            BottomNavigation(navController)
-                        }
+                    AnimatedVisibility(
+                        visible = sheetState.progress.fraction == 1.0f && sheetState.isCollapsed,
+                        enter = slideInVertically(animationSpec, initialOffsetY = { offset }),
+                        exit = slideOutVertically(animationSpec, targetOffsetY = { offset })
+                    ) {
+                        BottomNavigation(navController)
                     }
-                ) { innerPaddingScaffold ->
+                }) { innerPaddingScaffold ->
 
                     BottomSheetScaffold(
-                        scaffoldState = scaffoldState,
-                        sheetContent = {
+                        scaffoldState = scaffoldState, sheetContent = {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(innerPaddingScaffold)
+                                    // BottomSheetScaffold sets color, overwrite with Theme.colors.primary
+                                    .background(Theme.colors.primary)
                             ) {
                                 PlayerScreen(navController, sheetState)
                             }
-                        },
-                        sheetPeekHeight = 0.dp
+                        }, sheetPeekHeight = 0.dp
                     ) { innerPaddingSheet ->
 
                         Box(
@@ -132,7 +121,6 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
 
         // TODO: Should probably be somewhere else
         getSharedPreferences(SharedPrefsKeys.NAME, MODE_PRIVATE).edit()
-            .putBoolean(SharedPrefsKeys.FIRST_APP_START, false)
-            .apply()
+            .putBoolean(SharedPrefsKeys.FIRST_APP_START, false).apply()
     }
 }

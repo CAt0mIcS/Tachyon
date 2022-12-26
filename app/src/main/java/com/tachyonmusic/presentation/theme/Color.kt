@@ -2,7 +2,7 @@ package com.tachyonmusic.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 
-val LightWhite = Color.White
+val LightPrimary = Color.White
 val LightSecondary = Color(0xFFDDDDDD)
 
 //val WhiteTertiary = Color(0xFF797979)
@@ -19,5 +19,27 @@ val LightContrastLow = Color(0xB3252525)
 val LightBorderColor = LightTertiary.copy(alpha = LightTertiary.alpha * .7f)
 
 
-// TODO: Dark theme
-val Black = Color.Black
+/*********************************************************************
+ * DARK THEME
+ */
+val DarkPrimary = Color(0xFF151515)
+val DarkSecondary = LightSecondary.inverse()
+
+val DarkTertiary = Color(0xFF3A3A3A)
+
+val DarkBlue = Color(0xFF2A7AAF)
+val DarkOrange = LightOrange
+val DarkOrangePartial1 = LightOrangePartial1
+val DarkOrangePartial2 = LightOrangePartial2
+
+val DarkContrastHigh = Color(0xFFBDBDBD)
+val DarkContrastLow = LightContrastLow.inverse()
+
+val DarkBorderColor = LightBorderColor.inverse()
+
+
+private fun Color.inverse() = Color(
+    alpha - red,
+    alpha - green,
+    alpha - blue
+)
