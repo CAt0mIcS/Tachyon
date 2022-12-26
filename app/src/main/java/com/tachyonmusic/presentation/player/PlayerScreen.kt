@@ -13,10 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -51,9 +48,11 @@ import kotlinx.coroutines.delay
 
 object PlayerScreen : NavigationItem("player_screen") {
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     operator fun invoke(
         navController: NavController,
+        sheetState: BottomSheetState,
         viewModel: PlayerViewModel = hiltViewModel(),
         log: Logger = Log()
     ) {
@@ -360,6 +359,10 @@ object PlayerScreen : NavigationItem("player_screen") {
                             }
                     )
                 }
+            }
+
+            items(50) {
+                Text("$it")
             }
         }
     }

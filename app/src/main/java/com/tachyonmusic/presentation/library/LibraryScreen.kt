@@ -15,16 +15,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -44,18 +36,23 @@ import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.player.PlayerScreen
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
+import kotlinx.coroutines.launch
 
 object LibraryScreen :
     BottomNavigationItem(R.string.btmNav_library, R.drawable.ic_library, "library") {
 
+    @OptIn(ExperimentalMaterialApi::class)
     @Composable
     operator fun invoke(
         navController: NavController,
+        sheetState: BottomSheetState,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
         var selectedFilter by remember { mutableStateOf(0) }
         var sortOptionsExpanded by remember { mutableStateOf(false) }
         var sortText by remember { mutableStateOf("Alphabetically") }
+
+        val scope = rememberCoroutineScope()
 
         val playbackItems = viewModel.items.collectAsLazyPagingItems()
 
@@ -178,11 +175,12 @@ object LibraryScreen :
                             .padding(bottom = Theme.padding.extraSmall),
                         onClick = {
                             viewModel.onItemClicked(playback)
-                            navController.navigate(PlayerScreen.route)
+                            scope.launch {
+                                sheetState.expand()
+                            }
                         }
                     )
                 }
-
             }
         }
     }

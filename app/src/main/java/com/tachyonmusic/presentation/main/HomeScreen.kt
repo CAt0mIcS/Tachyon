@@ -36,6 +36,7 @@ import com.tachyonmusic.presentation.main.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.player.PlayerScreen
 import com.tachyonmusic.presentation.theme.Theme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 object HomeScreen :
@@ -45,12 +46,15 @@ object HomeScreen :
     @Composable
     operator fun invoke(
         navController: NavController,
+        sheetState: BottomSheetState,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var searchText by remember { mutableStateOf("") }
 
         val history = viewModel.history.collectAsLazyPagingItems()
         val recentlyPlayed = if (history.itemCount > 0) history[0] else null
+
+        val scope = rememberCoroutineScope()
 
         val isPlaying by viewModel.isPlaying
         var currentPosition by remember {
@@ -189,7 +193,9 @@ object HomeScreen :
                 ) {
                     playbacksView(history) {
                         viewModel.onItemClicked(it)
-                        navController.navigate(PlayerScreen.route)
+                        scope.launch {
+                            sheetState.expand()
+                        }
                     }
                 }
             }
@@ -217,7 +223,9 @@ object HomeScreen :
                 ) {
                     playbacksView(playbacks = history) {
                         viewModel.onItemClicked(it)
-                        navController.navigate(PlayerScreen.route)
+                        scope.launch {
+                            sheetState.expand()
+                        }
                     }
                 }
 
@@ -240,7 +248,9 @@ object HomeScreen :
                         onPlayPauseClicked = { viewModel.onPlayPauseClicked(recentlyPlayed) },
                         onClick = {
                             viewModel.onMiniPlayerClicked(recentlyPlayed)
-                            navController.navigate(PlayerScreen.route)
+                            scope.launch {
+                                sheetState.expand()
+                            }
                         }
                     )
                 }

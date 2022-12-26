@@ -1,11 +1,13 @@
 package com.tachyonmusic.presentation.player
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.material.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.presentation.ActivityMain
+import com.tachyonmusic.presentation.main.HomeScreen
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -21,19 +23,24 @@ internal class PlayerScreenTest {
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<ActivityMain>()
 
-    @OptIn(ExperimentalAnimationApi::class)
+    @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
     @Before
     fun setUp() {
         hiltRule.inject()
         composeRule.setContent {
             val navController = rememberAnimatedNavController()
+            val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Expanded)
+            val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
+
             TachyonTheme {
-                AnimatedNavHost(
-                    navController = navController,
-                    startDestination = PlayerScreen.route
+                BottomSheetScaffold(
+                    scaffoldState = scaffoldState,
+                    sheetContent = { PlayerScreen(navController, sheetState) },
                 ) {
-                    composable(PlayerScreen.route) {
-                        PlayerScreen(navController)
+                    AnimatedNavHost(navController, startDestination = HomeScreen.route) {
+                        composable(HomeScreen.route) {
+                            HomeScreen(navController, sheetState)
+                        }
                     }
                 }
             }
