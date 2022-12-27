@@ -10,6 +10,7 @@ import com.tachyonmusic.database.domain.model.PlaybackEntity
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.util.ArtworkUpdateInfo
 import com.tachyonmusic.database.util.updateArtwork
 import com.tachyonmusic.logger.Log
 import com.tachyonmusic.logger.domain.Logger
@@ -30,12 +31,12 @@ class LoadArtwork(
     private val log: Logger = Log(),
     private val artworkFetcher: ArtworkFetcher = ArtworkFetcher()
 ) {
-    suspend operator fun invoke(playback: PlaybackEntity?) {
+    suspend operator fun invoke(playback: PlaybackEntity?): ArtworkUpdateInfo? {
         if (playback !is SinglePlaybackEntity)
-            return
+            return null
 
-        when (val artwork = artworkSource.get(playback)) {
-            is RemoteArtwork -> updateArtwork(
+        return when (val artwork = artworkSource.get(playback)) {
+            is RemoteArtwork -> ArtworkUpdateInfo(
                 songRepo,
                 loopRepo,
                 playback,
@@ -43,17 +44,23 @@ class LoadArtwork(
                 artwork.uri.toURL().toString()
             )
 
-            is EmbeddedArtwork -> updateArtwork(songRepo, loopRepo, playback, ArtworkType.EMBEDDED)
+            is EmbeddedArtwork -> ArtworkUpdateInfo(
+                songRepo,
+                loopRepo,
+                playback,
+                ArtworkType.EMBEDDED
+            )
             null -> {
                 /**
                  * We haven't yet found any artwork for this song, search the web if there's anything
-                 * we can find
+                 * we can find (TODO: Don't hard-code imageSize 1000)
                  */
                 log.info("Searching web for artwork for ${playback.title} - ${playback.artist}")
+                var artworkInfo: ArtworkUpdateInfo? = null
                 artworkFetcher.query(playback.title, playback.artist, 1000)
                     .onEach { res ->
                         if (res is Resource.Success)
-                            updateArtwork(
+                            artworkInfo = ArtworkUpdateInfo(
                                 songRepo,
                                 loopRepo,
                                 playback,
@@ -64,6 +71,7 @@ class LoadArtwork(
                             log.exception(res.exception, res.message?.asString(appContext))
                         }
                     }.collect()
+                artworkInfo
             }
 
             else -> TODO("Unknown artwork type")

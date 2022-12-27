@@ -53,6 +53,14 @@ fun getArtworkForPlayback(playback: PlaybackEntity?, log: Logger = Log()): Artwo
     }
 
 
+data class ArtworkUpdateInfo(
+    val songRepository: SongRepository,
+    val loopRepository: LoopRepository,
+    val playback: PlaybackEntity?,
+    val artworkType: String,
+    val artworkUrl: String? = null
+)
+
 /**
  * Takes a [PlaybackEntity] and updates the artwork of the underlying song wherever it's saved.
  * So if we update a loop's artwork, the artwork for the song in the [SongRepository] is also set.
@@ -90,3 +98,11 @@ suspend fun updateArtwork(
     }
     return true
 }
+
+suspend fun updateArtwork(info: ArtworkUpdateInfo) = updateArtwork(
+    info.songRepository,
+    info.loopRepository,
+    info.playback,
+    info.artworkType,
+    info.artworkUrl
+)

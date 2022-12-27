@@ -116,7 +116,7 @@ class HomeViewModel @Inject constructor(
     fun refreshArtwork() {
         viewModelScope.launch(Dispatchers.IO) {
             unloadArtworks()
-            updateArtworks(ignoreIsFirstAppStart = true)
+            updateArtworks(shouldUpdate = true)
         }
     }
 }
