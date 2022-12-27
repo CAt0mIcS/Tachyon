@@ -21,10 +21,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.SharedPrefsKeys
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.presentation.player.PlayerScreen
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
@@ -32,13 +35,22 @@ import com.tachyonmusic.presentation.util.Permission
 import com.tachyonmusic.presentation.util.PermissionManager
 import com.tachyonmusic.presentation.util.plus
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import okhttp3.internal.wait
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
 
     @Inject
+    lateinit var log: Logger
+
+    @Inject
     lateinit var mediaBrowser: MediaBrowserController
+
+    // TODO: Better way of awaiting two events
+    private val permissionJob = CompletableDeferred<Boolean>()
+    private val mediaControllerConnectionJob = Job()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,20 +59,30 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
             request(Permission.ReadMediaAudio)
             rationale(getString(R.string.storage_permission_rationale))
             checkPermission { result: Boolean ->
-                if (result) println("Storage permission granted")
-                else {
-                    println("Storage permission NOT granted")
-                }
+                permissionJob.complete(result)
 
+                if (result) log.info("Storage permission granted")
+                else log.info("Storage permission NOT granted")
             }
         }
 
         mediaBrowser.registerLifecycle(lifecycle)
         mediaBrowser.registerEventListener(this)
+
+        lifecycleScope.launch {
+            mediaControllerConnectionJob.join()
+            permissionJob.await()
+
+            setupUi()
+        }
+    }
+
+    override fun onConnected() {
+        mediaControllerConnectionJob.complete()
     }
 
     @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
-    override fun onConnected() {
+    private fun setupUi() {
         setContent {
             TachyonTheme {
 
