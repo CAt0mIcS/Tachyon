@@ -28,89 +28,25 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val itemClicked: ItemClicked,
     getHistory: GetPagedHistory,
-    private val playerListener: PlayerListenerHandler,
-    val getAudioUpdateInterval: GetAudioUpdateInterval,
-    private val setCurrentPlayback: SetCurrentPlayback,
-    private val pauseResumePlayback: PauseResumePlayback,
-    private val normalizePosition: NormalizePosition,
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
     private val updateArtworks: UpdateArtworks,
     private val unloadArtworks: UnloadArtworks,
-    private val getRecentlyPlayed: GetRecentlyPlayed
 ) : ViewModel() {
-
-    val isPlaying = playerListener.isPlaying
-    val currentPositionNormalized: Float?
-        get() = normalizePosition()
-    var recentlyPlayedPositionNormalized: Float = 0f
-        private set
 
     var history = getHistory(5)
 
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            val recentlyPlayed = getRecentlyPlayed()
-            recentlyPlayedPositionNormalized = normalizePosition(
-                recentlyPlayed.positionMs,
-                recentlyPlayed.durationMs
-            )
-
             updateSettingsDatabase()
             updateSongDatabase()
             updateArtworks()
         }
     }
 
-    fun registerPlayerListener() {
-        playerListener.register()
-    }
-
-    fun unregisterPlayerListener() {
-        playerListener.unregister()
-    }
-
     fun onItemClicked(playback: Playback) {
         itemClicked(playback)
-    }
-
-    /**
-     * TODO: BUG
-     *   Reproduce:
-     *     * Start playback (using MiniPlayer)
-     *     * Pause (using notification/MiniPlayer)
-     *     * Swipe notification
-     *     * Try to press play using the MiniPlayer (doesn't start playback)
-     */
-    fun onPlayPauseClicked(playback: Playback?) {
-        if (isPlaying.value)
-            pauseResumePlayback(PauseResumePlayback.Action.Pause)
-        else {
-            viewModelScope.launch(Dispatchers.IO) {
-                if (!setCurrentPlaybackToRecentlyPlayed(playback, playWhenReady = true)) {
-                    runOnUiThreadAsync {
-                        pauseResumePlayback(PauseResumePlayback.Action.Resume)
-                    }
-                }
-            }
-        }
-    }
-
-    fun onMiniPlayerClicked(playback: Playback?) {
-        viewModelScope.launch(Dispatchers.IO) {
-            setCurrentPlaybackToRecentlyPlayed(playback)
-        }
-    }
-
-    private suspend fun setCurrentPlaybackToRecentlyPlayed(
-        playback: Playback?,
-        playWhenReady: Boolean = false
-    ): Boolean = withContext(Dispatchers.IO) {
-        val recentlyPlayedPos = getRecentlyPlayed().positionMs
-        runOnUiThread {
-            setCurrentPlayback(playback, playWhenReady, recentlyPlayedPos)
-        }
     }
 
     fun refreshArtwork() {

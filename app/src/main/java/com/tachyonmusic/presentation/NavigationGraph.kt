@@ -4,6 +4,8 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.BottomSheetState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -16,10 +18,10 @@ import com.tachyonmusic.presentation.profile.ProfileScreen
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun NavigationGraph(navController: NavHostController, sheetState: BottomSheetState) {
+fun NavigationGraph(navController: NavHostController, sheetState: BottomSheetState, miniPlayerHeight: MutableState<Dp>) {
     AnimatedNavHost(navController, startDestination = HomeScreen.route) {
         composable(HomeScreen.route) {
-            HomeScreen(navController, sheetState)
+            HomeScreen(navController, sheetState, miniPlayerHeight)
         }
         composable(LibraryScreen.route) {
             LibraryScreen(navController, sheetState)

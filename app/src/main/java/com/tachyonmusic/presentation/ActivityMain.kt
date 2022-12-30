@@ -19,6 +19,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
@@ -92,45 +94,36 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                     )
                 )
                 val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
+
+                val miniPlayerHeight = remember { mutableStateOf(66.dp) }
+
                 val navController = rememberAnimatedNavController()
 
                 Scaffold(bottomBar = {
-                    val animationSpec = tween<IntOffset>(
-                        durationMillis = Theme.animation.long, easing = LinearEasing
-                    )
-
-                    // TODO: Shouldn't be hard-coded: Used to make BottomNavigation disappear
-                    val offset = Int.MAX_VALUE
-
-                    AnimatedVisibility(
-                        visible = sheetState.progress.fraction == 1.0f && sheetState.isCollapsed,
-                        enter = slideInVertically(animationSpec, initialOffsetY = { offset }),
-                        exit = slideOutVertically(animationSpec, targetOffsetY = { offset })
-                    ) {
-                        BottomNavigation(navController)
-                    }
+                    BottomNavigation(navController)
                 }) { innerPaddingScaffold ->
 
                     BottomSheetScaffold(
-                        scaffoldState = scaffoldState, sheetContent = {
+                        modifier = Modifier.padding(innerPaddingScaffold),
+                        scaffoldState = scaffoldState,
+                        sheetContent = {
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(innerPaddingScaffold)
-                                    // BottomSheetScaffold sets color, overwrite with Theme.colors.primary
-                                    .background(Theme.colors.primary)
                             ) {
-                                PlayerScreen(navController, sheetState)
+                                PlayerScreen(navController, sheetState, miniPlayerHeight)
                             }
-                        }, sheetPeekHeight = 0.dp
+                        },
+                        sheetPeekHeight = 66.dp,
+                        sheetBackgroundColor = Theme.colors.primary
                     ) { innerPaddingSheet ->
 
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(innerPaddingScaffold + innerPaddingSheet)
+                                .padding(innerPaddingSheet)
                         ) {
-                            NavigationGraph(navController, sheetState)
+                            NavigationGraph(navController, sheetState, miniPlayerHeight)
                         }
                     }
                 }

@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -47,43 +48,19 @@ object HomeScreen :
     operator fun invoke(
         navController: NavController,
         sheetState: BottomSheetState,
+        miniPlayerHeight: MutableState<Dp>,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var searchText by remember { mutableStateOf("") }
-
         val history = viewModel.history.collectAsLazyPagingItems()
-        val recentlyPlayed = if (history.itemCount > 0) history[0] else null
 
         val scope = rememberCoroutineScope()
 
-        val isPlaying by viewModel.isPlaying
-        var currentPosition by remember {
-            mutableStateOf(
-                viewModel.currentPositionNormalized ?: viewModel.recentlyPlayedPositionNormalized
-            )
-        }
-
-        var bottomPaddingRequiredByMiniPlayer by remember { mutableStateOf(0.dp) }
-
-        DisposableEffect(Unit) {
-            viewModel.registerPlayerListener()
-            onDispose {
-                viewModel.unregisterPlayerListener()
-            }
-        }
-
-        LaunchedEffect(Unit) {
-            while (true) {
-                currentPosition = viewModel.currentPositionNormalized
-                    ?: viewModel.recentlyPlayedPositionNormalized
-                delay(viewModel.getAudioUpdateInterval())
-            }
-        }
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(bottom = bottomPaddingRequiredByMiniPlayer)
+            contentPadding = PaddingValues(bottom = miniPlayerHeight.value)
         ) {
 
             item {
@@ -231,62 +208,6 @@ object HomeScreen :
 
             }
         }
-
-        if (recentlyPlayed != null) {
-
-            val artwork by recentlyPlayed.artwork.collectAsState()
-
-            Layout(
-                modifier = Modifier.fillMaxSize(),
-                content = {
-                    MiniPlayer(
-                        playback = recentlyPlayed,
-                        artwork = artwork
-                            ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
-                        currentPosition = currentPosition,
-                        isPlaying = isPlaying,
-                        onPlayPauseClicked = { viewModel.onPlayPauseClicked(recentlyPlayed) },
-                        onClick = {
-                            viewModel.onMiniPlayerClicked(recentlyPlayed)
-                            scope.launch {
-                                sheetState.expand()
-                            }
-                        }
-                    )
-                }
-            ) { measurables, constraints ->
-                val looseConstraints = constraints.copy(
-                    minWidth = 0,
-                    maxWidth = constraints.maxWidth,
-                    minHeight = 0,
-                    maxHeight = constraints.maxHeight
-                )
-
-                // Measure each child
-                val placeables = measurables.map { measurable ->
-                    measurable.measure(looseConstraints)
-                }
-
-                layout(constraints.maxWidth, constraints.maxHeight) {
-                    // Place children in the parent layout
-                    placeables.forEach { placeable ->
-                        // This applies bottom content padding to the LazyColumn handling the entire other screen
-                        // so that we can scroll down far enough
-                        // TODO: Many recompositions?
-                        if (bottomPaddingRequiredByMiniPlayer == 0.dp && placeable.height != 0) {
-                            bottomPaddingRequiredByMiniPlayer = placeable.height.toDp()
-                            println("BottomPadding $bottomPaddingRequiredByMiniPlayer")
-                        }
-
-                        // Position items at the bottom of the screen, excluding BottomNavBar
-                        placeable.placeRelative(
-                            x = 0,
-                            y = constraints.maxHeight - placeable.height
-                        )
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -328,7 +249,5 @@ private fun LazyListScope.playbacksView(
                 isArtworkLoading = isArtworkLoading
             )
         }
-
-
     }
 }

@@ -3,10 +3,14 @@ package com.tachyonmusic.presentation.player
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.HandleCurrentPlaybackState
 import com.tachyonmusic.domain.use_case.ItemClicked
+import com.tachyonmusic.domain.use_case.main.GetPagedHistory
+import com.tachyonmusic.domain.use_case.main.GetRecentlyPlayed
+import com.tachyonmusic.domain.use_case.main.NormalizePosition
 import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
 import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
 import com.tachyonmusic.domain.use_case.player.HandleLoopState
@@ -15,8 +19,15 @@ import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.PlayerListenerHandler
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
+import com.tachyonmusic.domain.use_case.player.SetCurrentPlayback
 import com.tachyonmusic.presentation.player.data.RepeatMode
+import com.tachyonmusic.util.runOnUiThread
+import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.lang.Long.max
 import javax.inject.Inject
 import kotlin.math.min
@@ -33,7 +44,11 @@ class PlayerViewModel @Inject constructor(
     private val millisecondsToReadableString: MillisecondsToReadableString,
     private val itemClicked: ItemClicked,
     private val pauseResumePlayback: PauseResumePlayback,
-    private val handleCurrentPlaybackState: HandleCurrentPlaybackState
+    private val handleCurrentPlaybackState: HandleCurrentPlaybackState,
+    private val normalizePosition: NormalizePosition,
+    private val getRecentlyPlayed: GetRecentlyPlayed,
+    private val setCurrentPlayback: SetCurrentPlayback,
+    private val getHistory: GetPagedHistory
 ) : ViewModel(), MediaBrowserController.EventListener {
 
     val isPlaying = playerListener.isPlaying
@@ -48,6 +63,23 @@ class PlayerViewModel @Inject constructor(
     val repeatMode: State<RepeatMode> = _repeatMode
 
     val playback = handleCurrentPlaybackState.currentPlayback
+
+    val currentPositionNormalized: Float?
+        get() = normalizePosition()
+    var recentlyPlayedPositionNormalized: Float = 0f
+        private set
+
+    var history = getHistory(5)
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            val recentlyPlayed = getRecentlyPlayed()
+            recentlyPlayedPositionNormalized = normalizePosition(
+                recentlyPlayed.positionMs,
+                recentlyPlayed.durationMs
+            )
+        }
+    }
 
 
     fun registerPlayerListeners() {
@@ -93,5 +125,29 @@ class PlayerViewModel @Inject constructor(
 
     fun onRepeatModeChange() {
         _repeatMode.value = repeatMode.value.next
+    }
+
+
+    fun onMiniPlayerPlayPauseClicked() {
+        if (isPlaying.value)
+            pauseResumePlayback(PauseResumePlayback.Action.Pause)
+        else
+            pauseResumePlayback(PauseResumePlayback.Action.Resume)
+    }
+
+    fun onMiniPlayerClicked(playback: Playback?) {
+        viewModelScope.launch(Dispatchers.IO) {
+            setCurrentPlaybackToRecentlyPlayed(playback)
+        }
+    }
+
+    private suspend fun setCurrentPlaybackToRecentlyPlayed(
+        playback: Playback?,
+        playWhenReady: Boolean = false
+    ): Boolean = withContext(Dispatchers.IO) {
+        val recentlyPlayedPos = getRecentlyPlayed().positionMs
+        runOnUiThread {
+            setCurrentPlayback(playback, playWhenReady, recentlyPlayedPos)
+        }
     }
 }
