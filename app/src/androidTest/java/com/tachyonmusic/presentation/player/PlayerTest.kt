@@ -16,7 +16,7 @@ import org.junit.Rule
 
 
 @HiltAndroidTest
-internal class PlayerScreenTest {
+internal class PlayerTest {
     @get:Rule(order = 0)
     val hiltRule = HiltAndroidRule(this)
 
@@ -35,7 +35,7 @@ internal class PlayerScreenTest {
             TachyonTheme {
                 BottomSheetScaffold(
                     scaffoldState = scaffoldState,
-                    sheetContent = { PlayerScreen(navController, sheetState) },
+                    sheetContent = { Player(navController, sheetState) },
                 ) {
                     AnimatedNavHost(navController, startDestination = HomeScreen.route) {
                         composable(HomeScreen.route) {

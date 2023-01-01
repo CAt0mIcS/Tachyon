@@ -149,7 +149,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         }
 
     override val currentPosition: Long?
-        get() = browser?.currentPosition
+        get() = if (browser?.currentMediaItem == null) null else browser?.currentPosition
 
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {

@@ -15,7 +15,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -32,11 +31,8 @@ import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.data.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
-import com.tachyonmusic.presentation.main.component.MiniPlayer
 import com.tachyonmusic.presentation.main.component.VerticalPlaybackView
-import com.tachyonmusic.presentation.player.PlayerScreen
 import com.tachyonmusic.presentation.theme.Theme
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 

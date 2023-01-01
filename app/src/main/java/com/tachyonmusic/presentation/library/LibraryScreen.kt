@@ -33,7 +33,6 @@ import com.tachyonmusic.data.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.library.component.FilterItem
-import com.tachyonmusic.presentation.player.PlayerScreen
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
 import kotlinx.coroutines.launch

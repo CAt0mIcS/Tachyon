@@ -136,10 +136,6 @@ object AppUseCaseModule {
         PauseResumePlayback(browser)
 
     @Provides
-    fun providePlayerListenerHandlerUseCase(browser: MediaBrowserController) =
-        PlayerListenerHandler(browser)
-
-    @Provides
     @Singleton
     fun provideGetCurrentPositionUseCase(browser: MediaBrowserController) =
         GetCurrentPosition(browser)
@@ -153,17 +149,6 @@ object AppUseCaseModule {
     @Singleton
     fun provideGetAudioUpdateIntervalUseCase(settingsRepository: SettingsRepository) =
         GetAudioUpdateInterval(settingsRepository)
-
-    @Provides
-    fun provideHandlePlaybackStateUseCase(browser: MediaBrowserController) =
-        HandlePlaybackState(browser)
-
-    @Provides
-    fun provideHandleArtworkStateUseCase(browser: MediaBrowserController) =
-        HandleCurrentPlaybackState(browser)
-
-    @Provides
-    fun provideHandleLoopStateUseCase(browser: MediaBrowserController) = HandleLoopState(browser)
 
     @Provides
     @Singleton
