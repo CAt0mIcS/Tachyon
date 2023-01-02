@@ -39,7 +39,7 @@ class PlayerViewModel @Inject constructor(
     private val normalizePosition: NormalizePosition,
     private val getRecentlyPlayed: GetRecentlyPlayed,
     private val setCurrentPlayback: SetCurrentPlayback,
-    private val getHistory: GetHistory,
+    getHistory: GetHistory,
     private val browser: MediaBrowserController
 ) : ViewModel() {
 
@@ -57,9 +57,6 @@ class PlayerViewModel @Inject constructor(
 
     private var recentlyPlayedPosition: Long = 0L
 
-    private var _history = mutableStateOf(emptyList<Playback>())
-    val history: State<List<Playback>> = _history
-
     private var _recentlyPlayed = mutableStateOf<Playback?>(null)
     val recentlyPlayed: State<Playback?> = _recentlyPlayed
 
@@ -73,8 +70,7 @@ class PlayerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            _history.value = getHistory()
-            _recentlyPlayed.value = history.value.firstOrNull()
+            _recentlyPlayed.value = getHistory().firstOrNull()
             updatePlaybackState(recentlyPlayed.value)
 
             val recentlyPlayed = getRecentlyPlayed()

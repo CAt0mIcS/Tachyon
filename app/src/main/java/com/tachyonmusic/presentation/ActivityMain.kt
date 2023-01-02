@@ -9,7 +9,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.*
+import androidx.compose.material.BottomSheetScaffold
+import androidx.compose.material.BottomSheetValue
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.Scaffold
+import androidx.compose.material.rememberBottomSheetScaffoldState
+import androidx.compose.material.rememberBottomSheetState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -26,7 +31,9 @@ import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.Permission
 import com.tachyonmusic.presentation.util.PermissionManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -97,7 +104,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                         sheetContent = {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxSize()
+                                    .fillMaxSize(),
                             ) {
                                 Player(navController, sheetState, miniPlayerHeight)
                             }
