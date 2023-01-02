@@ -90,7 +90,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                 )
                 val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
 
-                val miniPlayerHeight = remember { mutableStateOf(0.dp) }
+                val miniPlayerHeight = remember { mutableStateOf(66.dp) } // TODO set to 0
 
                 val navController = rememberAnimatedNavController()
 
