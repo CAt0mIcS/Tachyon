@@ -13,3 +13,8 @@ data class PlaybackState(
     var isArtworkLoading: StateFlow<Boolean> = MutableStateFlow(true),
     var children: List<SinglePlayback> = emptyList()
 )
+
+data class SeekIncrementsState(
+    var forward: Long = 0L,
+    var backward: Long = 0L
+)

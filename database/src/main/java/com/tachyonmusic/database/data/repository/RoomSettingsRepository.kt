@@ -3,6 +3,9 @@ package com.tachyonmusic.database.data.repository
 import com.tachyonmusic.database.data.data_source.SettingsDao
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 
 class RoomSettingsRepository(
     private val dao: SettingsDao
@@ -14,6 +17,8 @@ class RoomSettingsRepository(
         dao.setSettings(settings)
         return settings
     }
+
+    override fun observe() = dao.observe().map { it ?: SettingsEntity() }
 
     override suspend fun removeExcludedFilesRange(toRemove: List<String>) {
         val settings = getSettings()
@@ -33,5 +38,9 @@ class RoomSettingsRepository(
 
     override suspend fun setSeekBackIncrement(intervalMs: Long) {
         dao.setSeekBackIncrement(intervalMs)
+    }
+
+    override suspend fun setShouldMillisecondsBeShown(showMilliseconds: Boolean) {
+        dao.setShouldMillisecondsBeShown(showMilliseconds)
     }
 }

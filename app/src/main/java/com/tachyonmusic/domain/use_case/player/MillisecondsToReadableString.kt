@@ -4,7 +4,7 @@ import java.util.Locale
 
 
 class MillisecondsToReadableString {
-    operator fun invoke(progress: Long?): String {
+    operator fun invoke(progress: Long?, includeMilliseconds: Boolean): String {
         if (progress == null)
             return ""
 
@@ -13,22 +13,24 @@ class MillisecondsToReadableString {
         val minute = progress / (1000 * 60) % 60
         val hour = progress / (1000 * 60 * 60) % 24
 
-        return if (hour != 0L)
-            String.format(
-                Locale.getDefault(),
-                "%d:%d:%02d.%03d",
-                hour,
-                minute,
-                second,
-                millis
-            )
-        else
-            String.format(
-                Locale.getDefault(),
-                "%d:%02d.%03d",
-                minute,
-                second,
-                millis
-            )
+        val formatStr = StringBuilder("%d:%02d")
+        val args = mutableListOf<Long>()
+        if (hour != 0L) {
+            formatStr.insert(0, "%d:")
+            args += hour
+        }
+
+        args.addAll(listOf(minute, second))
+
+        if (includeMilliseconds) {
+            formatStr.append(".%03d")
+            args += millis
+        }
+
+        return String.format(
+            Locale.getDefault(),
+            formatStr.toString(),
+            *args.toTypedArray()
+        )
     }
 }

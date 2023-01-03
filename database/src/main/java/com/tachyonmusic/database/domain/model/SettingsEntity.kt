@@ -14,6 +14,11 @@ data class SettingsEntity(
     val maxPlaybacksInHistory: Int = 25,
     val seekForwardIncrementMs: Long = 10000,
     val seekBackIncrementMs: Long = 10000,
+    /**
+     * Specifies if milliseconds should be shown in the current position and duration texts above
+     * the seek bar in the player
+     */
+    val shouldMillisecondsBeShown: Boolean = false,
     val excludedSongFiles: List<String> = emptyList(),
     @PrimaryKey val id: Int = 0
 )

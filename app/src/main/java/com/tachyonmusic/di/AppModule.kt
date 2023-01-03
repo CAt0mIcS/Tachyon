@@ -67,6 +67,11 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
+    fun provideObserveSettings(settingsRepository: SettingsRepository) =
+        ObserveSettings(settingsRepository)
+
+    @Provides
+    @Singleton
     fun provideUpdateArtworksUseCase(
         songRepository: SongRepository,
         isFirstAppStart: IsFirstAppStart,
@@ -150,11 +155,6 @@ object AppUseCaseModule {
     @Provides
     @Singleton
     fun provideSeekPositionUseCase(browser: MediaBrowserController) = SeekPosition(browser)
-
-    @Provides
-    @Singleton
-    fun provideGetSeekIncrementsUseCase(settingsRepository: SettingsRepository) =
-        GetSeekIncrements(settingsRepository)
 
     @Provides
     @Singleton

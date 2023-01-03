@@ -7,21 +7,23 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.ItemClicked
+import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.main.GetHistory
 import com.tachyonmusic.domain.use_case.main.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.main.NormalizePosition
 import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
 import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
-import com.tachyonmusic.domain.use_case.player.GetSeekIncrements
 import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
-import com.tachyonmusic.domain.use_case.player.SeekIncrements
 import com.tachyonmusic.domain.use_case.player.SeekPosition
 import com.tachyonmusic.domain.use_case.player.SetCurrentPlayback
 import com.tachyonmusic.presentation.player.data.PlaybackState
 import com.tachyonmusic.presentation.player.data.RepeatMode
+import com.tachyonmusic.presentation.player.data.SeekIncrementsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,7 +40,7 @@ class PlayerViewModel @Inject constructor(
     private val getRecentlyPlayed: GetRecentlyPlayed,
     private val setCurrentPlayback: SetCurrentPlayback,
     getHistory: GetHistory,
-    getSeekIncrements: GetSeekIncrements,
+    observeSettings: ObserveSettings,
     private val browser: MediaBrowserController
 ) : ViewModel() {
 
@@ -65,8 +67,10 @@ class PlayerViewModel @Inject constructor(
     private var _playbackState = mutableStateOf(PlaybackState())
     val playbackState: State<PlaybackState> = _playbackState
 
-    private var _seekIncrement = mutableStateOf(SeekIncrements())
-    val seekIncrement: State<SeekIncrements> = _seekIncrement
+    private var _seekIncrement = mutableStateOf(SeekIncrementsState())
+    val seekIncrement: State<SeekIncrementsState> = _seekIncrement
+
+    private var showMillisecondsInPositionText: Boolean = false
 
     private val mediaListener = MediaListener()
 
@@ -81,10 +85,13 @@ class PlayerViewModel @Inject constructor(
                 recentlyPlayed.durationMs
             )
             recentlyPlayedPosition = recentlyPlayed.positionMs
-
-            val seekIncrement = getSeekIncrements()
-            _seekIncrement.value = SeekIncrements(seekIncrement.forward, seekIncrement.backward)
         }
+
+        observeSettings().map {
+            _seekIncrement.value =
+                SeekIncrementsState(it.seekForwardIncrementMs, it.seekBackIncrementMs)
+            showMillisecondsInPositionText = it.shouldMillisecondsBeShown
+        }.launchIn(viewModelScope)
     }
 
     fun registerMediaListener() {
@@ -95,7 +102,8 @@ class PlayerViewModel @Inject constructor(
         browser.unregisterEventListener(mediaListener)
     }
 
-    fun getTextForPosition(position: Long) = millisecondsToReadableString(position)
+    fun getTextForPosition(position: Long) =
+        millisecondsToReadableString(position, showMillisecondsInPositionText)
 
     fun onSeekTo(position: Long) {
         seekPosition(position)
