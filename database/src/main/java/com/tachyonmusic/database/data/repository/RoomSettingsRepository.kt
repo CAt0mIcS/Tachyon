@@ -26,4 +26,12 @@ class RoomSettingsRepository(
         val newRange = settings.excludedSongFiles.toMutableSet().apply { addAll(toAdd) }
         dao.updateExcludedSongFiles(newRange.toList())
     }
+
+    override suspend fun setSeekForwardIncrement(intervalMs: Long) {
+        dao.setSeekForwardIncrement(intervalMs)
+    }
+
+    override suspend fun setSeekBackIncrement(intervalMs: Long) {
+        dao.setSeekBackIncrement(intervalMs)
+    }
 }

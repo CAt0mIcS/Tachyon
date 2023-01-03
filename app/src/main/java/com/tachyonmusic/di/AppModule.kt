@@ -1,7 +1,6 @@
 package com.tachyonmusic.di
 
 import android.app.Application
-import android.content.Context
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
@@ -11,7 +10,6 @@ import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.database.domain.use_case.LoadArtwork
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -26,7 +24,6 @@ import com.tachyonmusic.logger.domain.Logger
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -152,7 +149,12 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideSeekToPositionUseCase(browser: MediaBrowserController) = SeekToPosition(browser)
+    fun provideSeekPositionUseCase(browser: MediaBrowserController) = SeekPosition(browser)
+
+    @Provides
+    @Singleton
+    fun provideGetSeekIncrementsUseCase(settingsRepository: SettingsRepository) =
+        GetSeekIncrements(settingsRepository)
 
     @Provides
     @Singleton

@@ -8,4 +8,6 @@ interface SettingsRepository {
 
     suspend fun removeExcludedFilesRange(toRemove: List<String>)
     suspend fun addExcludedFilesRange(toAdd: List<String>)
+    suspend fun setSeekForwardIncrement(intervalMs: Long)
+    suspend fun setSeekBackIncrement(intervalMs: Long)
 }

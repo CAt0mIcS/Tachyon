@@ -20,4 +20,10 @@ interface SettingsDao {
 
     @Query("UPDATE SettingsEntity SET excludedSongFiles=:excludedFiles")
     suspend fun updateExcludedSongFiles(excludedFiles: List<String>)
+
+    @Query("UPDATE SettingsEntity SET seekForwardIncrementMs=:intervalMs")
+    suspend fun setSeekForwardIncrement(intervalMs: Long)
+
+    @Query("UPDATE SettingsEntity SET seekBackIncrementMs=:intervalMs")
+    suspend fun setSeekBackIncrement(intervalMs: Long)
 }

@@ -12,27 +12,25 @@ import com.tachyonmusic.domain.use_case.main.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.main.NormalizePosition
 import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
 import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
+import com.tachyonmusic.domain.use_case.player.GetSeekIncrements
 import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
-import com.tachyonmusic.domain.use_case.player.SeekToPosition
+import com.tachyonmusic.domain.use_case.player.SeekIncrements
+import com.tachyonmusic.domain.use_case.player.SeekPosition
 import com.tachyonmusic.domain.use_case.player.SetCurrentPlayback
 import com.tachyonmusic.presentation.player.data.PlaybackState
 import com.tachyonmusic.presentation.player.data.RepeatMode
-import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.lang.Long.max
 import javax.inject.Inject
-import kotlin.math.min
 
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val getCurrentPosition: GetCurrentPosition,
     val getAudioUpdateInterval: GetAudioUpdateInterval,
-    private val seekToPosition: SeekToPosition,
+    private val seekPosition: SeekPosition,
     private val millisecondsToReadableString: MillisecondsToReadableString,
     private val itemClicked: ItemClicked,
     private val pauseResumePlayback: PauseResumePlayback,
@@ -40,6 +38,7 @@ class PlayerViewModel @Inject constructor(
     private val getRecentlyPlayed: GetRecentlyPlayed,
     private val setCurrentPlayback: SetCurrentPlayback,
     getHistory: GetHistory,
+    getSeekIncrements: GetSeekIncrements,
     private val browser: MediaBrowserController
 ) : ViewModel() {
 
@@ -66,6 +65,9 @@ class PlayerViewModel @Inject constructor(
     private var _playbackState = mutableStateOf(PlaybackState())
     val playbackState: State<PlaybackState> = _playbackState
 
+    private var _seekIncrement = mutableStateOf(SeekIncrements())
+    val seekIncrement: State<SeekIncrements> = _seekIncrement
+
     private val mediaListener = MediaListener()
 
     init {
@@ -79,6 +81,9 @@ class PlayerViewModel @Inject constructor(
                 recentlyPlayed.durationMs
             )
             recentlyPlayedPosition = recentlyPlayed.positionMs
+
+            val seekIncrement = getSeekIncrements()
+            _seekIncrement.value = SeekIncrements(seekIncrement.forward, seekIncrement.backward)
         }
     }
 
@@ -93,21 +98,19 @@ class PlayerViewModel @Inject constructor(
     fun getTextForPosition(position: Long) = millisecondsToReadableString(position)
 
     fun onSeekTo(position: Long) {
-        seekToPosition(position)
+        seekPosition(position)
     }
 
     fun onItemClicked(playback: Playback?) {
         itemClicked(playback)
     }
 
-    // TODO: Don't hard-code 10000 back/forward seek time, should be a user setting
-    // TODO: Use Player.onSeek(Back/Forward)IncrementChanged...
     fun onSeekBack() {
-        seekToPosition(max(currentPosition - 10000, 0L))
+        seekPosition(currentPosition - seekIncrement.value.backward)
     }
 
     fun onSeekForward() {
-        seekToPosition(min(currentPosition + 10000, playbackState.value.duration))
+        seekPosition(currentPosition + seekIncrement.value.forward)
     }
 
     fun pauseResume() {

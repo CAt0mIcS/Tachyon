@@ -12,6 +12,8 @@ data class SettingsEntity(
     val songIncDecInterval: Int = 100,
     val audioUpdateInterval: Int = 100,
     val maxPlaybacksInHistory: Int = 25,
+    val seekForwardIncrementMs: Long = 10000,
+    val seekBackIncrementMs: Long = 10000,
     val excludedSongFiles: List<String> = emptyList(),
     @PrimaryKey val id: Int = 0
 )

@@ -48,6 +48,8 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
     fun play()
     fun pause()
     fun seekTo(pos: Long)
+    fun seekForward()
+    fun seekBack()
 
     interface EventListener {
         fun onConnected() {}
