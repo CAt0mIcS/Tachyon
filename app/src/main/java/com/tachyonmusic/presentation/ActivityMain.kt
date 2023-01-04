@@ -106,7 +106,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                                 modifier = Modifier
                                     .fillMaxSize(),
                             ) {
-                                Player(navController, sheetState, miniPlayerHeight)
+                                Player(sheetState, miniPlayerHeight)
                             }
                         },
                         sheetPeekHeight = miniPlayerHeight.value,

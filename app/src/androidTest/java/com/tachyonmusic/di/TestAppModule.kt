@@ -2,9 +2,14 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import androidx.room.Room
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.ToNumberPolicy
 import com.tachyonmusic.core.data.playback.RemoteLoopImpl
 import com.tachyonmusic.core.data.playback.RemotePlaylistImpl
+import com.tachyonmusic.core.di.CoreModule
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
@@ -20,6 +25,8 @@ import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.util.TestFileRepository
+import com.tachyonmusic.util.TestMediaBrowserController
+import com.tachyonmusic.util.TestSongMetadataExtractor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.components.SingletonComponent
@@ -30,9 +37,17 @@ import javax.inject.Singleton
 @Module
 @TestInstallIn(
     components = [SingletonComponent::class],
-    replaces = [DatabaseModule::class, AppRepositoryModule::class]
+    replaces = [DatabaseModule::class, AppRepositoryModule::class, CoreModule::class]
 )
 object TestAppModule {
+    @Provides
+    @Singleton
+    fun provideGSON(): Gson = GsonBuilder().apply {
+        registerTypeAdapter(MediaId::class.java, MediaId.Serializer())
+        registerTypeAdapter(TimingData::class.java, TimingData.Serializer())
+        setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE)
+    }.create()
+
     @Provides
     @Singleton
     fun provideFileRepository(): FileRepository = TestFileRepository()
@@ -45,7 +60,11 @@ object TestAppModule {
     @Provides
     @Singleton
     fun provideMediaBrowserController(): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController()
+        TestMediaBrowserController()
+
+    @Provides
+    @Singleton
+    fun provideSongMetadataExtractor(): SongMetadataExtractor = TestSongMetadataExtractor()
 
     @Provides
     @Singleton

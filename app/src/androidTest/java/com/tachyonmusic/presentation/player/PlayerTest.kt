@@ -1,16 +1,37 @@
 package com.tachyonmusic.presentation.player
 
+import androidx.activity.compose.setContent
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.unit.dp
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.presentation.ActivityMain
+import com.tachyonmusic.presentation.NavigationGraph
+import com.tachyonmusic.presentation.authentication.RegisterScreen
+import com.tachyonmusic.presentation.authentication.SignInScreen
+import com.tachyonmusic.presentation.library.LibraryScreen
 import com.tachyonmusic.presentation.main.HomeScreen
+import com.tachyonmusic.presentation.profile.ProfileScreen
 import com.tachyonmusic.presentation.theme.TachyonTheme
+import com.tachyonmusic.presentation.theme.Theme
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import kotlinx.coroutines.launch
 import org.junit.Before
 import org.junit.Rule
 
@@ -23,23 +44,52 @@ internal class PlayerTest {
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<ActivityMain>()
 
-    @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
+    @OptIn(ExperimentalMaterialApi::class)
     @Before
     fun setUp() {
         hiltRule.inject()
         composeRule.setContent {
-            val navController = rememberAnimatedNavController()
-            val sheetState = rememberBottomSheetState(initialValue = BottomSheetValue.Expanded)
-            val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
-
             TachyonTheme {
-                BottomSheetScaffold(
-                    scaffoldState = scaffoldState,
-                    sheetContent = { Player(navController, sheetState) },
-                ) {
-                    AnimatedNavHost(navController, startDestination = HomeScreen.route) {
-                        composable(HomeScreen.route) {
-                            HomeScreen(navController, sheetState)
+                val sheetState = rememberBottomSheetState(
+                    initialValue = BottomSheetValue.Collapsed, animationSpec = tween(
+                        durationMillis = Theme.animation.medium, easing = LinearEasing
+                    )
+                )
+                val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
+                val scope = rememberCoroutineScope()
+
+                val miniPlayerHeight = remember { mutableStateOf(0.dp) }
+
+                Scaffold(bottomBar = {
+                    // Simulate [BottomNavigation] bar
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp)
+                            .background(Theme.colors.contrastHigh)
+                    )
+                }) { innerPaddingScaffold ->
+
+                    BottomSheetScaffold(
+                        modifier = Modifier.padding(innerPaddingScaffold),
+                        scaffoldState = scaffoldState,
+                        sheetContent = {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                            ) {
+                                Player(sheetState, miniPlayerHeight)
+                            }
+                        },
+                        sheetPeekHeight = miniPlayerHeight.value,
+                        sheetBackgroundColor = Theme.colors.primary
+                    ) { innerPaddingSheet ->
+
+                        Button(
+                            modifier = Modifier.padding(innerPaddingSheet),
+                            onClick = { scope.launch { sheetState.expand() } }
+                        ) {
+                            Text("Expand")
                         }
                     }
                 }

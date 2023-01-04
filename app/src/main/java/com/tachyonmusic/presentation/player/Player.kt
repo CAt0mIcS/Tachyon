@@ -56,7 +56,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun Player(
-    navController: NavController,
     sheetState: BottomSheetState,
     miniPlayerHeight: MutableState<Dp>,
     viewModel: PlayerViewModel = hiltViewModel(),

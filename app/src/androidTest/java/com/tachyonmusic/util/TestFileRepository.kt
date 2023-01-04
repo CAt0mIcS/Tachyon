@@ -9,6 +9,8 @@ internal class TestFileRepository : FileRepository {
         directory: File,
         extensions: List<String>
     ): List<File> = List(100) {
-        File(Environment.getExternalStorageDirectory().absolutePath + "/Music/TestFile$it.mp3")
+        File("${basePath}TestFile$it.mp3")
     }
+
+    val basePath = Environment.getExternalStorageDirectory().absolutePath + "/Music/"
 }

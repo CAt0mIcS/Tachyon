@@ -16,11 +16,8 @@ class CreateAndSaveNewLoop(
     // TODO: [UiText.StringResource] instead of [UiText.DynamicString]
     suspend operator fun invoke(
         name: String
-    ): Resource<Unit> {
-        if (browser.playback?.mediaId == null || browser.timingData == null ||
-            browser.timingData?.isEmpty() == true ||
-            (browser.timingData!![0].startTime == 0L && browser.timingData!![0].endTime == browser.playback?.duration)
-        )
+    ): Resource<LoopEntity> {
+        if (isInvalidPlayback() || hasNoTimingData() || isInvalidTimingData())
             return Resource.Error(UiText.DynamicString("Invalid loop"))
 
         /**
@@ -45,6 +42,18 @@ class CreateAndSaveNewLoop(
         )
 
         loopRepository.add(loop)
-        return Resource.Success()
+        return Resource.Success(loop)
     }
+
+    private fun isInvalidPlayback() = browser.playback == null
+    private fun hasNoTimingData() =
+        browser.timingData == null || browser.timingData?.isEmpty() == true
+
+    /**
+     * Invalid if we only have one entry and it goes from the beginning to the end
+     */
+    private fun isInvalidTimingData() = browser.timingData!!.all {
+        it.startTime == 0L && it.endTime == browser.playback?.duration
+    }
+
 }

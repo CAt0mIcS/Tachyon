@@ -36,7 +36,7 @@ class LocalSongImpl(
         parcel.readLong()
     ) {
         artwork.value = parcel.readParcelable(Artwork::class.java.classLoader)
-        isArtworkLoading.value = parcel.readBoolean()
+        isArtworkLoading.value = parcel.readBoolean() //TODO
     }
 
     companion object {
