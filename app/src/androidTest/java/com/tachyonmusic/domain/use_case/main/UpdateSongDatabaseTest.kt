@@ -9,7 +9,9 @@ import com.tachyonmusic.testutils.tryInject
 import com.tachyonmusic.util.TestSongMetadataExtractor
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -17,6 +19,7 @@ import org.junit.Test
 import java.io.File
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 internal class UpdateSongDatabaseTest {
 
@@ -50,7 +53,7 @@ internal class UpdateSongDatabaseTest {
     }
 
     @Test
-    fun allSongsAreAddedToEmptyDatabaseWithNoExclusions(): Unit = runBlocking {
+    fun allSongsAreAddedToEmptyDatabaseWithNoExclusions() = runTest {
         val updateSongDatabase = UpdateSongDatabase(
             RoomSongRepository(database.songDao),
             RoomSettingsRepository(database.settingsDao),
@@ -69,7 +72,7 @@ internal class UpdateSongDatabaseTest {
     }
 
     @Test
-    fun allNotExcludedSongsAreAddedToEmptyDatabase(): Unit = runBlocking {
+    fun allNotExcludedSongsAreAddedToEmptyDatabase() = runTest {
         val expectedSize = allFiles.size - excludedIndices.size
         val expectedFiles = mutableListOf<File>().apply { addAll(allFiles) }
 
@@ -98,7 +101,7 @@ internal class UpdateSongDatabaseTest {
     // TODO: Tests fail due to [File.exists] check in [UpdateSongDatabase]
     //   create temporary files to bypass check
 //    @Test
-//    fun newExclusionsAreRemovedFromPopulatedDatabase(): Unit = runBlocking {
+//    fun newExclusionsAreRemovedFromPopulatedDatabase() = runTest {
 //        val settingsRepo = RoomSettingsRepository(database.settingsDao)
 //
 //        val expectedFiles = mutableListOf<File>().apply {
@@ -124,7 +127,7 @@ internal class UpdateSongDatabaseTest {
 //    }
 //
 //    @Test
-//    fun removingExclusionsAddsThemToDatabase(): Unit = runBlocking {
+//    fun removingExclusionsAddsThemToDatabase() = runTest {
 //        val settingsRepo = RoomSettingsRepository(database.settingsDao)
 //
 //        val expectedFiles = mutableListOf<File>().apply {

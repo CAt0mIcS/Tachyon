@@ -15,7 +15,8 @@ import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.TestMediaBrowserController
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -23,6 +24,7 @@ import java.io.File
 import javax.inject.Inject
 
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 internal class CreateAndSaveNewLoopTest {
     @get:Rule
@@ -49,7 +51,7 @@ internal class CreateAndSaveNewLoopTest {
     fun setUp() {
         hiltRule.tryInject()
 
-        runBlocking {
+        runTest {
             updateSongDatabase()
         }
 
@@ -63,13 +65,13 @@ internal class CreateAndSaveNewLoopTest {
     }
 
     @Test
-    fun nullPlaybackReturnsError(): Unit = runBlocking {
+    fun nullPlaybackReturnsError() = runTest {
         browser.playback = null
         assert(createAndSaveNewLoop(name) is Resource.Error)
     }
 
     @Test
-    fun invalidTimingDataReturnsError(): Unit = runBlocking {
+    fun invalidTimingDataReturnsError() = runTest {
         browser.playback = LocalSongImpl(MediaId("*0*DoesntExist.mp3"), "Title", "Artist", 10000L)
 
         browser.timingData = null
@@ -88,8 +90,8 @@ internal class CreateAndSaveNewLoopTest {
     }
 
     @Test
-    fun timingDataWithOneStartingAtZeroAndEndingAtDurationAndOthersReturnsSuccess(): Unit =
-        runBlocking {
+    fun timingDataWithOneStartingAtZeroAndEndingAtDurationAndOthersReturnsSuccess() =
+        runTest {
             browser.playback = getSong()
 
             browser.duration = 10000L
@@ -98,13 +100,13 @@ internal class CreateAndSaveNewLoopTest {
         }
 
     @Test
-    fun invalidSongReturnsError(): Unit = runBlocking {
+    fun invalidSongReturnsError() = runTest {
         browser.playback = LocalSongImpl(MediaId("*0*DoesntExist.mp3"), "Title", "Artist", 10000L)
         assert(createAndSaveNewLoop(name) is Resource.Error)
     }
 
     @Test
-    fun correctSongReturnsCorrectLoop(): Unit = runBlocking {
+    fun correctSongReturnsCorrectLoop() = runTest {
         browser.playback = getSong()
         browser.timingData = mutableListOf(TimingData(0, 323L), TimingData(443L, 6666L))
 
@@ -113,7 +115,7 @@ internal class CreateAndSaveNewLoopTest {
     }
 
     @Test
-    fun correctLoopReturnsCorrectLoop(): Unit = runBlocking {
+    fun correctLoopReturnsCorrectLoop() = runTest {
         browser.playback = getLoop()
         browser.timingData = mutableListOf(TimingData(0, 323L), TimingData(443L, 6666L))
 
