@@ -86,6 +86,7 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             _recentlyPlayed.value = getHistory().firstOrNull()
             updatePlaybackState(recentlyPlayed.value)
+            updateArtworkState(recentlyPlayed.value)
 
             val recentlyPlayed = getRecentlyPlayed()
             recentlyPlayedPositionNormalized = normalizePosition(
@@ -156,6 +157,14 @@ class PlayerViewModel @Inject constructor(
         )
     }
 
+    private fun updateArtworkState(playback: Playback?) {
+        if (playback == null)
+            return
+
+        _artworkState.value =
+            ArtworkState(artwork = playback.artwork, isArtworkLoading = playback.isArtworkLoading)
+    }
+
     private inner class MediaListener : MediaBrowserController.EventListener {
         override fun onPlaybackTransition(playback: Playback?) {
             updatePlaybackState(playback)
@@ -169,9 +178,7 @@ class PlayerViewModel @Inject constructor(
                  *   thus we have a lot of recompositions
                  */
                 songObserverJob = observeSongs(playback.mediaId).map {
-                    _artworkState.value =
-                        ArtworkState(artwork = it.artwork, isArtworkLoading = it.isArtworkLoading)
-
+                    updateArtworkState(it)
                 }.launchIn(viewModelScope)
             }
         }

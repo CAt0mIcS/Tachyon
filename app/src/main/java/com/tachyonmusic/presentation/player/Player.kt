@@ -107,7 +107,7 @@ fun Player(
      */
     if (recentlyPlayed != null && !sheetState.isAtTop) {
 
-        val artwork by recentlyPlayed!!.artwork.collectAsState()
+        val artwork by artworkState.artwork.collectAsState()
 
         /**
          * TODO
