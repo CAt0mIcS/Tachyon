@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -24,8 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
@@ -53,7 +52,7 @@ object LibraryScreen :
 
         val scope = rememberCoroutineScope()
 
-        val playbackItems = viewModel.items.collectAsLazyPagingItems()
+        val playbackItems by viewModel.items
 
         LazyColumn(
             modifier = Modifier
@@ -151,25 +150,23 @@ object LibraryScreen :
 
             items(playbackItems) { playback ->
 
-                if (playback != null) {
-                    val artwork by if (playback is SinglePlayback) playback.artwork.collectAsState()
-                    else (playback as Playlist).playbacks.first().artwork.collectAsState()
+                val artwork by if (playback is SinglePlayback) playback.artwork.collectAsState()
+                else (playback as Playlist).playbacks.first().artwork.collectAsState()
 
-                    val isArtworkLoading by playback.isArtworkLoading.collectAsState()
+                val isArtworkLoading by playback.isArtworkLoading.collectAsState()
 
-                    HorizontalPlaybackView(playback,
-                        artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
-                        isArtworkLoading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = Theme.padding.extraSmall),
-                        onClick = {
-                            viewModel.onItemClicked(playback)
-                            scope.launch {
-                                sheetState.expand()
-                            }
-                        })
-                }
+                HorizontalPlaybackView(playback,
+                    artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+                    isArtworkLoading,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = Theme.padding.extraSmall),
+                    onClick = {
+                        viewModel.onItemClicked(playback)
+                        scope.launch {
+                            sheetState.expand()
+                        }
+                    })
             }
         }
     }

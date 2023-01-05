@@ -45,7 +45,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetSongsUseCase(songRepository: SongRepository) = GetSongs(songRepository)
+    fun provideObserveSongsUseCase(songRepository: SongRepository) = ObserveSongs(songRepository)
 
     @Provides
     @Singleton
@@ -86,7 +86,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetLoopsUseCase(loopRepository: LoopRepository) = GetLoops(loopRepository)
+    fun provideObserveLoopsUseCase(loopRepository: LoopRepository) = ObserveLoops(loopRepository)
 
     @Provides
     @Singleton
@@ -94,8 +94,8 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetPlaylistsUseCase(playlistRepository: PlaylistRepository) =
-        GetPlaylists(playlistRepository)
+    fun provideObservePlaylistsUseCase(playlistRepository: PlaylistRepository) =
+        ObservePlaylists(playlistRepository)
 
     @Provides
     @Singleton
@@ -104,13 +104,13 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetPagedHistoryUseCase(historyRepository: HistoryRepository) =
-        GetPagedHistory(historyRepository)
+    fun provideGetHistoryUseCase(historyRepository: HistoryRepository) =
+        GetHistory(historyRepository)
 
     @Provides
     @Singleton
-    fun provideGetHistoryUseCase(historyRepository: HistoryRepository) =
-        GetHistory(historyRepository)
+    fun provideObserveHistoryUseCase(historyRepository: HistoryRepository) =
+        ObserveHistory(historyRepository)
 
     @Provides
     @Singleton

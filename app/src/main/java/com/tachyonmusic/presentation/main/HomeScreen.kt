@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -25,8 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.data.PlaceholderArtwork
@@ -48,7 +47,7 @@ object HomeScreen :
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var searchText by remember { mutableStateOf("") }
-        val history = viewModel.history.collectAsLazyPagingItems()
+        val history by viewModel.history
 
         val scope = rememberCoroutineScope()
 
@@ -56,7 +55,10 @@ object HomeScreen :
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(bottom = miniPlayerHeight.value)
+            contentPadding = PaddingValues(
+                start = Theme.padding.medium,
+                bottom = miniPlayerHeight.value + Theme.padding.medium
+            )
         ) {
 
             item {
@@ -209,41 +211,26 @@ object HomeScreen :
 
 
 private fun LazyListScope.playbacksView(
-    playbacks: LazyPagingItems<Playback>,
+    playbacks: List<Playback>,
     onClick: (Playback) -> Unit
 ) {
-    items(playbacks.itemCount) { i ->
+    items(playbacks) { playback ->
 
-        // Apply extra padding to the start of the first playback and to the end of the last
-        val padding = if (i == 0) {
-            PaddingValues(start = Theme.padding.medium, end = Theme.padding.extraSmall / 2f)
-        } else if (i > 0 && i < playbacks.itemCount - 1) {
-            PaddingValues(
-                start = Theme.padding.extraSmall / 2f,
-                end = Theme.padding.extraSmall / 2f
-            )
-        } else {
-            PaddingValues(
-                start = Theme.padding.extraSmall / 2f,
-                end = Theme.padding.medium
-            )
-        }
+        val artwork by playback.artwork.collectAsState()
+        val isArtworkLoading by playback.isArtworkLoading.collectAsState()
 
-        val playback = playbacks[i]
-        if (playback != null) {
-            val artwork by playback.artwork.collectAsState()
-            val isArtworkLoading by playback.isArtworkLoading.collectAsState()
-
-            VerticalPlaybackView(
-                modifier = Modifier
-                    .padding(padding)
-                    .clickable {
-                        onClick(playback)
-                    },
-                playback = playback,
-                artwork = artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
-                isArtworkLoading = isArtworkLoading
-            )
-        }
+        VerticalPlaybackView(
+            modifier = Modifier
+                .padding(
+                    start = Theme.padding.extraSmall / 2f,
+                    end = Theme.padding.extraSmall / 2f
+                )
+                .clickable {
+                    onClick(playback)
+                },
+            playback = playback,
+            artwork = artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+            isArtworkLoading = isArtworkLoading
+        )
     }
 }

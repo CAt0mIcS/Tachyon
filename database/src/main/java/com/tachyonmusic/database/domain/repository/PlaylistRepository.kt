@@ -14,6 +14,8 @@ interface PlaylistRepository {
         initialLoadSize: Int = pageSize
     ): Flow<PagingData<Playlist>>
 
+    fun observe(): Flow<List<Playlist>>
+
     suspend fun getPlaylistEntities(): List<PlaylistEntity>
     suspend fun add(playlist: PlaylistEntity)
     suspend fun addAll(playlists: List<PlaylistEntity>)

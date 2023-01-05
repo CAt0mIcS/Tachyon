@@ -37,6 +37,12 @@ class RoomLoopRepository(
         }
     }
 
+    override fun observe() = dao.observe().map { loops ->
+        loops.map {
+            it.toLoop()
+        }
+    }
+
     override suspend fun getLoopEntities(): List<LoopEntity> = dao.getLoops()
 
     override suspend fun add(loop: LoopEntity) {

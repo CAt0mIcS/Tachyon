@@ -2,9 +2,8 @@ package com.tachyonmusic.domain.use_case.main
 
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 
-class GetPagedHistory(
+class ObserveHistory(
     private val historyRepository: HistoryRepository
 ) {
-    operator fun invoke(pageSize: Int, prefetchDistance: Int = pageSize) =
-        historyRepository.getPagedHistory(pageSize, prefetchDistance)
+    operator fun invoke() = historyRepository.observe()
 }

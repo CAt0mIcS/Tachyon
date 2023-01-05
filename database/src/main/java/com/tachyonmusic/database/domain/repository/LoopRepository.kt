@@ -14,6 +14,8 @@ interface LoopRepository {
         initialLoadSize: Int = pageSize
     ): Flow<PagingData<Loop>>
 
+    fun observe(): Flow<List<Loop>>
+
     suspend fun getLoopEntities(): List<LoopEntity>
     suspend fun add(loop: LoopEntity)
     suspend fun addAll(loops: List<LoopEntity>)

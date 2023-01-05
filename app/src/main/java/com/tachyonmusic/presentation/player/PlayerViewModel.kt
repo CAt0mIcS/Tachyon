@@ -6,9 +6,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.GetHistory
 import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.ObserveSettings
-import com.tachyonmusic.domain.use_case.main.GetHistory
 import com.tachyonmusic.domain.use_case.main.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.main.NormalizePosition
 import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval

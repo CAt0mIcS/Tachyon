@@ -41,6 +41,12 @@ class RoomPlaylistRepository(
         }
     }
 
+    override fun observe() = dao.observe().map { playlists ->
+        playlists.map {
+            it.toPlaylist(songRepo, loopRepo)
+        }
+    }
+
     override suspend fun getPlaylistEntities(): List<PlaylistEntity> = dao.getPlaylists()
 
     override suspend fun add(playlist: PlaylistEntity) {
