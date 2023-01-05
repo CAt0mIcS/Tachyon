@@ -20,6 +20,9 @@ interface SongDao {
     fun observe(): Flow<List<SongEntity>>
 
     @Query("SELECT * FROM SongEntity WHERE mediaId=:mediaId")
+    fun observeByMediaId(mediaId: MediaId): Flow<SongEntity>
+
+    @Query("SELECT * FROM SongEntity WHERE mediaId=:mediaId")
     suspend fun getSongWithMediaId(mediaId: MediaId): SongEntity?
 
     @Query("SELECT * FROM SongEntity WHERE artworkType IN (:artworkTypes)")

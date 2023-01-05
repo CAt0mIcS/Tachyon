@@ -15,6 +15,7 @@ interface SongRepository {
     ): Flow<PagingData<Song>>
 
     fun observe(): Flow<List<Song>>
+    fun observeByMediaId(mediaId: MediaId): Flow<Song>
 
     suspend fun findByMediaId(mediaId: MediaId): SongEntity?
 

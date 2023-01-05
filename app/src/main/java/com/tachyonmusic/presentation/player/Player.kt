@@ -69,6 +69,7 @@ fun Player(
     val isPlaying by viewModel.isPlaying
 
     val playbackState by viewModel.playbackState
+    val artworkState by viewModel.artworkState
 
     val scope = rememberCoroutineScope()
     val recentlyPlayed by viewModel.recentlyPlayed
@@ -184,8 +185,8 @@ fun Player(
                     .aspectRatio(1f)
                     .shadow(Theme.shadow.small, shape = Theme.shapes.large)
 
-                val artwork by playbackState.artwork.collectAsState()
-                val isArtworkLoading by playbackState.isArtworkLoading.collectAsState()
+                val artwork by artworkState.artwork.collectAsState()
+                val isArtworkLoading by artworkState.isArtworkLoading.collectAsState()
 
                 if (isArtworkLoading)
                     CircularProgressIndicator(modifier = artworkModifier)

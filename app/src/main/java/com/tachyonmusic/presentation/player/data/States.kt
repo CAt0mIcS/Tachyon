@@ -9,9 +9,12 @@ data class PlaybackState(
     var title: String = "",
     var artist: String = "",
     var duration: Long = 0,
+    var children: List<SinglePlayback> = emptyList()
+)
+
+data class ArtworkState(
     var artwork: StateFlow<Artwork?> = MutableStateFlow(null),
     var isArtworkLoading: StateFlow<Boolean> = MutableStateFlow(true),
-    var children: List<SinglePlayback> = emptyList()
 )
 
 data class SeekIncrementsState(

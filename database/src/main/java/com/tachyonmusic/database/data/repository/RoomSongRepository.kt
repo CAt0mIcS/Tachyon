@@ -42,6 +42,10 @@ class RoomSongRepository(
         }
     }
 
+    override fun observeByMediaId(mediaId: MediaId) = dao.observeByMediaId(mediaId).map {
+        it.toSong()
+    }
+
     override suspend fun findByMediaId(mediaId: MediaId): SongEntity? =
         dao.getSongWithMediaId(mediaId)
 
