@@ -8,14 +8,15 @@ import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
+import com.tachyonmusic.domain.util.removeFirst
 import com.tachyonmusic.logger.Log
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.util.File
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import java.io.File
 
 /**
  * Checks if every song that is not excluded is saved in the database. If a song was removed by the
@@ -45,9 +46,10 @@ class UpdateSongDatabase(
         songRepo.removeIf {
             val path = it.mediaId.path
             if (path != null) {
-                paths.remove(path)
-                settings.excludedSongFiles.contains(path.absolutePath) ||
-                        !path.exists() || !path.isFile
+                paths.removeFirst { it.absolutePath == path.absolutePath }
+                val contains = settings.excludedSongFiles.contains(path.absolutePath)
+                val notIsFile = !path.isFile
+                contains || notIsFile
             } else TODO("Invalid path null")
         }
 
@@ -57,7 +59,7 @@ class UpdateSongDatabase(
             val songs = mutableListOf<Deferred<SongMetadataExtractor.SongMetadata?>>()
             for (path in paths) {
                 songs += async(Dispatchers.IO) {
-                    metadataExtractor.loadMetadata(Uri.fromFile(path))
+                    metadataExtractor.loadMetadata(Uri.fromFile(path.raw))
                 }
             }
 

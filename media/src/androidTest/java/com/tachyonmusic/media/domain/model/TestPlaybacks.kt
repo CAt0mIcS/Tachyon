@@ -9,7 +9,7 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
-import java.io.File
+import com.tachyonmusic.util.File
 
 internal class TestSong(
     mediaId: MediaId,

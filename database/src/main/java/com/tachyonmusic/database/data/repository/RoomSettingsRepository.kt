@@ -3,8 +3,6 @@ package com.tachyonmusic.database.data.repository
 import com.tachyonmusic.database.data.data_source.SettingsDao
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 
 class RoomSettingsRepository(

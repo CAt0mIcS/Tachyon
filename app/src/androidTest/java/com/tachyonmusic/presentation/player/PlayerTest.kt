@@ -1,7 +1,5 @@
 package com.tachyonmusic.presentation.player
 
-import androidx.activity.compose.setContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -17,16 +15,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.navigation.animation.AnimatedNavHost
-import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.presentation.ActivityMain
-import com.tachyonmusic.presentation.NavigationGraph
-import com.tachyonmusic.presentation.authentication.RegisterScreen
-import com.tachyonmusic.presentation.authentication.SignInScreen
-import com.tachyonmusic.presentation.library.LibraryScreen
-import com.tachyonmusic.presentation.main.HomeScreen
-import com.tachyonmusic.presentation.profile.ProfileScreen
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
 import dagger.hilt.android.testing.HiltAndroidRule

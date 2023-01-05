@@ -12,8 +12,6 @@ import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.util.launch
-import kotlinx.coroutines.Dispatchers
 
 /**
  * TODO: Optimize Artwork loading in [getArtworkForPlayback], especially the [EmbeddedArtwork] part

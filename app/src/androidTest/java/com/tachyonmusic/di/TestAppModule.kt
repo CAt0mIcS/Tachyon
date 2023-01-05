@@ -15,16 +15,13 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
+import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.database.data.data_source.room.RoomDatabase
 import com.tachyonmusic.database.di.DatabaseModule
-import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.util.TestFileRepository
 import com.tachyonmusic.util.TestMediaBrowserController
 import com.tachyonmusic.util.TestSongMetadataExtractor
 import dagger.Module
@@ -50,7 +47,7 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun provideFileRepository(): FileRepository = TestFileRepository()
+    fun provideFileRepository(): FileRepository = FileRepositoryImpl()
 
     @Provides
     @Singleton

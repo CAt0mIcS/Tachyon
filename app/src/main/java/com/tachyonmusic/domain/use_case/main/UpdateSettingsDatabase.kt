@@ -1,8 +1,7 @@
 package com.tachyonmusic.domain.use_case.main
 
 import com.tachyonmusic.database.domain.repository.SettingsRepository
-import com.tachyonmusic.domain.repository.MediaBrowserController
-import java.io.File
+import com.tachyonmusic.util.File
 
 /**
  * Updates [SettingsEntity.excludedSongFiles] to make sure that all songs in the list exist

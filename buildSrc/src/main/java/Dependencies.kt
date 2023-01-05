@@ -73,7 +73,7 @@ object Dependency {
 
     object Test {
         const val ANDROIDX_CORE = "androidx.test:core:1.4.0"
-        const val JUNIT = "junit:junit:4.13.2"
+        const val JUNIT = "junit:junit:4.12"
         const val ARCH_CORE_TESTING = "androidx.arch.core:core-testing:2.1.0"
         const val COROUTINES_TEST = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
 
@@ -84,6 +84,10 @@ object Dependency {
         const val DAGGER_TEST_COMPILER = "com.google.dagger:hilt-android-compiler:2.37"
         const val JUNIT_EXT = "androidx.test.ext:junit:1.1.3"
         const val TEST_RUNNER = "androidx.test:runner:1.4.0"
+
+        const val MOCKK = "io.mockk:mockk:${Version.MOCKK}"
+        const val MOCKK_ANDROID = "io.mockk:mockk-android:${Version.MOCKK}"
+
     }
 
     object Media3 {
@@ -234,6 +238,7 @@ fun DependencyHandler.unitTest(
     add(configName, Dependency.Test.JUNIT)
     add(configName, Dependency.Test.ARCH_CORE_TESTING)
     add(configName, Dependency.Test.COROUTINES_TEST)
+    add(configName, Dependency.Test.MOCKK)
     if (addTestUtilsProject)
         add(configName, project(":testutils"))
 }
@@ -255,6 +260,7 @@ fun DependencyHandler.androidTest(
     add(configName, Dependency.Test.ANDROIDX_CORE)
     add(configName, Dependency.Test.TEST_RUNNER)
     add(configName, Dependency.Room.RUNTIME)
+    add(configName, Dependency.Test.MOCKK_ANDROID)
     if (addTestUtilsProject)
         add(configName, project(":testutils"))
 }

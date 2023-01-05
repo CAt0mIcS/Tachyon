@@ -11,7 +11,6 @@ import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.util.ArtworkUpdateInfo
-import com.tachyonmusic.database.util.updateArtwork
 import com.tachyonmusic.logger.Log
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.Resource

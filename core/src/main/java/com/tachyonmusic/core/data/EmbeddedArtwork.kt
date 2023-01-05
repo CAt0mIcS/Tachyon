@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import java.io.File
+import com.tachyonmusic.util.File
 
 
 /**
@@ -36,7 +36,7 @@ class EmbeddedArtwork(
         fun load(
             path: File,
             metadataExtractor: SongMetadataExtractor = FileSongMetadataExtractor()
-        ) = metadataExtractor.loadBitmap(Uri.fromFile(path))
+        ) = metadataExtractor.loadBitmap(Uri.fromFile(path.raw))
 
         @JvmField
         val CREATOR = object : Parcelable.Creator<EmbeddedArtwork> {
@@ -44,7 +44,7 @@ class EmbeddedArtwork(
                 parcel.readParcelable(
                     Bitmap::class.java.classLoader,
                     Bitmap::class.java
-                )!!
+                )!! // (TODO)
             )
 
             override fun newArray(size: Int) = arrayOfNulls<EmbeddedArtwork?>(size)

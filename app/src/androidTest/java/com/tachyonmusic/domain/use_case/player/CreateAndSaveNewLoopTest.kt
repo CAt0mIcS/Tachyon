@@ -11,6 +11,7 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.use_case.main.UpdateSongDatabase
 import com.tachyonmusic.testutils.tryInject
+import com.tachyonmusic.util.File
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.TestMediaBrowserController
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -20,7 +21,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.io.File
 import javax.inject.Inject
 
 

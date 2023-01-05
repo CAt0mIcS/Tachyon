@@ -9,7 +9,7 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.playback.Song
-import java.io.File
+import com.tachyonmusic.util.File
 
 /**
  * Song stored in local storage with a path in the filesystem
@@ -27,7 +27,7 @@ class LocalSongImpl(
         get() = mediaId.path!!
 
     override val uri: Uri
-        get() = Uri.fromFile(path)
+        get() = Uri.fromFile(path.raw)
 
     constructor(parcel: Parcel) : this(
         MediaId(parcel.readString()!!),
@@ -50,7 +50,7 @@ class LocalSongImpl(
             path: File,
             metadataExtractor: SongMetadataExtractor = FileSongMetadataExtractor()
         ): Song =
-            metadataExtractor.loadMetadata(Uri.fromFile(path)).run {
+            metadataExtractor.loadMetadata(Uri.fromFile(path.raw)).run {
                 if (this != null)
                     return@run LocalSongImpl(MediaId.ofLocalSong(path), title, artist, duration)
                 else TODO("Invalid playback $path")
