@@ -9,12 +9,15 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.testutils.tryInject
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 internal class UpdateArtworkTest {
     @get:Rule
@@ -74,7 +77,7 @@ internal class UpdateArtworkTest {
     }
 
     @Test
-    fun updatingSongEntityUpdatesAllOccurrencesOfArtwork(): Unit = runBlocking {
+    fun updatingSongEntityUpdatesAllOccurrencesOfArtwork(): Unit = runTest {
         val url = "ExampleUrl.com/example-search"
 
         val entityToEdit = songRepo.findByMediaId(songMediaId)!!
@@ -102,7 +105,7 @@ internal class UpdateArtworkTest {
 
 
     @Test
-    fun updatingLoopEntityUpdatesAllOccurrencesOfArtwork(): Unit = runBlocking {
+    fun updatingLoopEntityUpdatesAllOccurrencesOfArtwork(): Unit = runTest {
         val url = "ExampleUrl.com/example-search"
 
         val entityToEdit = loopRepo.findByMediaId(loopMediaId2)!!

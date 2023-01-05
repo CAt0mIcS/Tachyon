@@ -1,12 +1,18 @@
 package com.tachyonmusic.artworkfetcher
 
+import com.tachyonmusic.artworkfetcher.domain.artwork_source.ArtworkSource
 import com.tachyonmusic.util.Resource
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 internal class ArtworkFetcherTest {
     private lateinit var downloader: ArtworkFetcher
 
@@ -16,7 +22,7 @@ internal class ArtworkFetcherTest {
     }
 
     @Test
-    fun `Invalid arguments, returns Resource Error`(): Unit = runBlocking {
+    fun `Invalid arguments, returns Resource Error`(): Unit = runTest {
         downloader.query("", "Artist", 100).map {
             assert(it is Resource.Loading || it is Resource.Error)
         }.collect()
@@ -27,6 +33,16 @@ internal class ArtworkFetcherTest {
 
         downloader.query("Title", "Artist", 0).map {
             assert(it is Resource.Loading || it is Resource.Error)
+        }.collect()
+    }
+
+    @Test
+    fun `Valid arguments, returns Resource Success`() = runTest {
+        val source = mockk<ArtworkSource>()
+        every { source.search(any(), any(), any()) } returns Resource.Success()
+
+        ArtworkFetcher(listOf(source)).query("Title", "Artist", 100).map {
+            assert(it is Resource.Loading || it is Resource.Success)
         }.collect()
     }
 }

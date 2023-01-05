@@ -1,5 +1,6 @@
 package com.tachyonmusic.domain.use_case.main
 
+import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.database.data.repository.RoomSettingsRepository
 import com.tachyonmusic.database.data.repository.RoomSongRepository
@@ -7,7 +8,6 @@ import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.tryInject
 import com.tachyonmusic.util.File
-import com.tachyonmusic.util.TestSongMetadataExtractor
 import com.tachyonmusic.util.getTestFiles
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -32,11 +32,11 @@ internal class UpdateSongDatabaseTest {
     @Inject
     lateinit var database: Database
 
-    val excludedIndices = listOf(0, 3, 8, 12)
+    private val excludedIndices = listOf(0, 3, 8, 12)
+    private lateinit var allFiles: List<File>
 
-    lateinit var allFiles: List<File>
-
-    val fileRepository: FileRepository = mockk()
+    private val fileRepository: FileRepository = mockk()
+    private val metadataExtractor: SongMetadataExtractor = mockk()
 
 
     @Before
@@ -46,6 +46,11 @@ internal class UpdateSongDatabaseTest {
         allFiles = getTestFiles {
             File(it)
         }
+
+        every { metadataExtractor.loadMetadata(any()) } answers {
+            SongMetadataExtractor.SongMetadata("Title", "Artist", 10000L, firstArg())
+        }
+        every { metadataExtractor.loadBitmap(any()) } returns null
 
         every {
             fileRepository.getFilesInDirectoryWithExtensions(
@@ -66,7 +71,7 @@ internal class UpdateSongDatabaseTest {
             RoomSongRepository(database.songDao),
             RoomSettingsRepository(database.settingsDao),
             fileRepository,
-            TestSongMetadataExtractor()
+            metadataExtractor
         )
 
         assert(database.songDao.getSongs().isEmpty())
@@ -92,7 +97,7 @@ internal class UpdateSongDatabaseTest {
                 addExcludedFilesRange(toAdd)
             },
             fileRepository,
-            TestSongMetadataExtractor()
+            metadataExtractor
         )
 
         assert(database.songDao.getSongs().isEmpty())
@@ -103,8 +108,7 @@ internal class UpdateSongDatabaseTest {
         assert(songs.containsAll(expectedFiles.map { it.absolutePath }))
     }
 
-    // TODO: Tests fail due to [File.exists] check in [UpdateSongDatabase]
-    //   create temporary files to bypass check
+
     @Test
     fun newExclusionsAreRemovedFromPopulatedDatabase() = runTest {
         mockkConstructor(File::class)
@@ -122,7 +126,7 @@ internal class UpdateSongDatabaseTest {
             RoomSongRepository(database.songDao),
             settingsRepo,
             fileRepository,
-            TestSongMetadataExtractor()
+            metadataExtractor
         )
         updateSongDatabase()
 
@@ -157,7 +161,7 @@ internal class UpdateSongDatabaseTest {
                 addExcludedFilesRange(toAdd)
             },
             fileRepository,
-            TestSongMetadataExtractor()
+            metadataExtractor
         )
         updateSongDatabase()
 
