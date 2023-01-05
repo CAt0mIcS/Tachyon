@@ -24,12 +24,14 @@ class UpdateArtworks(
                 val infos = mutableListOf<ArtworkUpdateInfo?>()
                 songRepo.getSongsWithArtworkTypes(ArtworkType.NO_ARTWORK).forEach { song ->
                     infos += loadArtwork(song)
+                    if (infos.lastOrNull() != null)
+                        updateArtwork(infos.lastOrNull()!!)
                 }
 
-                infos.forEach {
-                    if (it != null)
-                        updateArtwork(it)
-                }
+//                infos.forEach {
+//                    if (it != null)
+//                        updateArtwork(it)
+//                }
             }
         }
 }

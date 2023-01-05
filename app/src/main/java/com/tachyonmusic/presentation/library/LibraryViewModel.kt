@@ -4,6 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
@@ -30,36 +31,51 @@ class LibraryViewModel @Inject constructor(
     private var loops = listOf<Loop>()
     private var playlists = listOf<Playlist>()
 
-    private var _items = mutableStateOf<List<Playback>>(songs)
+    private var filterType: PlaybackType = PlaybackType.Song.Local()
+
+    private val _items = mutableStateOf(listOf<Playback>())
     val items: State<List<Playback>> = _items
 
     init {
         observeSongs().map {
             songs = it
-            if(items.value.isEmpty())
-                onFilterSongs()
+            if (filterType is PlaybackType.Song.Local) {
+                _items.value = emptyList()
+                _items.value = songs
+            }
         }.launchIn(viewModelScope)
 
         observeLoops().map {
             loops = it
+            if (filterType is PlaybackType.Loop.Remote) {
+                _items.value = emptyList()
+                _items.value = loops
+            }
         }.launchIn(viewModelScope)
 
         observePlaylists().map {
             playlists = it
+            if (filterType is PlaybackType.Playlist.Remote) {
+                _items.value = emptyList()
+                _items.value = playlists
+            }
         }.launchIn(viewModelScope)
     }
 
 
     fun onFilterSongs() {
         _items.value = songs
+        filterType = PlaybackType.Song.Local()
     }
 
     fun onFilterLoops() {
         _items.value = loops
+        filterType = PlaybackType.Loop.Remote()
     }
 
     fun onFilterPlaylists() {
         _items.value = playlists
+        filterType = PlaybackType.Playlist.Remote()
     }
 
     fun onItemClicked(playback: Playback) {
