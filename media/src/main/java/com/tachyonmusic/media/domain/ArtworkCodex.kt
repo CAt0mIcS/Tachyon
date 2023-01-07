@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain.repository
+package com.tachyonmusic.media.domain
 
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId

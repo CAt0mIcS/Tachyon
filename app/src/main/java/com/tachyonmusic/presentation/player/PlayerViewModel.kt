@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetHistory
-import com.tachyonmusic.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.ObserveSettings

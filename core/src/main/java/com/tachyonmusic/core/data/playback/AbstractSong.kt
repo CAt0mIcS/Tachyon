@@ -47,14 +47,9 @@ abstract class AbstractSong(
         setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
         setIsPlayable(true)
 
+        // EmbeddedArtwork automatically handled by media3
         when (val artworkVal = artwork.value) {
             null -> {}
-            is EmbeddedArtwork -> launch(Dispatchers.IO) {
-                setArtworkData(
-                    artworkVal.bitmap.toByteArray(),
-                    MediaMetadata.PICTURE_TYPE_FRONT_COVER
-                )
-            }
             is RemoteArtwork -> setArtworkUri(Uri.parse(artworkVal.uri.toURL().toString()))
         }
 

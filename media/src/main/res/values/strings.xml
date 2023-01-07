@@ -7,4 +7,9 @@
 
     <string name="invalid_playback">Service detected an invalid playback</string>
     <string name="invalid_arguments">Invalid arguments supplied to the service</string>
+
+    <string name="no_embedded_artwork_despite_embedded_artwork_type">No embedded artwork found at path \"%1$s\" despite having found embedded artwork previously</string>
+    <string name="no_artwork_found">No artwork found for playback \"%1$s\"</string>
+    <string name="invalid_path">Invalid path \"%1$s\"</string>
+    <string name="unknown_error">An unknown error occurred</string>
 </resources>

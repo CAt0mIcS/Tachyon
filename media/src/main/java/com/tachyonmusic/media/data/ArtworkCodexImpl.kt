@@ -1,6 +1,5 @@
-package com.tachyonmusic.data.repository
+package com.tachyonmusic.media.data
 
-import com.tachyonmusic.app.R
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
@@ -9,8 +8,9 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.model.SongEntity
-import com.tachyonmusic.domain.repository.ArtworkCodex
+import com.tachyonmusic.media.domain.ArtworkCodex
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.R
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.CompletableJob

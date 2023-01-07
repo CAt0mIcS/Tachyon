@@ -58,6 +58,7 @@ dependencies {
     projectDatabase()
     projectUtil()
     projectLogger()
+    projectArtworkFetcher()
 
     unitTest()
     androidTest()

@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain.use_case
+package com.tachyonmusic.media.domain.use_case
 
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Playback
@@ -7,7 +7,7 @@ import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.database.util.updateArtwork
-import com.tachyonmusic.domain.repository.ArtworkCodex
+import com.tachyonmusic.media.domain.ArtworkCodex
 import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.channelFlow

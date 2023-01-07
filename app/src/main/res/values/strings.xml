@@ -18,8 +18,4 @@
     <string name="unknown_error">An unknown error occurred</string>
 
     <string name="invalid_search_query">Invalid search query %1$s</string>
-
-    <string name="no_embedded_artwork_despite_embedded_artwork_type">No embedded artwork found at path \"%1$s\" despite having found embedded artwork previously</string>
-    <string name="no_artwork_found">No artwork found for playback \"%1$s\"</string>
-    <string name="invalid_path">Invalid path \"%1$s\"</string>
 </resources>

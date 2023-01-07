@@ -1,8 +1,6 @@
 package com.tachyonmusic.di
 
-import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.data.repository.ArtworkCodexImpl
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.database.domain.repository.DataRepository
@@ -12,7 +10,6 @@ import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
-import com.tachyonmusic.domain.repository.ArtworkCodex
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.*
@@ -23,6 +20,8 @@ import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.logger.Log
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.domain.ArtworkCodex
+import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -172,15 +171,4 @@ object AppRepositoryModule {
     @Singleton
     fun provideMediaBrowserController(): MediaBrowserController =
         MediaPlaybackServiceMediaBrowserController()
-
-    @Provides
-    @Singleton
-    fun provideArtworkFetcher(): ArtworkFetcher = ArtworkFetcher()
-
-    @Provides
-    @Singleton
-    fun provideArtworkCodex(
-        artworkFetcher: ArtworkFetcher,
-        log: Logger
-    ): ArtworkCodex = ArtworkCodexImpl(artworkFetcher, log)
 }

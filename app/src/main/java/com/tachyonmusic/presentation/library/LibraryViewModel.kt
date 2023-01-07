@@ -14,7 +14,7 @@ import com.tachyonmusic.domain.use_case.GetSongs
 import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.ObserveLoops
 import com.tachyonmusic.domain.use_case.ObservePlaylists
-import com.tachyonmusic.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.runOnUiThread

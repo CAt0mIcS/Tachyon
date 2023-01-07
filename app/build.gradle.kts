@@ -97,8 +97,6 @@ dependencies {
     projectDatabase()
     projectUtil()
     projectLogger()
-    //TODO: Not necessary
-    projectArtworkFetcher()
 
     unitTest()
     androidTest()
