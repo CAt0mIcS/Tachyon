@@ -42,7 +42,6 @@ object LibraryScreen :
     @OptIn(ExperimentalMaterialApi::class)
     @Composable
     operator fun invoke(
-        navController: NavController,
         sheetState: BottomSheetState,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {

@@ -13,21 +13,7 @@ import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 
-/**
- * TODO: Optimize Artwork loading in [getArtworkForPlayback], especially the [EmbeddedArtwork] part
- *   We can't put this on a separate thread because when the state is marshalled and sent to
- *   [MediaPlaybackServiceMediaBrowserController.onMediaItemTransition] and then e.g. [Playback.isArtworkLoading]
- *   is set to false the playback in [onMediaItemTransition] won't get this update since it only marshalled
- *   the value and not the state [Playback.isArtworkLoading] itself
- */
-
-fun SongEntity.toSong() =
-    LocalSongImpl(mediaId, title, artist, duration).apply {
-        isArtworkLoading.value = true
-        artwork.value = getArtworkForPlayback(this@toSong)
-        isArtworkLoading.value = false
-    }
-
+fun SongEntity.toSong() = LocalSongImpl(mediaId, title, artist, duration)
 
 fun LoopEntity.toLoop() =
     RemoteLoopImpl(
@@ -39,13 +25,8 @@ fun LoopEntity.toLoop() =
             title,
             artist,
             duration
-        ).apply {
-            isArtworkLoading.value = true
-            artwork.value = getArtworkForPlayback(this@toLoop)
-            isArtworkLoading.value = false
-        }
+        )
     )
-
 
 suspend fun PlaylistEntity.toPlaylist(
     songRepository: SongRepository,

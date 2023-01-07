@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.unit.dp
 import com.tachyonmusic.presentation.ActivityMain
+import com.tachyonmusic.presentation.library.LibraryScreen
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -23,10 +24,11 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.launch
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
 
 
 @HiltAndroidTest
-internal class PlayerTest {
+internal class LibraryPlayerTest {
     @get:Rule(order = 0)
     val hiltRule = HiltAndroidRule(this)
 
@@ -74,15 +76,19 @@ internal class PlayerTest {
                         sheetBackgroundColor = Theme.colors.primary
                     ) { innerPaddingSheet ->
 
-                        Button(
-                            modifier = Modifier.padding(innerPaddingSheet),
-                            onClick = { scope.launch { sheetState.expand() } }
-                        ) {
-                            Text("Expand")
+                        Box(modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPaddingSheet)) {
+                            LibraryScreen(sheetState)
                         }
                     }
                 }
             }
         }
+    }
+
+    @Test
+    fun clickingOnPlaybackWhileArtworkLoading_ArtworkAppearsInPlayerAfterLoaded() {
+
     }
 }

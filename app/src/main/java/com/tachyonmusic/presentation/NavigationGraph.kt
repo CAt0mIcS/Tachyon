@@ -17,13 +17,17 @@ import com.tachyonmusic.presentation.profile.ProfileScreen
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun NavigationGraph(navController: NavHostController, sheetState: BottomSheetState, miniPlayerHeight: MutableState<Dp>) {
+fun NavigationGraph(
+    navController: NavHostController,
+    sheetState: BottomSheetState,
+    miniPlayerHeight: MutableState<Dp>
+) {
     AnimatedNavHost(navController, startDestination = HomeScreen.route) {
         composable(HomeScreen.route) {
             HomeScreen(navController, sheetState, miniPlayerHeight)
         }
         composable(LibraryScreen.route) {
-            LibraryScreen(navController, sheetState)
+            LibraryScreen(sheetState)
         }
         composable(ProfileScreen.route) {
             ProfileScreen()

@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.library
 
+import android.app.Application
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -9,22 +10,33 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.domain.use_case.GetSongs
 import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.ObserveLoops
 import com.tachyonmusic.domain.use_case.ObservePlaylists
-import com.tachyonmusic.domain.use_case.ObserveSongs
+import com.tachyonmusic.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    observeSongs: ObserveSongs,
+    getSongs: GetSongs,
     observeLoops: ObserveLoops,
     observePlaylists: ObservePlaylists,
-    private val itemClicked: ItemClicked
+    getOrLoadArtwork: GetOrLoadArtwork,
+    private val itemClicked: ItemClicked,
+    private val application: Application,
+    private val log: Logger
 ) : ViewModel() {
 
     private var songs = listOf<Song>()
@@ -37,14 +49,6 @@ class LibraryViewModel @Inject constructor(
     val items: State<List<Playback>> = _items
 
     init {
-        observeSongs().map {
-            songs = it
-            if (filterType is PlaybackType.Song.Local) {
-                _items.value = emptyList()
-                _items.value = songs
-            }
-        }.launchIn(viewModelScope)
-
         observeLoops().map {
             loops = it
             if (filterType is PlaybackType.Loop.Remote) {
@@ -60,6 +64,20 @@ class LibraryViewModel @Inject constructor(
                 _items.value = playlists
             }
         }.launchIn(viewModelScope)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            songs = getSongs()
+            runOnUiThread { _items.value = songs }
+
+            getOrLoadArtwork(getSongs.entities()).onEach {
+                if (it is Resource.Success)
+                    songs[it.data!!.i].artwork.value = it.data!!.artwork
+                else
+                    log.debug(it.message?.asString(application) ?: "No message from artwork loader")
+
+                songs[it.data!!.i].isArtworkLoading.value = false
+            }.collect()
+        }
     }
 
 

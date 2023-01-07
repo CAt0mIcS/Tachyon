@@ -9,4 +9,6 @@ interface Artwork : Parcelable {
     fun Image(contentDescription: String?, modifier: Modifier)
 
     override fun describeContents() = 0
+
+    override fun equals(other: Any?): Boolean
 }

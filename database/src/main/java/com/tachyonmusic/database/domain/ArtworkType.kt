@@ -10,14 +10,15 @@ object ArtworkType {
     const val NO_ARTWORK = "NONE"
     const val EMBEDDED = "EMBEDDED"
     const val REMOTE = "REMOTE"
+    const val UNKNOWN = "UNKNOWN"
 
     fun getType(playback: SinglePlayback, log: Logger = Log()) = when (playback.artwork.value) {
         is RemoteArtwork -> REMOTE
         is EmbeddedArtwork -> EMBEDDED
-        null -> NO_ARTWORK
+        null -> UNKNOWN
         else -> {
             log.warning("Unknown artwork type ${playback.artwork.value!!::class.java.name}")
-            NO_ARTWORK
+            UNKNOWN
         }
     }
 }

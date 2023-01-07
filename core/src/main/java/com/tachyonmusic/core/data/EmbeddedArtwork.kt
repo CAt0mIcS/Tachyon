@@ -16,7 +16,8 @@ import com.tachyonmusic.util.File
  * Artwork that is embedded in the audio file
  */
 class EmbeddedArtwork(
-    val bitmap: Bitmap
+    val bitmap: Bitmap,
+    val path: File
 ) : Artwork {
 
     @Composable
@@ -28,8 +29,11 @@ class EmbeddedArtwork(
         )
     }
 
+    override fun equals(other: Any?) = other is EmbeddedArtwork && other.path == path
+
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeParcelable(bitmap, flags)
+        parcel.writeString(path.absolutePath)
     }
 
     companion object {
@@ -44,7 +48,8 @@ class EmbeddedArtwork(
                 parcel.readParcelable(
                     Bitmap::class.java.classLoader,
                     Bitmap::class.java
-                )!! // (TODO)
+                )!!, // (TODO)
+                File(parcel.readString()!!)
             )
 
             override fun newArray(size: Int) = arrayOfNulls<EmbeddedArtwork?>(size)

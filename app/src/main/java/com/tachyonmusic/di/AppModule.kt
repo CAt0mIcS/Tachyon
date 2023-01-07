@@ -1,7 +1,9 @@
 package com.tachyonmusic.di
 
 import android.app.Application
+import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.domain.SongMetadataExtractor
+import com.tachyonmusic.data.repository.ArtworkCodexImpl
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.database.domain.repository.DataRepository
@@ -10,7 +12,7 @@ import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.domain.use_case.LoadArtwork
+import com.tachyonmusic.domain.repository.ArtworkCodex
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.*
@@ -19,6 +21,7 @@ import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
+import com.tachyonmusic.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.logger.Log
 import com.tachyonmusic.logger.domain.Logger
 import dagger.Module
@@ -53,6 +56,10 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
+    fun provideGetSongsUseCase(songRepository: SongRepository) = GetSongs(songRepository)
+
+    @Provides
+    @Singleton
     fun provideUpdateSongDatabaseUseCase(
         songRepository: SongRepository,
         settingsRepository: SettingsRepository,
@@ -67,16 +74,16 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideObserveSettings(settingsRepository: SettingsRepository) =
+    fun provideObserveSettingsUseCase(settingsRepository: SettingsRepository) =
         ObserveSettings(settingsRepository)
 
     @Provides
     @Singleton
-    fun provideUpdateArtworksUseCase(
+    fun provideGetOrLoadArtworkUseCase(
         songRepository: SongRepository,
-        isFirstAppStart: IsFirstAppStart,
-        loadArtwork: LoadArtwork
-    ) = UpdateArtworks(songRepository, isFirstAppStart, loadArtwork)
+        loopRepository: LoopRepository,
+        artworkCodex: ArtworkCodex
+    ) = GetOrLoadArtwork(songRepository, loopRepository, artworkCodex)
 
     @Provides
     @Singleton
@@ -187,4 +194,15 @@ object AppRepositoryModule {
     @Singleton
     fun provideMediaBrowserController(): MediaBrowserController =
         MediaPlaybackServiceMediaBrowserController()
+
+    @Provides
+    @Singleton
+    fun provideArtworkFetcher(): ArtworkFetcher = ArtworkFetcher()
+
+    @Provides
+    @Singleton
+    fun provideArtworkCodex(
+        artworkFetcher: ArtworkFetcher,
+        log: Logger
+    ): ArtworkCodex = ArtworkCodexImpl(artworkFetcher, log)
 }

@@ -44,7 +44,6 @@ class PlayerViewModel @Inject constructor(
     private val setCurrentPlayback: SetCurrentPlayback,
     getHistory: GetHistory,
     observeSettings: ObserveSettings,
-    private val observeSongs: ObserveSongs,
     private val browser: MediaBrowserController
 ) : ViewModel() {
 
@@ -169,18 +168,8 @@ class PlayerViewModel @Inject constructor(
         override fun onPlaybackTransition(playback: Playback?) {
             updatePlaybackState(playback)
             songObserverJob?.cancel()
-            if (playback != null) {
+            if (playback != null)
                 _recentlyPlayed.value = playback
-
-                /**
-                 * Listen to changes in song and update artwork state if song changed
-                 * TODO: [observeSongs(MediaId)] updated every time any item in the song database is changed
-                 *   thus we have a lot of recompositions
-                 */
-                songObserverJob = observeSongs(playback.mediaId).map {
-                    updateArtworkState(it)
-                }.launchIn(viewModelScope)
-            }
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {

@@ -8,7 +8,6 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.main.ObserveHistory
 import com.tachyonmusic.domain.use_case.main.UnloadArtworks
-import com.tachyonmusic.domain.use_case.main.UpdateArtworks
 import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.main.UpdateSongDatabase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +24,6 @@ class HomeViewModel @Inject constructor(
     observeHistory: ObserveHistory,
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
-    private val updateArtworks: UpdateArtworks,
     private val unloadArtworks: UnloadArtworks,
 ) : ViewModel() {
 
@@ -41,7 +39,6 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             updateSettingsDatabase()
             updateSongDatabase()
-            updateArtworks()
         }
     }
 
@@ -52,7 +49,6 @@ class HomeViewModel @Inject constructor(
     fun refreshArtwork() {
         viewModelScope.launch(Dispatchers.IO) {
             unloadArtworks()
-            updateArtworks(shouldUpdate = true)
         }
     }
 }

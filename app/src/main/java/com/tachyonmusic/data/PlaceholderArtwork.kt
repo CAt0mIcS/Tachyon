@@ -20,6 +20,8 @@ class PlaceholderArtwork(
         )
     }
 
+    override fun equals(other: Any?) = other is PlaceholderArtwork
+
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(id)
     }
