@@ -13,7 +13,8 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.core.ext.toByteArray
+import com.tachyonmusic.core.data.ext.toByteArray
+import com.tachyonmusic.core.data.ext.toInt
 import com.tachyonmusic.util.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,6 +75,6 @@ abstract class AbstractSong(
         parcel.writeString(artist)
         parcel.writeLong(duration)
         parcel.writeParcelable(artwork.value, flags)
-        parcel.writeBoolean(isArtworkLoading.value)
+        parcel.writeInt(isArtworkLoading.value.toInt())
     }
 }

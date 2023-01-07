@@ -8,5 +8,4 @@ abstract class BottomNavigationItem(
     @StringRes val title: Int,
     @DrawableRes val icon: Int,
     route: String
-) : NavigationItem(route) {
-}
+) : NavigationItem(route)

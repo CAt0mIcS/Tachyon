@@ -1,4 +1,4 @@
-package com.tachyonmusic.core.ext
+package com.tachyonmusic.core.data.ext
 
 import android.graphics.Bitmap
 import java.io.ByteArrayOutputStream

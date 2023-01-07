@@ -10,8 +10,7 @@ class UnloadArtworks(
     suspend operator fun invoke() {
         repository.getSongsWithArtworkTypes(ArtworkType.EMBEDDED, ArtworkType.REMOTE)
             .forEach { song ->
-                repository.updateArtwork(song, ArtworkType.NO_ARTWORK)
-                song.toSong().artwork.value = null
+                repository.updateArtwork(song, ArtworkType.UNKNOWN)
             }
     }
 }

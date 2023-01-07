@@ -5,15 +5,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.main.ObserveHistory
 import com.tachyonmusic.domain.use_case.main.UnloadArtworks
 import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.main.UpdateSongDatabase
+import com.tachyonmusic.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,6 +29,7 @@ class HomeViewModel @Inject constructor(
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
     private val unloadArtworks: UnloadArtworks,
+    getOrLoadArtwork: GetOrLoadArtwork
 ) : ViewModel() {
 
     private val _history = mutableStateOf(listOf<Playback>())
@@ -32,8 +37,15 @@ class HomeViewModel @Inject constructor(
 
 
     init {
-        observeHistory().map {
-            _history.value = it
+        observeHistory().map { newHistory ->
+            _history.value = newHistory
+
+            getOrLoadArtwork(newHistory).onEach {
+                if (it is Resource.Success)
+                    history.value[it.data!!.i].artwork.value = it.data!!.artwork
+
+                history.value[it.data!!.i].isArtworkLoading.value = false
+            }.collect()
         }.launchIn(viewModelScope)
 
         viewModelScope.launch(Dispatchers.IO) {

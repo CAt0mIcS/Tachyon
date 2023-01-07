@@ -43,8 +43,8 @@ class UpdateSongDatabase(
          * Remove all invalid or excluded paths in the [songRepo]
          * Update [paths] to only contain new songs that we need to add to [songRepo]
          */
-        songRepo.removeIf {
-            val path = it.mediaId.path
+        songRepo.removeIf { song ->
+            val path = song.mediaId.path
             if (path != null) {
                 paths.removeFirst { it.absolutePath == path.absolutePath }
                 val contains = settings.excludedSongFiles.contains(path.absolutePath)

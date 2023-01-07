@@ -81,6 +81,8 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
         return true
     }
 
+    override fun hashCode(): Int = source.hashCode() + (underlyingMediaId?.hashCode() ?: 0)
+
     override fun toString(): String {
         return if (underlyingMediaId != null)
             "${source}|||${underlyingMediaId}"

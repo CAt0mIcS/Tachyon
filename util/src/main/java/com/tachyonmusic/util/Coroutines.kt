@@ -55,7 +55,7 @@ fun runOnUiThread(block: suspend CoroutineScope.() -> Unit) =
 /**
  * Dispatches [block] to UI thread while suspending current coroutine until [block] finishes
  */
-suspend fun <T> CoroutineScope.runOnUiThread(block: suspend CoroutineScope.() -> T) =
+suspend fun <T> runOnUiThread(block: suspend CoroutineScope.() -> T) =
     withContext(Dispatchers.Main) {
         block()
     }

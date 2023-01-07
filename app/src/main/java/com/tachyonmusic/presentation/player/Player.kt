@@ -88,7 +88,7 @@ fun Player(
                 currentPosition = viewModel.currentPosition
             }
 
-            delay(viewModel.getAudioUpdateInterval())
+            delay(viewModel.audioUpdateInterval)
         }
     }
 

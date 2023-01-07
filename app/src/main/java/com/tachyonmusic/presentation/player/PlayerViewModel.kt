@@ -7,12 +7,11 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetHistory
+import com.tachyonmusic.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.ObserveSettings
-import com.tachyonmusic.domain.use_case.ObserveSongs
-import com.tachyonmusic.domain.use_case.main.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.main.NormalizePosition
-import com.tachyonmusic.domain.use_case.player.GetAudioUpdateInterval
 import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
 import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
@@ -24,17 +23,19 @@ import com.tachyonmusic.presentation.player.data.RepeatMode
 import com.tachyonmusic.presentation.player.data.SeekIncrementsState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val getCurrentPosition: GetCurrentPosition,
-    val getAudioUpdateInterval: GetAudioUpdateInterval,
     private val seekPosition: SeekPosition,
     private val millisecondsToReadableString: MillisecondsToReadableString,
     private val itemClicked: ItemClicked,
@@ -42,24 +43,14 @@ class PlayerViewModel @Inject constructor(
     private val normalizePosition: NormalizePosition,
     private val getRecentlyPlayed: GetRecentlyPlayed,
     private val setCurrentPlayback: SetCurrentPlayback,
+    private val getOrLoadArtwork: GetOrLoadArtwork,
+    private val browser: MediaBrowserController,  // TODO: Shouldn't be used in ViewModel
     getHistory: GetHistory,
     observeSettings: ObserveSettings,
-    private val browser: MediaBrowserController
 ) : ViewModel() {
-
-    val currentPosition: Long
-        get() = getCurrentPosition() ?: recentlyPlayedPosition
 
     private var _repeatMode = mutableStateOf<RepeatMode>(RepeatMode.One)
     val repeatMode: State<RepeatMode> = _repeatMode
-
-    val currentPositionNormalized: Float?
-        get() = normalizePosition()
-
-    var recentlyPlayedPositionNormalized: Float = 0f
-        private set
-
-    private var recentlyPlayedPosition: Long = 0L
 
     private var _recentlyPlayed = mutableStateOf<Playback?>(null)
     val recentlyPlayed: State<Playback?> = _recentlyPlayed
@@ -76,29 +67,44 @@ class PlayerViewModel @Inject constructor(
     private var _seekIncrement = mutableStateOf(SeekIncrementsState())
     val seekIncrement: State<SeekIncrementsState> = _seekIncrement
 
-    private var showMillisecondsInPositionText: Boolean = false
+    var audioUpdateInterval: Duration = 100.milliseconds
+        private set
 
+    val currentPosition: Long
+        get() = getCurrentPosition() ?: recentlyPlayedPosition
+
+    val currentPositionNormalized: Float?
+        get() = normalizePosition()
+
+    var recentlyPlayedPositionNormalized: Float = 0f
+        private set
+
+    private var recentlyPlayedPosition: Long = 0L
+    private var showMillisecondsInPositionText: Boolean = false
     private val mediaListener = MediaListener()
-    private var songObserverJob: Job? = null
+
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
             _recentlyPlayed.value = getHistory().firstOrNull()
             updatePlaybackState(recentlyPlayed.value)
-            updateArtworkState(recentlyPlayed.value)
+            if (recentlyPlayed.value != null)
+                getOrLoadArtworkForPlayback(recentlyPlayed.value!!)
+
 
             val recentlyPlayed = getRecentlyPlayed()
             recentlyPlayedPositionNormalized = normalizePosition(
-                recentlyPlayed.positionMs,
-                recentlyPlayed.durationMs
+                recentlyPlayed?.positionMs ?: 0L,
+                recentlyPlayed?.durationMs ?: 0L
             )
-            recentlyPlayedPosition = recentlyPlayed.positionMs
+            recentlyPlayedPosition = recentlyPlayed?.positionMs ?: 0L
         }
 
         observeSettings().map {
             _seekIncrement.value =
                 SeekIncrementsState(it.seekForwardIncrementMs, it.seekBackIncrementMs)
             showMillisecondsInPositionText = it.shouldMillisecondsBeShown
+            audioUpdateInterval = it.audioUpdateInterval.milliseconds
         }.launchIn(viewModelScope)
     }
 
@@ -164,12 +170,23 @@ class PlayerViewModel @Inject constructor(
             ArtworkState(artwork = playback.artwork, isArtworkLoading = playback.isArtworkLoading)
     }
 
+    private fun getOrLoadArtworkForPlayback(playback: Playback) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getOrLoadArtwork(playback).onEach {
+                recentlyPlayed.value?.artwork?.value = it.data?.artwork
+                recentlyPlayed.value?.isArtworkLoading?.value = false
+                updateArtworkState(recentlyPlayed.value)
+            }.collect()
+        }
+    }
+
     private inner class MediaListener : MediaBrowserController.EventListener {
         override fun onPlaybackTransition(playback: Playback?) {
             updatePlaybackState(playback)
-            songObserverJob?.cancel()
-            if (playback != null)
+            if (playback != null) {
                 _recentlyPlayed.value = playback
+                getOrLoadArtworkForPlayback(playback)
+            }
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {

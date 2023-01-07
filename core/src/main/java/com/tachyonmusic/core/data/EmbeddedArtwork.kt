@@ -45,10 +45,7 @@ class EmbeddedArtwork(
         @JvmField
         val CREATOR = object : Parcelable.Creator<EmbeddedArtwork> {
             override fun createFromParcel(parcel: Parcel) = EmbeddedArtwork(
-                parcel.readParcelable(
-                    Bitmap::class.java.classLoader,
-                    Bitmap::class.java
-                )!!, // (TODO)
+                parcel.readParcelable(Bitmap::class.java.classLoader)!!,
                 File(parcel.readString()!!)
             )
 

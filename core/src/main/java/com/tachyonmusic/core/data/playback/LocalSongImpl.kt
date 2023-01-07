@@ -5,6 +5,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.tachyonmusic.core.data.FileSongMetadataExtractor
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.core.data.ext.toBoolean
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
@@ -36,7 +37,7 @@ class LocalSongImpl(
         parcel.readLong()
     ) {
         artwork.value = parcel.readParcelable(Artwork::class.java.classLoader)
-        isArtworkLoading.value = parcel.readBoolean() //TODO
+        isArtworkLoading.value = parcel.readInt().toBoolean()
     }
 
     companion object {
