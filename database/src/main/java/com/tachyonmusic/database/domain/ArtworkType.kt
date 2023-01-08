@@ -4,7 +4,7 @@ import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 
 object ArtworkType {
@@ -13,7 +13,7 @@ object ArtworkType {
     const val REMOTE = "REMOTE"
     const val UNKNOWN = "UNKNOWN"
 
-    fun getType(artwork: Artwork?, log: Logger = Log()) = when (artwork) {
+    fun getType(artwork: Artwork?, log: Logger = LoggerImpl()) = when (artwork) {
         is RemoteArtwork -> REMOTE
         is EmbeddedArtwork -> EMBEDDED
         null -> UNKNOWN
@@ -23,6 +23,6 @@ object ArtworkType {
         }
     }
 
-    fun getType(playback: SinglePlayback, log: Logger = Log()) =
+    fun getType(playback: SinglePlayback, log: Logger = LoggerImpl()) =
         getType(playback.artwork.value, log)
 }

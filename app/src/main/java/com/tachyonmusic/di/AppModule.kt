@@ -18,7 +18,7 @@ import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
-import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.ArtworkCodex
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
@@ -156,7 +156,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideLogger(): Logger = Log()
+    fun provideLogger(): Logger = LoggerImpl()
 }
 
 

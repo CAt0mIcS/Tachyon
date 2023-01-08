@@ -3,7 +3,7 @@ package com.tachyonmusic.logger
 import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.domain.Logger
 
-class Log(
+class LoggerImpl(
     private val loggers: List<Logger> = listOf(
         ConsoleLogger()
     )

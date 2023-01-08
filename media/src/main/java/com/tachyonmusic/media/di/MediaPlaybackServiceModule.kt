@@ -20,9 +20,11 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.CAST_PLAYER_NAME
 import com.tachyonmusic.media.EXO_PLAYER_NAME
 import com.tachyonmusic.media.data.ArtworkCodexImpl
+import com.tachyonmusic.media.data.ArtworkLoaderImpl
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.domain.ArtworkCodex
+import com.tachyonmusic.media.domain.ArtworkLoader
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.*
 import dagger.Module
@@ -117,8 +119,13 @@ class MediaPlaybackSingletonRepositoryModule {
 
     @Provides
     @Singleton
+    internal fun provideArtworkLoader(artworkFetcher: ArtworkFetcher, log: Logger): ArtworkLoader =
+        ArtworkLoaderImpl(artworkFetcher, log)
+
+    @Provides
+    @Singleton
     fun provideArtworkCodex(
-        artworkFetcher: ArtworkFetcher,
+        artworkLoader: ArtworkLoader,
         log: Logger
-    ): ArtworkCodex = ArtworkCodexImpl(artworkFetcher, log)
+    ): ArtworkCodex = ArtworkCodexImpl(artworkLoader, log)
 }

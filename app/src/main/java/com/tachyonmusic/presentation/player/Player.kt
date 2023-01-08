@@ -40,7 +40,7 @@ import com.github.krottv.compose.sliders.DefaultTrack
 import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
 import com.tachyonmusic.data.PlaceholderArtwork
-import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.main.component.MiniPlayer
@@ -58,7 +58,7 @@ fun Player(
     sheetState: BottomSheetState,
     miniPlayerHeight: MutableState<Dp>,
     viewModel: PlayerViewModel = hiltViewModel(),
-    log: Logger = Log()
+    log: Logger = LoggerImpl()
 ) {
     var currentPositionNormalized by remember {
         mutableStateOf(

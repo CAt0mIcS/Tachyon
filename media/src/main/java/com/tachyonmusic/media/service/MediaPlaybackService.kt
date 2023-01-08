@@ -13,7 +13,7 @@ import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
-import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.CAST_PLAYER_NAME
 import com.tachyonmusic.media.EXO_PLAYER_NAME
@@ -33,7 +33,7 @@ import javax.inject.Named
 
 @AndroidEntryPoint
 class MediaPlaybackService(
-    private val log: Logger = Log()
+    private val log: Logger = LoggerImpl()
 ) : MediaLibraryService(), Player.Listener {
 
     @Inject

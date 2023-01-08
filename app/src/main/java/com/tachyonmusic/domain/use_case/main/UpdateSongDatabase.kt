@@ -9,7 +9,7 @@ import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.util.removeFirst
-import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.File
 import kotlinx.coroutines.Deferred
@@ -27,7 +27,7 @@ class UpdateSongDatabase(
     private val settingsRepo: SettingsRepository,
     private val fileRepository: FileRepository,
     private val metadataExtractor: SongMetadataExtractor,
-    private val log: Logger = Log()
+    private val log: Logger = LoggerImpl()
 ) {
     suspend operator fun invoke() = withContext(Dispatchers.IO) {
         val settings = settingsRepo.getSettings()
