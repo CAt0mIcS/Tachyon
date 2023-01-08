@@ -9,6 +9,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import com.google.android.gms.cast.framework.CastContext
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
+import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.LoopRepository
@@ -119,8 +120,11 @@ class MediaPlaybackSingletonRepositoryModule {
 
     @Provides
     @Singleton
-    internal fun provideArtworkLoader(artworkFetcher: ArtworkFetcher, log: Logger): ArtworkLoader =
-        ArtworkLoaderImpl(artworkFetcher, log)
+    internal fun provideArtworkLoader(
+        artworkFetcher: ArtworkFetcher,
+        log: Logger,
+        metadataExtractor: SongMetadataExtractor
+    ): ArtworkLoader = ArtworkLoaderImpl(artworkFetcher, log, metadataExtractor)
 
     @Provides
     @Singleton

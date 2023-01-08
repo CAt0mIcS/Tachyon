@@ -4,6 +4,7 @@ import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.Artwork
+import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.logger.domain.Logger
@@ -18,7 +19,8 @@ import java.net.URI
 
 internal class ArtworkLoaderImpl(
     private val artworkFetcher: ArtworkFetcher,
-    private val log: Logger
+    private val log: Logger,
+    private val metadataExtractor: SongMetadataExtractor
 ) : ArtworkLoader {
     override suspend fun requestLoad(entity: SinglePlaybackEntity): Resource<ArtworkData> {
         when (entity.artworkType) {
@@ -29,6 +31,18 @@ internal class ArtworkLoaderImpl(
 
             ArtworkType.REMOTE -> {
                 log.debug("Entity ${entity.title} - ${entity.artist} has ${ArtworkType.REMOTE}")
+                if (entity.artworkUrl.isNullOrBlank()) {
+                    entity.artworkType = ArtworkType.UNKNOWN
+                    entity.artworkUrl = null
+                    return Resource.Error(
+                        message = UiText.StringResource(
+                            R.string.no_artwork_found,
+                            "${entity.title} - ${entity.artist}"
+                        ),
+                        data = ArtworkData(entityToUpdate = entity)
+                    )
+                }
+
                 return Resource.Success(ArtworkData(RemoteArtwork(URI(entity.artworkUrl!!))))
             }
 
@@ -36,7 +50,7 @@ internal class ArtworkLoaderImpl(
                 log.debug("Entity ${entity.title} - ${entity.artist} has ${ArtworkType.EMBEDDED}")
                 val path = entity.mediaId.path
                 if (path != null) {
-                    val embedded = EmbeddedArtwork.load(path)
+                    val embedded = EmbeddedArtwork.load(path, metadataExtractor)
                     return if (embedded != null) {
                         Resource.Success(ArtworkData(EmbeddedArtwork(embedded, path)))
                     } else {
@@ -129,7 +143,7 @@ internal class ArtworkLoaderImpl(
         val path = entity.mediaId.path
             ?: return Resource.Error(UiText.StringResource(R.string.invalid_path, "null"))
 
-        val bitmap = EmbeddedArtwork.load(path) ?: return Resource.Error(
+        val bitmap = EmbeddedArtwork.load(path, metadataExtractor) ?: return Resource.Error(
             UiText.StringResource(
                 R.string.invalid_path,
                 path.absolutePath
