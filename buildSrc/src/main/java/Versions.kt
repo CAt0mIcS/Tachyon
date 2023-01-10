@@ -5,7 +5,7 @@ object Version {
     const val MIN_SDK = 21
     const val TARGET_SDK = COMPILE_SDK
 
-    const val APP = 76
+    const val APP = 77
     const val APP_NAME = "Dev $APP"
 
     const val COMPOSE = "1.4.0-alpha01"

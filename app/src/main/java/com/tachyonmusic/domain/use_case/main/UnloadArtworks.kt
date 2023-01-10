@@ -2,7 +2,6 @@ package com.tachyonmusic.domain.use_case.main
 
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.util.toSong
 
 class UnloadArtworks(
     private val repository: SongRepository
