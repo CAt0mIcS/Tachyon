@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="notification_channel">Now Playing</string>
-    <string name="notification_channel_description">Shows what music is currently playing in Tachyon Music</string>
-
     <string name="seek_to_previous_description">Seek to previous media item</string>
     <string name="play_description">Play current media item</string>
     <string name="pause_description">Pause current media item</string>
@@ -10,4 +7,9 @@
 
     <string name="invalid_playback">Service detected an invalid playback</string>
     <string name="invalid_arguments">Invalid arguments supplied to the service</string>
+
+    <string name="no_embedded_artwork_despite_embedded_artwork_type">No embedded artwork found at path \"%1$s\" despite having found embedded artwork previously</string>
+    <string name="no_artwork_found">No artwork found for playback \"%1$s\"</string>
+    <string name="invalid_path">Invalid path \"%1$s\"</string>
+    <string name="unknown_error">An unknown error occurred</string>
 </resources>

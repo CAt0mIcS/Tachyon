@@ -1,7 +1,8 @@
 package com.tachyonmusic.data.repository
 
 import com.tachyonmusic.domain.repository.FileRepository
-import java.io.File
+import com.tachyonmusic.util.File
+import com.tachyonmusic.util.extension
 
 class FileRepositoryImpl : FileRepository {
 

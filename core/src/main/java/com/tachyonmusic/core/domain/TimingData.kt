@@ -6,6 +6,7 @@ import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
+import java.security.InvalidParameterException
 
 /**
  * Class which holds one start and end time of a loop
@@ -15,6 +16,11 @@ data class TimingData(
     var startTime: Long,
     var endTime: Long
 ) : Parcelable {
+
+    init {
+        if (startTime < 0L || endTime < 0L)
+            throw InvalidParameterException("Start-/EndTime must be above 0: start: $startTime, end: $endTime")
+    }
 
     constructor(parcel: Parcel) : this(
         parcel.readLong(),

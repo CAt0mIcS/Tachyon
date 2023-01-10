@@ -5,7 +5,8 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import java.io.File
+import com.tachyonmusic.util.File
+import com.tachyonmusic.util.nameWithoutExtension
 
 class FileSongMetadataExtractor : SongMetadataExtractor {
     override fun loadMetadata(uri: Uri): SongMetadataExtractor.SongMetadata? {

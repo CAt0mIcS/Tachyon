@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import com.tachyonmusic.core.data.constants.Constants
 import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.assertNotEquals
+import com.tachyonmusic.util.File
 import org.junit.Test
-import java.io.File
 
 
 @SuppressLint("CheckResult")

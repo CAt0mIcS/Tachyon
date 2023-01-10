@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.LoopEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LoopDao {
@@ -16,6 +17,9 @@ interface LoopDao {
 
     @Query("SELECT * FROM LoopEntity")
     suspend fun getLoops(): List<LoopEntity>
+
+    @Query("SELECT * FROM LoopEntity")
+    fun observe(): Flow<List<LoopEntity>>
 
     // TODO: Handle abort
     @Insert(onConflict = OnConflictStrategy.ABORT)

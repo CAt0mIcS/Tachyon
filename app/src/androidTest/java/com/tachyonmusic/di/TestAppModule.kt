@@ -10,16 +10,14 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.database.data.data_source.room.RoomDatabase
 import com.tachyonmusic.database.di.DatabaseModule
-import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.util.TestFileRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.components.SingletonComponent
@@ -35,7 +33,7 @@ import javax.inject.Singleton
 object TestAppModule {
     @Provides
     @Singleton
-    fun provideFileRepository(): FileRepository = TestFileRepository()
+    fun provideFileRepository(): FileRepository = FileRepositoryImpl()
 
     @Provides
     @Singleton
@@ -44,16 +42,8 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun provideMediaBrowserController(
-        findPlaybackByMediaId: FindPlaybackByMediaId,
-        songRepository: SongRepository,
-        loopRepository: LoopRepository
-    ): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController(
-            findPlaybackByMediaId,
-            songRepository,
-            loopRepository
-        )
+    fun provideMediaBrowserController(): MediaBrowserController =
+        MediaPlaybackServiceMediaBrowserController()
 
     @Provides
     @Singleton

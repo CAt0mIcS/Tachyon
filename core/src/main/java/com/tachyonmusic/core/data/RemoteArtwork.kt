@@ -33,6 +33,8 @@ class RemoteArtwork(
 
     }
 
+    override fun equals(other: Any?) = other is RemoteArtwork && other.uri == uri
+
     // TODO: GlideLazyListPreloader
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

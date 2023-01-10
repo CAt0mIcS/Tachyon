@@ -6,7 +6,7 @@ import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import com.tachyonmusic.core.data.constants.Constants
 import com.tachyonmusic.core.data.constants.PlaybackType
-import java.io.File
+import com.tachyonmusic.util.File
 
 class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
 
@@ -80,6 +80,8 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
 
         return true
     }
+
+    override fun hashCode(): Int = source.hashCode() + (underlyingMediaId?.hashCode() ?: 0)
 
     override fun toString(): String {
         return if (underlyingMediaId != null)

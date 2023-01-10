@@ -35,7 +35,7 @@ class RegisterViewModel @Inject constructor(
         registerUser(email.value, password.value).onEach { resource ->
             if (resource is Resource.Error) {
                 _error.value = resource.message ?: UiText.StringResource(R.string.unknown_error)
-//                log.exception(resource.exception, resource.message) TODO
+//                log.exception(resource.exception, resource.message)
             } else {
                 _error.value = null
             }

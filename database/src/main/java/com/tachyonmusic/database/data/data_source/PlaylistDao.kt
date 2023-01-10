@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.PlaylistEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlaylistDao {
@@ -16,6 +17,9 @@ interface PlaylistDao {
 
     @Query("SELECT * FROM PlaylistEntity")
     suspend fun getPlaylists(): List<PlaylistEntity>
+
+    @Query("SELECT * FROM PlaylistEntity")
+    fun observe(): Flow<List<PlaylistEntity>>
 
     @Query("SELECT * FROM PlaylistEntity WHERE mediaId=:mediaId")
     suspend fun getPlaylistWithMediaId(mediaId: MediaId): PlaylistEntity?

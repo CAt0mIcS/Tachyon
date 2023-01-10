@@ -5,7 +5,7 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.media.domain.model.TestLoop
 import com.tachyonmusic.media.domain.model.TestPlaylist
 import com.tachyonmusic.media.domain.model.TestSong
-import java.io.File
+import com.tachyonmusic.util.File
 
 internal fun getSongs() = MutableList(50) { i ->
     return@MutableList when {

@@ -15,9 +15,6 @@ import com.tachyonmusic.core.data.constants.MediaAction
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.database.domain.repository.LoopRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.data.ext.duration
 import com.tachyonmusic.media.data.ext.name
@@ -103,6 +100,14 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
             browser?.seekTo(pos)
     }
 
+    override fun seekForward() {
+        browser?.seekForward()
+    }
+
+    override fun seekBack() {
+        browser?.seekBack()
+    }
+
     override suspend fun getChildren(
         parentId: String,
         page: Int,
@@ -149,7 +154,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         }
 
     override val currentPosition: Long?
-        get() = browser?.currentPosition
+        get() = if (browser?.currentMediaItem == null) null else browser?.currentPosition
 
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {

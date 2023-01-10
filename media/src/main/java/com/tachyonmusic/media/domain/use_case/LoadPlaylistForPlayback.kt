@@ -8,68 +8,50 @@ import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.util.toSong
 import com.tachyonmusic.media.R
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 
 class LoadPlaylistForPlayback(
     private val songRepository: SongRepository,
     private val loopRepository: LoopRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val getOrLoadArtwork: GetOrLoadArtwork
 ) {
     suspend operator fun invoke(playback: Playback?): Resource<Pair<List<MediaItem>, Int>> {
+        if (playback == null)
+            return Resource.Error(UiText.StringResource(R.string.invalid_playback))
+
         var initialWindowIndex: Int? = null
         var items: List<MediaItem>? = null
+        val combinePlaybackTypes = settingsRepository.getSettings().combineDifferentPlaybackTypes
 
-        if (settingsRepository.getSettings().combineDifferentPlaybackTypes) {
-            when (playback) {
-                is Song -> {
-                    val songs = songRepository.getSongs()
-                    val loops = loopRepository.getLoops()
-                    initialWindowIndex = songs.indexOf(playback)
-                    items =
-                        songs.map { it.toMediaItem() } + loops.map { it.toMediaItem() }
-                }
+        when (playback) {
+            is Song -> {
+                val songEntities = songRepository.getSongEntities()
+                val playbacks = if (combinePlaybackTypes)
+                    songEntities.map { it.toSong() } + loopRepository.getLoops()
+                else
+                    songEntities.map { it.toSong() }
 
-                is Loop -> {
-                    val songs = songRepository.getSongs()
-                    val loops = loopRepository.getLoops()
-                    initialWindowIndex = loops.indexOf(playback)
-                    items =
-                        loops.map { it.toMediaItem() } + songs.map { it.toMediaItem() }
-                }
+                getOrLoadArtwork(songEntities).onEach {
+                    if (it is Resource.Success)
+                        playbacks[it.data!!.i].artwork.value = it.data!!.artwork
+                }.collect()
 
-                is Playlist -> {
-                    initialWindowIndex = playback.currentPlaylistIndex
-                    items = playback.toMediaItemList()
-                }
-
-                null -> {
-                    return Resource.Error(UiText.StringResource(R.string.invalid_playback))
-                }
+                initialWindowIndex = playbacks.indexOf(playback)
+                items = playbacks.map { it.toMediaItem() }
             }
-        } else {
-            when (playback) {
-                is Song -> {
-                    val songs = songRepository.getSongs()
-                    initialWindowIndex = songs.indexOf(playback)
-                    items = songs.map { it.toMediaItem() }
-                }
 
-                is Loop -> {
-                    val loops = loopRepository.getLoops()
-                    initialWindowIndex = loops.indexOf(playback)
-                    items = loops.map { it.toMediaItem() }
-                }
+            is Loop -> {
+                TODO()
+            }
 
-                is Playlist -> {
-                    items = playback.toMediaItemList()
-                    initialWindowIndex = playback.currentPlaylistIndex
-                }
-
-                null -> {
-                    return Resource.Error(UiText.StringResource(R.string.invalid_playback))
-                }
+            is Playlist -> {
+                TODO()
             }
         }
 

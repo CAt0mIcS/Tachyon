@@ -44,6 +44,14 @@ class RoomHistoryRepository(
         }
     }
 
+    override fun observe() = dao.observe().map { history ->
+        history.map {
+            // TODO: Slow!!!
+            findPlaybackByMediaId(it.mediaId)?.toPlayback(songRepo, loopRepo)
+                ?: TODO("Playback not found ${it.mediaId}")
+        }
+    }
+
     override suspend fun getHistory(): List<Playback> =
         dao.getHistory().map {
             findPlaybackByMediaId(it.mediaId)?.toPlayback(songRepo, loopRepo)

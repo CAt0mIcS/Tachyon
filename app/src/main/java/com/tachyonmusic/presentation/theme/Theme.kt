@@ -13,13 +13,20 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorPalette = darkColors(
-    primary = Black,
-    primaryVariant = Black,
-    secondary = Black
+    primary = DarkPrimary,
+    primaryVariant = DarkSecondary,
+    secondary = DarkTertiary,
+
+    background = DarkPrimary,
+    surface = DarkSecondary,
+    onPrimary = DarkContrastHigh,
+    onSecondary = DarkBlue,
+    onBackground = DarkContrastLow,
+    onSurface = DarkContrastHigh,
 )
 
 private val LightColorPalette = lightColors(
-    primary = LightWhite,
+    primary = LightPrimary,
     primaryVariant = LightSecondary,
     secondary = LightTertiary,
 
@@ -33,20 +40,20 @@ private val LightColorPalette = lightColors(
 
 // TODO: Dark palette
 private val DarkCustomColorPalette = Colors(
-    primary = LightWhite,
-    secondary = LightSecondary,
-    tertiary = LightTertiary,
-    blue = LightBlue,
-    orange = LightOrange,
-    partialOrange1 = LightOrangePartial1,
-    partialOrange2 = LightOrangePartial2,
-    contrastHigh = LightContrastHigh,
-    contrastLow = LightContrastLow,
-    border = LightBorderColor
+    primary = DarkPrimary,
+    secondary = DarkSecondary,
+    tertiary = DarkTertiary,
+    blue = DarkBlue,
+    orange = DarkOrange,
+    partialOrange1 = DarkOrangePartial1,
+    partialOrange2 = DarkOrangePartial2,
+    contrastHigh = DarkContrastHigh,
+    contrastLow = DarkContrastLow,
+    border = DarkBorderColor
 )
 
 private val LightCustomColorPalette = Colors(
-    primary = LightWhite,
+    primary = LightPrimary,
     secondary = LightSecondary,
     tertiary = LightTertiary,
     blue = LightBlue,

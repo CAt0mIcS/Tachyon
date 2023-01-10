@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.HistoryEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface HistoryDao {
@@ -16,6 +17,9 @@ interface HistoryDao {
 
     @Query("SELECT * FROM HistoryEntity ORDER BY timestamp DESC")
     fun getPagedHistory(): PagingSource<Int, HistoryEntity>
+
+    @Query("SELECT * FROM HistoryEntity ORDER BY timestamp DESC")
+    fun observe(): Flow<List<HistoryEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addHistory(history: HistoryEntity)

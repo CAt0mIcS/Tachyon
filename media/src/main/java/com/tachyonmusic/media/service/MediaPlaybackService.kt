@@ -1,17 +1,19 @@
 package com.tachyonmusic.media.service
 
 import android.os.Bundle
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.*
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MediaAction
 import com.tachyonmusic.core.data.constants.MetadataKeys
+import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
-import com.tachyonmusic.logger.Log
+import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.CAST_PLAYER_NAME
 import com.tachyonmusic.media.EXO_PLAYER_NAME
@@ -31,7 +33,7 @@ import javax.inject.Named
 
 @AndroidEntryPoint
 class MediaPlaybackService(
-    private val log: Logger = Log()
+    private val log: Logger = LoggerImpl()
 ) : MediaLibraryService(), Player.Listener {
 
     @Inject
@@ -69,6 +71,7 @@ class MediaPlaybackService(
         mediaSession
 
     override fun onDestroy() {
+        super.onDestroy()
         exoPlayer.release()
         castPlayer.release()
         mediaSession.release()
@@ -168,13 +171,21 @@ class MediaPlaybackService(
     // TODO: Check if the position is saved every time, e.g. when the playback is terminated another way
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (!isPlaying) {
+            val playback = exoPlayer.mediaMetadata.playback ?: return
             val currentPos = exoPlayer.currentPosition
-            val duration = exoPlayer.duration
-            if (duration != C.TIME_UNSET)
-                ioScope.launch {
-                    useCases.saveRecentlyPlayed(RecentlyPlayed(currentPos, duration))
-                }
+            ioScope.launch {
+                useCases.saveRecentlyPlayed(
+                    RecentlyPlayed(
+                        playback.mediaId,
+                        currentPos,
+                        playback.duration ?: return@launch,
+                        ArtworkType.getType(playback as SinglePlayback), // TODO: Playlists
+                        if (playback.artwork.value is RemoteArtwork)
+                            (playback.artwork.value as RemoteArtwork).uri.toURL()
+                                .toString() else null
+                    )
+                )
+            }
         }
-
     }
 }

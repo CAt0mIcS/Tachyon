@@ -7,6 +7,7 @@ import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import org.jsoup.HttpStatusException
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -39,6 +40,8 @@ abstract class ArtworkSource {
         } catch (e: SocketException) {
             requestFailed(e, url.data)
         } catch (e: SocketTimeoutException) {
+            requestFailed(e, url.data)
+        } catch (e: IOException) {
             requestFailed(e, url.data)
         }
     }

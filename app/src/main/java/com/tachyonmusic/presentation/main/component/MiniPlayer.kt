@@ -28,7 +28,7 @@ import com.tachyonmusic.presentation.theme.Theme
 
 @Composable
 fun MiniPlayer(
-    playback: Playback,
+    playback: Playback?,
     currentPosition: Float,
     isPlaying: Boolean,
     onClick: () -> Unit,
@@ -36,69 +36,75 @@ fun MiniPlayer(
     artwork: Artwork,
     modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier
-        .fillMaxWidth()
-        .padding(
-            start = Theme.padding.extraSmall,
-            top = Theme.padding.extraSmall,
-            end = Theme.padding.extraSmall
-        )
-        .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
-        .background(Theme.colors.tertiary, shape = Theme.shapes.medium)
-        .clickable {
-            onClick()
-        }) {
-        artwork.Image(
-            contentDescription = "Album Artwork",
-            modifier = Modifier
-                .padding(Theme.padding.extraSmall)
-                .size(48.dp, 48.dp)
-                .clip(Theme.shapes.medium)
-        )
+    if (playback == null)
+        return
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterVertically)
-                .padding(start = Theme.padding.small),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text(
-                    modifier = Modifier.padding(top = Theme.padding.small),
-                    text = playback.title ?: "No Title",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    maxLines = 2
-                )
-
-                Text(
-                    modifier = Modifier.padding(
-                        start = Theme.padding.small, bottom = Theme.padding.small
-                    ), text = playback.artist ?: "No Artist", fontSize = 12.sp, maxLines = 1
-                )
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(
+                start = Theme.padding.extraSmall,
+                end = Theme.padding.extraSmall
+            )
+            .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
+            .background(Theme.colors.tertiary, shape = Theme.shapes.medium)
+            .clickable {
+                onClick()
             }
-
-            IconButton(
+    ) {
+        Row {
+            artwork.Image(
+                contentDescription = "Album Artwork",
                 modifier = Modifier
-                    .padding(start = Theme.padding.medium, end = Theme.padding.medium)
-                    .scale(1.4f),
-                onClick = onPlayPauseClicked
+                    .padding(Theme.padding.extraSmall)
+                    .size(48.dp, 48.dp)
+                    .clip(Theme.shapes.medium)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.CenterVertically)
+                    .padding(start = Theme.padding.small),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    painterResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
-                    contentDescription = "Play/Pause"
-                )
+                Column {
+                    Text(
+                        modifier = Modifier.padding(top = Theme.padding.small),
+                        text = playback.title ?: "No Title",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        maxLines = 2
+                    )
+
+                    Text(
+                        modifier = Modifier.padding(
+                            start = Theme.padding.small, bottom = Theme.padding.small
+                        ), text = playback.artist ?: "No Artist", fontSize = 12.sp, maxLines = 1
+                    )
+                }
+
+                IconButton(
+                    modifier = Modifier
+                        .padding(start = Theme.padding.medium, end = Theme.padding.medium)
+                        .scale(1.4f),
+                    onClick = onPlayPauseClicked
+                ) {
+                    Icon(
+                        painterResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
+                        contentDescription = "Play/Pause"
+                    )
+                }
             }
         }
-    }
 
-    ProgressIndicator(
-        progress = currentPosition,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = Theme.padding.medium, end = Theme.padding.medium),
-        color = Theme.colors.orange,
-        backgroundColor = Theme.colors.partialOrange2
-    )
+        ProgressIndicator(
+            progress = currentPosition,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = Theme.padding.medium, end = Theme.padding.medium),
+            color = Theme.colors.orange,
+            backgroundColor = Theme.colors.partialOrange2
+        )
+    }
 }

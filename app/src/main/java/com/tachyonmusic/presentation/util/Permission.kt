@@ -2,9 +2,12 @@ package com.tachyonmusic.presentation.util
 
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.READ_MEDIA_AUDIO
+import android.os.Build
+import androidx.annotation.RequiresApi
 
 sealed class Permission(vararg val permissions: String) {
     // Individual permissions
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     object ReadMediaAudio : Permission(READ_MEDIA_AUDIO)
     object ReadExternalStorage : Permission(READ_EXTERNAL_STORAGE)
 

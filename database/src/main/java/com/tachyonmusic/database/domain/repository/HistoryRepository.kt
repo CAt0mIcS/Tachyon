@@ -15,6 +15,8 @@ interface HistoryRepository {
         initialLoadSize: Int = pageSize
     ): Flow<PagingData<Playback>>
 
+    fun observe(): Flow<List<Playback>>
+
     suspend fun getHistory(): List<Playback>
     suspend operator fun plusAssign(playback: PlaybackEntity)
     suspend operator fun minusAssign(playback: PlaybackEntity)

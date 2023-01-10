@@ -4,15 +4,23 @@ import androidx.paging.PagingSource
 import androidx.room.*
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.SongEntity
+import kotlinx.coroutines.flow.Flow
 
 
 @Dao
 interface SongDao {
-    @Query("SELECT * FROM SongEntity")
+    // TODO: Temporary, user should be able to choose how to sort
+    @Query("SELECT * FROM SongEntity ORDER BY title ASC")
     fun getPagedSongs(): PagingSource<Int, SongEntity>
 
     @Query("SELECT * FROM SongEntity")
     suspend fun getSongs(): List<SongEntity>
+
+    @Query("SELECT * FROM SongEntity")
+    fun observe(): Flow<List<SongEntity>>
+
+    @Query("SELECT * FROM SongEntity WHERE mediaId=:mediaId")
+    fun observeByMediaId(mediaId: MediaId): Flow<SongEntity>
 
     @Query("SELECT * FROM SongEntity WHERE mediaId=:mediaId")
     suspend fun getSongWithMediaId(mediaId: MediaId): SongEntity?

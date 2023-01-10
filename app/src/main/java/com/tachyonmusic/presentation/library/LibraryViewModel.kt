@@ -1,44 +1,99 @@
 package com.tachyonmusic.presentation.library
 
+import android.app.Application
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import androidx.paging.PagingData
-import androidx.paging.map
+import androidx.lifecycle.viewModelScope
+import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.domain.use_case.GetPagedLoops
-import com.tachyonmusic.domain.use_case.GetPagedPlaylists
-import com.tachyonmusic.domain.use_case.GetPagedSongs
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.domain.use_case.GetSongs
 import com.tachyonmusic.domain.use_case.ItemClicked
+import com.tachyonmusic.domain.use_case.ObserveLoops
+import com.tachyonmusic.domain.use_case.ObservePlaylists
+import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    getSongs: GetPagedSongs,
-    getLoops: GetPagedLoops,
-    getPlaylists: GetPagedPlaylists,
-    private val itemClicked: ItemClicked
+    getSongs: GetSongs,
+    observeLoops: ObserveLoops,
+    observePlaylists: ObservePlaylists,
+    getOrLoadArtwork: GetOrLoadArtwork,
+    private val itemClicked: ItemClicked,
+    private val application: Application,
+    private val log: Logger
 ) : ViewModel() {
 
-    private var songs = getSongs(5)
-    private val loops = getLoops(5)
-    private val playlists = getPlaylists(5)
+    private var songs = listOf<Song>()
+    private var loops = listOf<Loop>()
+    private var playlists = listOf<Playlist>()
 
-    var items: Flow<PagingData<Playback>> = songs.map { it.map { it } }
-        private set
+    private var filterType: PlaybackType = PlaybackType.Song.Local()
+
+    private val _items = mutableStateOf(listOf<Playback>())
+    val items: State<List<Playback>> = _items
+
+    init {
+        observeLoops().map {
+            loops = it
+            if (filterType is PlaybackType.Loop.Remote) {
+                _items.value = emptyList()
+                _items.value = loops
+            }
+        }.launchIn(viewModelScope)
+
+        observePlaylists().map {
+            playlists = it
+            if (filterType is PlaybackType.Playlist.Remote) {
+                _items.value = emptyList()
+                _items.value = playlists
+            }
+        }.launchIn(viewModelScope)
+
+        viewModelScope.launch(Dispatchers.IO) {
+            songs = getSongs()
+            runOnUiThread { _items.value = songs }
+
+            getOrLoadArtwork(getSongs.entities()).onEach {
+                if (it is Resource.Success)
+                    songs[it.data!!.i].artwork.value = it.data!!.artwork
+                else
+                    log.debug(it.message?.asString(application) ?: "No message from artwork loader")
+
+                songs[it.data!!.i].isArtworkLoading.value = false
+            }.collect()
+        }
+    }
+
 
     fun onFilterSongs() {
-        items = songs.map { it.map { it } }
+        _items.value = songs
+        filterType = PlaybackType.Song.Local()
     }
 
     fun onFilterLoops() {
-        items = loops.map { it.map { it } }
+        _items.value = loops
+        filterType = PlaybackType.Loop.Remote()
     }
 
     fun onFilterPlaylists() {
-        items = playlists.map { it.map { it } }
+        _items.value = playlists
+        filterType = PlaybackType.Playlist.Remote()
     }
 
     fun onItemClicked(playback: Playback) {

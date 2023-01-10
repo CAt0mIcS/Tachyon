@@ -8,14 +8,15 @@ import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
-import com.tachyonmusic.logger.Log
+import com.tachyonmusic.domain.util.removeFirst
+import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.util.File
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
-import java.io.File
 
 /**
  * Checks if every song that is not excluded is saved in the database. If a song was removed by the
@@ -26,7 +27,7 @@ class UpdateSongDatabase(
     private val settingsRepo: SettingsRepository,
     private val fileRepository: FileRepository,
     private val metadataExtractor: SongMetadataExtractor,
-    private val log: Logger = Log()
+    private val log: Logger = LoggerImpl()
 ) {
     suspend operator fun invoke() = withContext(Dispatchers.IO) {
         val settings = settingsRepo.getSettings()
@@ -42,12 +43,13 @@ class UpdateSongDatabase(
          * Remove all invalid or excluded paths in the [songRepo]
          * Update [paths] to only contain new songs that we need to add to [songRepo]
          */
-        songRepo.removeIf {
-            val path = it.mediaId.path
+        songRepo.removeIf { song ->
+            val path = song.mediaId.path
             if (path != null) {
-                paths.remove(path)
-                settings.excludedSongFiles.contains(path.absolutePath) ||
-                        !path.exists() || !path.isFile
+                paths.removeFirst { it.absolutePath == path.absolutePath }
+                val contains = settings.excludedSongFiles.contains(path.absolutePath)
+                val notIsFile = !path.isFile
+                contains || notIsFile
             } else TODO("Invalid path null")
         }
 
@@ -57,7 +59,7 @@ class UpdateSongDatabase(
             val songs = mutableListOf<Deferred<SongMetadataExtractor.SongMetadata?>>()
             for (path in paths) {
                 songs += async(Dispatchers.IO) {
-                    metadataExtractor.loadMetadata(Uri.fromFile(path))
+                    metadataExtractor.loadMetadata(Uri.fromFile(path.raw))
                 }
             }
 

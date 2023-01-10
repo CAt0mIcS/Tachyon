@@ -16,9 +16,6 @@
     <string name="already_have_account_question">Already have an account?</string>
 
     <string name="unknown_error">An unknown error occurred</string>
-    <string name="invalid_email_error">Please enter a valid email</string>
-    <string name="invalid_password_error">Please enter a valid password</string>
 
-    <string name="no_album_art">No Album Art found for %1$s</string>
     <string name="invalid_search_query">Invalid search query %1$s</string>
 </resources>

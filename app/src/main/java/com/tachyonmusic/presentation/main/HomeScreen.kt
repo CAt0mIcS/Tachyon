@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -15,27 +16,23 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.data.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
-import com.tachyonmusic.presentation.main.component.MiniPlayer
 import com.tachyonmusic.presentation.main.component.VerticalPlaybackView
-import com.tachyonmusic.presentation.player.PlayerScreen
 import com.tachyonmusic.presentation.theme.Theme
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 object HomeScreen :
@@ -45,41 +42,23 @@ object HomeScreen :
     @Composable
     operator fun invoke(
         navController: NavController,
+        sheetState: BottomSheetState,
+        miniPlayerHeight: MutableState<Dp>,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var searchText by remember { mutableStateOf("") }
+        val history by viewModel.history
 
-        val history = viewModel.history.collectAsLazyPagingItems()
-        val recentlyPlayed = if (history.itemCount > 0) history[0] else null
+        val scope = rememberCoroutineScope()
 
-        val isPlaying by viewModel.isPlaying
-        var currentPosition by remember {
-            mutableStateOf(
-                viewModel.currentPositionNormalized ?: viewModel.recentlyPlayedPositionNormalized
-            )
-        }
-
-        var bottomPaddingRequiredByMiniPlayer by remember { mutableStateOf(0.dp) }
-
-        DisposableEffect(Unit) {
-            viewModel.registerPlayerListener()
-            onDispose {
-                viewModel.unregisterPlayerListener()
-            }
-        }
-
-        LaunchedEffect(Unit) {
-            while (true) {
-                currentPosition = viewModel.currentPositionNormalized
-                    ?: viewModel.recentlyPlayedPositionNormalized
-                delay(viewModel.getAudioUpdateInterval())
-            }
-        }
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(bottom = bottomPaddingRequiredByMiniPlayer)
+            contentPadding = PaddingValues(
+                start = Theme.padding.medium,
+                bottom = miniPlayerHeight.value + Theme.padding.medium
+            )
         ) {
 
             item {
@@ -189,7 +168,9 @@ object HomeScreen :
                 ) {
                     playbacksView(history) {
                         viewModel.onItemClicked(it)
-                        navController.navigate(PlayerScreen.route)
+                        scope.launch {
+                            sheetState.expand()
+                        }
                     }
                 }
             }
@@ -217,64 +198,12 @@ object HomeScreen :
                 ) {
                     playbacksView(playbacks = history) {
                         viewModel.onItemClicked(it)
-                        navController.navigate(PlayerScreen.route)
+                        scope.launch {
+                            sheetState.expand()
+                        }
                     }
                 }
 
-            }
-        }
-
-        if (recentlyPlayed != null) {
-
-            val artwork by recentlyPlayed.artwork.collectAsState()
-
-            Layout(
-                modifier = Modifier.fillMaxSize(),
-                content = {
-                    MiniPlayer(
-                        playback = recentlyPlayed,
-                        artwork = artwork
-                            ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
-                        currentPosition = currentPosition,
-                        isPlaying = isPlaying,
-                        onPlayPauseClicked = { viewModel.onPlayPauseClicked(recentlyPlayed) },
-                        onClick = {
-                            viewModel.onMiniPlayerClicked(recentlyPlayed)
-                            navController.navigate(PlayerScreen.route)
-                        }
-                    )
-                }
-            ) { measurables, constraints ->
-                val looseConstraints = constraints.copy(
-                    minWidth = 0,
-                    maxWidth = constraints.maxWidth,
-                    minHeight = 0,
-                    maxHeight = constraints.maxHeight
-                )
-
-                // Measure each child
-                val placeables = measurables.map { measurable ->
-                    measurable.measure(looseConstraints)
-                }
-
-                layout(constraints.maxWidth, constraints.maxHeight) {
-                    // Place children in the parent layout
-                    placeables.forEach { placeable ->
-                        // This applies bottom content padding to the LazyColumn handling the entire other screen
-                        // so that we can scroll down far enough
-                        // TODO: Many recompositions?
-                        if (bottomPaddingRequiredByMiniPlayer == 0.dp && placeable.height != 0) {
-                            bottomPaddingRequiredByMiniPlayer = placeable.height.toDp()
-                            println("BottomPadding $bottomPaddingRequiredByMiniPlayer")
-                        }
-
-                        // Position items at the bottom of the screen, excluding BottomNavBar
-                        placeable.placeRelative(
-                            x = 0,
-                            y = constraints.maxHeight - placeable.height
-                        )
-                    }
-                }
             }
         }
     }
@@ -282,43 +211,26 @@ object HomeScreen :
 
 
 private fun LazyListScope.playbacksView(
-    playbacks: LazyPagingItems<Playback>,
+    playbacks: List<Playback>,
     onClick: (Playback) -> Unit
 ) {
-    items(playbacks.itemCount) { i ->
+    items(playbacks) { playback ->
 
-        // Apply extra padding to the start of the first playback and to the end of the last
-        val padding = if (i == 0) {
-            PaddingValues(start = Theme.padding.medium, end = Theme.padding.extraSmall / 2f)
-        } else if (i > 0 && i < playbacks.itemCount - 1) {
-            PaddingValues(
-                start = Theme.padding.extraSmall / 2f,
-                end = Theme.padding.extraSmall / 2f
-            )
-        } else {
-            PaddingValues(
-                start = Theme.padding.extraSmall / 2f,
-                end = Theme.padding.medium
-            )
-        }
+        val artwork by playback.artwork.collectAsState()
+        val isArtworkLoading by playback.isArtworkLoading.collectAsState()
 
-        val playback = playbacks[i]
-        if (playback != null) {
-            val artwork by playback.artwork.collectAsState()
-            val isArtworkLoading by playback.isArtworkLoading.collectAsState()
-
-            VerticalPlaybackView(
-                modifier = Modifier
-                    .padding(padding)
-                    .clickable {
-                        onClick(playback)
-                    },
-                playback = playback,
-                artwork = artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
-                isArtworkLoading = isArtworkLoading
-            )
-        }
-
-
+        VerticalPlaybackView(
+            modifier = Modifier
+                .padding(
+                    start = Theme.padding.extraSmall / 2f,
+                    end = Theme.padding.extraSmall / 2f
+                )
+                .clickable {
+                    onClick(playback)
+                },
+            playback = playback,
+            artwork = artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+            isArtworkLoading = isArtworkLoading
+        )
     }
 }

@@ -10,6 +10,6 @@ class SongEntity(
     title: String,
     artist: String,
     duration: Long,
-    artworkType: String = ArtworkType.NO_ARTWORK,
+    artworkType: String = ArtworkType.UNKNOWN,
     artworkUrl: String? = null
 ) : SinglePlaybackEntity(mediaId, title, artist, duration, artworkType, artworkUrl)

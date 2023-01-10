@@ -1,19 +1,15 @@
 package com.tachyonmusic.database.di
 
 import android.app.Application
-import android.content.Context
 import androidx.room.Room
 import com.tachyonmusic.database.data.data_source.*
 import com.tachyonmusic.database.data.data_source.room.RoomDatabase
 import com.tachyonmusic.database.data.repository.*
-import com.tachyonmusic.database.domain.ArtworkSource
 import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
-import com.tachyonmusic.database.domain.use_case.LoadArtwork
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -88,23 +84,9 @@ object DatabaseUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideArtworkSource(): ArtworkSource = ArtworkSourceImpl()
-
-    @Provides
-    @Singleton
     fun provideFindPlaybackByMediaIdUseCase(
         songRepository: SongRepository,
         loopRepository: LoopRepository,
         playlistRepository: PlaylistRepository
     ) = FindPlaybackByMediaId(songRepository, loopRepository, playlistRepository)
-
-
-    @Provides
-    @Singleton
-    fun provideLoadArtworkUseCase(
-        artworkSource: ArtworkSource,
-        songRepository: SongRepository,
-        loopRepository: LoopRepository,
-        @ApplicationContext context: Context
-    ) = LoadArtwork(artworkSource, context, songRepository, loopRepository)
 }

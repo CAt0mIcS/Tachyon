@@ -1,7 +1,11 @@
 package com.tachyonmusic.presentation
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.material.BottomSheetState
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
@@ -9,18 +13,21 @@ import com.tachyonmusic.presentation.authentication.RegisterScreen
 import com.tachyonmusic.presentation.authentication.SignInScreen
 import com.tachyonmusic.presentation.library.LibraryScreen
 import com.tachyonmusic.presentation.main.HomeScreen
-import com.tachyonmusic.presentation.player.PlayerScreen
 import com.tachyonmusic.presentation.profile.ProfileScreen
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
 @Composable
-fun NavigationGraph(navController: NavHostController) {
+fun NavigationGraph(
+    navController: NavHostController,
+    sheetState: BottomSheetState,
+    miniPlayerHeight: MutableState<Dp>
+) {
     AnimatedNavHost(navController, startDestination = HomeScreen.route) {
         composable(HomeScreen.route) {
-            HomeScreen(navController)
+            HomeScreen(navController, sheetState, miniPlayerHeight)
         }
         composable(LibraryScreen.route) {
-            LibraryScreen(navController)
+            LibraryScreen(sheetState)
         }
         composable(ProfileScreen.route) {
             ProfileScreen()
@@ -30,9 +37,6 @@ fun NavigationGraph(navController: NavHostController) {
         }
         composable(RegisterScreen.route) {
             RegisterScreen(navController)
-        }
-        composable(PlayerScreen.route) {
-            PlayerScreen(navController)
         }
     }
 }

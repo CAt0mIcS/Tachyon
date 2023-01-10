@@ -1,6 +1,7 @@
 package com.tachyonmusic.domain.repository
 
-import java.io.File
+import com.tachyonmusic.util.File
+
 
 interface FileRepository {
     /**

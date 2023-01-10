@@ -13,7 +13,7 @@ android {
         minSdk = Version.MIN_SDK
         targetSdk = Version.TARGET_SDK
 
-        testInstrumentationRunner = "com.tachyonmusic.testutils.HiltTestRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
 
@@ -37,6 +37,14 @@ android {
         jvmTarget = "11"
     }
 
+    packagingOptions {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
+        }
+    }
+
     namespace = "com.tachyonmusic.media"
 }
 
@@ -50,6 +58,7 @@ dependencies {
     projectDatabase()
     projectUtil()
     projectLogger()
+    projectArtworkFetcher()
 
     unitTest()
     androidTest()

@@ -10,7 +10,7 @@ import java.lang.reflect.Type
 object Converters {
     @TypeConverter
     fun fromStringToStringList(value: String?): List<String> {
-        val listType: Type = object : TypeToken<List<String?>?>() {}.getType()
+        val listType: Type = object : TypeToken<List<String?>?>() {}.type
         return Gson().fromJson(value, listType)
     }
 
@@ -27,7 +27,7 @@ object Converters {
 
     @TypeConverter
     fun fromStringToMediaIdList(value: String?): List<MediaId> {
-        val listType: Type = object : TypeToken<List<MediaId?>?>() {}.getType()
+        val listType: Type = object : TypeToken<List<MediaId?>?>() {}.type
         return Gson().fromJson(value, listType)
     }
 
@@ -37,7 +37,7 @@ object Converters {
 
     @TypeConverter
     fun fromStringToTimingDataList(value: String?): List<TimingData> {
-        val listType: Type = object : TypeToken<List<TimingData?>?>() {}.getType()
+        val listType: Type = object : TypeToken<List<TimingData?>?>() {}.type
         return Gson().fromJson(value, listType)
     }
 
