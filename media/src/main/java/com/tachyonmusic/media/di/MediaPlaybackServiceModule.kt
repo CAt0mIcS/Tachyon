@@ -1,12 +1,8 @@
 package com.tachyonmusic.media.di
 
 import android.app.Service
+import android.content.Context
 import androidx.media3.cast.CastPlayer
-import androidx.media3.common.AudioAttributes
-import androidx.media3.common.C
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.util.EventLogger
 import com.google.android.gms.cast.framework.CastContext
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.domain.SongMetadataExtractor
@@ -18,8 +14,6 @@ import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.CAST_PLAYER_NAME
-import com.tachyonmusic.media.EXO_PLAYER_NAME
 import com.tachyonmusic.media.data.ArtworkCodexImpl
 import com.tachyonmusic.media.data.ArtworkLoaderImpl
 import com.tachyonmusic.media.data.BrowserTree
@@ -32,9 +26,9 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ServiceComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ServiceScoped
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -56,39 +50,19 @@ class MediaPlaybackServiceRepositoryModule {
 
     @Provides
     @ServiceScoped
-    @Named(EXO_PLAYER_NAME)
-    fun provideExoPlayer(service: Service): CustomPlayer =
-        CustomPlayerImpl(ExoPlayer.Builder(service).apply {
-            setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                    .setUsage(C.USAGE_MEDIA)
-                    .build(), true
-            )
-            setHandleAudioBecomingNoisy(true)
-        }.build().apply {
-            // TODO: Debug only
-            addAnalyticsListener(EventLogger())
-            repeatMode = Player.REPEAT_MODE_ONE
-        })
-
-    @Provides
-    @ServiceScoped
-    @Named(CAST_PLAYER_NAME)
     fun provideCastPlayer(context: CastContext): CustomPlayer =
         CustomPlayerImpl(CastPlayer(context))
 }
 
 
 @Module
-@InstallIn(ServiceComponent::class)
+@InstallIn(SingletonComponent::class)
 class MediaPlaybackUseCaseModule {
     @Provides
-    @ServiceScoped
+    @Singleton
     fun provideServiceUseCases(
         historyRepository: HistoryRepository,
         settingsRepository: SettingsRepository,
-        @Named(EXO_PLAYER_NAME) player: CustomPlayer,
         songRepository: SongRepository,
         loopRepository: LoopRepository,
         findPlaybackByMediaId: FindPlaybackByMediaId,
@@ -102,12 +76,22 @@ class MediaPlaybackUseCaseModule {
             getOrLoadArtwork
         ),
         ConfirmAddedMediaItems(songRepository, loopRepository, findPlaybackByMediaId),
-        PreparePlayer(player),
+        PreparePlayer(),
         GetSupportedCommands(),
-        UpdateTimingDataOfCurrentPlayback(player),
+        UpdateTimingDataOfCurrentPlayback(),
         AddNewPlaybackToHistory(historyRepository, settingsRepository),
         SaveRecentlyPlayed(dataRepository)
     )
+
+    @Provides
+    @Singleton
+    fun provideGetSettingsUseCase(settingsRepository: SettingsRepository) =
+        GetSettings(settingsRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetIsInternetConnectionMetered(@ApplicationContext context: Context) =
+        GetIsInternetConnectionMetered(context)
 }
 
 

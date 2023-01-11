@@ -17,11 +17,14 @@ import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.*
+import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.ArtworkCodex
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.domain.use_case.ObserveSettings
+import com.tachyonmusic.media.domain.use_case.GetIsInternetConnectionMetered
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -73,12 +76,26 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
+    fun provideWriteSettingsUseCase(settingsRepository: SettingsRepository) =
+        WriteSettings(settingsRepository)
+
+    @Provides
+    @Singleton
     fun provideGetOrLoadArtworkUseCase(
         songRepository: SongRepository,
         loopRepository: LoopRepository,
+        settingsRepository: SettingsRepository,
         artworkCodex: ArtworkCodex,
-        findPlaybackByMediaId: FindPlaybackByMediaId
-    ) = GetOrLoadArtwork(songRepository, loopRepository, artworkCodex, findPlaybackByMediaId)
+        findPlaybackByMediaId: FindPlaybackByMediaId,
+        isNetworkConnectionMetered: GetIsInternetConnectionMetered
+    ) = GetOrLoadArtwork(
+        songRepository,
+        loopRepository,
+        settingsRepository,
+        artworkCodex,
+        findPlaybackByMediaId,
+        isNetworkConnectionMetered
+    )
 
     @Provides
     @Singleton

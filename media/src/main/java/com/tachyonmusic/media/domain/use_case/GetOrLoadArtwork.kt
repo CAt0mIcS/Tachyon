@@ -4,6 +4,7 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.database.util.updateArtwork
@@ -24,13 +25,25 @@ data class UpdateInfo(
 class GetOrLoadArtwork(
     private val songRepository: SongRepository,
     private val loopRepository: LoopRepository,
+    private val settingsRepository: SettingsRepository,
     private val artworkCodex: ArtworkCodex,
-    private val findPlayback: FindPlaybackByMediaId
+    private val findPlayback: FindPlaybackByMediaId,
+    private val isInternetMetered: GetIsInternetConnectionMetered
 ) {
 
     @JvmName("invokePlaybackEntities")
     suspend operator fun invoke(songs: List<SinglePlaybackEntity>) = channelFlow {
         withContext(Dispatchers.IO) {
+            val settings = settingsRepository.getSettings()
+            if (!settings.autoDownloadAlbumArtwork) {
+                send(Resource.Error())
+                return@withContext
+            }
+            if (settings.autoDownloadAlbumArtworkWifiOnly && isInternetMetered()) {
+                send(Resource.Error())
+                return@withContext
+            }
+
             songs.forEachIndexed { i, entity ->
                 launch {
                     if (!artworkCodex.isLoaded(entity.mediaId)) {

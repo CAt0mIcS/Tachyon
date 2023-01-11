@@ -7,10 +7,12 @@ import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 
-class PreparePlayer(
-    private val player: CustomPlayer
-) {
-    operator fun invoke(items: List<MediaItem>?, initialWindowIndex: Int?): Resource<Unit> {
+class PreparePlayer {
+    operator fun invoke(
+        player: CustomPlayer,
+        items: List<MediaItem>?,
+        initialWindowIndex: Int?
+    ): Resource<Unit> {
         if (items == null || initialWindowIndex == null)
             return Resource.Error(UiText.StringResource(R.string.invalid_arguments))
 

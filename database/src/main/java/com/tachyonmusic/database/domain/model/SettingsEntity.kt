@@ -9,7 +9,6 @@ data class SettingsEntity(
     val autoDownloadAlbumArtwork: Boolean = true,
     val autoDownloadAlbumArtworkWifiOnly: Boolean = true,
     val combineDifferentPlaybackTypes: Boolean = false,
-    val songIncDecInterval: Int = 100,
     val audioUpdateInterval: Int = 100,
     val maxPlaybacksInHistory: Int = 25,
     val seekForwardIncrementMs: Long = 10000,

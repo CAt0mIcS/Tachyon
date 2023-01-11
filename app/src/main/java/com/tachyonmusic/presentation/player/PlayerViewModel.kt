@@ -21,6 +21,8 @@ import com.tachyonmusic.presentation.player.data.ArtworkState
 import com.tachyonmusic.presentation.player.data.PlaybackState
 import com.tachyonmusic.presentation.player.data.RepeatMode
 import com.tachyonmusic.presentation.player.data.SeekIncrementsState
+import com.tachyonmusic.util.runOnUiThread
+import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -86,11 +88,14 @@ class PlayerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            _recentlyPlayed.value = getHistory().firstOrNull()
-            updatePlaybackState(recentlyPlayed.value)
-            if (recentlyPlayed.value != null)
-                getOrLoadArtworkForPlayback(recentlyPlayed.value!!)
+            val recentlyPlayedPlayback = getHistory().firstOrNull()
 
+            runOnUiThreadAsync {
+                _recentlyPlayed.value = recentlyPlayedPlayback
+                updatePlaybackState(recentlyPlayed.value)
+            }
+            if (recentlyPlayedPlayback != null)
+                getOrLoadArtworkForPlayback(recentlyPlayedPlayback)
 
             val recentlyPlayed = getRecentlyPlayed()
             recentlyPlayedPositionNormalized = normalizePosition(

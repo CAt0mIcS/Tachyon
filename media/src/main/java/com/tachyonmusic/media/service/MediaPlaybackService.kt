@@ -1,9 +1,17 @@
 package com.tachyonmusic.media.service
 
 import android.os.Bundle
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.session.*
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.util.EventLogger
+import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaSession
+import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionResult
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -15,20 +23,25 @@ import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.CAST_PLAYER_NAME
-import com.tachyonmusic.media.EXO_PLAYER_NAME
 import com.tachyonmusic.media.data.BrowserTree
+import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.data.ext.parcelable
 import com.tachyonmusic.media.data.ext.playback
 import com.tachyonmusic.media.domain.CustomPlayer
+import com.tachyonmusic.media.domain.use_case.GetSettings
 import com.tachyonmusic.media.domain.use_case.ServiceUseCases
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.future
+import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import javax.inject.Named
 
 
 @AndroidEntryPoint
@@ -36,12 +49,10 @@ class MediaPlaybackService(
     private val log: Logger = LoggerImpl()
 ) : MediaLibraryService(), Player.Listener {
 
-    @Inject
-    @Named(EXO_PLAYER_NAME)
-    lateinit var exoPlayer: CustomPlayer
+    private lateinit var exoPlayer: CustomPlayer
+    private lateinit var currentPlayer: CustomPlayer
 
     @Inject
-    @Named(CAST_PLAYER_NAME)
     lateinit var castPlayer: CustomPlayer
 
     @Inject
@@ -50,6 +61,9 @@ class MediaPlaybackService(
     @Inject
     lateinit var useCases: ServiceUseCases
 
+    @Inject
+    lateinit var getSettings: GetSettings
+
     private val supervisor = SupervisorJob()
     private val ioScope = CoroutineScope(supervisor + Dispatchers.IO)
 
@@ -57,6 +71,11 @@ class MediaPlaybackService(
 
     override fun onCreate() {
         super.onCreate()
+
+        runBlocking {
+            val settings = getSettings()
+            exoPlayer = buildExoPlayer(!settings.ignoreAudioFocus)
+        }
 
         setMediaNotificationProvider(MediaNotificationProvider(this))
 
@@ -132,7 +151,11 @@ class MediaPlaybackService(
 
                     withContext(Dispatchers.Main) {
                         val prepareRes =
-                            useCases.preparePlayer(loadingRes.data?.first, loadingRes.data?.second)
+                            useCases.preparePlayer(
+                                currentPlayer,
+                                loadingRes.data?.first,
+                                loadingRes.data?.second
+                            )
                         if (prepareRes is Resource.Error)
                             return@withContext SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
                         SessionResult(SessionResult.RESULT_SUCCESS)
@@ -142,6 +165,7 @@ class MediaPlaybackService(
                 MediaAction.updateTimingDataCommand -> {
                     val res = withContext(Dispatchers.Main) {
                         useCases.updateTimingDataOfCurrentPlayback(
+                            currentPlayer,
                             args.parcelable(MetadataKeys.TimingData)
                         )
                     }
@@ -171,8 +195,8 @@ class MediaPlaybackService(
     // TODO: Check if the position is saved every time, e.g. when the playback is terminated another way
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (!isPlaying) {
-            val playback = exoPlayer.mediaMetadata.playback ?: return
-            val currentPos = exoPlayer.currentPosition
+            val playback = currentPlayer.mediaMetadata.playback ?: return
+            val currentPos = currentPlayer.currentPosition
             ioScope.launch {
                 useCases.saveRecentlyPlayed(
                     RecentlyPlayed(
@@ -188,4 +212,20 @@ class MediaPlaybackService(
             }
         }
     }
+
+    private fun buildExoPlayer(handleAudioFocus: Boolean): CustomPlayer =
+        CustomPlayerImpl(ExoPlayer.Builder(this).apply {
+            setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                    .setUsage(C.USAGE_MEDIA)
+                    .build(),
+                handleAudioFocus
+            )
+            setHandleAudioBecomingNoisy(true)
+        }.build().apply {
+            // TODO: Debug only
+            addAnalyticsListener(EventLogger())
+            repeatMode = Player.REPEAT_MODE_ONE
+        })
 }
