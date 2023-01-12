@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetHistory
-import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.ObserveSettings
@@ -17,12 +16,12 @@ import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.SeekPosition
 import com.tachyonmusic.domain.use_case.player.SetCurrentPlayback
+import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.ArtworkState
 import com.tachyonmusic.presentation.player.data.PlaybackState
 import com.tachyonmusic.presentation.player.data.RepeatMode
 import com.tachyonmusic.presentation.player.data.SeekIncrementsState
 import com.tachyonmusic.util.runOnUiThread
-import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -90,7 +89,7 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val recentlyPlayedPlayback = getHistory().firstOrNull()
 
-            runOnUiThreadAsync {
+            runOnUiThread {
                 _recentlyPlayed.value = recentlyPlayedPlayback
                 updatePlaybackState(recentlyPlayed.value)
             }
@@ -178,9 +177,11 @@ class PlayerViewModel @Inject constructor(
     private fun getOrLoadArtworkForPlayback(playback: Playback) {
         viewModelScope.launch(Dispatchers.IO) {
             getOrLoadArtwork(playback).onEach {
-                recentlyPlayed.value?.artwork?.value = it.data?.artwork
-                recentlyPlayed.value?.isArtworkLoading?.value = false
-                updateArtworkState(recentlyPlayed.value)
+                runOnUiThread {
+                    recentlyPlayed.value?.artwork?.value = it.data?.artwork
+                    recentlyPlayed.value?.isArtworkLoading?.value = false
+                    updateArtworkState(recentlyPlayed.value)
+                }
             }.collect()
         }
     }

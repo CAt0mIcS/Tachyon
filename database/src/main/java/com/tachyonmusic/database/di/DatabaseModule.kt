@@ -6,6 +6,7 @@ import com.tachyonmusic.database.data.data_source.*
 import com.tachyonmusic.database.data.data_source.room.RoomDatabase
 import com.tachyonmusic.database.data.repository.*
 import com.tachyonmusic.database.domain.repository.*
+import com.tachyonmusic.database.domain.use_case.ConvertHistoryEntityToPlayback
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import dagger.Module
 import dagger.Provides
@@ -59,16 +60,9 @@ object DatabaseRepositoryModule {
     @Singleton
     fun provideHistoryRepository(
         database: Database,
-        findPlaybackByMediaId: FindPlaybackByMediaId,
-        songRepository: SongRepository,
-        loopRepository: LoopRepository
+        convertHistoryEntityToPlayback: ConvertHistoryEntityToPlayback
     ): HistoryRepository =
-        RoomHistoryRepository(
-            database.historyDao,
-            findPlaybackByMediaId,
-            songRepository,
-            loopRepository
-        )
+        RoomHistoryRepository(database.historyDao, convertHistoryEntityToPlayback)
 
     @Provides
     @Singleton
@@ -89,4 +83,12 @@ object DatabaseUseCaseModule {
         loopRepository: LoopRepository,
         playlistRepository: PlaylistRepository
     ) = FindPlaybackByMediaId(songRepository, loopRepository, playlistRepository)
+
+    @Provides
+    @Singleton
+    fun provideConvertHistoryEntityToPlaybackUseCase(
+        findPlaybackByMediaId: FindPlaybackByMediaId,
+        songRepository: SongRepository,
+        loopRepository: LoopRepository,
+    ) = ConvertHistoryEntityToPlayback(findPlaybackByMediaId, songRepository, loopRepository)
 }
