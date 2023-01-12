@@ -76,6 +76,7 @@ class MediaPlaybackService(
             val settings = getSettings()
             exoPlayer = buildExoPlayer(!settings.ignoreAudioFocus)
         }
+        currentPlayer = exoPlayer
 
         setMediaNotificationProvider(MediaNotificationProvider(this))
 
