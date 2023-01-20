@@ -35,19 +35,16 @@ class GetOrLoadArtwork(
     suspend operator fun invoke(songs: List<SinglePlaybackEntity>) = channelFlow {
         withContext(Dispatchers.IO) {
             val settings = settingsRepository.getSettings()
-            if (!settings.autoDownloadAlbumArtwork) {
-                send(Resource.Error())
-                return@withContext
-            }
-            if (settings.autoDownloadAlbumArtworkWifiOnly && isInternetMetered()) {
-                send(Resource.Error())
-                return@withContext
-            }
+            val fetchOnline =
+                if (!settings.autoDownloadAlbumArtwork || (settings.autoDownloadAlbumArtworkWifiOnly && isInternetMetered()))
+                    false
+                else
+                    true
 
             songs.forEachIndexed { i, entity ->
                 launch {
                     if (!artworkCodex.isLoaded(entity.mediaId)) {
-                        val res = artworkCodex.awaitOrLoad(entity)
+                        val res = artworkCodex.awaitOrLoad(entity, fetchOnline)
                         val entityToUpdate = res.data
 
                         if (res is Resource.Error)

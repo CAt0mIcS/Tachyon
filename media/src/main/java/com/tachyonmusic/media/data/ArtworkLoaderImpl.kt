@@ -22,7 +22,10 @@ internal class ArtworkLoaderImpl(
     private val log: Logger,
     private val metadataExtractor: SongMetadataExtractor
 ) : ArtworkLoader {
-    override suspend fun requestLoad(entity: SinglePlaybackEntity): Resource<ArtworkData> {
+    override suspend fun requestLoad(
+        entity: SinglePlaybackEntity,
+        fetchOnline: Boolean
+    ): Resource<ArtworkData> {
         when (entity.artworkType) {
             ArtworkType.NO_ARTWORK -> {
                 log.debug("Entity ${entity.title} - ${entity.artist} has ${ArtworkType.NO_ARTWORK}")
@@ -70,6 +73,15 @@ internal class ArtworkLoaderImpl(
             }
 
             else -> {
+                if (!fetchOnline)
+                    return Resource.Error(
+                        UiText.StringResource(
+                            R.string.connection_metered_artwork_download_denied,
+                            entity.artist,
+                            entity.title
+                        )
+                    )
+
                 log.debug("Entity ${entity.title} - ${entity.artist} has no artwork type, trying to find artwork...")
                 val newArtwork = tryFindArtwork(entity)
                 val ret: Resource<ArtworkData> =

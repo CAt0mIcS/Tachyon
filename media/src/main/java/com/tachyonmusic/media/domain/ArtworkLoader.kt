@@ -10,5 +10,5 @@ interface ArtworkLoader {
         val entityToUpdate: SinglePlaybackEntity? = null
     )
 
-    suspend fun requestLoad(entity: SinglePlaybackEntity): Resource<ArtworkData>
+    suspend fun requestLoad(entity: SinglePlaybackEntity, fetchOnline: Boolean = true): Resource<ArtworkData>
 }

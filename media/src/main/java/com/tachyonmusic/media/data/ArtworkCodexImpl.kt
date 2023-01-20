@@ -22,19 +22,22 @@ class ArtworkCodexImpl internal constructor(
 
     private val codex = mutableMapOf<MediaId, ArtworkData>()
 
-    override suspend fun awaitOrLoad(entity: SinglePlaybackEntity): Resource<SinglePlaybackEntity?> {
+    override suspend fun awaitOrLoad(
+        entity: SinglePlaybackEntity,
+        fetchOnline: Boolean
+    ): Resource<SinglePlaybackEntity?> {
         val data = synchronized(codex) {
             val data = codex[entity.mediaId]
 
             // Ensure that if the artwork hasn't been loaded for entity the job is started
-            if(data == null)
+            if (data == null)
                 codex[entity.mediaId] = ArtworkData(artwork = null)
             data
         }
 
         if (data == null) {
             log.debug("Requesting artwork for ${entity.title} - ${entity.artist}")
-            return internalRequest(entity)
+            return internalRequest(entity, fetchOnline)
         } else if (internalAwait(data.job, entity.mediaId)) {
             /**
              * Doesn't require [SinglePlaybackEntity] database update since the other thread that
@@ -50,7 +53,8 @@ class ArtworkCodexImpl internal constructor(
     override suspend fun awaitOrLoad(
         mediaId: MediaId,
         artworkType: String,
-        artworkUrl: String?
+        artworkUrl: String?,
+        fetchOnline: Boolean
     ): Resource<SinglePlaybackEntity?> {
         return awaitOrLoad(
             SongEntity(
@@ -60,7 +64,8 @@ class ArtworkCodexImpl internal constructor(
                 mediaId = mediaId,
                 artworkType = artworkType,
                 artworkUrl = artworkUrl
-            )
+            ),
+            fetchOnline
         )
     }
 
@@ -93,8 +98,11 @@ class ArtworkCodexImpl internal constructor(
         return false
     }
 
-    private suspend fun internalRequest(entity: SinglePlaybackEntity): Resource<SinglePlaybackEntity?> {
-        val res = artworkLoader.requestLoad(entity)
+    private suspend fun internalRequest(
+        entity: SinglePlaybackEntity,
+        fetchOnline: Boolean
+    ): Resource<SinglePlaybackEntity?> {
+        val res = artworkLoader.requestLoad(entity, fetchOnline)
         synchronized(codex) {
             codex[entity.mediaId]?.artwork = res.data?.artwork
             codex[entity.mediaId]?.job?.complete()

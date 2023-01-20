@@ -20,12 +20,19 @@ interface ArtworkCodex {
      * somewhere else OR loads it if [awaitOrLoad] hasn't been called OR returns if the artwork
      * was already loaded. If the returned [Resource] is [Resource.Success] it is save to call [get]
      * to get the now loaded artwork
+     *
+     * @param fetchOnline controls whether the [ArtworkFetcher] runs if no local artwork is found
      */
-    suspend fun awaitOrLoad(entity: SinglePlaybackEntity): Resource<SinglePlaybackEntity?>
+    suspend fun awaitOrLoad(
+        entity: SinglePlaybackEntity,
+        fetchOnline: Boolean = true
+    ): Resource<SinglePlaybackEntity?>
+
     suspend fun awaitOrLoad(
         mediaId: MediaId,
         artworkType: String,
-        artworkUrl: String? = null
+        artworkUrl: String? = null,
+        fetchOnline: Boolean = true
     ): Resource<SinglePlaybackEntity?>
 
     /**
