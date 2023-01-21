@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.app.R
+import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.data.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.main.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
@@ -229,7 +229,7 @@ private fun LazyListScope.playbacksView(
                     onClick(playback)
                 },
             playback = playback,
-            artwork = artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+            artwork = artwork ?: PlaceholderArtwork,
             isArtworkLoading = isArtworkLoading
         )
     }

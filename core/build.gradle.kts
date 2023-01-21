@@ -51,14 +51,15 @@ dependencies {
     gson()
     dagger()
 
-    glide()
+    landscapist_glide()
 
     projectArtworkFetcher()
     projectUtil()
     projectLogger()
 
     implementation(Dependency.Media3.MEDIA_SESSION)
-    implementation(Dependency.Compose.UI)
+    implementation(Dependency.Compose.FOUNDATION)
+    implementation(Dependency.Compose.COMPOSE_MATERIAL)
 
     unitTest()
     androidTest()

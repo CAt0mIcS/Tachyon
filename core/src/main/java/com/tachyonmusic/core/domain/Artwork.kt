@@ -6,6 +6,11 @@ import androidx.compose.ui.Modifier
 
 interface Artwork : Parcelable {
     @Composable
+    operator fun invoke(contentDescription: String?, modifier: Modifier) {
+        Image(contentDescription, modifier)
+    }
+
+    @Composable
     fun Image(contentDescription: String?, modifier: Modifier)
 
     override fun describeContents() = 0

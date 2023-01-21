@@ -39,7 +39,7 @@ import com.github.krottv.compose.sliders.DefaultThumb
 import com.github.krottv.compose.sliders.DefaultTrack
 import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
-import com.tachyonmusic.data.PlaceholderArtwork
+import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
@@ -119,8 +119,7 @@ fun Player(
             content = {
                 MiniPlayer(
                     playback = recentlyPlayed,
-                    artwork = artwork
-                        ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+                    artwork = artwork ?: PlaceholderArtwork,
                     currentPosition = currentPositionNormalized,
                     isPlaying = isPlaying,
                     onPlayPauseClicked = viewModel::pauseResume,
@@ -192,10 +191,7 @@ fun Player(
                     CircularProgressIndicator(modifier = artworkModifier)
                 else
                     artwork?.Image(modifier = artworkModifier, contentDescription = null)
-                        ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder).Image(
-                            contentDescription = null,
-                            modifier = artworkModifier
-                        )
+                        ?: PlaceholderArtwork(modifier = artworkModifier, contentDescription = null)
             }
 
             item {
@@ -428,7 +424,7 @@ fun Player(
 
                     HorizontalPlaybackView(
                         playback,
-                        artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+                        artwork ?: PlaceholderArtwork,
                         isArtworkLoading,
                         modifier = Modifier
                             .fillMaxWidth()

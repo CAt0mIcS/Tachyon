@@ -1,4 +1,4 @@
-package com.tachyonmusic.data
+package com.tachyonmusic.core.data
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import com.tachyonmusic.core.domain.Artwork
 
-class PlaceholderArtwork(
+open class ResourceArtwork(
     @DrawableRes private val id: Int
 ) : Artwork {
     @Composable
@@ -20,14 +20,14 @@ class PlaceholderArtwork(
         )
     }
 
-    override fun equals(other: Any?) = other is PlaceholderArtwork
+    override fun equals(other: Any?) = other is ResourceArtwork
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(id)
     }
 
-    companion object CREATOR : Parcelable.Creator<PlaceholderArtwork> {
-        override fun createFromParcel(parcel: Parcel) = PlaceholderArtwork(parcel.readInt())
-        override fun newArray(size: Int) = arrayOfNulls<PlaceholderArtwork?>(size)
+    companion object CREATOR : Parcelable.Creator<ResourceArtwork> {
+        override fun createFromParcel(parcel: Parcel) = ResourceArtwork(parcel.readInt())
+        override fun newArray(size: Int) = arrayOfNulls<ResourceArtwork?>(size)
     }
 }

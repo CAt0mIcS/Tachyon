@@ -53,7 +53,7 @@ fun MiniPlayer(
             }
     ) {
         Row {
-            artwork.Image(
+            artwork(
                 contentDescription = "Album Artwork",
                 modifier = Modifier
                     .padding(Theme.padding.extraSmall)

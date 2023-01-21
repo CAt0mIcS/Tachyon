@@ -14,6 +14,7 @@ object Dependency {
     }
 
     object Compose {
+        const val FOUNDATION = "androidx.compose.foundation:foundation:${Version.COMPOSE}"
         const val APP_COMPAT = "androidx.appcompat:appcompat:1.5.1"
         const val ANDROID_MATERIAL = "com.google.android.material:material:1.7.0"
         const val COMPOSE_SLIDERS = "com.github.krottv:compose-sliders:0.1.14"
@@ -66,9 +67,8 @@ object Dependency {
         const val JSOUP = "org.jsoup:jsoup:1.15.3"
     }
 
-    object Glide {
-        const val GLIDE = "com.github.bumptech.glide:glide:4.14.2"
-        const val GLIDE_COMPOSE = "com.github.bumptech.glide:compose:1.0.0-alpha.1"
+    object Landscapist {
+        const val GLIDE = "com.github.skydoves:landscapist-glide:2.1.1"
     }
 
     object Test {
@@ -118,6 +118,7 @@ fun DependencyHandler.firebaseAnalytics() {
 }
 
 fun DependencyHandler.compose() {
+    implementation(Dependency.Compose.FOUNDATION)
     implementation(Dependency.Compose.APP_COMPAT)
     implementation(Dependency.Compose.ANDROID_MATERIAL)
 
@@ -200,9 +201,8 @@ fun DependencyHandler.jsoup() {
     implementation(Dependency.Jsoup.JSOUP)
 }
 
-fun DependencyHandler.glide() {
-    implementation(Dependency.Glide.GLIDE)
-    implementation(Dependency.Glide.GLIDE_COMPOSE)
+fun DependencyHandler.landscapist_glide() {
+    implementation(Dependency.Landscapist.GLIDE)
 }
 
 fun DependencyHandler.projectMedia() {

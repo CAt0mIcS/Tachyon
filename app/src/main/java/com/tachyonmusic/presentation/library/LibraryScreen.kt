@@ -25,9 +25,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
+import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.data.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.library.component.FilterItem
@@ -154,7 +154,7 @@ object LibraryScreen :
                 val isArtworkLoading by playback.isArtworkLoading.collectAsState()
 
                 HorizontalPlaybackView(playback,
-                    artwork ?: PlaceholderArtwork(R.drawable.artwork_image_placeholder),
+                    artwork ?: PlaceholderArtwork,
                     isArtworkLoading,
                     modifier = Modifier
                         .fillMaxWidth()

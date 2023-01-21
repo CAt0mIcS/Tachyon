@@ -1,6 +1,8 @@
 package com.tachyonmusic.core.data.constants
 
 import android.os.Environment
+import com.tachyonmusic.core.R
+import com.tachyonmusic.core.data.ResourceArtwork
 
 
 object Constants {
