@@ -13,10 +13,12 @@ interface SongDao {
     @Query("SELECT * FROM SongEntity ORDER BY title ASC")
     fun getPagedSongs(): PagingSource<Int, SongEntity>
 
-    @Query("SELECT * FROM SongEntity")
+    // TODO: Temporary, user should be able to choose how to sort
+    @Query("SELECT * FROM SongEntity ORDER BY title ASC")
     suspend fun getSongs(): List<SongEntity>
 
-    @Query("SELECT * FROM SongEntity")
+    // TODO: Temporary, user should be able to choose how to sort
+    @Query("SELECT * FROM SongEntity ORDER BY title ASC")
     fun observe(): Flow<List<SongEntity>>
 
     @Query("SELECT * FROM SongEntity WHERE mediaId=:mediaId")
