@@ -426,6 +426,7 @@ fun Player(
                         playback,
                         artwork ?: PlaceholderArtwork,
                         isArtworkLoading,
+                        onClick = { viewModel.onItemClicked(playback) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(
@@ -433,9 +434,6 @@ fun Player(
                                 end = Theme.padding.medium,
                                 bottom = Theme.padding.extraSmall
                             )
-                            .clickable {
-                                viewModel.onItemClicked(playback)
-                            }
                     )
                 }
             }

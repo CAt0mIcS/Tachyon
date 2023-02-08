@@ -23,6 +23,7 @@ class GetSupportedCommands {
             // CustomCommands
             add(MediaAction.setPlaybackCommand)
             add(MediaAction.updateTimingDataCommand)
+            add(MediaAction.repeatModeChangedCommand)
         }.build()
 
         val playerCommands = Player.Commands.Builder().apply {

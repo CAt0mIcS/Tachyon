@@ -5,8 +5,10 @@ import androidx.lifecycle.Lifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.session.LibraryResult
 import com.google.common.collect.ImmutableList
+import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.util.IListenable
 
 interface MediaBrowserController : IListenable<MediaBrowserController.EventListener>,
@@ -20,8 +22,10 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
     }
 
     var playback: Playback?
-
     var playWhenReady: Boolean
+
+    var repeatMode: RepeatMode
+    val nextMediaItemIndex: Int
 
     suspend fun getChildren(
         parentId: String,

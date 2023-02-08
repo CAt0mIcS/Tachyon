@@ -12,6 +12,7 @@ import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.main.NormalizePosition
 import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
+import com.tachyonmusic.domain.use_case.player.GetNextPlaybackItems
 import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.SeekPosition
@@ -19,7 +20,7 @@ import com.tachyonmusic.domain.use_case.player.SetCurrentPlayback
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.ArtworkState
 import com.tachyonmusic.presentation.player.data.PlaybackState
-import com.tachyonmusic.presentation.player.data.RepeatMode
+import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.presentation.player.data.SeekIncrementsState
 import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,6 +46,7 @@ class PlayerViewModel @Inject constructor(
     private val getRecentlyPlayed: GetRecentlyPlayed,
     private val setCurrentPlayback: SetCurrentPlayback,
     private val getOrLoadArtwork: GetOrLoadArtwork,
+    private val getNextPlaybackItems: GetNextPlaybackItems,
     private val browser: MediaBrowserController,  // TODO: Shouldn't be used in ViewModel
     getHistory: GetHistory,
     observeSettings: ObserveSettings,
@@ -148,6 +150,17 @@ class PlayerViewModel @Inject constructor(
 
     fun nextRepeatMode() {
         _repeatMode.value = repeatMode.value.next
+        browser.repeatMode = repeatMode.value
+
+        viewModelScope.launch {
+            _playbackState.value =
+                playbackState.value.copy(
+                    children = getNextPlaybackItems(
+                        recentlyPlayed.value,
+                        repeatMode.value
+                    )
+                )
+        }
     }
 
     fun setCurrentPlaybackToRecentlyPlayed(
@@ -158,12 +171,14 @@ class PlayerViewModel @Inject constructor(
         if (playback == null)
             return
 
-        _playbackState.value = PlaybackState(
-            title = playback.title ?: "Unknown Title",
-            artist = playback.artist ?: "Unknown Artist",
-            duration = playback.duration ?: 0L,
-            children = emptyList()
-        )
+        viewModelScope.launch {
+            _playbackState.value = PlaybackState(
+                title = playback.title ?: "Unknown Title",
+                artist = playback.artist ?: "Unknown Artist",
+                duration = playback.duration ?: 0L,
+                children = getNextPlaybackItems(playback, repeatMode.value)
+            )
+        }
     }
 
     private fun updateArtworkState(playback: Playback?) {
@@ -188,11 +203,11 @@ class PlayerViewModel @Inject constructor(
 
     private inner class MediaListener : MediaBrowserController.EventListener {
         override fun onPlaybackTransition(playback: Playback?) {
+            _recentlyPlayed.value = playback
             updatePlaybackState(playback)
-            if (playback != null) {
-                _recentlyPlayed.value = playback
+
+            if (playback != null)
                 getOrLoadArtworkForPlayback(playback)
-            }
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {

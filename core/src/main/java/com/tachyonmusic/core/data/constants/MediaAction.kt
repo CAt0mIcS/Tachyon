@@ -17,6 +17,8 @@ object MediaAction {
     val setPlaybackCommand = SessionCommand("com.tachyonmusic.SET_PLAYBACK", Bundle.EMPTY)
     val updateTimingDataCommand =
         SessionCommand("com.tachyonmusic.UPDATE_TIMING_DATA", Bundle.EMPTY)
+    val repeatModeChangedCommand =
+        SessionCommand("com.tachyonmusic.REPEAT_MODE_CHANGED", Bundle.EMPTY)
 
     fun setPlaybackEvent(browser: MediaBrowser, playback: Playback?) =
         browser.sendCustomCommand(setPlaybackCommand, Bundle().apply {
@@ -27,4 +29,10 @@ object MediaAction {
         browser.sendCustomCommand(updateTimingDataCommand, Bundle().apply {
             putParcelable(MetadataKeys.TimingData, timingData)
         })
+
+    fun setRepeatMode(browser: MediaBrowser, repeatMode: RepeatMode) {
+        browser.sendCustomCommand(repeatModeChangedCommand, Bundle().apply {
+            putInt(MetadataKeys.RepeatMode, repeatMode.id)
+        })
+    }
 }

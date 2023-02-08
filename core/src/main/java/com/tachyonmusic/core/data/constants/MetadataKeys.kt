@@ -4,6 +4,7 @@ object MetadataKeys {
     const val Duration = "com.tachyonmusic.DURATION"
     const val Playback = "com.tachyonmusic.PLAYBACK"
     const val TimingData = "com.tachyonmusic.TIMING_DATA"
+    const val RepeatMode = "com.tachyonmusic.REPEAT_MODE"
 
     /**
      * Name of loop or playlist

@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.app.R
-import com.tachyonmusic.core.SharedPrefsKeys
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.presentation.player.Player
@@ -124,13 +123,5 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                 }
             }
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
-
-        // TODO: Should probably be somewhere else
-        getSharedPreferences(SharedPrefsKeys.NAME, MODE_PRIVATE).edit()
-            .putBoolean(SharedPrefsKeys.FIRST_APP_START, false).apply()
     }
 }

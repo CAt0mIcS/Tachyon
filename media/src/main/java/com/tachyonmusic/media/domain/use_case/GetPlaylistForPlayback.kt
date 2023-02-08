@@ -4,6 +4,7 @@ import androidx.media3.common.MediaItem
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
@@ -15,18 +16,25 @@ import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 
-class LoadPlaylistForPlayback(
+class GetPlaylistForPlayback(
     private val songRepository: SongRepository,
     private val loopRepository: LoopRepository,
     private val settingsRepository: SettingsRepository,
     private val getOrLoadArtwork: GetOrLoadArtwork
 ) {
-    suspend operator fun invoke(playback: Playback?): Resource<Pair<List<MediaItem>, Int>> {
+    data class ActivePlaylist(
+        val mediaItems: List<MediaItem>,
+        val playbackItems: List<SinglePlayback>,
+        val initialWindowIndex: Int
+    )
+
+    suspend operator fun invoke(playback: Playback?): Resource<ActivePlaylist> {
         if (playback == null)
             return Resource.Error(UiText.StringResource(R.string.invalid_playback))
 
         var initialWindowIndex: Int? = null
-        var items: List<MediaItem>? = null
+        var mediaItems: List<MediaItem>? = null
+        var playbackItems: List<SinglePlayback>? = null
         val combinePlaybackTypes = settingsRepository.getSettings().combineDifferentPlaybackTypes
 
         when (playback) {
@@ -43,7 +51,8 @@ class LoadPlaylistForPlayback(
                 }.collect()
 
                 initialWindowIndex = playbacks.indexOf(playback)
-                items = playbacks.map { it.toMediaItem() }
+                mediaItems = playbacks.map { it.toMediaItem() }
+                playbackItems = playbacks
             }
 
             is Loop -> {
@@ -55,9 +64,9 @@ class LoadPlaylistForPlayback(
             }
         }
 
-        if (items == null || initialWindowIndex == null)
+        if (mediaItems == null || initialWindowIndex == null || playbackItems == null)
             return Resource.Error(UiText.StringResource(R.string.invalid_arguments))
 
-        return Resource.Success(items to initialWindowIndex)
+        return Resource.Success(ActivePlaylist(mediaItems, playbackItems, initialWindowIndex))
     }
 }

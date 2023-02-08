@@ -25,6 +25,7 @@ import com.tachyonmusic.media.domain.ArtworkCodex
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.media.domain.use_case.GetIsInternetConnectionMetered
+import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -174,6 +175,11 @@ object AppUseCaseModule {
     @Provides
     @Singleton
     fun provideLogger(): Logger = LoggerImpl()
+
+    @Provides
+    @Singleton
+    fun provideGetNextPlaybackItemsUseCase(browser: MediaBrowserController, getPlaylistForPlayback: GetPlaylistForPlayback) =
+        GetNextPlaybackItems(browser, getPlaylistForPlayback)
 }
 
 

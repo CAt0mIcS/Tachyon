@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ComponentName
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.LibraryResult
@@ -12,6 +13,7 @@ import androidx.media3.session.SessionToken
 import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.ListenableMutableList
 import com.tachyonmusic.core.data.constants.MediaAction
+import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
@@ -80,6 +82,15 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         set(value) {
             browser?.playWhenReady = value
         }
+
+    override var repeatMode: RepeatMode = RepeatMode.One
+        set(value) {
+            field = value
+            MediaAction.setRepeatMode(browser!!, repeatMode)
+        }
+
+    override val nextMediaItemIndex: Int
+        get() = browser?.nextMediaItemIndex ?: C.INDEX_UNSET
 
     override fun stop() {
         browser?.stop()
@@ -186,3 +197,8 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         )
     }
 }
+
+private val MediaBrowser.mediaItems: List<MediaItem>
+    get() = List(mediaItemCount) {
+        getMediaItemAt(it)
+    }

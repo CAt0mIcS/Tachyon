@@ -18,6 +18,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MediaAction
 import com.tachyonmusic.core.data.constants.MetadataKeys
+import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
@@ -29,8 +30,14 @@ import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.data.ext.parcelable
 import com.tachyonmusic.media.data.ext.playback
 import com.tachyonmusic.media.domain.CustomPlayer
+import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
+import com.tachyonmusic.media.domain.use_case.ConfirmAddedMediaItems
+import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
 import com.tachyonmusic.media.domain.use_case.GetSettings
-import com.tachyonmusic.media.domain.use_case.ServiceUseCases
+import com.tachyonmusic.media.domain.use_case.GetSupportedCommands
+import com.tachyonmusic.media.domain.use_case.PreparePlayer
+import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
+import com.tachyonmusic.media.domain.use_case.UpdateTimingDataOfCurrentPlayback
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.runOnUiThreadAsync
@@ -59,7 +66,25 @@ class MediaPlaybackService(
     lateinit var browserTree: BrowserTree
 
     @Inject
-    lateinit var useCases: ServiceUseCases
+    lateinit var getPlaylistForPlayback: GetPlaylistForPlayback
+
+    @Inject
+    lateinit var confirmAddedMediaItems: ConfirmAddedMediaItems
+
+    @Inject
+    lateinit var preparePlayer: PreparePlayer
+
+    @Inject
+    lateinit var getSupportedCommands: GetSupportedCommands
+
+    @Inject
+    lateinit var updateTimingDataOfCurrentPlayback: UpdateTimingDataOfCurrentPlayback
+
+    @Inject
+    lateinit var addNewPlaybackToHistory: AddNewPlaybackToHistory
+
+    @Inject
+    lateinit var saveRecentlyPlayed: SaveRecentlyPlayed
 
     @Inject
     lateinit var getSettings: GetSettings
@@ -103,7 +128,7 @@ class MediaPlaybackService(
         override fun onConnect(
             session: MediaSession,
             controller: MediaSession.ControllerInfo
-        ): MediaSession.ConnectionResult = useCases.getSupportedCommands()
+        ): MediaSession.ConnectionResult = getSupportedCommands()
 
         override fun onGetLibraryRoot(
             session: MediaLibrarySession,
@@ -132,7 +157,7 @@ class MediaPlaybackService(
             controller: MediaSession.ControllerInfo,
             mediaItems: MutableList<MediaItem>
         ): ListenableFuture<MutableList<MediaItem>> = future(Dispatchers.IO) {
-            useCases.confirmAddedMediaItems(mediaItems)
+            confirmAddedMediaItems(mediaItems)
         }
 
         override fun onCustomCommand(
@@ -143,7 +168,7 @@ class MediaPlaybackService(
         ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
             return@future when (customCommand) {
                 MediaAction.setPlaybackCommand -> {
-                    val loadingRes = useCases.loadPlaylistForPlayback(
+                    val loadingRes = getPlaylistForPlayback(
                         args.parcelable(MetadataKeys.Playback)
                     )
 
@@ -152,11 +177,12 @@ class MediaPlaybackService(
 
                     withContext(Dispatchers.Main) {
                         val prepareRes =
-                            useCases.preparePlayer(
+                            preparePlayer(
                                 currentPlayer,
-                                loadingRes.data?.first,
-                                loadingRes.data?.second
+                                loadingRes.data?.mediaItems,
+                                loadingRes.data?.initialWindowIndex
                             )
+
                         if (prepareRes is Resource.Error)
                             return@withContext SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
                         SessionResult(SessionResult.RESULT_SUCCESS)
@@ -165,7 +191,7 @@ class MediaPlaybackService(
 
                 MediaAction.updateTimingDataCommand -> {
                     val res = withContext(Dispatchers.Main) {
-                        useCases.updateTimingDataOfCurrentPlayback(
+                        updateTimingDataOfCurrentPlayback(
                             currentPlayer,
                             args.parcelable(MetadataKeys.TimingData)
                         )
@@ -173,6 +199,28 @@ class MediaPlaybackService(
 
                     if (res is Resource.Error)
                         return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
+                    SessionResult(SessionResult.RESULT_SUCCESS)
+                }
+
+                MediaAction.repeatModeChangedCommand -> {
+                    runOnUiThreadAsync {
+                        when (RepeatMode.fromId(args.getInt(MetadataKeys.RepeatMode))) {
+                            RepeatMode.All -> {
+                                currentPlayer.shuffleModeEnabled = false
+                                currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
+                            }
+
+                            RepeatMode.One -> {
+                                currentPlayer.shuffleModeEnabled = false
+                                currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
+                            }
+
+                            RepeatMode.Shuffle -> {
+                                currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
+                                currentPlayer.shuffleModeEnabled = true
+                            }
+                        }
+                    }
                     SessionResult(SessionResult.RESULT_SUCCESS)
                 }
 
@@ -189,17 +237,16 @@ class MediaPlaybackService(
          */
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
             ioScope.launch {
-                useCases.addNewPlaybackToHistory(mediaItem?.mediaMetadata?.playback)
+                addNewPlaybackToHistory(mediaItem?.mediaMetadata?.playback)
             }
     }
 
-    // TODO: Check if the position is saved every time, e.g. when the playback is terminated another way
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (!isPlaying) {
             val playback = currentPlayer.mediaMetadata.playback ?: return
             val currentPos = currentPlayer.currentPosition
             ioScope.launch {
-                useCases.saveRecentlyPlayed(
+                saveRecentlyPlayed(
                     RecentlyPlayed(
                         playback.mediaId,
                         currentPos,

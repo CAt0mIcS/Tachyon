@@ -60,28 +60,48 @@ class MediaPlaybackServiceRepositoryModule {
 class MediaPlaybackUseCaseModule {
     @Provides
     @Singleton
-    fun provideServiceUseCases(
-        historyRepository: HistoryRepository,
-        settingsRepository: SettingsRepository,
+    fun provideGetPlaylistForPlaybackUseCase(
         songRepository: SongRepository,
         loopRepository: LoopRepository,
-        findPlaybackByMediaId: FindPlaybackByMediaId,
-        dataRepository: DataRepository,
+        settingsRepository: SettingsRepository,
         getOrLoadArtwork: GetOrLoadArtwork
-    ) = ServiceUseCases(
-        LoadPlaylistForPlayback(
-            songRepository,
-            loopRepository,
-            settingsRepository,
-            getOrLoadArtwork
-        ),
-        ConfirmAddedMediaItems(songRepository, loopRepository, findPlaybackByMediaId),
-        PreparePlayer(),
-        GetSupportedCommands(),
-        UpdateTimingDataOfCurrentPlayback(),
-        AddNewPlaybackToHistory(historyRepository, settingsRepository),
-        SaveRecentlyPlayed(dataRepository)
+    ) = GetPlaylistForPlayback(
+        songRepository,
+        loopRepository,
+        settingsRepository,
+        getOrLoadArtwork
     )
+
+    @Provides
+    @Singleton
+    fun provideConfirmAddedMediaItemsUseCase(
+        songRepository: SongRepository,
+        loopRepository: LoopRepository, findPlaybackByMediaId: FindPlaybackByMediaId
+    ) = ConfirmAddedMediaItems(songRepository, loopRepository, findPlaybackByMediaId)
+
+    @Provides
+    @Singleton
+    fun providePreparePlayerUseCase() = PreparePlayer()
+
+    @Provides
+    @Singleton
+    fun provideGetSupportedCommandsUseCase() = GetSupportedCommands()
+
+    @Provides
+    @Singleton
+    fun provideUpdateTimingDataOfCurrentPlaybackUseCase() = UpdateTimingDataOfCurrentPlayback()
+
+    @Provides
+    @Singleton
+    fun provideAddNewPlaybackToHistoryUseCase(
+        historyRepository: HistoryRepository,
+        settingsRepository: SettingsRepository
+    ) = AddNewPlaybackToHistory(historyRepository, settingsRepository)
+
+    @Provides
+    @Singleton
+    fun provideSaveRecentlyPlayedUseCase(dataRepository: DataRepository) =
+        SaveRecentlyPlayed(dataRepository)
 
     @Provides
     @Singleton
