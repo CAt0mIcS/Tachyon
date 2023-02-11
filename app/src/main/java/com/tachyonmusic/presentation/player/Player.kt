@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.player
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -170,6 +171,12 @@ fun Player(
      */
 
     if (!sheetState.isAtBottom) {
+        BackHandler {
+            scope.launch {
+                sheetState.collapse()
+            }
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
