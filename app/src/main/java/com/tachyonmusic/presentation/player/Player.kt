@@ -1,14 +1,16 @@
 package com.tachyonmusic.presentation.player
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -41,6 +43,7 @@ import com.github.krottv.compose.sliders.DefaultTrack
 import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
+import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
@@ -78,6 +81,9 @@ fun Player(
     val repeatMode by viewModel.repeatMode
 
     var isSeeking by remember { mutableStateOf(false) }
+
+    var isEditingLoop by remember { mutableStateOf(false) }
+    val timingData by viewModel.timingData
 
 
     LaunchedEffect(Unit) {
@@ -398,7 +404,7 @@ fun Player(
 
                     IconButton(
                         modifier = Modifier.scale(buttonScale),
-                        onClick = { /*TODO: Loop Edit Screen*/ }
+                        onClick = { isEditingLoop = !isEditingLoop }
                     ) {
                         Icon(
                             painterResource(R.drawable.ic_loop),
@@ -406,6 +412,20 @@ fun Player(
                             modifier = Modifier.scale(iconScale)
                         )
                     }
+                }
+            }
+
+            if (isEditingLoop) {
+                item {
+                    LoopEditor(
+                        timingData.timingData,
+                        playbackState.duration,
+                        modifier = Modifier.fillMaxWidth(),
+                        onValueChange = viewModel::updateTimingData,
+                        onSeekCompleted = viewModel::setNewTimingData,
+                        onAddNewTimingData = viewModel::addNewTimingData,
+                        onRemoveTimingData = viewModel::removeTimingData
+                    )
                 }
             }
 
@@ -444,6 +464,62 @@ fun Player(
                     )
                 }
             }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun LoopEditor(
+    timingData: List<TimingData>,
+    duration: Long,
+    onValueChange: (Int, Long, Long) -> Unit,
+    onSeekCompleted: () -> Unit,
+    onRemoveTimingData: (Int) -> Unit,
+    onAddNewTimingData: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.padding(start = Theme.padding.extraSmall)) {
+        IconButton(
+            modifier = modifier.padding(Theme.padding.small),
+            onClick = onAddNewTimingData
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_add_circle),
+                contentDescription = "Add new loop time point"
+            )
+        }
+
+        IconButton(
+            modifier = Modifier.padding(Theme.padding.small),
+            onClick = { onRemoveTimingData(timingData.size - 1) }) {
+            Icon(
+                painterResource(R.drawable.ic_rewind_10),
+                contentDescription = "Remove loop time point"
+            )
+        }
+
+        for (i in timingData.indices) {
+            RangeSlider(
+                value = timingData[i].startTime.toFloat()..timingData[i].endTime.toFloat(),
+                onValueChange = {
+                    onValueChange(
+                        i,
+                        it.start.toLong(),
+                        it.endInclusive.toLong()
+                    )
+                },
+                onValueChangeFinished = onSeekCompleted,
+                valueRange = 0f..duration.toFloat(),
+                colors = SliderDefaults.colors(
+                    thumbColor = Theme.colors.orange,
+                    activeTrackColor = Theme.colors.orange,
+                    inactiveTrackColor = Theme.colors.partialOrange1
+                )
+            )
+
+            Spacer(modifier = Modifier.padding(top = 6.dp))
         }
     }
 }

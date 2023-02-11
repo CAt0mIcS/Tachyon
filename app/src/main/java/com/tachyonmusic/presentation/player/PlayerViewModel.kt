@@ -21,6 +21,8 @@ import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.ArtworkState
 import com.tachyonmusic.presentation.player.data.PlaybackState
 import com.tachyonmusic.core.data.constants.RepeatMode
+import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.presentation.player.data.SeekIncrementsState
 import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -70,6 +72,9 @@ class PlayerViewModel @Inject constructor(
     private var _seekIncrement = mutableStateOf(SeekIncrementsState())
     val seekIncrement: State<SeekIncrementsState> = _seekIncrement
 
+    private var _timingData = mutableStateOf(TimingDataController())
+    val timingData: State<TimingDataController> = _timingData
+
     var audioUpdateInterval: Duration = 100.milliseconds
         private set
 
@@ -104,6 +109,8 @@ class PlayerViewModel @Inject constructor(
                 recentlyPlayed?.durationMs ?: 0L
             )
             recentlyPlayedPosition = recentlyPlayed?.positionMs ?: 0L
+
+            _timingData.value = TimingDataController(listOf(TimingData(0L,recentlyPlayed?.durationMs ?: 0L)))
         }
 
         observeSettings().map {
@@ -163,7 +170,34 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun setCurrentPlaybackToRecentlyPlayed(
+    fun updateTimingData(i: Int, startTime: Long, endTime: Long) {
+        val newTimingData = timingData.value.timingData
+        newTimingData[i].startTime = startTime
+        newTimingData[i].endTime = endTime
+
+        _timingData.value =
+            TimingDataController(newTimingData, timingData.value.currentIndex)
+    }
+
+    fun setNewTimingData() {
+        browser.timingData = timingData.value.timingData
+        // TODO: Current index
+    }
+
+    fun addNewTimingData() {
+        _timingData.value = TimingDataController(timingData.value.timingData.apply {
+            add(TimingData(0L, playbackState.value.duration))
+        }, timingData.value.currentIndex)
+    }
+
+    fun removeTimingData(i: Int) {
+        _timingData.value = TimingDataController(timingData.value.timingData.apply {
+            removeAt(i)
+        }, timingData.value.currentIndex)
+    }
+
+
+    private fun setCurrentPlaybackToRecentlyPlayed(
         playWhenReady: Boolean = false
     ): Boolean = setCurrentPlayback(recentlyPlayed.value, playWhenReady, recentlyPlayedPosition)
 
@@ -206,8 +240,17 @@ class PlayerViewModel @Inject constructor(
             _recentlyPlayed.value = playback
             updatePlaybackState(playback)
 
-            if (playback != null)
+            if (playback != null) {
+                val newTimingData = playback.timingData?.timingData
+                if (newTimingData.isNullOrEmpty())
+                    _timingData.value =
+                        TimingDataController(listOf(TimingData(0L, playback.duration!!)))
+                else
+                    _timingData.value = TimingDataController(newTimingData) // TODO: current index
+
                 getOrLoadArtworkForPlayback(playback)
+            } else
+                _timingData.value = TimingDataController()
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
