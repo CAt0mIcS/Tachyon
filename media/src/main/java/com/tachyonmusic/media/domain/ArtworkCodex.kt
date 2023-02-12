@@ -3,6 +3,7 @@ package com.tachyonmusic.media.domain
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.util.Resource
 
 interface ArtworkCodex {
@@ -24,16 +25,16 @@ interface ArtworkCodex {
      * @param fetchOnline controls whether the [ArtworkFetcher] runs if no local artwork is found
      */
     suspend fun awaitOrLoad(
-        entity: SinglePlaybackEntity,
+        entity: SongEntity,
         fetchOnline: Boolean = true
-    ): Resource<SinglePlaybackEntity?>
+    ): Resource<SongEntity?>
 
     suspend fun awaitOrLoad(
         mediaId: MediaId,
         artworkType: String,
         artworkUrl: String? = null,
         fetchOnline: Boolean = true
-    ): Resource<SinglePlaybackEntity?>
+    ): Resource<SongEntity?>
 
     /**
      * Waits for artwork to be loaded if [awaitOrLoad] was called for [mediaId] or immediately returns

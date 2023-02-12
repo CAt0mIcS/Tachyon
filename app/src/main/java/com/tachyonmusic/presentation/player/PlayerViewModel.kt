@@ -23,6 +23,7 @@ import com.tachyonmusic.presentation.player.data.PlaybackState
 import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
 import com.tachyonmusic.presentation.player.data.SeekIncrementsState
 import com.tachyonmusic.util.Resource
@@ -235,7 +236,7 @@ class PlayerViewModel @Inject constructor(
 
     private fun getOrLoadArtworkForPlayback(playback: Playback) {
         viewModelScope.launch(Dispatchers.IO) {
-            getOrLoadArtwork(playback).onEach {
+            getOrLoadArtwork(playback.underlyingSong ?: return@launch).onEach {
                 runOnUiThreadAsync {
                     recentlyPlayed.value?.artwork?.value = it.data?.artwork
                     recentlyPlayed.value?.isArtworkLoading?.value = false

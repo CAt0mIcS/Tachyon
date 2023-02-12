@@ -84,14 +84,12 @@ object AppUseCaseModule {
     @Singleton
     fun provideGetOrLoadArtworkUseCase(
         songRepository: SongRepository,
-        loopRepository: LoopRepository,
         settingsRepository: SettingsRepository,
         artworkCodex: ArtworkCodex,
         findPlaybackByMediaId: FindPlaybackByMediaId,
         isNetworkConnectionMetered: GetIsInternetConnectionMetered
     ) = GetOrLoadArtwork(
         songRepository,
-        loopRepository,
         settingsRepository,
         artworkCodex,
         findPlaybackByMediaId,
@@ -178,7 +176,10 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetNextPlaybackItemsUseCase(browser: MediaBrowserController, getPlaylistForPlayback: GetPlaylistForPlayback) =
+    fun provideGetNextPlaybackItemsUseCase(
+        browser: MediaBrowserController,
+        getPlaylistForPlayback: GetPlaylistForPlayback
+    ) =
         GetNextPlaybackItems(browser, getPlaylistForPlayback)
 }
 

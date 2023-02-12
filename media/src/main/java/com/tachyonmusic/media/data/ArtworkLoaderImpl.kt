@@ -6,7 +6,7 @@ import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.ArtworkType
-import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.R
 import com.tachyonmusic.media.domain.ArtworkLoader
@@ -23,7 +23,7 @@ internal class ArtworkLoaderImpl(
     private val metadataExtractor: SongMetadataExtractor
 ) : ArtworkLoader {
     override suspend fun requestLoad(
-        entity: SinglePlaybackEntity,
+        entity: SongEntity,
         fetchOnline: Boolean
     ): Resource<ArtworkData> {
         when (entity.artworkType) {
@@ -119,7 +119,7 @@ internal class ArtworkLoaderImpl(
     }
 
     private suspend fun tryFindArtwork(
-        entity: SinglePlaybackEntity
+        entity: SongEntity
     ): Resource<Artwork?> {
         var res = tryFindEmbeddedArtwork(entity)
         if (res is Resource.Success) // TODO: Return error message from embedded artwork loading too
@@ -131,7 +131,7 @@ internal class ArtworkLoaderImpl(
 
 
     private suspend fun tryFindRemoteArtwork(
-        entity: SinglePlaybackEntity,
+        entity: SongEntity,
     ): Resource<Artwork?> {
         var ret: Resource<Artwork?> =
             Resource.Error(UiText.StringResource(R.string.unknown_error))
@@ -151,7 +151,7 @@ internal class ArtworkLoaderImpl(
         return ret
     }
 
-    private fun tryFindEmbeddedArtwork(entity: SinglePlaybackEntity): Resource<Artwork?> {
+    private fun tryFindEmbeddedArtwork(entity: SongEntity): Resource<Artwork?> {
         val path = entity.mediaId.path
             ?: return Resource.Error(UiText.StringResource(R.string.invalid_path, "null"))
 

@@ -68,18 +68,4 @@ class RoomLoopRepository(
     ): LoopEntity? = dao.findBySong(songTitle, songArtist, songDuration)
 
     override suspend fun findByMediaId(mediaId: MediaId): LoopEntity? = dao.findByMediaId(mediaId)
-
-    override suspend fun updateArtwork(loop: LoopEntity, artworkType: String, artworkUrl: String?) {
-        dao.updateArtwork(loop.id ?: return, artworkType, artworkUrl)
-    }
-
-    override suspend fun updateArtworkBySong(
-        songMediaId: MediaId,
-        artworkType: String,
-        artworkUrl: String?
-    ) {
-        dao.getLoops().filter { it.mediaId.underlyingMediaId == songMediaId }.forEach {
-            updateArtwork(it, artworkType, artworkUrl)
-        }
-    }
 }

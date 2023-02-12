@@ -37,6 +37,17 @@ interface Playback : Parcelable {
 
     val hasArtwork: Boolean
         get() = artwork.value != null || isArtworkLoading.value
+
+    /**
+     * @return Either the underlying song in the loop or the first song in the playlist
+     */
+    val underlyingSong: Song?
+        get() = when(this) {
+            is Song -> this
+            is Loop -> song
+            is Playlist -> playbacks.firstOrNull()?.underlyingSong
+            else -> TODO("Invalid Playback ${this.javaClass.name}")
+        }
 }
 
 interface SinglePlayback : Playback {

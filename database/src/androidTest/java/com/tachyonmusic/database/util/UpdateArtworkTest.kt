@@ -87,7 +87,7 @@ internal class UpdateArtworkTest {
             ArtworkType.REMOTE,
             ArtworkType.EMBEDDED
         )) {
-            assert(updateArtwork(songRepo, loopRepo, entityToEdit, artworkType, url))
+            assert(updateArtwork(songRepo, entityToEdit, artworkType, url))
 
             val databaseSong = songRepo.findByMediaId(songMediaId)!!
             assert(databaseSong.artworkType == artworkType)
@@ -114,7 +114,7 @@ internal class UpdateArtworkTest {
             ArtworkType.REMOTE,
             ArtworkType.EMBEDDED
         )) {
-            assert(updateArtwork(songRepo, loopRepo, entityToEdit, artworkType, url))
+            assert(updateArtwork(songRepo, entityToEdit, artworkType, url))
 
             val databaseSong = songRepo.findByMediaId(songMediaId)!!
             assert(databaseSong.artworkType == artworkType)

@@ -33,7 +33,6 @@ fun Song.toEntity(): SongEntity {
 }
 
 fun Loop.toEntity(): LoopEntity {
-    val artworkType = ArtworkType.getType(this)
     return LoopEntity(
         mediaId,
         title,
@@ -41,10 +40,6 @@ fun Loop.toEntity(): LoopEntity {
         duration,
         timingData.timingData,
         timingData.currentIndex,
-        artworkType,
-        if (artwork.value is RemoteArtwork)
-            (artwork.value as RemoteArtwork).uri.toURL().toString()
-        else null
     )
 }
 

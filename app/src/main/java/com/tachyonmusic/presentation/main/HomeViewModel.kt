@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.domain.use_case.ItemClicked
 import com.tachyonmusic.domain.use_case.main.ObserveHistory
@@ -40,7 +41,8 @@ class HomeViewModel @Inject constructor(
         observeHistory().map { newHistory ->
             _history.value = newHistory
 
-            getOrLoadArtwork(newHistory).onEach {
+            // TODO: Cast
+            getOrLoadArtwork(newHistory.map { it as Song }).onEach {
                 if (it is Resource.Success)
                     history.value[it.data!!.i].artwork.value = it.data!!.artwork
 

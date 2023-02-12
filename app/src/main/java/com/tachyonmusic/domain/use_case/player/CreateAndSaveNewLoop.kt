@@ -49,9 +49,7 @@ class CreateAndSaveNewLoop(
             song.artist,
             song.duration,
             timingData!!,
-            currentTimingDataIndex = 0, // TODO
-            song.artworkType,
-            song.artworkUrl
+            currentTimingDataIndex = 0 // TODO
         )
 
         loopRepository.add(loop)

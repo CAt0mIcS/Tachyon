@@ -1,9 +1,8 @@
 package com.tachyonmusic.media.domain.use_case
 
 import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
-import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
@@ -24,7 +23,6 @@ data class UpdateInfo(
 
 class GetOrLoadArtwork(
     private val songRepository: SongRepository,
-    private val loopRepository: LoopRepository,
     private val settingsRepository: SettingsRepository,
     private val artworkCodex: ArtworkCodex,
     private val findPlayback: FindPlaybackByMediaId,
@@ -32,7 +30,7 @@ class GetOrLoadArtwork(
 ) {
 
     @JvmName("invokePlaybackEntities")
-    suspend operator fun invoke(songs: List<SinglePlaybackEntity>) = channelFlow {
+    suspend operator fun invoke(songs: List<SongEntity>) = channelFlow {
         withContext(Dispatchers.IO) {
             val settings = settingsRepository.getSettings()
             val fetchOnline =
@@ -53,7 +51,6 @@ class GetOrLoadArtwork(
                         if (entityToUpdate != null)
                             updateArtwork(
                                 songRepository,
-                                loopRepository,
                                 entityToUpdate,
                                 entityToUpdate.artworkType,
                                 entityToUpdate.artworkUrl
@@ -67,10 +64,10 @@ class GetOrLoadArtwork(
     }
 
     @JvmName("invokePlaybacks")
-    suspend operator fun invoke(playbacks: List<Playback>) = channelFlow {
+    suspend operator fun invoke(songs: List<Song>) = channelFlow {
         withContext(Dispatchers.IO) {
-            val entities = List(playbacks.size) { i ->
-                findPlayback(playbacks[i].mediaId) as SinglePlaybackEntity
+            val entities = List(songs.size) { i ->
+                findPlayback(songs[i].mediaId) as SongEntity
             }
 
             invoke(entities).onEach {
@@ -80,8 +77,8 @@ class GetOrLoadArtwork(
     }
 
     @JvmName("invokePlayback")
-    suspend operator fun invoke(playback: Playback) = invoke(listOf(playback))
+    suspend operator fun invoke(song: Song) = invoke(listOf(song))
 
     @JvmName("invokePlaybackEntity")
-    suspend fun invoke(entity: SinglePlaybackEntity) = invoke(listOf(entity))
+    suspend fun invoke(entity: SongEntity) = invoke(listOf(entity))
 }

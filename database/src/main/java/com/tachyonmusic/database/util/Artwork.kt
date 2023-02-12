@@ -3,7 +3,6 @@ package com.tachyonmusic.database.util
 import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.database.domain.model.PlaybackEntity
 import com.tachyonmusic.database.domain.model.SongEntity
-import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 
 /**
@@ -12,7 +11,6 @@ import com.tachyonmusic.database.domain.repository.SongRepository
  */
 suspend fun updateArtwork(
     songRepository: SongRepository,
-    loopRepository: LoopRepository,
     playback: PlaybackEntity?,
     artworkType: String,
     artworkUrl: String? = null
@@ -21,7 +19,6 @@ suspend fun updateArtwork(
     when (playback) {
         is SongEntity -> {
             songRepository.updateArtwork(playback, artworkType, artworkUrl)
-            loopRepository.updateArtworkBySong(playback.mediaId, artworkType, artworkUrl)
         }
 
         is LoopEntity -> {
@@ -29,11 +26,6 @@ suspend fun updateArtwork(
                 songRepository.findByMediaId(
                     playback.mediaId.underlyingMediaId ?: return false
                 ) ?: return false,
-                artworkType,
-                artworkUrl
-            )
-            loopRepository.updateArtworkBySong(
-                playback.mediaId.underlyingMediaId ?: return false,
                 artworkType,
                 artworkUrl
             )

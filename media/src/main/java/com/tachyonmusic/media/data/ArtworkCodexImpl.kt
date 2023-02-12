@@ -23,9 +23,9 @@ class ArtworkCodexImpl internal constructor(
     private val codex = mutableMapOf<MediaId, ArtworkData>()
 
     override suspend fun awaitOrLoad(
-        entity: SinglePlaybackEntity,
+        entity: SongEntity,
         fetchOnline: Boolean
-    ): Resource<SinglePlaybackEntity?> {
+    ): Resource<SongEntity?> {
         val data = synchronized(codex) {
             val data = codex[entity.mediaId]
 
@@ -55,7 +55,7 @@ class ArtworkCodexImpl internal constructor(
         artworkType: String,
         artworkUrl: String?,
         fetchOnline: Boolean
-    ): Resource<SinglePlaybackEntity?> {
+    ): Resource<SongEntity?> {
         return awaitOrLoad(
             SongEntity(
                 title = "UNKNOWN",
@@ -99,9 +99,9 @@ class ArtworkCodexImpl internal constructor(
     }
 
     private suspend fun internalRequest(
-        entity: SinglePlaybackEntity,
+        entity: SongEntity,
         fetchOnline: Boolean
-    ): Resource<SinglePlaybackEntity?> {
+    ): Resource<SongEntity?> {
         val res = artworkLoader.requestLoad(entity, fetchOnline)
         synchronized(codex) {
             codex[entity.mediaId]?.artwork = res.data?.artwork

@@ -6,6 +6,7 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
@@ -58,12 +59,17 @@ class GetPlaylistForPlayback(
 
             is Loop -> {
                 val loopEntities = loopRepository.getLoopEntities()
+                val songEntities = songRepository.getSongEntities()
                 val playbacks = if (combinePlaybackTypes)
                     loopEntities.map { it.toLoop() } + songRepository.getSongs()
                 else
                     loopEntities.map { it.toLoop() }
 
-                getOrLoadArtwork(loopEntities).onEach {
+                val songsOfLoops = loopEntities.map { loop ->
+                    songEntities.find { loop.mediaId.underlyingMediaId == it.mediaId }!!
+                } + if(combinePlaybackTypes) songEntities else emptyList()
+
+                getOrLoadArtwork(songsOfLoops).onEach {
                     if (it is Resource.Success)
                         playbacks[it.data!!.i].artwork.value = it.data!!.artwork
                 }.collect()

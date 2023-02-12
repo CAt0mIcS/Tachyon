@@ -6,8 +6,5 @@ open class SinglePlaybackEntity(
     mediaId: MediaId,
     var title: String,
     var artist: String,
-    var duration: Long,
-
-    var artworkType: String,
-    var artworkUrl: String?
+    var duration: Long
 ) : PlaybackEntity(mediaId)

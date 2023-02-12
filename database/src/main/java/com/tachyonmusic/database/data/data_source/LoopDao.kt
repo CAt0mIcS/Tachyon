@@ -34,9 +34,6 @@ interface LoopDao {
     @Query("SELECT * FROM LoopEntity WHERE mediaId=:mediaId")
     suspend fun findByMediaId(mediaId: MediaId): LoopEntity?
 
-    @Query("UPDATE LoopEntity SET artworkType=:artworkType, artworkUrl=:artworkUrl WHERE id=:id")
-    suspend fun updateArtwork(id: Int, artworkType: String?, artworkUrl: String? = null)
-
     @Delete
     suspend fun delete(loop: LoopEntity)
 }
