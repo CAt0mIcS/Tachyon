@@ -13,6 +13,6 @@ class LoopEntity(
     val songDuration: Long,
     val timingData: List<TimingData>,
     val currentTimingDataIndex: Int = 0,
-    artworkType: String = ArtworkType.UNKNOWN,
+    artworkType: String = ArtworkType.UNKNOWN,  // TODO: Do we need to store artwork info in loop entity
     artworkUrl: String? = null
 ) : SinglePlaybackEntity(mediaId, songTitle, songArtist, songDuration, artworkType, artworkUrl)

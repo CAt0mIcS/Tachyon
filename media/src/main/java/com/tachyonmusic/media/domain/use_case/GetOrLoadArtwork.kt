@@ -36,21 +36,19 @@ class GetOrLoadArtwork(
         withContext(Dispatchers.IO) {
             val settings = settingsRepository.getSettings()
             val fetchOnline =
-                if (!settings.autoDownloadAlbumArtwork || (settings.autoDownloadAlbumArtworkWifiOnly && isInternetMetered()))
-                    false
-                else
-                    true
+                !(!settings.autoDownloadAlbumArtwork || (settings.autoDownloadAlbumArtworkWifiOnly && isInternetMetered()))
 
             songs.forEachIndexed { i, entity ->
                 launch {
-                    if (!artworkCodex.isLoaded(entity.mediaId)) {
+                    val mediaId = entity.mediaId.underlyingMediaId ?: entity.mediaId
+                    if (!artworkCodex.isLoaded(mediaId)) {
                         val res = artworkCodex.awaitOrLoad(entity, fetchOnline)
                         val entityToUpdate = res.data
 
                         if (res is Resource.Error)
                             send(Resource.Error(res, UpdateInfo(i, null)))
                         else
-                            send(Resource.Success(UpdateInfo(i, artworkCodex[entity.mediaId])))
+                            send(Resource.Success(UpdateInfo(i, artworkCodex[mediaId])))
 
                         if (entityToUpdate != null)
                             updateArtwork(
@@ -61,7 +59,7 @@ class GetOrLoadArtwork(
                                 entityToUpdate.artworkUrl
                             )
                     } else {
-                        send(Resource.Success(UpdateInfo(i, artworkCodex[entity.mediaId])))
+                        send(Resource.Success(UpdateInfo(i, artworkCodex[mediaId])))
                     }
                 }
             }

@@ -39,7 +39,8 @@ class LibraryViewModel @Inject constructor(
     private val log: Logger
 ) : ViewModel() {
 
-    private var songs = listOf<Song>()
+    var songs = listOf<Song>()
+        private set
     private var loops = listOf<Loop>()
     private var playlists = listOf<Playlist>()
 

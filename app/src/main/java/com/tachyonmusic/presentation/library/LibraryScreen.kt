@@ -26,8 +26,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
+import com.tachyonmusic.core.domain.Artwork
+import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.library.component.FilterItem
@@ -148,14 +151,44 @@ object LibraryScreen :
 
             items(playbackItems) { playback ->
 
-                val artwork by if (playback is SinglePlayback) playback.artwork.collectAsState()
-                else (playback as Playlist).playbacks.first().artwork.collectAsState()
+                lateinit var artwork: State<Artwork?>
+                lateinit var isArtworkLoading: State<Boolean>
+                when (playback) {
+                    is Song -> {
+                        artwork = playback.artwork.collectAsState()
+                        isArtworkLoading = playback.isArtworkLoading.collectAsState()
+                    }
 
-                val isArtworkLoading by playback.isArtworkLoading.collectAsState()
+                    is Loop -> {
+                        val song = viewModel.songs.find { it == playback.song }
+                        artwork = song?.artwork?.collectAsState() ?: remember {
+                            mutableStateOf(PlaceholderArtwork)
+                        }
+                        isArtworkLoading = song?.isArtworkLoading?.collectAsState() ?: remember {
+                            mutableStateOf(false)
+                        }
+                    }
+
+                    else -> {
+                        val singlePlayback = (playback as Playlist).playbacks.firstOrNull()
+                        val song = if (singlePlayback is Song?)
+                            singlePlayback
+                        else
+                            (singlePlayback as Loop?)?.song
+
+                        artwork = song?.artwork?.collectAsState() ?: remember {
+                            mutableStateOf(PlaceholderArtwork)
+                        }
+
+                        isArtworkLoading = song?.isArtworkLoading?.collectAsState() ?: remember {
+                            mutableStateOf(false)
+                        }
+                    }
+                }
 
                 HorizontalPlaybackView(playback,
-                    artwork ?: PlaceholderArtwork,
-                    isArtworkLoading,
+                    artwork.value ?: PlaceholderArtwork,
+                    isArtworkLoading.value,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall),
