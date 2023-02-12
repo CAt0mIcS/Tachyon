@@ -23,8 +23,10 @@ import com.tachyonmusic.presentation.player.data.PlaybackState
 import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
 import com.tachyonmusic.presentation.player.data.SeekIncrementsState
-import com.tachyonmusic.util.runOnUiThread
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -32,6 +34,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -49,6 +52,7 @@ class PlayerViewModel @Inject constructor(
     private val setCurrentPlayback: SetCurrentPlayback,
     private val getOrLoadArtwork: GetOrLoadArtwork,
     private val getNextPlaybackItems: GetNextPlaybackItems,
+    private val createAndSaveNewLoop: CreateAndSaveNewLoop,
     private val browser: MediaBrowserController,  // TODO: Shouldn't be used in ViewModel
     getHistory: GetHistory,
     observeSettings: ObserveSettings,
@@ -96,7 +100,7 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val recentlyPlayedPlayback = getHistory().firstOrNull()
 
-            runOnUiThread {
+            runOnUiThreadAsync {
                 _recentlyPlayed.value = recentlyPlayedPlayback
                 updatePlaybackState(recentlyPlayed.value)
             }
@@ -110,7 +114,8 @@ class PlayerViewModel @Inject constructor(
             )
             recentlyPlayedPosition = recentlyPlayed?.positionMs ?: 0L
 
-            _timingData.value = TimingDataController(listOf(TimingData(0L,recentlyPlayed?.durationMs ?: 0L)))
+            _timingData.value =
+                TimingDataController(listOf(TimingData(0L, recentlyPlayed?.durationMs ?: 0L)))
         }
 
         observeSettings().map {
@@ -196,6 +201,11 @@ class PlayerViewModel @Inject constructor(
         }, timingData.value.currentIndex)
     }
 
+    // TODO: Make non-suspending
+    suspend fun saveNewLoop(name: String): Boolean = withContext(Dispatchers.IO) {
+        return@withContext createAndSaveNewLoop(name) is Resource.Success
+    }
+
 
     private fun setCurrentPlaybackToRecentlyPlayed(
         playWhenReady: Boolean = false
@@ -226,7 +236,7 @@ class PlayerViewModel @Inject constructor(
     private fun getOrLoadArtworkForPlayback(playback: Playback) {
         viewModelScope.launch(Dispatchers.IO) {
             getOrLoadArtwork(playback).onEach {
-                runOnUiThread {
+                runOnUiThreadAsync {
                     recentlyPlayed.value?.artwork?.value = it.data?.artwork
                     recentlyPlayed.value?.isArtworkLoading?.value = false
                     updateArtworkState(recentlyPlayed.value)

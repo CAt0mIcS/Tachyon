@@ -52,6 +52,7 @@ import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.currentFraction
 import com.tachyonmusic.presentation.util.isAtBottom
 import com.tachyonmusic.presentation.util.isAtTop
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -424,7 +425,8 @@ fun Player(
                         onValueChange = viewModel::updateTimingData,
                         onSeekCompleted = viewModel::setNewTimingData,
                         onAddNewTimingData = viewModel::addNewTimingData,
-                        onRemoveTimingData = viewModel::removeTimingData
+                        onRemoveTimingData = viewModel::removeTimingData,
+                        onSaveLoop = viewModel::saveNewLoop
                     )
                 }
             }
@@ -478,6 +480,7 @@ fun LoopEditor(
     onSeekCompleted: () -> Unit,
     onRemoveTimingData: (Int) -> Unit,
     onAddNewTimingData: () -> Unit,
+    onSaveLoop: suspend (String) -> Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.padding(start = Theme.padding.extraSmall)) {
@@ -520,6 +523,38 @@ fun LoopEditor(
             )
 
             Spacer(modifier = Modifier.padding(top = 6.dp))
+        }
+
+        // TODO: State should be in view model to be able to move coroutine stuff to view model
+        var openAlertDialog by remember { mutableStateOf(false) }
+        var loopName by remember { mutableStateOf("") }
+        val scope = rememberCoroutineScope()
+
+        Button(onClick = {
+            openAlertDialog = true
+        }) {
+            Text("Save")
+        }
+
+        if (openAlertDialog) {
+            AlertDialog(
+                onDismissRequest = { openAlertDialog = false },
+                text = {
+                    TextField(value = loopName, onValueChange = { loopName = it })
+                },
+                buttons = {
+                    Button(
+                        onClick = {
+                            scope.launch((Dispatchers.IO)) {
+                                if (onSaveLoop(loopName))
+                                    openAlertDialog = false
+                            }
+                        }
+                    ) {
+                        Text("Save")
+                    }
+                }
+            )
         }
     }
 }

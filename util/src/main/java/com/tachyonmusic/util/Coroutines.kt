@@ -47,7 +47,7 @@ fun <T> future(
 
     }, context.asExecutor())
 
-fun runOnUiThread(block: suspend CoroutineScope.() -> Unit) =
+fun runOnUiThreadAsync(block: suspend CoroutineScope.() -> Unit) =
     launch(Dispatchers.Main) {
         block()
     }

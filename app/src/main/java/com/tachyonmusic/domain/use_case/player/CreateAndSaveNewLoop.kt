@@ -1,12 +1,16 @@
 package com.tachyonmusic.domain.use_case.player
 
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.runOnUiThread
+import com.tachyonmusic.util.runOnUiThreadAsync
 
 class CreateAndSaveNewLoop(
     private val songRepository: SongRepository,
@@ -17,15 +21,24 @@ class CreateAndSaveNewLoop(
     suspend operator fun invoke(
         name: String
     ): Resource<LoopEntity> {
-        if (isInvalidPlayback() || hasNoTimingData() || isInvalidTimingData())
+        var isInvalid = false
+        var playback: Playback? = null
+        var timingData: List<TimingData>? = null
+        runOnUiThread {
+            isInvalid = isInvalidPlayback() || hasNoTimingData() || isInvalidTimingData()
+            playback = browser.playback
+            timingData = browser.timingData
+        }
+        if (isInvalid)
             return Resource.Error(UiText.DynamicString("Invalid loop"))
+
 
         /**
          * Building the new loop by using either the [underlyingMediaId] of the current playback
          * which means that the current playback is a loop or using the direct media id of the current
          * playback which means that it's a song TODO: Saving current playlist item as loop
          */
-        val songMediaId = browser.playback!!.mediaId.underlyingMediaId ?: browser.playback!!.mediaId
+        val songMediaId = playback!!.mediaId.underlyingMediaId ?: playback!!.mediaId
         val song = songRepository.findByMediaId(songMediaId) ?: return Resource.Error(
             UiText.DynamicString("Unknown song $songMediaId")
         )
@@ -35,7 +48,7 @@ class CreateAndSaveNewLoop(
             song.title,
             song.artist,
             song.duration,
-            browser.timingData!!,
+            timingData!!,
             currentTimingDataIndex = 0, // TODO
             song.artworkType,
             song.artworkUrl
@@ -46,8 +59,7 @@ class CreateAndSaveNewLoop(
     }
 
     private fun isInvalidPlayback() = browser.playback == null
-    private fun hasNoTimingData() =
-        browser.timingData == null || browser.timingData?.isEmpty() == true
+    private fun hasNoTimingData() = browser.timingData.isNullOrEmpty()
 
     /**
      * Invalid if we only have one entry and it goes from the beginning to the end

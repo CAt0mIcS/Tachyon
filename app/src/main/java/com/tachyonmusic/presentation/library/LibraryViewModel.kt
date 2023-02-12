@@ -17,7 +17,7 @@ import com.tachyonmusic.domain.use_case.ObservePlaylists
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.runOnUiThread
+import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -67,7 +67,7 @@ class LibraryViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             songs = getSongs()
-            runOnUiThread { _items.value = songs }
+            runOnUiThreadAsync { _items.value = songs }
 
             getOrLoadArtwork(getSongs.entities()).onEach {
                 if (it is Resource.Success)
