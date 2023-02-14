@@ -17,6 +17,7 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MediaAction
+import com.tachyonmusic.core.data.constants.MediaAction.sendOnTimingDataAdvancedEvent
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.playback.SinglePlayback
@@ -189,7 +190,7 @@ class MediaPlaybackService(
                     }
                 }
 
-                MediaAction.updateTimingDataCommand -> {
+                MediaAction.setTimingDataCommand -> {
                     val res = withContext(Dispatchers.Main) {
                         updateTimingDataOfCurrentPlayback(
                             currentPlayer,
@@ -202,7 +203,7 @@ class MediaPlaybackService(
                     SessionResult(SessionResult.RESULT_SUCCESS)
                 }
 
-                MediaAction.repeatModeChangedCommand -> {
+                MediaAction.setRepeatModeCommand -> {
                     runOnUiThreadAsync {
                         when (RepeatMode.fromId(args.getInt(MetadataKeys.RepeatMode))) {
                             RepeatMode.All -> {
@@ -272,8 +273,17 @@ class MediaPlaybackService(
             )
             setHandleAudioBecomingNoisy(true)
         }.build().apply {
+
             // TODO: Debug only
             addAnalyticsListener(EventLogger())
             repeatMode = Player.REPEAT_MODE_ONE
-        })
+        }).apply {
+            registerEventListener(CustomPlayerEventListener())
+        }
+
+    private inner class CustomPlayerEventListener : CustomPlayer.Listener {
+        override fun onTimingDataAdvanced(i: Int) {
+            mediaSession.sendOnTimingDataAdvancedEvent(i)
+        }
+    }
 }

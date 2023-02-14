@@ -58,6 +58,6 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
         fun onConnected() {}
         fun onPlaybackTransition(playback: Playback?) {}
         fun onIsPlayingChanged(isPlaying: Boolean) {}
-        fun onTimingDataChanged(timingData: TimingDataController?) {}
+        fun onTimingDataAdvanced(i: Int) {}
     }
 }

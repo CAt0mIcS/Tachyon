@@ -12,11 +12,16 @@ import androidx.media3.exoplayer.PlayerMessage
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.domain.CustomPlayer
+import com.tachyonmusic.util.IListenable
+import com.tachyonmusic.util.Listenable
 
 /**
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands
  */
-class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer, Player.Listener {
+class CustomPlayerImpl(player: Player) : ForwardingPlayer(player),
+    CustomPlayer,
+    Player.Listener,
+    IListenable<CustomPlayer.Listener> by Listenable() {
     private var loopMessage: PlayerMessage? = null
 
     private val castPlayerMessageSender = CastPlayerMessageSender()
@@ -54,6 +59,7 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer,
                 Clock.DEFAULT,
                 wrappedPlayer.applicationLooper // TODO (internalPlayer.getPlaybackLooper())
             )
+
             else -> TODO("createMessage for other types of players")
         }
 
@@ -133,6 +139,7 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer,
             seekWithoutCallback(newTimingData.current.startTime)
 
         currentMediaItem?.mediaMetadata?.timingData = newTimingData
+        invokeEvent { it.onTimingDataAdvanced(newTimingData.currentIndex) }
     }
 
     private fun postLoopMessage(startTime: Long, endTime: Long) {
@@ -144,6 +151,9 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player), CustomPlayer,
             val timingData = currentMediaItem?.mediaMetadata?.timingData
             if (timingData != null) {
                 timingData.advanceToNext()
+
+                invokeEvent { it.onTimingDataAdvanced(timingData.currentIndex) }
+
                 postLoopMessage(
                     timingData.next.startTime,
                     timingData.current.endTime

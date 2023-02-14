@@ -126,14 +126,6 @@ class PlayerViewModel @Inject constructor(
             }
         }
 
-        // TODO
-        viewModelScope.launch {
-            while(true) {
-                delay(200)
-                _currentTimingDataIndex.value = browser.timingData?.currentIndex ?: 0
-            }
-        }
-
         observeSettings().map {
             _seekIncrement.value =
                 SeekIncrementsState(it.seekForwardIncrementMs, it.seekBackIncrementMs)
@@ -284,9 +276,8 @@ class PlayerViewModel @Inject constructor(
             _isPlaying.value = isPlaying
         }
 
-        override fun onTimingDataChanged(timingData: TimingDataController?) {
-            _currentTimingDataIndex.value = timingData?.currentIndex ?: 0
-            println("NEWIDX: ${currentTimingDataIndex.value}")
+        override fun onTimingDataAdvanced(i: Int) {
+            _currentTimingDataIndex.value = i
         }
     }
 }

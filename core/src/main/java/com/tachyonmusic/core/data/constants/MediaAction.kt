@@ -2,6 +2,7 @@ package com.tachyonmusic.core.data.constants
 
 import android.os.Bundle
 import androidx.media3.session.MediaBrowser
+import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
@@ -15,24 +16,37 @@ object MediaAction {
      * Events sent to the MediaPlaybackService by the MediaBrowserController
      */
     val setPlaybackCommand = SessionCommand("com.tachyonmusic.SET_PLAYBACK", Bundle.EMPTY)
-    val updateTimingDataCommand =
+    val setTimingDataCommand =
         SessionCommand("com.tachyonmusic.UPDATE_TIMING_DATA", Bundle.EMPTY)
-    val repeatModeChangedCommand =
+    val setRepeatModeCommand =
         SessionCommand("com.tachyonmusic.REPEAT_MODE_CHANGED", Bundle.EMPTY)
 
-    fun setPlaybackEvent(browser: MediaBrowser, playback: Playback?) =
-        browser.sendCustomCommand(setPlaybackCommand, Bundle().apply {
+    fun MediaBrowser.sendSetPlaybackEvent(playback: Playback?) =
+        sendCustomCommand(setPlaybackCommand, Bundle().apply {
             putParcelable(MetadataKeys.Playback, playback)
         })
 
-    fun updateTimingDataEvent(browser: MediaBrowser, timingData: TimingDataController) =
-        browser.sendCustomCommand(updateTimingDataCommand, Bundle().apply {
+    fun MediaBrowser.sendSetTimingDataEvent(timingData: TimingDataController) =
+        sendCustomCommand(setTimingDataCommand, Bundle().apply {
             putParcelable(MetadataKeys.TimingData, timingData)
         })
 
-    fun setRepeatMode(browser: MediaBrowser, repeatMode: RepeatMode) {
-        browser.sendCustomCommand(repeatModeChangedCommand, Bundle().apply {
+    fun MediaBrowser.sendSetRepeatModeEvent(repeatMode: RepeatMode) {
+        sendCustomCommand(setRepeatModeCommand, Bundle().apply {
             putInt(MetadataKeys.RepeatMode, repeatMode.id)
+        })
+    }
+
+
+    /**
+     * Events sent to the MediaBrowserController by the MediaPlaybackService
+     */
+    val timingDataAdvancedCommand =
+        SessionCommand("com.tachyonmusic.TIMING_DATA_ADVANCED", Bundle.EMPTY)
+
+    fun MediaSession.sendOnTimingDataAdvancedEvent(i: Int) {
+        broadcastCustomCommand(timingDataAdvancedCommand, Bundle().apply {
+            putInt(MetadataKeys.TimingData, i)
         })
     }
 }

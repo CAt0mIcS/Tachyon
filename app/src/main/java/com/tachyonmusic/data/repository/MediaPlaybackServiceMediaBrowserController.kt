@@ -2,20 +2,25 @@ package com.tachyonmusic.data.repository
 
 import android.app.Activity
 import android.content.ComponentName
+import android.os.Bundle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaBrowser
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionToken
 import com.google.common.collect.ImmutableList
-import com.tachyonmusic.core.ListenableMutableList
-import com.tachyonmusic.core.data.constants.MediaAction
+import com.google.common.util.concurrent.ListenableFuture
+import com.tachyonmusic.core.data.constants.MediaAction.sendSetPlaybackEvent
+import com.tachyonmusic.core.data.constants.MediaAction.sendSetRepeatModeEvent
+import com.tachyonmusic.core.data.constants.MediaAction.sendSetTimingDataEvent
+import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.RepeatMode
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -26,11 +31,14 @@ import com.tachyonmusic.media.data.ext.timingData
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
+import com.tachyonmusic.util.future
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 
 class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
     Player.Listener,
+    MediaBrowser.Listener,
     IListenable<MediaBrowserController.EventListener> by Listenable() {
 
     private var browser: MediaBrowser? = null
@@ -55,6 +63,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
 
         owner.lifecycleScope.launch {
             browser = MediaBrowser.Builder(owner, sessionToken)
+                .setListener(this@MediaPlaybackServiceMediaBrowserController)
                 .buildAsync().await()
             browser?.addListener(this@MediaPlaybackServiceMediaBrowserController)
             invokeEvent {
@@ -72,7 +81,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         get() = browser?.currentMediaItem?.mediaMetadata?.playback
         set(value) {
             if (value != null && browser != null)
-                MediaAction.setPlaybackEvent(browser!!, value)
+                browser!!.sendSetPlaybackEvent(value)
             else
                 stop()
         }
@@ -85,8 +94,10 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
 
     override var repeatMode: RepeatMode = RepeatMode.One
         set(value) {
-            field = value
-            MediaAction.setRepeatMode(browser!!, repeatMode)
+            if(browser != null) {
+                field = value
+                browser!!.sendSetRepeatModeEvent(repeatMode)
+            }
         }
 
     override val nextMediaItemIndex: Int
@@ -152,17 +163,18 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
     override var timingData: TimingDataController?
         get() = browser?.mediaMetadata?.timingData
         set(value) {
-            if(value == null)
+            if (value == null)
                 throw IllegalArgumentException("TimingDataController mustn't be null")
-            MediaAction.updateTimingDataEvent(
-                browser ?: return,
-                value
-            )
+            browser?.sendSetTimingDataEvent(value)
         }
 
     override val currentPosition: Long?
         get() = if (browser?.currentMediaItem == null) null else browser?.currentPosition
 
+
+    /***********************************************************************************************
+     * [Player.Listener]
+     **********************************************************************************************/
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val playback = mediaItem?.mediaMetadata?.playback
@@ -182,6 +194,23 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
             browser?.seekTo(cachedSeekPositionWhenAvailable ?: 0)
             cachedSeekPositionWhenAvailable = null
         }
+    }
+
+
+    /***********************************************************************************************
+     * [MediaBrowser.Listener]
+     **********************************************************************************************/
+
+    override fun onCustomCommand(
+        controller: MediaController,
+        command: SessionCommand,
+        args: Bundle
+    ): ListenableFuture<SessionResult> = future(Dispatchers.Main) {
+        invokeEvent {
+            it.onTimingDataAdvanced(args.getInt(MetadataKeys.TimingData))
+        }
+
+        SessionResult(SessionResult.RESULT_SUCCESS)
     }
 }
 
