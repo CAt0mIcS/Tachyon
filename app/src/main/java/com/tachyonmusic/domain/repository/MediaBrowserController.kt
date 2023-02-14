@@ -6,9 +6,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.session.LibraryResult
 import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.data.constants.RepeatMode
-import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.util.IListenable
 
 interface MediaBrowserController : IListenable<MediaBrowserController.EventListener>,
@@ -45,7 +44,7 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
     val artist: String?
     val name: String?
     val duration: Long?
-    var timingData: MutableList<TimingData>?
+    var timingData: TimingDataController?
     val currentPosition: Long?
 
     fun stop()
@@ -59,5 +58,6 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
         fun onConnected() {}
         fun onPlaybackTransition(playback: Playback?) {}
         fun onIsPlayingChanged(isPlaying: Boolean) {}
+        fun onTimingDataChanged(timingData: TimingDataController?) {}
     }
 }

@@ -1,6 +1,7 @@
 package com.tachyonmusic.presentation.player
 
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,6 +31,7 @@ import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -77,8 +79,11 @@ class PlayerViewModel @Inject constructor(
     private var _seekIncrement = mutableStateOf(SeekIncrementsState())
     val seekIncrement: State<SeekIncrementsState> = _seekIncrement
 
-    private var _timingData = mutableStateOf(TimingDataController())
-    val timingData: State<TimingDataController> = _timingData
+    val timingData = mutableStateListOf<TimingData>()
+//    val timingData: State<List<TimingData>> = _timingData
+
+    private var _currentTimingDataIndex = mutableStateOf(0)
+    val currentTimingDataIndex: State<Int> = _currentTimingDataIndex
 
     var audioUpdateInterval: Duration = 100.milliseconds
         private set
@@ -115,8 +120,18 @@ class PlayerViewModel @Inject constructor(
             )
             recentlyPlayedPosition = recentlyPlayed?.positionMs ?: 0L
 
-            _timingData.value =
-                TimingDataController(listOf(TimingData(0L, recentlyPlayed?.durationMs ?: 0L)))
+            runOnUiThreadAsync {
+                timingData.clear()
+                timingData.add(TimingData(0L, recentlyPlayed?.durationMs ?: 0L))
+            }
+        }
+
+        // TODO
+        viewModelScope.launch {
+            while(true) {
+                delay(200)
+                _currentTimingDataIndex.value = browser.timingData?.currentIndex ?: 0
+            }
         }
 
         observeSettings().map {
@@ -177,29 +192,24 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun updateTimingData(i: Int, startTime: Long, endTime: Long) {
-        val newTimingData = timingData.value.timingData
-        newTimingData[i].startTime = startTime
-        newTimingData[i].endTime = endTime
+        val old = timingData.toList()
+        old[i].startTime = startTime
+        old[i].endTime = endTime
 
-        _timingData.value =
-            TimingDataController(newTimingData, timingData.value.currentIndex)
+        timingData.clear()
+        timingData.addAll(old)
     }
 
     fun setNewTimingData() {
-        browser.timingData = timingData.value.timingData
-        // TODO: Current index
+        browser.timingData = TimingDataController(timingData, currentTimingDataIndex.value)
     }
 
     fun addNewTimingData() {
-        _timingData.value = TimingDataController(timingData.value.timingData.apply {
-            add(TimingData(0L, playbackState.value.duration))
-        }, timingData.value.currentIndex)
+        timingData.add(TimingData(0L, playbackState.value.duration))
     }
 
     fun removeTimingData(i: Int) {
-        _timingData.value = TimingDataController(timingData.value.timingData.apply {
-            removeAt(i)
-        }, timingData.value.currentIndex)
+        timingData.removeAt(i)
     }
 
     // TODO: Make non-suspending
@@ -252,20 +262,31 @@ class PlayerViewModel @Inject constructor(
             updatePlaybackState(playback)
 
             if (playback != null) {
-                val newTimingData = playback.timingData?.timingData
-                if (newTimingData.isNullOrEmpty())
-                    _timingData.value =
-                        TimingDataController(listOf(TimingData(0L, playback.duration!!)))
-                else
-                    _timingData.value = TimingDataController(newTimingData) // TODO: current index
+                val newTimingData = playback.timingData
+                if (newTimingData == null || newTimingData.timingData.isEmpty()) {
+                    timingData.clear()
+                    timingData.add(TimingData(0L, playback.duration!!))
+                }
+                else {
+                    timingData.clear()
+                    timingData.addAll(newTimingData.timingData)
+                    _currentTimingDataIndex.value = newTimingData.currentIndex
+                }
 
                 getOrLoadArtworkForPlayback(playback)
-            } else
-                _timingData.value = TimingDataController()
+            } else {
+                timingData.clear()
+                _currentTimingDataIndex.value = 0
+            }
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             _isPlaying.value = isPlaying
+        }
+
+        override fun onTimingDataChanged(timingData: TimingDataController?) {
+            _currentTimingDataIndex.value = timingData?.currentIndex ?: 0
+            println("NEWIDX: ${currentTimingDataIndex.value}")
         }
     }
 }

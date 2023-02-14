@@ -2,6 +2,7 @@ package com.tachyonmusic.domain.use_case.player
 
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
@@ -23,7 +24,7 @@ class CreateAndSaveNewLoop(
     ): Resource<LoopEntity> {
         var isInvalid = false
         var playback: Playback? = null
-        var timingData: List<TimingData>? = null
+        var timingData: TimingDataController? = null
         runOnUiThread {
             isInvalid = isInvalidPlayback() || hasNoTimingData() || isInvalidTimingData()
             playback = browser.playback
@@ -48,7 +49,7 @@ class CreateAndSaveNewLoop(
             song.title,
             song.artist,
             song.duration,
-            timingData!!,
+            timingData!!.timingData,
             currentTimingDataIndex = 0 // TODO
         )
 
@@ -57,12 +58,12 @@ class CreateAndSaveNewLoop(
     }
 
     private fun isInvalidPlayback() = browser.playback == null
-    private fun hasNoTimingData() = browser.timingData.isNullOrEmpty()
+    private fun hasNoTimingData() = browser.timingData?.timingData.isNullOrEmpty()
 
     /**
      * Invalid if we only have one entry and it goes from the beginning to the end
      */
-    private fun isInvalidTimingData() = browser.timingData!!.all {
+    private fun isInvalidTimingData() = browser.timingData!!.timingData.all {
         it.startTime == 0L && it.endTime == browser.playback?.duration
     }
 

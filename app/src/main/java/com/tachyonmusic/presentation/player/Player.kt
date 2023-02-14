@@ -44,6 +44,7 @@ import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
@@ -84,7 +85,8 @@ fun Player(
     var isSeeking by remember { mutableStateOf(false) }
 
     var isEditingLoop by remember { mutableStateOf(false) }
-    val timingData by viewModel.timingData
+    val timingData = viewModel.timingData
+    val currentTimingDataIndex by viewModel.currentTimingDataIndex
 
 
     LaunchedEffect(Unit) {
@@ -419,7 +421,8 @@ fun Player(
             if (isEditingLoop) {
                 item {
                     LoopEditor(
-                        timingData.timingData,
+                        timingData,
+                        currentTimingDataIndex,
                         playbackState.duration,
                         modifier = Modifier.fillMaxWidth(),
                         onValueChange = viewModel::updateTimingData,
@@ -475,6 +478,7 @@ fun Player(
 @Composable
 fun LoopEditor(
     timingData: List<TimingData>,
+    currentTimingDataIndex: Int,
     duration: Long,
     onValueChange: (Int, Long, Long) -> Unit,
     onSeekCompleted: () -> Unit,
@@ -516,7 +520,7 @@ fun LoopEditor(
                 onValueChangeFinished = onSeekCompleted,
                 valueRange = 0f..duration.toFloat(),
                 colors = SliderDefaults.colors(
-                    thumbColor = Theme.colors.orange,
+                    thumbColor = if (i == currentTimingDataIndex) Theme.colors.orange else Theme.colors.contrastLow,
                     activeTrackColor = Theme.colors.orange,
                     inactiveTrackColor = Theme.colors.partialOrange1
                 )

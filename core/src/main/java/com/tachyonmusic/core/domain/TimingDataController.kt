@@ -110,5 +110,10 @@ class TimingDataController(
     val size get() = _timingData.size
     val indices get() = _timingData.indices
     operator fun get(index: Int) = TimingData.deserialize(_timingData[index])
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is TimingDataController) return false
+        return other._timingData == _timingData && other.currentIndex == currentIndex
+    }
 }
 

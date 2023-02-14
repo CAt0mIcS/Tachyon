@@ -6,6 +6,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaBrowser
@@ -30,7 +31,6 @@ import kotlinx.coroutines.launch
 
 class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
     Player.Listener,
-    ListenableMutableList.EventListener<TimingData>,
     IListenable<MediaBrowserController.EventListener> by Listenable() {
 
     private var browser: MediaBrowser? = null
@@ -149,19 +149,15 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         get() = browser?.mediaMetadata?.name
     override val duration: Long?
         get() = browser?.mediaMetadata?.duration
-    override var timingData: MutableList<TimingData>?
-        get() {
-            val data = browser?.mediaMetadata?.timingData
-            return if (data == null) null
-            else ListenableMutableList(data.timingData).apply {
-                registerEventListener(this@MediaPlaybackServiceMediaBrowserController)
-            }
-        }
+    override var timingData: TimingDataController?
+        get() = browser?.mediaMetadata?.timingData
         set(value) {
-            if (value != null)
-                onChanged(value)
-            else
-                onChanged(listOf())
+            if(value == null)
+                throw IllegalArgumentException("TimingDataController mustn't be null")
+            MediaAction.updateTimingDataEvent(
+                browser ?: return,
+                value
+            )
         }
 
     override val currentPosition: Long?
@@ -186,15 +182,6 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
             browser?.seekTo(cachedSeekPositionWhenAvailable ?: 0)
             cachedSeekPositionWhenAvailable = null
         }
-    }
-
-    override fun onChanged(list: List<TimingData>) {
-        if (browser == null)
-            return
-        MediaAction.updateTimingDataEvent(
-            browser!!,
-            TimingDataController(list)
-        )
     }
 }
 
