@@ -67,7 +67,7 @@ class GetPlaylistForPlayback(
 
                 val songsOfLoops = loopEntities.map { loop ->
                     songEntities.find { loop.mediaId.underlyingMediaId == it.mediaId }!!
-                } + if(combinePlaybackTypes) songEntities else emptyList()
+                } + if (combinePlaybackTypes) songEntities else emptyList()
 
                 getOrLoadArtwork(songsOfLoops).onEach {
                     if (it is Resource.Success)
@@ -80,7 +80,18 @@ class GetPlaylistForPlayback(
             }
 
             is Playlist -> {
-                TODO()
+                initialWindowIndex = playback.currentPlaylistIndex
+
+                // TODO: What if it.underlying song is null? Warning? Error?
+                val underlyingSongs = playback.playbacks.mapNotNull { it.underlyingSong }
+
+                getOrLoadArtwork(underlyingSongs).onEach {
+                    if (it is Resource.Success)
+                        playback.playbacks[it.data!!.i].artwork.value = it.data!!.artwork
+                }.collect()
+
+                mediaItems = playback.toMediaItemList()
+                playbackItems = playback.playbacks
             }
         }
 

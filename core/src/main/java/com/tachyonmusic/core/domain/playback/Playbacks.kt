@@ -27,7 +27,6 @@ interface Playback : Parcelable {
     val playbackType: PlaybackType
 
     fun toMediaItem(): MediaItem
-    fun toMediaMetadata(): MediaMetadata
 
     fun toHashMap(): HashMap<String, Any?>
 
@@ -54,6 +53,8 @@ interface SinglePlayback : Playback {
     override val title: String
     override val artist: String
     override val duration: Long
+
+    fun toMediaItem(associatedPlaylist: Playlist? = null): MediaItem
 
     override var timingData: TimingDataController
 

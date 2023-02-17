@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetHistory
@@ -24,6 +25,7 @@ import com.tachyonmusic.presentation.player.data.PlaybackState
 import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.use_case.ObservePlaylists
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
@@ -73,6 +75,7 @@ class PlayerViewModel @Inject constructor(
 
     private var _recentlyPlayed = mutableStateOf<Playback?>(null)
     val recentlyPlayed: State<Playback?> = _recentlyPlayed
+    private var associatedPlaylist: Playlist? = null
 
     private var _isPlaying = mutableStateOf(browser.isPlaying)
     val isPlaying: State<Boolean> = _isPlaying
@@ -92,7 +95,8 @@ class PlayerViewModel @Inject constructor(
     private var _currentTimingDataIndex = mutableStateOf(0)
     val currentTimingDataIndex: State<Int> = _currentTimingDataIndex
 
-    val playlists = mutableStateListOf<Pair<String, Boolean>>()
+    val songAddedToPlaylists = mutableStateListOf<Pair<String, Boolean>>()
+    private var playlists: List<Playlist> = emptyList()
 
     var audioUpdateInterval: Duration = 100.milliseconds
         private set
@@ -120,11 +124,8 @@ class PlayerViewModel @Inject constructor(
                 updatePlaybackState(recentlyPlayed.value)
 
                 observePlaylists().map { newPlaylists ->
-                    playlists.clear()
-                    // TODO: Check if we're trying to save a playlist to a playlist and if [recentlyPlayed.value] is null
-                    playlists.addAll(newPlaylists.map {
-                        it.name to it.hasPlayback(recentlyPlayed.value as SinglePlayback)
-                    })
+                    playlists = newPlaylists
+                    updateSavedPlaylists(newPlaylists)
                 }.collect()
             }
             if (recentlyPlayedPlayback != null)
@@ -193,7 +194,7 @@ class PlayerViewModel @Inject constructor(
             _playbackState.value =
                 playbackState.value.copy(
                     children = getNextPlaybackItems(
-                        recentlyPlayed.value,
+                        associatedPlaylist ?: recentlyPlayed.value,
                         repeatMode.value
                     )
                 )
@@ -256,7 +257,8 @@ class PlayerViewModel @Inject constructor(
                 title = playback.title ?: "Unknown Title",
                 artist = playback.artist ?: "Unknown Artist",
                 duration = playback.duration ?: 0L,
-                children = getNextPlaybackItems(playback, repeatMode.value)
+                children = getNextPlaybackItems(associatedPlaylist ?: playback, repeatMode.value),
+                playbackType = PlaybackType.build(associatedPlaylist ?: playback)
             )
         }
     }
@@ -281,16 +283,29 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    private fun updateSavedPlaylists(newPlaylists: List<Playlist>) {
+        songAddedToPlaylists.clear()
+        // TODO: Check if we're trying to save a playlist to a playlist and if [recentlyPlayed.value] is null
+        songAddedToPlaylists.addAll(newPlaylists.map {
+            it.name to it.hasPlayback(recentlyPlayed.value as SinglePlayback)
+        })
+    }
+
     private inner class MediaListener : MediaBrowserController.EventListener {
-        override fun onPlaybackTransition(playback: Playback?) {
+        override fun onPlaybackTransition(
+            playback: SinglePlayback?,
+            associatedPlaylist: Playlist?
+        ) {
             _recentlyPlayed.value = playback
+            this@PlayerViewModel.associatedPlaylist = associatedPlaylist
             updatePlaybackState(playback)
+            updateSavedPlaylists(playlists)
 
             if (playback != null) {
                 val newTimingData = playback.timingData
-                if (newTimingData == null || newTimingData.timingData.isEmpty()) {
+                if (newTimingData.timingData.isEmpty()) {
                     timingData.clear()
-                    timingData.add(TimingData(0L, playback.duration!!))
+                    timingData.add(TimingData(0L, playback.duration))
                 } else {
                     timingData.clear()
                     timingData.addAll(newTimingData.timingData)

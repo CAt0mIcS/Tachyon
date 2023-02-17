@@ -16,6 +16,7 @@ import androidx.media3.session.SessionResult
 import androidx.media3.session.SessionToken
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListenableFuture
+import com.tachyonmusic.core.data.constants.MediaAction
 import com.tachyonmusic.core.data.constants.MediaAction.sendSetPlaybackEvent
 import com.tachyonmusic.core.data.constants.MediaAction.sendSetRepeatModeEvent
 import com.tachyonmusic.core.data.constants.MediaAction.sendSetTimingDataEvent
@@ -24,6 +25,7 @@ import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.media.data.ext.associatedPlaylist
 import com.tachyonmusic.media.data.ext.duration
 import com.tachyonmusic.media.data.ext.name
 import com.tachyonmusic.media.data.ext.playback
@@ -178,8 +180,9 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val playback = mediaItem?.mediaMetadata?.playback
+        val playlist = mediaItem?.mediaMetadata?.associatedPlaylist
         invokeEvent {
-            it.onPlaybackTransition(playback)
+            it.onPlaybackTransition(playback, playlist)
         }
     }
 
@@ -206,9 +209,14 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         command: SessionCommand,
         args: Bundle
     ): ListenableFuture<SessionResult> = future(Dispatchers.Main) {
-        invokeEvent {
-            it.onTimingDataAdvanced(args.getInt(MetadataKeys.TimingData))
+        when(command) {
+            MediaAction.timingDataAdvancedCommand -> {
+                invokeEvent {
+                    it.onTimingDataAdvanced(args.getInt(MetadataKeys.TimingData))
+                }
+            }
         }
+
 
         SessionResult(SessionResult.RESULT_SUCCESS)
     }

@@ -45,6 +45,9 @@ class GetNextPlaybackItems(
             (playback as Playlist).playbacks
 
     private suspend fun repeatModeShuffle(playback: Playback): List<SinglePlayback> {
+        if(playback is Playlist)
+            return playback.playbacks
+
         return listOf(
             getPlaylist(playback).getOrNull(browser.nextMediaItemIndex) ?: return emptyList()
         )

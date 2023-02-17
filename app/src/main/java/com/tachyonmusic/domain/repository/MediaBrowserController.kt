@@ -8,6 +8,8 @@ import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.util.IListenable
 
 interface MediaBrowserController : IListenable<MediaBrowserController.EventListener>,
@@ -56,7 +58,14 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
 
     interface EventListener {
         fun onConnected() {}
-        fun onPlaybackTransition(playback: Playback?) {}
+
+        /**
+         * @param playback the new playback (song or loop) to be played
+         * @param associatedPlaylist if we set [MediaBrowserController.playback] to a [Playlist]
+         *      then [playback] will be the song/loop currently playing and [associatedPlaylist]
+         *      will be the set Playlist
+         */
+        fun onPlaybackTransition(playback: SinglePlayback?, associatedPlaylist: Playlist?) {}
         fun onIsPlayingChanged(isPlaying: Boolean) {}
         fun onTimingDataAdvanced(i: Int) {}
     }

@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
@@ -13,10 +12,8 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.core.data.ext.toByteArray
 import com.tachyonmusic.core.data.ext.toInt
-import com.tachyonmusic.util.launch
-import kotlinx.coroutines.Dispatchers
+import com.tachyonmusic.core.domain.playback.Playlist
 import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class AbstractSong(
@@ -37,13 +34,15 @@ abstract class AbstractSong(
         "mediaId" to mediaId.toString()
     )
 
-    override fun toMediaItem() = MediaItem.Builder().apply {
+    override fun toMediaItem() = toMediaItem(null)
+
+    override fun toMediaItem(associatedPlaylist: Playlist?) = MediaItem.Builder().apply {
         setMediaId(mediaId.toString())
         setUri(uri)
-        setMediaMetadata(toMediaMetadata())
+        setMediaMetadata(toMediaMetadata(associatedPlaylist))
     }.build()
 
-    override fun toMediaMetadata() = MediaMetadata.Builder().apply {
+    private fun toMediaMetadata(associatedPlaylist: Playlist?) = MediaMetadata.Builder().apply {
         setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
         setIsPlayable(true)
 
@@ -61,6 +60,8 @@ abstract class AbstractSong(
             // Empty here to allow custom setting of timing data
             putParcelable(MetadataKeys.TimingData, TimingDataController())
             putParcelable(MetadataKeys.Playback, this@AbstractSong)
+            if(associatedPlaylist != null)
+                putParcelable(MetadataKeys.AssociatedPlaylist, associatedPlaylist)
         })
     }.build()
 

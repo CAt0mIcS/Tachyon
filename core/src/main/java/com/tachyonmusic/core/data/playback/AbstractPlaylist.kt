@@ -60,7 +60,7 @@ abstract class AbstractPlaylist(
         setMediaMetadata(toMediaMetadata())
     }.build()
 
-    override fun toMediaMetadata() = MediaMetadata.Builder().apply {
+    private fun toMediaMetadata() = MediaMetadata.Builder().apply {
         setFolderType(MediaMetadata.FOLDER_TYPE_MIXED)
         setIsPlayable(true)
         setExtras(Bundle().apply {
@@ -69,7 +69,8 @@ abstract class AbstractPlaylist(
         })
     }.build()
 
-    override fun toMediaItemList(): List<MediaItem> = playbacks.map { it.toMediaItem() }
+    override fun toMediaItemList(): List<MediaItem> =
+        playbacks.map { it.toMediaItem(associatedPlaylist = this) }
 
     override fun add(playback: SinglePlayback) {
         _playbacks.add(playback)

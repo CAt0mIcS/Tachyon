@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.player.data
 
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,7 +10,8 @@ data class PlaybackState(
     var title: String = "",
     var artist: String = "",
     var duration: Long = 0,
-    var children: List<SinglePlayback> = emptyList()
+    var children: List<SinglePlayback> = emptyList(),
+    var playbackType: PlaybackType? = null
 )
 
 data class ArtworkState(

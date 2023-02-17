@@ -45,6 +45,7 @@ import com.github.krottv.compose.sliders.DefaultTrack
 import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
@@ -90,7 +91,7 @@ fun Player(
     val currentTimingDataIndex by viewModel.currentTimingDataIndex
 
     var showSaveToPlaylistDialog by remember { mutableStateOf(false) }
-    val playlists = viewModel.playlists
+    val playlists = viewModel.songAddedToPlaylists
 
 
     LaunchedEffect(Unit) {
@@ -459,7 +460,7 @@ fun Player(
                             end = Theme.padding.medium,
                             bottom = Theme.padding.extraSmall
                         ),
-                        text = if (playbackState.children.size == 1) "Up Next" else "Playlist",
+                        text = if (playbackState.playbackType !is PlaybackType.Playlist) "Up Next" else "Playlist",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )

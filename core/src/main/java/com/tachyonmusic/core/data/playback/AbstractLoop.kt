@@ -11,6 +11,7 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -43,13 +44,15 @@ abstract class AbstractLoop(
         "timingData" to timingData.timingData
     )
 
-    override fun toMediaItem() = MediaItem.Builder().apply {
+    override fun toMediaItem() = toMediaItem(null)
+
+    override fun toMediaItem(associatedPlaylist: Playlist?) = MediaItem.Builder().apply {
         setMediaId(mediaId.toString())
         setUri(uri)
-        setMediaMetadata(toMediaMetadata())
+        setMediaMetadata(toMediaMetadata(associatedPlaylist))
     }.build()
 
-    override fun toMediaMetadata() = MediaMetadata.Builder().apply {
+    private fun toMediaMetadata(associatedPlaylist: Playlist?) = MediaMetadata.Builder().apply {
         setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
         setIsPlayable(true)
         setTitle(title)
@@ -59,6 +62,9 @@ abstract class AbstractLoop(
             putParcelable(MetadataKeys.TimingData, timingData)
             putString(MetadataKeys.Name, name)
             putParcelable(MetadataKeys.Playback, this@AbstractLoop)
+
+            if (associatedPlaylist != null)
+                putParcelable(MetadataKeys.AssociatedPlaylist, associatedPlaylist)
         })
     }.build()
 
