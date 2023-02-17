@@ -9,7 +9,7 @@ import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.util.toPlaylist
-import com.tachyonmusic.media.domain.use_case.getItemsOnPageWithPageSize
+import com.tachyonmusic.media.util.getItemsOnPageWithPageSize
 import kotlinx.coroutines.*
 
 

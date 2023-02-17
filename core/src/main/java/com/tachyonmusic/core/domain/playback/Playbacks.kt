@@ -3,7 +3,6 @@ package com.tachyonmusic.core.domain.playback
 import android.net.Uri
 import android.os.Parcelable
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId

@@ -20,7 +20,6 @@ import com.tachyonmusic.core.data.constants.MediaAction
 import com.tachyonmusic.core.data.constants.MediaAction.sendOnTimingDataAdvancedEvent
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.RepeatMode
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.logger.LoggerImpl
@@ -28,17 +27,17 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.data.MediaNotificationProvider
-import com.tachyonmusic.media.data.ext.parcelable
-import com.tachyonmusic.media.data.ext.playback
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.ConfirmAddedMediaItems
 import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
 import com.tachyonmusic.media.domain.use_case.GetSettings
-import com.tachyonmusic.media.domain.use_case.GetSupportedCommands
-import com.tachyonmusic.media.domain.use_case.PreparePlayer
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
-import com.tachyonmusic.media.domain.use_case.UpdateTimingDataOfCurrentPlayback
+import com.tachyonmusic.media.util.parcelable
+import com.tachyonmusic.media.util.playback
+import com.tachyonmusic.media.util.prepare
+import com.tachyonmusic.media.util.supportedCommands
+import com.tachyonmusic.media.util.updateTimingDataOfCurrentPlayback
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.runOnUiThreadAsync
@@ -71,15 +70,6 @@ class MediaPlaybackService(
 
     @Inject
     lateinit var confirmAddedMediaItems: ConfirmAddedMediaItems
-
-    @Inject
-    lateinit var preparePlayer: PreparePlayer
-
-    @Inject
-    lateinit var getSupportedCommands: GetSupportedCommands
-
-    @Inject
-    lateinit var updateTimingDataOfCurrentPlayback: UpdateTimingDataOfCurrentPlayback
 
     @Inject
     lateinit var addNewPlaybackToHistory: AddNewPlaybackToHistory
@@ -129,7 +119,7 @@ class MediaPlaybackService(
         override fun onConnect(
             session: MediaSession,
             controller: MediaSession.ControllerInfo
-        ): MediaSession.ConnectionResult = getSupportedCommands()
+        ): MediaSession.ConnectionResult = supportedCommands
 
         override fun onGetLibraryRoot(
             session: MediaLibrarySession,
@@ -178,8 +168,7 @@ class MediaPlaybackService(
 
                     withContext(Dispatchers.Main) {
                         val prepareRes =
-                            preparePlayer(
-                                currentPlayer,
+                            currentPlayer.prepare(
                                 loadingRes.data?.mediaItems,
                                 loadingRes.data?.initialWindowIndex
                             )
@@ -192,8 +181,7 @@ class MediaPlaybackService(
 
                 MediaAction.setTimingDataCommand -> {
                     val res = withContext(Dispatchers.Main) {
-                        updateTimingDataOfCurrentPlayback(
-                            currentPlayer,
+                        currentPlayer.updateTimingDataOfCurrentPlayback(
                             args.parcelable(MetadataKeys.TimingData)
                         )
                     }
@@ -251,8 +239,8 @@ class MediaPlaybackService(
                     RecentlyPlayed(
                         playback.mediaId,
                         currentPos,
-                        playback.duration ?: return@launch,
-                        ArtworkType.getType(playback as SinglePlayback), // TODO: Playlists
+                        playback.duration,
+                        ArtworkType.getType(playback),
                         if (playback.artwork.value is RemoteArtwork)
                             (playback.artwork.value as RemoteArtwork).uri.toURL()
                                 .toString() else null

@@ -1,4 +1,4 @@
-package com.tachyonmusic.media.data.ext
+package com.tachyonmusic.media.util
 
 import android.os.Bundle
 import android.os.Parcelable

@@ -1,7 +1,6 @@
 package com.tachyonmusic.domain.use_case.player
 
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.database.domain.model.LoopEntity
@@ -11,7 +10,6 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.runOnUiThread
-import com.tachyonmusic.util.runOnUiThreadAsync
 
 class CreateAndSaveNewLoop(
     private val songRepository: SongRepository,

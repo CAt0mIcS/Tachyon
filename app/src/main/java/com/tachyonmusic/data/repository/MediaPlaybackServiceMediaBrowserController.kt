@@ -25,11 +25,11 @@ import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.media.data.ext.associatedPlaylist
-import com.tachyonmusic.media.data.ext.duration
-import com.tachyonmusic.media.data.ext.name
-import com.tachyonmusic.media.data.ext.playback
-import com.tachyonmusic.media.data.ext.timingData
+import com.tachyonmusic.media.util.associatedPlaylist
+import com.tachyonmusic.media.util.duration
+import com.tachyonmusic.media.util.name
+import com.tachyonmusic.media.util.playback
+import com.tachyonmusic.media.util.timingData
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable

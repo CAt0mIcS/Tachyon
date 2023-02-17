@@ -81,18 +81,6 @@ class MediaPlaybackUseCaseModule {
 
     @Provides
     @Singleton
-    fun providePreparePlayerUseCase() = PreparePlayer()
-
-    @Provides
-    @Singleton
-    fun provideGetSupportedCommandsUseCase() = GetSupportedCommands()
-
-    @Provides
-    @Singleton
-    fun provideUpdateTimingDataOfCurrentPlaybackUseCase() = UpdateTimingDataOfCurrentPlayback()
-
-    @Provides
-    @Singleton
     fun provideAddNewPlaybackToHistoryUseCase(
         historyRepository: HistoryRepository,
         settingsRepository: SettingsRepository

@@ -6,7 +6,6 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository

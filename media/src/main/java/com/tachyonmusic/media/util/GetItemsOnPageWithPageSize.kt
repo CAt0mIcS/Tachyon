@@ -1,4 +1,4 @@
-package com.tachyonmusic.media.domain.use_case
+package com.tachyonmusic.media.util
 
 import com.google.common.collect.ImmutableList
 

@@ -2,7 +2,6 @@ package com.tachyonmusic.media.domain
 
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.util.Resource
 

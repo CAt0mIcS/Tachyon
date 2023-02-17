@@ -29,7 +29,6 @@ import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView

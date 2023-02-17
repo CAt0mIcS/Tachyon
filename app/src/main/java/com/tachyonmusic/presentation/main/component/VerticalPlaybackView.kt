@@ -3,7 +3,6 @@ package com.tachyonmusic.presentation.main.component
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,7 +17,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.presentation.theme.Theme
