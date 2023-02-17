@@ -6,6 +6,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.util.File
+import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.nameWithoutExtension
 
 class FileSongMetadataExtractor : SongMetadataExtractor {
@@ -29,7 +30,7 @@ class FileSongMetadataExtractor : SongMetadataExtractor {
             artist = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
                 ?: "Unknown Artist",
             duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                ?.toLong() ?: 0L,
+                ?.toLong()?.ms ?: 0.ms,
             uri = uri
         )
     }

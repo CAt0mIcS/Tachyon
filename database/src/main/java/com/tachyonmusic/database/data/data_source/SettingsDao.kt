@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.tachyonmusic.database.domain.model.SettingsEntity
+import com.tachyonmusic.util.Duration
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -25,11 +26,11 @@ interface SettingsDao {
     @Query("UPDATE SettingsEntity SET excludedSongFiles=:excludedFiles")
     suspend fun updateExcludedSongFiles(excludedFiles: List<String>)
 
-    @Query("UPDATE SettingsEntity SET seekForwardIncrementMs=:intervalMs")
-    suspend fun setSeekForwardIncrement(intervalMs: Long)
+    @Query("UPDATE SettingsEntity SET seekForwardIncrement=:interval")
+    suspend fun setSeekForwardIncrement(interval: Duration)
 
-    @Query("UPDATE SettingsEntity SET seekBackIncrementMs=:intervalMs")
-    suspend fun setSeekBackIncrement(intervalMs: Long)
+    @Query("UPDATE SettingsEntity SET seekBackIncrement=:interval")
+    suspend fun setSeekBackIncrement(interval: Duration)
 
     @Query("UPDATE SettingsEntity SET shouldMillisecondsBeShown=:showMilliseconds")
     suspend fun setShouldMillisecondsBeShown(showMilliseconds: Boolean)

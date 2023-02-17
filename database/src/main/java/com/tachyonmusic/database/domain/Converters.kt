@@ -5,6 +5,8 @@ import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.ms
 import java.lang.reflect.Type
 
 object Converters {
@@ -43,4 +45,11 @@ object Converters {
 
     @TypeConverter
     fun fromTimingDataListToString(list: List<TimingData>?): String = Gson().toJson(list)
+
+
+    @TypeConverter
+    fun fromLongToDuration(value: Long?): Duration? = value?.ms
+
+    @TypeConverter
+    fun fromDurationToLong(value: Duration?): Long? = value?.inWholeMilliseconds
 }

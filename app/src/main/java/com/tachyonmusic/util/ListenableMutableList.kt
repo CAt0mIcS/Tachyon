@@ -1,7 +1,5 @@
-package com.tachyonmusic.core
+package com.tachyonmusic.util
 
-import com.tachyonmusic.util.IListenable
-import com.tachyonmusic.util.Listenable
 import java.util.function.Predicate
 import java.util.function.UnaryOperator
 

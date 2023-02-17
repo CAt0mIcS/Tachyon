@@ -9,6 +9,7 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
 
 class CreateAndSaveNewLoop(
@@ -62,7 +63,7 @@ class CreateAndSaveNewLoop(
      * Invalid if we only have one entry and it goes from the beginning to the end
      */
     private fun isInvalidTimingData() = browser.timingData!!.timingData.all {
-        it.startTime == 0L && it.endTime == browser.playback?.duration
+        it.startTime == 0.ms && it.endTime == browser.playback?.duration
     }
 
 }

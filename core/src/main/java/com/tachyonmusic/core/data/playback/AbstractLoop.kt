@@ -14,6 +14,7 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import kotlinx.coroutines.flow.MutableStateFlow
+import com.tachyonmusic.util.Duration
 
 abstract class AbstractLoop(
     final override val mediaId: MediaId,
@@ -26,7 +27,7 @@ abstract class AbstractLoop(
         get() = song.title
     override val artist: String
         get() = song.artist
-    override val duration: Long
+    override val duration: Duration
         get() = song.duration
 
     override val uri: Uri
@@ -58,7 +59,7 @@ abstract class AbstractLoop(
         setTitle(title)
         setArtist(artist)
         setExtras(Bundle().apply {
-            putLong(MetadataKeys.Duration, duration)
+            putLong(MetadataKeys.Duration, duration.inWholeMilliseconds)
             putParcelable(MetadataKeys.TimingData, timingData)
             putString(MetadataKeys.Name, name)
             putParcelable(MetadataKeys.Playback, this@AbstractLoop)

@@ -12,6 +12,7 @@ import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.util.toLoop
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import com.tachyonmusic.util.Duration
 
 class RoomLoopRepository(
     private val dao: LoopDao
@@ -64,7 +65,7 @@ class RoomLoopRepository(
     override suspend fun findBySong(
         songTitle: String,
         songArtist: String,
-        songDuration: Long
+        songDuration: Duration
     ): LoopEntity? = dao.findBySong(songTitle, songArtist, songDuration)
 
     override suspend fun findByMediaId(mediaId: MediaId): LoopEntity? = dao.findByMediaId(mediaId)

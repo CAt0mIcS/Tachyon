@@ -11,6 +11,7 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.util.IListenable
+import com.tachyonmusic.util.Duration
 
 interface MediaBrowserController : IListenable<MediaBrowserController.EventListener>,
     DefaultLifecycleObserver {
@@ -45,14 +46,14 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
     val title: String?
     val artist: String?
     val name: String?
-    val duration: Long?
+    val duration: Duration?
     var timingData: TimingDataController?
-    val currentPosition: Long?
+    val currentPosition: Duration?
 
     fun stop()
     fun play()
     fun pause()
-    fun seekTo(pos: Long)
+    fun seekTo(pos: Duration)
     fun seekForward()
     fun seekBack()
 

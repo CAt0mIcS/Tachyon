@@ -6,32 +6,35 @@ import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
+import com.tachyonmusic.util.ms
 import java.security.InvalidParameterException
+import com.tachyonmusic.util.Duration
 
 /**
  * Class which holds one start and end time of a loop
  * TODO: How much performance do we get out of providing our own serializer
  */
 data class TimingData(
-    var startTime: Long,
-    var endTime: Long
+    var startTime: Duration,
+    var endTime: Duration
 ) : Parcelable {
 
     init {
-        if (startTime < 0L || endTime < 0L)
+        if (startTime < 0.ms || endTime < 0.ms)
             throw InvalidParameterException("Start-/EndTime must be above 0: start: $startTime, end: $endTime")
     }
 
     constructor(parcel: Parcel) : this(
-        parcel.readLong(),
-        parcel.readLong()
+        parcel.readLong().ms,
+        parcel.readLong().ms
     )
 
-    fun surrounds(playerPosition: Long) =
+    fun surrounds(playerPosition: Duration) =
         if (startTime < endTime) playerPosition in startTime..endTime
         else playerPosition >= startTime || playerPosition <= endTime // TODO: <= or just < ||| >= or just >
 
-    override fun toString(): String = "${startTime}|${endTime}"
+    override fun toString(): String =
+        "${startTime.inWholeMilliseconds}|${endTime.inWholeMilliseconds}"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -68,8 +71,8 @@ data class TimingData(
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(startTime)
-        parcel.writeLong(endTime)
+        parcel.writeLong(startTime.inWholeMilliseconds)
+        parcel.writeLong(endTime.inWholeMilliseconds)
     }
 
     override fun describeContents() = 0
@@ -83,7 +86,7 @@ data class TimingData(
 
         fun deserialize(value: String): TimingData {
             val strings = value.split('|')
-            return TimingData(strings[0].toLong(), strings[1].toLong())
+            return TimingData(strings[0].toLong().ms, strings[1].toLong().ms)
         }
 
         fun deserializeIfValid(value: String?): TimingData? {

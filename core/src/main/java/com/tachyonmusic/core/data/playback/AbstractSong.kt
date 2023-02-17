@@ -15,12 +15,13 @@ import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.core.data.ext.toInt
 import com.tachyonmusic.core.domain.playback.Playlist
 import kotlinx.coroutines.flow.MutableStateFlow
+import com.tachyonmusic.util.Duration
 
 abstract class AbstractSong(
     final override val mediaId: MediaId,
     final override val title: String,
     final override val artist: String,
-    final override val duration: Long,
+    final override val duration: Duration,
 ) : Song, AbstractPlayback() {
 
     final override var timingData = TimingDataController(emptyList())
@@ -55,7 +56,7 @@ abstract class AbstractSong(
         setTitle(title)
         setArtist(artist)
         setExtras(Bundle().apply {
-            putLong(MetadataKeys.Duration, duration)
+            putLong(MetadataKeys.Duration, duration.inWholeMilliseconds)
 
             // Empty here to allow custom setting of timing data
             putParcelable(MetadataKeys.TimingData, TimingDataController())
@@ -69,7 +70,7 @@ abstract class AbstractSong(
         parcel.writeString(mediaId.source)
         parcel.writeString(title)
         parcel.writeString(artist)
-        parcel.writeLong(duration)
+        parcel.writeLong(duration.inWholeMilliseconds)
         parcel.writeParcelable(artwork.value, flags)
         parcel.writeInt(isArtworkLoading.value.toInt())
     }

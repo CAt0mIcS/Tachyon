@@ -21,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.util.ms
 
 object ProfileScreen :
     BottomNavigationItem(R.string.btmNav_profile, R.drawable.ic_profile, "profile") {
@@ -73,9 +74,9 @@ object ProfileScreen :
 
             Setting(text = "Increment when seeking forward") {
                 TextField(
-                    value = settings.seekForwardIncrementMs.toString(),
+                    value = settings.seekForwardIncrement.toString(),
                     onValueChange = {
-                        viewModel.seekForwardIncrementChanged(it.toLong())
+                        viewModel.seekForwardIncrementChanged(it.toLong().ms)
                     },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 )
@@ -83,9 +84,9 @@ object ProfileScreen :
 
             Setting(text = "Increment when seeking back") {
                 TextField(
-                    value = settings.seekBackIncrementMs.toString(),
+                    value = settings.seekBackIncrement.toString(),
                     onValueChange = {
-                        viewModel.seekBackIncrementChanged(it.toLong())
+                        viewModel.seekBackIncrementChanged(it.toLong().ms)
                     },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 )
@@ -105,7 +106,7 @@ object ProfileScreen :
                 TextField(
                     value = settings.audioUpdateInterval.toString(),
                     onValueChange = {
-                        viewModel.audioUpdateIntervalChanged(it.toInt())
+                        viewModel.audioUpdateIntervalChanged(it.toLong().ms)
                     },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 )

@@ -34,9 +34,11 @@ import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
 import com.tachyonmusic.util.future
+import com.tachyonmusic.util.ms
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
+import com.tachyonmusic.util.Duration
 
 class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
     Player.Listener,
@@ -49,7 +51,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
      * We might want to seek to the position while the player is still preparing. Cache
      * the position and seek to it in [onMediaItemTransition]
      */
-    private var cachedSeekPositionWhenAvailable: Long? = null
+    private var cachedSeekPositionWhenAvailable: Duration? = null
 
     override fun onCreate(owner: LifecycleOwner) {
         // TODO: Does this need to be done in onStart/onResume?
@@ -96,7 +98,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
 
     override var repeatMode: RepeatMode = RepeatMode.One
         set(value) {
-            if(browser != null) {
+            if (browser != null) {
                 field = value
                 browser!!.sendSetRepeatModeEvent(repeatMode)
             }
@@ -117,11 +119,11 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         browser?.pause()
     }
 
-    override fun seekTo(pos: Long) {
+    override fun seekTo(pos: Duration) {
         if (browser?.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) != true)
             cachedSeekPositionWhenAvailable = pos
         else
-            browser?.seekTo(pos)
+            browser?.seekTo(pos.inWholeMilliseconds)
     }
 
     override fun seekForward() {
@@ -160,7 +162,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         get() = browser?.mediaMetadata?.artist as String?
     override val name: String?
         get() = browser?.mediaMetadata?.name
-    override val duration: Long?
+    override val duration: Duration?
         get() = browser?.mediaMetadata?.duration
     override var timingData: TimingDataController?
         get() = browser?.mediaMetadata?.timingData
@@ -170,8 +172,8 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
             browser?.sendSetTimingDataEvent(value)
         }
 
-    override val currentPosition: Long?
-        get() = if (browser?.currentMediaItem == null) null else browser?.currentPosition
+    override val currentPosition: Duration?
+        get() = if (browser?.currentMediaItem == null) null else browser?.currentPosition?.ms
 
 
     /***********************************************************************************************
@@ -194,7 +196,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         if (cachedSeekPositionWhenAvailable != null &&
             availableCommands.contains(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
         ) {
-            browser?.seekTo(cachedSeekPositionWhenAvailable ?: 0)
+            seekTo(cachedSeekPositionWhenAvailable ?: 0.ms)
             cachedSeekPositionWhenAvailable = null
         }
     }
@@ -209,7 +211,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         command: SessionCommand,
         args: Bundle
     ): ListenableFuture<SessionResult> = future(Dispatchers.Main) {
-        when(command) {
+        when (command) {
             MediaAction.timingDataAdvancedCommand -> {
                 invokeEvent {
                     it.onTimingDataAdvanced(args.getInt(MetadataKeys.TimingData))

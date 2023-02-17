@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.DataEntity
+import com.tachyonmusic.util.Duration
 
 @Dao
 interface DataDao {
@@ -21,15 +22,15 @@ interface DataDao {
     @Query(
         "UPDATE DataEntity SET " +
                 "recentlyPlayedMediaId=:mediaId, " +
-                "currentPositionInRecentlyPlayedPlaybackMs=:positionMs, " +
-                "recentlyPlayedDurationMs=:durationMs, " +
+                "currentPositionInRecentlyPlayedPlayback=:position, " +
+                "recentlyPlayedDuration=:duration, " +
                 "recentlyPlayedArtworkType=:artworkType, " +
                 "recentlyPlayedArtworkUrl=:artworkUrl"
     )
     suspend fun updateRecentlyPlayed(
         mediaId: MediaId,
-        positionMs: Long,
-        durationMs: Long,
+        position: Duration,
+        duration: Duration,
         artworkType: String,
         artworkUrl: String? = null
     )

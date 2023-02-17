@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.tachyonmusic.util.Duration
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -31,15 +32,15 @@ class ProfileViewModel @Inject constructor(
     }
 
 
-    fun seekForwardIncrementChanged(inc: Long) {
+    fun seekForwardIncrementChanged(inc: Duration) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(seekForwardIncrementMs = inc))
+            writeSettings(settings.value.copy(seekForwardIncrement = inc))
         }
     }
 
-    fun seekBackIncrementChanged(inc: Long) {
+    fun seekBackIncrementChanged(inc: Duration) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(seekBackIncrementMs = inc))
+            writeSettings(settings.value.copy(seekBackIncrement = inc))
         }
     }
 
@@ -73,7 +74,7 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun audioUpdateIntervalChanged(interval: Int) {
+    fun audioUpdateIntervalChanged(interval: Duration) {
         viewModelScope.launch(Dispatchers.IO) {
             writeSettings(settings.value.copy(audioUpdateInterval = interval))
         }

@@ -18,8 +18,8 @@ class RoomDataRepository(
     override suspend fun updateRecentlyPlayed(recentlyPlayed: RecentlyPlayed) {
         dao.updateRecentlyPlayed(
             recentlyPlayed.mediaId,
-            recentlyPlayed.positionMs,
-            recentlyPlayed.durationMs,
+            recentlyPlayed.position,
+            recentlyPlayed.duration,
             recentlyPlayed.artworkType,
             recentlyPlayed.artworkUrl
         )

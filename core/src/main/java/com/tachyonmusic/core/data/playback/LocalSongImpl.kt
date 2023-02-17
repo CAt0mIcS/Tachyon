@@ -11,6 +11,8 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.File
+import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.Duration
 
 /**
  * Song stored in local storage with a path in the filesystem
@@ -19,7 +21,7 @@ class LocalSongImpl(
     mediaId: MediaId,
     title: String,
     artist: String,
-    duration: Long
+    duration: Duration
 ) : AbstractSong(mediaId, title, artist, duration) {
 
     override val playbackType = PlaybackType.Song.Local()
@@ -34,7 +36,7 @@ class LocalSongImpl(
         MediaId(parcel.readString()!!),
         parcel.readString()!!,
         parcel.readString()!!,
-        parcel.readLong()
+        parcel.readLong().ms
     ) {
         artwork.value = parcel.readParcelable(Artwork::class.java.classLoader)
         isArtworkLoading.value = parcel.readInt().toBoolean()

@@ -14,6 +14,8 @@ import com.tachyonmusic.media.util.timingData
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
+import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.Duration
 
 /**
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands
@@ -84,7 +86,7 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player),
 
         // Only the first start time matters when choosing if we play the previous playback
         // or seek back to the beginning of the current one
-        val startTime = mediaMetadata.timingData?.getOrNull(0)?.startTime ?: 0
+        val startTime = mediaMetadata.timingData?.getOrNull(0)?.startTime?.inWholeMilliseconds ?: 0L
 
         // Seek to either the previous song or to the last one if we don't have a previous one
         if (isCurrentMediaItemLive && !isCurrentMediaItemSeekable || currentPosition <= maxSeekToPreviousPosition + startTime) {
@@ -129,20 +131,20 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player),
             return
         }
 
-        newTimingData.advanceToCurrentPosition(currentPosition)
+        newTimingData.advanceToCurrentPosition(currentPosition.ms)
         postLoopMessage(
             newTimingData.next.startTime,
             newTimingData.current.endTime
         )
         // Only seek if we're not in any timing data interval
-        if (!newTimingData.anySurrounds(currentPosition))
-            seekWithoutCallback(newTimingData.current.startTime)
+        if (!newTimingData.anySurrounds(currentPosition.ms))
+            seekWithoutCallback(newTimingData.current.startTime.inWholeMilliseconds)
 
         currentMediaItem?.mediaMetadata?.timingData = newTimingData
         invokeEvent { it.onTimingDataAdvanced(newTimingData.currentIndex) }
     }
 
-    private fun postLoopMessage(startTime: Long, endTime: Long) {
+    private fun postLoopMessage(startTime: Duration, endTime: Duration) {
         // Cancel any previous messages
         loopMessage?.cancel()
 
@@ -166,8 +168,8 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player),
         }.apply {
             looper = Looper.getMainLooper()
             deleteAfterDelivery = false
-            payload = startTime
-            setPosition(endTime)
+            payload = startTime.inWholeMilliseconds
+            setPosition(endTime.inWholeMilliseconds)
             send()
         }
     }

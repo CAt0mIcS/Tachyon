@@ -2,6 +2,7 @@ package com.tachyonmusic.database.domain.repository
 
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import kotlinx.coroutines.flow.Flow
+import com.tachyonmusic.util.Duration
 
 interface SettingsRepository {
     suspend fun getSettings(): SettingsEntity
@@ -11,7 +12,7 @@ interface SettingsRepository {
 
     suspend fun removeExcludedFilesRange(toRemove: List<String>)
     suspend fun addExcludedFilesRange(toAdd: List<String>)
-    suspend fun setSeekForwardIncrement(intervalMs: Long)
-    suspend fun setSeekBackIncrement(intervalMs: Long)
+    suspend fun setSeekForwardIncrement(interval: Duration)
+    suspend fun setSeekBackIncrement(interval: Duration)
     suspend fun setShouldMillisecondsBeShown(showMilliseconds: Boolean)
 }

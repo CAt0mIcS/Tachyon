@@ -8,6 +8,7 @@ import com.tachyonmusic.media.domain.ArtworkCodex
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.ArtworkLoader
 import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.ms
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
 
@@ -60,7 +61,7 @@ class ArtworkCodexImpl internal constructor(
             SongEntity(
                 title = "UNKNOWN",
                 artist = "UNKNOWN",
-                duration = 0L,
+                duration = 0.ms,
                 mediaId = mediaId,
                 artworkType = artworkType,
                 artworkUrl = artworkUrl

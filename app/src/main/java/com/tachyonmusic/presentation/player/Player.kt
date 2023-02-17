@@ -55,9 +55,12 @@ import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.currentFraction
 import com.tachyonmusic.presentation.util.isAtBottom
 import com.tachyonmusic.presentation.util.isAtTop
+import com.tachyonmusic.util.ms
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.delay
+import com.tachyonmusic.util.toReadableString
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -283,12 +286,12 @@ fun Player(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = viewModel.getTextForPosition(currentPosition),
+                        text = currentPosition.toReadableString(viewModel.showMillisecondsInPositionText),
                         fontSize = 16.sp
                     )
 
                     Text(
-                        text = viewModel.getTextForPosition(playbackState.duration),
+                        text = playbackState.duration.toReadableString(viewModel.showMillisecondsInPositionText),
                         fontSize = 16.sp
                     )
                 }
@@ -301,16 +304,16 @@ fun Player(
                         bottom = Theme.padding.medium,
                         end = Theme.padding.small
                     ),
-                    value = currentPosition.toFloat(),
+                    value = currentPosition.inWholeMilliseconds.toFloat(),
                     onValueChange = {
                         isSeeking = true
-                        currentPosition = it.toLong()
+                        currentPosition = it.ms
                     },
                     onValueChangeFinished = {
                         isSeeking = false
                         viewModel.onSeekTo(currentPosition)
                     },
-                    valueRange = 0f..playbackState.duration.toFloat(),
+                    valueRange = 0f..playbackState.duration.inWholeMilliseconds.toFloat(),
                     thumbSizeInDp = DpSize(16.dp, 16.dp),
                     track = { modifier, fraction, interactionSource, tickFractions, enabled ->
                         DefaultTrack(
@@ -496,8 +499,8 @@ fun Player(
 fun LoopEditor(
     timingData: List<TimingData>,
     currentTimingDataIndex: Int,
-    duration: Long,
-    onValueChange: (Int, Long, Long) -> Unit,
+    duration: Duration,
+    onValueChange: (Int, Duration, Duration) -> Unit,
     onSeekCompleted: () -> Unit,
     onRemoveTimingData: (Int) -> Unit,
     onAddNewTimingData: () -> Unit,
@@ -526,16 +529,12 @@ fun LoopEditor(
 
         for (i in timingData.indices) {
             RangeSlider(
-                value = timingData[i].startTime.toFloat()..timingData[i].endTime.toFloat(),
+                value = timingData[i].startTime.inWholeMilliseconds.toFloat()..timingData[i].endTime.inWholeMilliseconds.toFloat(),
                 onValueChange = {
-                    onValueChange(
-                        i,
-                        it.start.toLong(),
-                        it.endInclusive.toLong()
-                    )
+                    onValueChange(i, it.start.ms, it.endInclusive.ms)
                 },
                 onValueChangeFinished = onSeekCompleted,
-                valueRange = 0f..duration.toFloat(),
+                valueRange = 0f..duration.inWholeMilliseconds.toFloat(),
                 colors = SliderDefaults.colors(
                     thumbColor = if (i == currentTimingDataIndex) Theme.colors.orange else Theme.colors.contrastLow,
                     activeTrackColor = Theme.colors.orange,

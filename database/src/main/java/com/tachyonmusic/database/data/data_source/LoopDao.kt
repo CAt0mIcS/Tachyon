@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.LoopEntity
+import com.tachyonmusic.util.Duration
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -29,7 +30,7 @@ interface LoopDao {
     suspend fun addAll(loops: List<LoopEntity>)
 
     @Query("SELECT * FROM LoopEntity WHERE songTitle=:songTitle AND songArtist=:songArtist AND songDuration=:songDuration")
-    suspend fun findBySong(songTitle: String, songArtist: String, songDuration: Long): LoopEntity?
+    suspend fun findBySong(songTitle: String, songArtist: String, songDuration: Duration): LoopEntity?
 
     @Query("SELECT * FROM LoopEntity WHERE mediaId=:mediaId")
     suspend fun findByMediaId(mediaId: MediaId): LoopEntity?

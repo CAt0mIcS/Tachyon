@@ -5,6 +5,7 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.database.domain.model.LoopEntity
 import kotlinx.coroutines.flow.Flow
+import com.tachyonmusic.util.Duration
 
 interface LoopRepository {
     suspend fun getLoops(): List<Loop>
@@ -21,6 +22,6 @@ interface LoopRepository {
     suspend fun addAll(loops: List<LoopEntity>)
     suspend fun removeIf(pred: (LoopEntity) -> Boolean)
 
-    suspend fun findBySong(songTitle: String, songArtist: String, songDuration: Long): LoopEntity?
+    suspend fun findBySong(songTitle: String, songArtist: String, songDuration: Duration): LoopEntity?
     suspend fun findByMediaId(mediaId: MediaId): LoopEntity?
 }

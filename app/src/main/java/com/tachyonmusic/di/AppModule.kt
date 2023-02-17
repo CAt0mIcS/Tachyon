@@ -154,10 +154,6 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideMillisecondsToReadableStringUseCase() = MillisecondsToReadableString()
-
-    @Provides
-    @Singleton
     fun providePauseResumePlaybackUseCase(browser: MediaBrowserController) =
         PauseResumePlayback(browser)
 
@@ -168,8 +164,8 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetCurrentPositionNormalizedUseCase(browser: MediaBrowserController) =
-        NormalizePosition(browser)
+    fun provideNormalizeCurrentPositionUseCase(browser: MediaBrowserController) =
+        NormalizeCurrentPosition(browser)
 
     @Provides
     @Singleton
@@ -191,11 +187,10 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetNextPlaybackItemsUseCase(
+    fun provideGetPlaybackChildrenUseCase(
         browser: MediaBrowserController,
         getPlaylistForPlayback: GetPlaylistForPlayback
-    ) =
-        GetNextPlaybackItems(browser, getPlaylistForPlayback)
+    ) = GetPlaybackChildren(browser, getPlaylistForPlayback)
 }
 
 

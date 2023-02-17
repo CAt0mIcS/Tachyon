@@ -2,11 +2,12 @@ package com.tachyonmusic.database.domain.repository
 
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.DataEntity
+import com.tachyonmusic.util.Duration
 
 data class RecentlyPlayed(
     val mediaId: MediaId,
-    val positionMs: Long,
-    val durationMs: Long,
+    val position: Duration,
+    val duration: Duration,
     val artworkType: String,
     val artworkUrl: String?
 )

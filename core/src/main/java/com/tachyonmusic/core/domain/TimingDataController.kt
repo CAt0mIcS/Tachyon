@@ -2,6 +2,8 @@ package com.tachyonmusic.core.domain
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.Duration
 
 class TimingDataController(
     private val _timingData: ArrayList<String> = arrayListOf(),
@@ -28,8 +30,8 @@ class TimingDataController(
         this.currentIndex = currentIndex
     }
 
-    fun advanceToCurrentPosition(positionMs: Long) {
-        currentIndex = getIndexOfCurrentPosition(positionMs)
+    fun advanceToCurrentPosition(position: Duration) {
+        currentIndex = getIndexOfCurrentPosition(position)
     }
 
     fun advanceToNext() {
@@ -38,24 +40,25 @@ class TimingDataController(
             currentIndex = 0
     }
 
-    fun getIndexOfCurrentPosition(positionMs: Long): Int {
+    fun getIndexOfCurrentPosition(position: Duration): Int {
         // TODO: Better way of ensuring that when a new playback is played, the first timing data is loaded first
-        if (positionMs == 0L)
+        if (position == 0.ms)
             return 0
 
         for (i in _timingData.indices) {
-            if (TimingData.deserialize(_timingData[i]).surrounds(positionMs))
+            if (TimingData.deserialize(_timingData[i]).surrounds(position))
                 return i
         }
 
-        return closestTimingDataIndexAfter(positionMs)
+        return closestTimingDataIndexAfter(position)
     }
 
-    fun closestTimingDataIndexAfter(positionMs: Long): Int {
+    fun closestTimingDataIndexAfter(position: Duration): Int {
         var closestApproachIndex = 0
         var closestApproach = Int.MAX_VALUE
         for (i in _timingData.indices) {
-            val distance = (TimingData.deserialize(_timingData[i]).startTime - positionMs).toInt()
+            val distance =
+                (TimingData.deserialize(_timingData[i]).startTime - position).inWholeMilliseconds.toInt()
             if (distance > 0 && distance < closestApproach) {
                 closestApproach = distance
                 closestApproachIndex = i
@@ -64,9 +67,9 @@ class TimingDataController(
         return closestApproachIndex
     }
 
-    fun anySurrounds(positionMs: Long): Boolean {
+    fun anySurrounds(position: Duration): Boolean {
         for (item in _timingData)
-            if (TimingData.deserialize(item).surrounds(positionMs))
+            if (TimingData.deserialize(item).surrounds(position))
                 return true
         return false
     }

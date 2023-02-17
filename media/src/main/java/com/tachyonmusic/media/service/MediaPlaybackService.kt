@@ -40,6 +40,7 @@ import com.tachyonmusic.media.util.supportedCommands
 import com.tachyonmusic.media.util.updateTimingDataOfCurrentPlayback
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.future
+import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -233,7 +234,7 @@ class MediaPlaybackService(
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (!isPlaying) {
             val playback = currentPlayer.mediaMetadata.playback ?: return
-            val currentPos = currentPlayer.currentPosition
+            val currentPos = currentPlayer.currentPosition.ms
             ioScope.launch {
                 saveRecentlyPlayed(
                     RecentlyPlayed(

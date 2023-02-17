@@ -4,6 +4,7 @@ import com.tachyonmusic.database.data.data_source.SettingsDao
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.map
+import com.tachyonmusic.util.Duration
 
 class RoomSettingsRepository(
     private val dao: SettingsDao
@@ -30,12 +31,12 @@ class RoomSettingsRepository(
         dao.updateExcludedSongFiles(newRange.toList())
     }
 
-    override suspend fun setSeekForwardIncrement(intervalMs: Long) {
-        dao.setSeekForwardIncrement(intervalMs)
+    override suspend fun setSeekForwardIncrement(interval: Duration) {
+        dao.setSeekForwardIncrement(interval)
     }
 
-    override suspend fun setSeekBackIncrement(intervalMs: Long) {
-        dao.setSeekBackIncrement(intervalMs)
+    override suspend fun setSeekBackIncrement(interval: Duration) {
+        dao.setSeekBackIncrement(interval)
     }
 
     override suspend fun setShouldMillisecondsBeShown(showMilliseconds: Boolean) {

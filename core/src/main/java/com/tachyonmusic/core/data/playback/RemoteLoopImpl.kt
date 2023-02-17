@@ -7,6 +7,7 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.util.Duration
 
 class RemoteLoopImpl(
     mediaId: MediaId,
@@ -67,7 +68,7 @@ class RemoteLoopImpl(
             timingData: TimingDataController,
             songTitle: String,
             songArtist: String,
-            songDuration: Long
+            songDuration: Duration
         ): RemoteLoopImpl? {
             return RemoteLoopImpl(
                 mediaId,

@@ -6,34 +6,35 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.core.data.constants.RepeatMode
+import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetHistory
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.ItemClicked
+import com.tachyonmusic.domain.use_case.ObservePlaylists
 import com.tachyonmusic.domain.use_case.ObserveSettings
-import com.tachyonmusic.domain.use_case.main.NormalizePosition
+import com.tachyonmusic.domain.use_case.main.NormalizeCurrentPosition
+import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
+import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewPlaylist
 import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
-import com.tachyonmusic.domain.use_case.player.GetNextPlaybackItems
-import com.tachyonmusic.domain.use_case.player.MillisecondsToReadableString
+import com.tachyonmusic.domain.use_case.player.GetPlaybackChildren
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
+import com.tachyonmusic.domain.use_case.player.RemovePlaybackFromPlaylist
+import com.tachyonmusic.domain.use_case.player.SavePlaybackToPlaylist
 import com.tachyonmusic.domain.use_case.player.SeekPosition
 import com.tachyonmusic.domain.use_case.player.SetCurrentPlayback
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.ArtworkState
 import com.tachyonmusic.presentation.player.data.PlaybackState
-import com.tachyonmusic.core.data.constants.RepeatMode
-import com.tachyonmusic.core.domain.TimingData
-import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.domain.use_case.ObservePlaylists
-import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
-import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewPlaylist
-import com.tachyonmusic.domain.use_case.player.RemovePlaybackFromPlaylist
-import com.tachyonmusic.domain.use_case.player.SavePlaybackToPlaylist
 import com.tachyonmusic.presentation.player.data.SeekIncrementsState
 import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.normalize
 import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -44,22 +45,20 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
+import com.tachyonmusic.util.Duration
 
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val getCurrentPosition: GetCurrentPosition,
     private val seekPosition: SeekPosition,
-    private val millisecondsToReadableString: MillisecondsToReadableString,
     private val itemClicked: ItemClicked,
     private val pauseResumePlayback: PauseResumePlayback,
-    private val normalizePosition: NormalizePosition,
+    private val normalizeCurrentPosition: NormalizeCurrentPosition,
     private val getRecentlyPlayed: GetRecentlyPlayed,
     private val setCurrentPlayback: SetCurrentPlayback,
     private val getOrLoadArtwork: GetOrLoadArtwork,
-    private val getNextPlaybackItems: GetNextPlaybackItems,
+    private val getPlaybackChildren: GetPlaybackChildren,
     private val createAndSaveNewLoop: CreateAndSaveNewLoop,
     private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
     private val removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
@@ -90,7 +89,6 @@ class PlayerViewModel @Inject constructor(
     val seekIncrement: State<SeekIncrementsState> = _seekIncrement
 
     val timingData = mutableStateListOf<TimingData>()
-//    val timingData: State<List<TimingData>> = _timingData
 
     private var _currentTimingDataIndex = mutableStateOf(0)
     val currentTimingDataIndex: State<Int> = _currentTimingDataIndex
@@ -98,20 +96,22 @@ class PlayerViewModel @Inject constructor(
     val songAddedToPlaylists = mutableStateListOf<Pair<String, Boolean>>()
     private var playlists: List<Playlist> = emptyList()
 
-    var audioUpdateInterval: Duration = 100.milliseconds
+    var audioUpdateInterval: Duration = 100.ms
         private set
 
-    val currentPosition: Long
+    val currentPosition: Duration
         get() = getCurrentPosition() ?: recentlyPlayedPosition
 
     val currentPositionNormalized: Float?
-        get() = normalizePosition()
+        get() = normalizeCurrentPosition()
 
     var recentlyPlayedPositionNormalized: Float = 0f
         private set
 
-    private var recentlyPlayedPosition: Long = 0L
-    private var showMillisecondsInPositionText: Boolean = false
+    private var recentlyPlayedPosition: Duration = 0.ms
+    var showMillisecondsInPositionText: Boolean = false
+        private set
+
     private val mediaListener = MediaListener()
 
 
@@ -132,23 +132,21 @@ class PlayerViewModel @Inject constructor(
                 getOrLoadArtworkForPlayback(recentlyPlayedPlayback)
 
             val recentlyPlayed = getRecentlyPlayed()
-            recentlyPlayedPositionNormalized = normalizePosition(
-                recentlyPlayed?.positionMs ?: 0L,
-                recentlyPlayed?.durationMs ?: 0L
-            )
-            recentlyPlayedPosition = recentlyPlayed?.positionMs ?: 0L
+            recentlyPlayedPositionNormalized =
+                recentlyPlayed?.position?.normalize(recentlyPlayed.duration) ?: 0f
+            recentlyPlayedPosition = recentlyPlayed?.position ?: 0.ms
 
             runOnUiThreadAsync {
                 timingData.clear()
-                timingData.add(TimingData(0L, recentlyPlayed?.durationMs ?: 0L))
+                timingData.add(TimingData(0.ms, recentlyPlayed?.duration ?: 0.ms))
             }
         }
 
         observeSettings().map {
             _seekIncrement.value =
-                SeekIncrementsState(it.seekForwardIncrementMs, it.seekBackIncrementMs)
+                SeekIncrementsState(it.seekForwardIncrement, it.seekBackIncrement)
             showMillisecondsInPositionText = it.shouldMillisecondsBeShown
-            audioUpdateInterval = it.audioUpdateInterval.milliseconds
+            audioUpdateInterval = it.audioUpdateInterval
         }.launchIn(viewModelScope)
     }
 
@@ -160,10 +158,7 @@ class PlayerViewModel @Inject constructor(
         browser.unregisterEventListener(mediaListener)
     }
 
-    fun getTextForPosition(position: Long) =
-        millisecondsToReadableString(position, showMillisecondsInPositionText)
-
-    fun onSeekTo(position: Long) {
+    fun onSeekTo(position: Duration) {
         seekPosition(position)
     }
 
@@ -193,7 +188,7 @@ class PlayerViewModel @Inject constructor(
         viewModelScope.launch {
             _playbackState.value =
                 playbackState.value.copy(
-                    children = getNextPlaybackItems(
+                    children = getPlaybackChildren(
                         associatedPlaylist ?: recentlyPlayed.value,
                         repeatMode.value
                     )
@@ -201,7 +196,7 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun updateTimingData(i: Int, startTime: Long, endTime: Long) {
+    fun updateTimingData(i: Int, startTime: Duration, endTime: Duration) {
         val old = timingData.toList()
         old[i].startTime = startTime
         old[i].endTime = endTime
@@ -215,7 +210,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun addNewTimingData() {
-        timingData.add(TimingData(0L, playbackState.value.duration))
+        timingData.add(TimingData(0.ms, playbackState.value.duration))
     }
 
     fun removeTimingData(i: Int) {
@@ -256,8 +251,8 @@ class PlayerViewModel @Inject constructor(
             _playbackState.value = PlaybackState(
                 title = playback.title ?: "Unknown Title",
                 artist = playback.artist ?: "Unknown Artist",
-                duration = playback.duration ?: 0L,
-                children = getNextPlaybackItems(associatedPlaylist ?: playback, repeatMode.value),
+                duration = playback.duration ?: 0.ms,
+                children = getPlaybackChildren(associatedPlaylist ?: playback, repeatMode.value),
                 playbackType = PlaybackType.build(associatedPlaylist ?: playback)
             )
         }
@@ -305,7 +300,7 @@ class PlayerViewModel @Inject constructor(
                 val newTimingData = playback.timingData
                 if (newTimingData.timingData.isEmpty()) {
                     timingData.clear()
-                    timingData.add(TimingData(0L, playback.duration))
+                    timingData.add(TimingData(0.ms, playback.duration))
                 } else {
                     timingData.clear()
                     timingData.addAll(newTimingData.timingData)

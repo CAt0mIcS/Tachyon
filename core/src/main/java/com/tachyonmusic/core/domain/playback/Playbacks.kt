@@ -8,11 +8,12 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import kotlinx.coroutines.flow.MutableStateFlow
+import com.tachyonmusic.util.Duration
 
 interface Playback : Parcelable {
     val title: String?
     val artist: String?
-    val duration: Long?
+    val duration: Duration?
 
     val mediaId: MediaId
 
@@ -51,7 +52,7 @@ interface Playback : Parcelable {
 interface SinglePlayback : Playback {
     override val title: String
     override val artist: String
-    override val duration: Long
+    override val duration: Duration
 
     fun toMediaItem(associatedPlaylist: Playlist? = null): MediaItem
 

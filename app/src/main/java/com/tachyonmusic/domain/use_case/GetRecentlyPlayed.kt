@@ -2,6 +2,7 @@ package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
+import com.tachyonmusic.util.ms
 
 class GetRecentlyPlayed(
     private val dataRepository: DataRepository
@@ -10,8 +11,8 @@ class GetRecentlyPlayed(
         val data = dataRepository.getData()
         return RecentlyPlayed(
             data.recentlyPlayedMediaId ?: return null,
-            data.currentPositionInRecentlyPlayedPlaybackMs,
-            data.recentlyPlayedDurationMs,
+            data.currentPositionInRecentlyPlayedPlayback,
+            data.recentlyPlayedDuration,
             data.recentlyPlayedArtworkType,
             data.recentlyPlayedArtworkUrl
         )

@@ -8,7 +8,14 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
 import com.tachyonmusic.util.Resource
 
-class GetNextPlaybackItems(
+/**
+ * For songs and loops:
+ * * Finds the next playback in all the songs/loops depending on the repeat mode
+ *
+ * For playlists:
+ * * Returns all items in the playlist as children
+ */
+class GetPlaybackChildren(
     private val browser: MediaBrowserController,
     private val getPlaylistForPlayback: GetPlaylistForPlayback
 ) {

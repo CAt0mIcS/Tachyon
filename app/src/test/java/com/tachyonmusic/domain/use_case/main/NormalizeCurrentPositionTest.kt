@@ -6,10 +6,10 @@ import io.mockk.mockk
 import org.junit.Test
 
 
-internal class NormalizePositionTest {
+internal class NormalizeCurrentPositionTest {
 
     private val browser: MediaBrowserController = mockk()
-    private val normalizePosition = NormalizePosition(browser)
+    private val normalizeCurrentPosition = NormalizeCurrentPosition(browser)
 
     @Test
     fun `Position returns correct normalized position`() {
@@ -17,7 +17,7 @@ internal class NormalizePositionTest {
         every { browser.duration } returns 12568204L
         val expectedNormalized = browser.currentPosition!!.toFloat() / browser.duration!!.toFloat()
 
-        assert(normalizePosition() == expectedNormalized)
+        assert(normalizeCurrentPosition() == expectedNormalized)
     }
 
     @Test
@@ -26,6 +26,6 @@ internal class NormalizePositionTest {
         every { browser.duration } returns 0L
         val expectedNormalized = 0f
 
-        assert(normalizePosition() == expectedNormalized)
+        assert(normalizeCurrentPosition() == expectedNormalized)
     }
 }
