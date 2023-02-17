@@ -94,7 +94,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                 val navController = rememberAnimatedNavController()
 
                 Scaffold(bottomBar = {
-                    BottomNavigation(navController)
+                    BottomNavigation(navController, sheetState)
                 }) { innerPaddingScaffold ->
 
                     BottomSheetScaffold(
