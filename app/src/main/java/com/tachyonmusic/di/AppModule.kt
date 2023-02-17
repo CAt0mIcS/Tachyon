@@ -139,6 +139,21 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
+    fun provideSavePlaybackToPlaylistUseCase(playlistRepository: PlaylistRepository) =
+        SavePlaybackToPlaylist(playlistRepository)
+
+    @Provides
+    @Singleton
+    fun provideRemovePlaybackFromPlaylistUseCase(playlistRepository: PlaylistRepository) =
+        RemovePlaybackFromPlaylist(playlistRepository)
+
+    @Provides
+    @Singleton
+    fun provideCreateNewPlaylistUseCase(playlistRepository: PlaylistRepository) =
+        CreateAndSaveNewPlaylist(playlistRepository)
+
+    @Provides
+    @Singleton
     fun provideMillisecondsToReadableStringUseCase() = MillisecondsToReadableString()
 
     @Provides

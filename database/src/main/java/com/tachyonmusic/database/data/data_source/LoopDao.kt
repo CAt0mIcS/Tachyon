@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LoopDao {
-    @Query("SELECT * FROM LoopEntity")
+    @Query("SELECT * FROM LoopEntity ORDER BY mediaId ASC")
     fun getPagedLoops(): PagingSource<Int, LoopEntity>
 
-    @Query("SELECT * FROM LoopEntity")
+    @Query("SELECT * FROM LoopEntity ORDER BY mediaId ASC")
     suspend fun getLoops(): List<LoopEntity>
 
-    @Query("SELECT * FROM LoopEntity")
+    @Query("SELECT * FROM LoopEntity ORDER BY mediaId ASC")
     fun observe(): Flow<List<LoopEntity>>
 
     // TODO: Handle abort

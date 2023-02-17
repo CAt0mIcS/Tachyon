@@ -71,6 +71,14 @@ abstract class AbstractPlaylist(
 
     override fun toMediaItemList(): List<MediaItem> = playbacks.map { it.toMediaItem() }
 
+    override fun add(playback: SinglePlayback) {
+        _playbacks.add(playback)
+    }
+
+    override fun remove(playback: SinglePlayback) {
+        _playbacks.remove(playback)
+    }
+
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
         "mediaId" to mediaId.source,
         "currPlIdx" to currentPlaylistIndex,

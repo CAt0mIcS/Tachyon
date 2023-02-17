@@ -24,14 +24,17 @@ import com.tachyonmusic.presentation.player.data.PlaybackState
 import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.domain.use_case.ObservePlaylists
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
+import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewPlaylist
+import com.tachyonmusic.domain.use_case.player.RemovePlaybackFromPlaylist
+import com.tachyonmusic.domain.use_case.player.SavePlaybackToPlaylist
 import com.tachyonmusic.presentation.player.data.SeekIncrementsState
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -56,9 +59,13 @@ class PlayerViewModel @Inject constructor(
     private val getOrLoadArtwork: GetOrLoadArtwork,
     private val getNextPlaybackItems: GetNextPlaybackItems,
     private val createAndSaveNewLoop: CreateAndSaveNewLoop,
+    private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
+    private val removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
+    private val createAndSaveNewPlaylist: CreateAndSaveNewPlaylist,
     private val browser: MediaBrowserController,  // TODO: Shouldn't be used in ViewModel
     getHistory: GetHistory,
     observeSettings: ObserveSettings,
+    observePlaylists: ObservePlaylists
 ) : ViewModel() {
 
     private var _repeatMode = mutableStateOf<RepeatMode>(RepeatMode.One)
@@ -84,6 +91,8 @@ class PlayerViewModel @Inject constructor(
 
     private var _currentTimingDataIndex = mutableStateOf(0)
     val currentTimingDataIndex: State<Int> = _currentTimingDataIndex
+
+    val playlists = mutableStateListOf<Pair<String, Boolean>>()
 
     var audioUpdateInterval: Duration = 100.milliseconds
         private set
@@ -131,6 +140,14 @@ class PlayerViewModel @Inject constructor(
                 SeekIncrementsState(it.seekForwardIncrementMs, it.seekBackIncrementMs)
             showMillisecondsInPositionText = it.shouldMillisecondsBeShown
             audioUpdateInterval = it.audioUpdateInterval.milliseconds
+        }.launchIn(viewModelScope)
+
+        observePlaylists().map { newPlaylists ->
+            playlists.clear()
+            // TODO: Check if we're trying to save a playlist to a playlist and if [recentlyPlayed.value] is null
+            playlists.addAll(newPlaylists.map {
+                it.name to it.hasPlayback(recentlyPlayed.value as SinglePlayback)
+            })
         }.launchIn(viewModelScope)
     }
 
@@ -209,6 +226,22 @@ class PlayerViewModel @Inject constructor(
         return@withContext createAndSaveNewLoop(name) is Resource.Success
     }
 
+    fun editPlaylist(i: Int, checked: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // TODO: Cast to SinglePlayback? might fail
+            if (checked)
+                savePlaybackToPlaylist(recentlyPlayed.value as SinglePlayback?, i)
+            else
+                removePlaybackFromPlaylist(recentlyPlayed.value as SinglePlayback?, i)
+        }
+    }
+
+    fun createPlaylist(name: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            createAndSaveNewPlaylist(name)
+        }
+    }
+
 
     private fun setCurrentPlaybackToRecentlyPlayed(
         playWhenReady: Boolean = false
@@ -258,8 +291,7 @@ class PlayerViewModel @Inject constructor(
                 if (newTimingData == null || newTimingData.timingData.isEmpty()) {
                     timingData.clear()
                     timingData.add(TimingData(0L, playback.duration!!))
-                }
-                else {
+                } else {
                     timingData.clear()
                     timingData.addAll(newTimingData.timingData)
                     _currentTimingDataIndex.value = newTimingData.currentIndex

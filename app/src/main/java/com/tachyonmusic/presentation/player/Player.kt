@@ -1,8 +1,8 @@
 package com.tachyonmusic.presentation.player
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -26,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
@@ -37,6 +37,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.krottv.compose.sliders.DefaultThumb
 import com.github.krottv.compose.sliders.DefaultTrack
@@ -44,7 +46,6 @@ import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.domain.TimingData
-import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
@@ -88,6 +89,9 @@ fun Player(
     val timingData = viewModel.timingData
     val currentTimingDataIndex by viewModel.currentTimingDataIndex
 
+    var showSaveToPlaylistDialog by remember { mutableStateOf(false) }
+    val playlists = viewModel.playlists
+
 
     LaunchedEffect(Unit) {
         log.debug("Entered currentPosition update effect composition")
@@ -107,6 +111,18 @@ fun Player(
         onDispose {
             viewModel.unregisterMediaListener()
         }
+    }
+
+    // TODO: Should be somewhere else?
+    if (showSaveToPlaylistDialog) {
+        SaveToPlaylistDialog(
+            playlists,
+            onDismiss = {
+                showSaveToPlaylistDialog = false
+            },
+            onCheckedChanged = viewModel::editPlaylist,
+            onCreatePlaylist = viewModel::createPlaylist
+        )
     }
 
     // TODO: Different layout in landscape mode
@@ -244,7 +260,7 @@ fun Player(
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .padding(Theme.padding.medium),
-                        onClick = { /*TODO: Save to playlist*/ }) {
+                        onClick = { showSaveToPlaylistDialog = true }) {
                         Icon(
                             painterResource(R.drawable.ic_add_circle),
                             null,
@@ -559,6 +575,74 @@ fun LoopEditor(
                     }
                 }
             )
+        }
+    }
+}
+
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun SaveToPlaylistDialog(
+    playlists: List<Pair<String, Boolean>>,
+    onDismiss: () -> Unit,
+    onCheckedChanged: (Int, Boolean) -> Unit,
+    onCreatePlaylist: (String) -> Unit
+) {
+    var createNewPlaylist by remember { mutableStateOf(false) }
+    var newPlaylistName by remember { mutableStateOf("") }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Card(
+            elevation = 5.dp,
+            shape = Theme.shapes.medium,
+            modifier = Modifier
+                .fillMaxWidth(.95f)
+                .border(1.dp, Theme.colors.orange, Theme.shapes.medium)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(Theme.padding.medium)
+            ) {
+                Text(text = "Save to...")
+
+                LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                    items(playlists.size) { i ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Checkbox(
+                                checked = playlists[i].second,
+                                onCheckedChange = { onCheckedChanged(i, it) })
+
+                            Text(text = playlists[i].first)
+                        }
+                    }
+                }
+
+
+                if (!createNewPlaylist) {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { createNewPlaylist = true }
+                    ) {
+                        Text("Create New Playlist")
+                    }
+                } else {
+                    TextField(
+                        value = newPlaylistName,
+                        onValueChange = { newPlaylistName = it },
+                        singleLine = true
+                    )
+                    Button(onClick = { onCreatePlaylist(newPlaylistName) }) {
+                        Text("Create")
+                    }
+                }
+            }
         }
     }
 }

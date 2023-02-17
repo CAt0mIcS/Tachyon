@@ -64,6 +64,10 @@ class RoomPlaylistRepository(
         }
     }
 
+    override suspend fun setPlaybacksOfPlaylist(playlistMediaId: MediaId, playbacks: List<MediaId>) {
+        dao.setPlaybacks(playlistMediaId, playbacks)
+    }
+
     override suspend fun findByMediaId(mediaId: MediaId): PlaylistEntity? =
         dao.getPlaylistWithMediaId(mediaId)
 }
