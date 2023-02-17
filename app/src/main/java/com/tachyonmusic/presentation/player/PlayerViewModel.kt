@@ -118,6 +118,14 @@ class PlayerViewModel @Inject constructor(
             runOnUiThreadAsync {
                 _recentlyPlayed.value = recentlyPlayedPlayback
                 updatePlaybackState(recentlyPlayed.value)
+
+                observePlaylists().map { newPlaylists ->
+                    playlists.clear()
+                    // TODO: Check if we're trying to save a playlist to a playlist and if [recentlyPlayed.value] is null
+                    playlists.addAll(newPlaylists.map {
+                        it.name to it.hasPlayback(recentlyPlayed.value as SinglePlayback)
+                    })
+                }.collect()
             }
             if (recentlyPlayedPlayback != null)
                 getOrLoadArtworkForPlayback(recentlyPlayedPlayback)
@@ -140,14 +148,6 @@ class PlayerViewModel @Inject constructor(
                 SeekIncrementsState(it.seekForwardIncrementMs, it.seekBackIncrementMs)
             showMillisecondsInPositionText = it.shouldMillisecondsBeShown
             audioUpdateInterval = it.audioUpdateInterval.milliseconds
-        }.launchIn(viewModelScope)
-
-        observePlaylists().map { newPlaylists ->
-            playlists.clear()
-            // TODO: Check if we're trying to save a playlist to a playlist and if [recentlyPlayed.value] is null
-            playlists.addAll(newPlaylists.map {
-                it.name to it.hasPlayback(recentlyPlayed.value as SinglePlayback)
-            })
         }.launchIn(viewModelScope)
     }
 

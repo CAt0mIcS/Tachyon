@@ -172,9 +172,9 @@ object LibraryScreen :
                     else -> {
                         val singlePlayback = (playback as Playlist).playbacks.firstOrNull()
                         val song = if (singlePlayback is Song?)
-                            singlePlayback
+                            viewModel.songs.find { it == singlePlayback }
                         else
-                            (singlePlayback as Loop?)?.song
+                            viewModel.songs.find { it == (singlePlayback as Loop?)?.song }
 
                         artwork = song?.artwork?.collectAsState() ?: remember {
                             mutableStateOf(PlaceholderArtwork)
@@ -186,7 +186,8 @@ object LibraryScreen :
                     }
                 }
 
-                HorizontalPlaybackView(playback,
+                HorizontalPlaybackView(
+                    playback,
                     artwork.value ?: PlaceholderArtwork,
                     isArtworkLoading.value,
                     modifier = Modifier
