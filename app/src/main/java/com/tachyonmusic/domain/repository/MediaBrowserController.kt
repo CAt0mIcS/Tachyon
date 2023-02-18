@@ -10,11 +10,12 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.IListenable
+import kotlinx.coroutines.flow.StateFlow
 
-interface MediaBrowserController : IListenable<MediaBrowserController.EventListener>,
-    DefaultLifecycleObserver {
+interface MediaBrowserController : DefaultLifecycleObserver,
+    IListenable<MediaBrowserController.EventListener> {
 
     /**
      * Binds a lifecycle object to the [MediaBrowserController]
@@ -23,8 +24,12 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
         lifecycle.addObserver(this)
     }
 
-    var playback: Playback?
+    var playback: SinglePlayback?
     var playWhenReady: Boolean
+
+    val playbackState: StateFlow<SinglePlayback?>
+    val associatedPlaylistState: StateFlow<Playlist?>
+    val playWhenReadyState: StateFlow<Boolean>
 
     var repeatMode: RepeatMode
     val nextMediaItemIndex: Int
@@ -50,6 +55,8 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
     var timingData: TimingDataController?
     val currentPosition: Duration?
 
+    val timingDataState: StateFlow<TimingDataController?>
+
     fun stop()
     fun play()
     fun pause()
@@ -59,15 +66,5 @@ interface MediaBrowserController : IListenable<MediaBrowserController.EventListe
 
     interface EventListener {
         fun onConnected() {}
-
-        /**
-         * @param playback the new playback (song or loop) to be played
-         * @param associatedPlaylist if we set [MediaBrowserController.playback] to a [Playlist]
-         *      then [playback] will be the song/loop currently playing and [associatedPlaylist]
-         *      will be the set Playlist
-         */
-        fun onPlaybackTransition(playback: SinglePlayback?, associatedPlaylist: Playlist?) {}
-        fun onIsPlayingChanged(isPlaying: Boolean) {}
-        fun onTimingDataAdvanced(i: Int) {}
     }
 }

@@ -17,9 +17,10 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MediaAction
-import com.tachyonmusic.core.data.constants.MediaAction.sendOnTimingDataAdvancedEvent
+import com.tachyonmusic.core.data.constants.MediaAction.sendOnTimingDataUpdatedEvent
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.RepeatMode
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.logger.LoggerImpl
@@ -271,8 +272,8 @@ class MediaPlaybackService(
         }
 
     private inner class CustomPlayerEventListener : CustomPlayer.Listener {
-        override fun onTimingDataAdvanced(i: Int) {
-            mediaSession.sendOnTimingDataAdvancedEvent(i)
+        override fun onTimingDataUpdated(controller: TimingDataController?) {
+            mediaSession.sendOnTimingDataUpdatedEvent(controller)
         }
     }
 }

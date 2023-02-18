@@ -41,12 +41,12 @@ object MediaAction {
     /**
      * Events sent to the MediaBrowserController by the MediaPlaybackService
      */
-    val timingDataAdvancedCommand =
+    val timingDataUpdatedCommand =
         SessionCommand("com.tachyonmusic.TIMING_DATA_ADVANCED", Bundle.EMPTY)
 
-    fun MediaSession.sendOnTimingDataAdvancedEvent(i: Int) {
-        broadcastCustomCommand(timingDataAdvancedCommand, Bundle().apply {
-            putInt(MetadataKeys.TimingData, i)
+    fun MediaSession.sendOnTimingDataUpdatedEvent(controller: TimingDataController?) {
+        broadcastCustomCommand(timingDataUpdatedCommand, Bundle().apply {
+            putParcelable(MetadataKeys.TimingData, controller)
         })
     }
 }

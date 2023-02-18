@@ -141,7 +141,7 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player),
             seekWithoutCallback(newTimingData.current.startTime.inWholeMilliseconds)
 
         currentMediaItem?.mediaMetadata?.timingData = newTimingData
-        invokeEvent { it.onTimingDataAdvanced(newTimingData.currentIndex) }
+        invokeEvent { it.onTimingDataUpdated(newTimingData) }
     }
 
     private fun postLoopMessage(startTime: Duration, endTime: Duration) {
@@ -154,7 +154,7 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player),
             if (timingData != null) {
                 timingData.advanceToNext()
 
-                invokeEvent { it.onTimingDataAdvanced(timingData.currentIndex) }
+                invokeEvent { it.onTimingDataUpdated(timingData) }
 
                 postLoopMessage(
                     timingData.next.startTime,

@@ -1,6 +1,7 @@
 package com.tachyonmusic.domain.use_case.player
 
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.util.ms
@@ -12,7 +13,7 @@ class PlayRecentlyPlayed(
     private val browser: MediaBrowserController,
     private val getRecentlyPlayed: GetRecentlyPlayed,
 ) {
-    suspend operator fun invoke(playback: Playback?) = withContext(Dispatchers.IO) {
+    suspend operator fun invoke(playback: SinglePlayback?) = withContext(Dispatchers.IO) {
         val recentlyPlayedInfo = getRecentlyPlayed()
 
         runOnUiThread {

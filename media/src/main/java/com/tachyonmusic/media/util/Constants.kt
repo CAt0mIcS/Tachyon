@@ -24,7 +24,7 @@ internal val supportedCommands = MediaSession.ConnectionResult.accept(
         add(MediaAction.setTimingDataCommand)
         add(MediaAction.setRepeatModeCommand)
 
-        add(MediaAction.timingDataAdvancedCommand)
+        add(MediaAction.timingDataUpdatedCommand)
     }.build(),
     Player.Commands.Builder().apply {
         add(Player.COMMAND_PLAY_PAUSE)

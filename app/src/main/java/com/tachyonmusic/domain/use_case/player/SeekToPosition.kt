@@ -4,7 +4,7 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.Duration
 
-class SeekPosition(private val browser: MediaBrowserController) {
+class SeekToPosition(private val browser: MediaBrowserController) {
     operator fun invoke(position: Duration) {
         /**
          * Seeking before beginning causes position update with negative values

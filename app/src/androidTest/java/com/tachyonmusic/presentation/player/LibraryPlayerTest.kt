@@ -21,7 +21,6 @@ import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.coroutines.launch
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -69,7 +68,7 @@ internal class LibraryPlayerTest {
                                 modifier = Modifier
                                     .fillMaxSize(),
                             ) {
-                                Player(sheetState, miniPlayerHeight)
+                                PlayerLayout(sheetState, miniPlayerHeight)
                             }
                         },
                         sheetPeekHeight = miniPlayerHeight.value,

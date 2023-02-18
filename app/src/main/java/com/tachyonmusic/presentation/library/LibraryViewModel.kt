@@ -9,9 +9,10 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.GetSongs
-import com.tachyonmusic.domain.use_case.ItemClicked
+import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.ObserveLoops
 import com.tachyonmusic.domain.use_case.ObservePlaylists
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
@@ -34,7 +35,7 @@ class LibraryViewModel @Inject constructor(
     observeLoops: ObserveLoops,
     observePlaylists: ObservePlaylists,
     getOrLoadArtwork: GetOrLoadArtwork,
-    private val itemClicked: ItemClicked,
+    private val playPlayback: PlayPlayback,
     private val application: Application,
     private val log: Logger
 ) : ViewModel() {
@@ -98,6 +99,9 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun onItemClicked(playback: Playback) {
-        itemClicked(playback)
+        if (playback is SinglePlayback)
+            playPlayback(playback)
+        else
+            TODO()
     }
 }

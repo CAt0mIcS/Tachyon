@@ -46,7 +46,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideItemClickedUseCase(browser: MediaBrowserController) = ItemClicked(browser)
+    fun provideItemClickedUseCase(browser: MediaBrowserController) = PlayPlayback(browser)
 
     @Provides
     @Singleton
@@ -169,7 +169,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideSeekPositionUseCase(browser: MediaBrowserController) = SeekPosition(browser)
+    fun provideSeekToPositionUseCase(browser: MediaBrowserController) = SeekToPosition(browser)
 
     @Provides
     @Singleton
@@ -183,10 +183,38 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
+    fun provideGetAssociatedPlaylistStateUseCase(browser: MediaBrowserController) =
+        GetAssociatedPlaylistState(browser)
+
+    @Provides
+    @Singleton
     fun providePlayRecentlyPlayedUseCase(
         browser: MediaBrowserController,
         getRecentlyPlayed: GetRecentlyPlayed
     ) = PlayRecentlyPlayed(browser, getRecentlyPlayed)
+
+    @Provides
+    @Singleton
+    fun provideGetIsPlayingStateUseCase(browser: MediaBrowserController) =
+        GetIsPlayingState(browser)
+
+    @Provides
+    @Singleton
+    fun provideGetPlaybackStateStateUseCase(browser: MediaBrowserController) =
+        GetCurrentPlaybackState(browser)
+
+    @Provides
+    @Singleton
+    fun provideGetTimingDataStateUseCase(browser: MediaBrowserController) =
+        GetTimingDataState(browser)
+
+    @Provides
+    @Singleton
+    fun provideSetNewTimingDataUseCase(browser: MediaBrowserController) = SetNewTimingData(browser)
+
+    @Provides
+    @Singleton
+    fun provideSetRepeatModeUseCase(browser: MediaBrowserController) = SetRepeatMode(browser)
 
     @Provides
     @Singleton

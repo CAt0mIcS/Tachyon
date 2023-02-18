@@ -24,6 +24,8 @@ import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.util.associatedPlaylist
 import com.tachyonmusic.media.util.duration
@@ -31,19 +33,21 @@ import com.tachyonmusic.media.util.name
 import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.timingData
 import com.tachyonmusic.media.service.MediaPlaybackService
-import com.tachyonmusic.util.IListenable
-import com.tachyonmusic.util.Listenable
+import com.tachyonmusic.media.util.parcelable
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.IListenable
+import com.tachyonmusic.util.Listenable
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
-class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
-    Player.Listener,
-    MediaBrowser.Listener,
-    IListenable<MediaBrowserController.EventListener> by Listenable() {
+class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Player.Listener,
+    MediaBrowser.Listener, IListenable<MediaBrowserController.EventListener> by Listenable() {
 
     private var browser: MediaBrowser? = null
 
@@ -81,7 +85,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         browser?.release()
     }
 
-    override var playback: Playback?
+    override var playback: SinglePlayback?
         get() = browser?.currentMediaItem?.mediaMetadata?.playback
         set(value) {
             if (value != null && browser != null)
@@ -95,6 +99,15 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         set(value) {
             browser?.playWhenReady = value
         }
+
+    private val _playbackState = MutableStateFlow<SinglePlayback?>(null)
+    override val playbackState = _playbackState.asStateFlow()
+
+    private val _associatedPlaylistState = MutableStateFlow<Playlist?>(null)
+    override val associatedPlaylistState = _associatedPlaylistState.asStateFlow()
+
+    private val _playWhenReadyState = MutableStateFlow(false)
+    override val playWhenReadyState = _playWhenReadyState.asStateFlow()
 
     override var repeatMode: RepeatMode = RepeatMode.One
         set(value) {
@@ -170,10 +183,14 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
             if (value == null)
                 throw IllegalArgumentException("TimingDataController mustn't be null")
             browser?.sendSetTimingDataEvent(value)
+            _timingDataState.update { value }
         }
 
     override val currentPosition: Duration?
         get() = if (browser?.currentMediaItem == null) null else browser?.currentPosition?.ms
+
+    private val _timingDataState = MutableStateFlow<TimingDataController?>(null)
+    override val timingDataState = _timingDataState.asStateFlow()
 
 
     /***********************************************************************************************
@@ -183,13 +200,12 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val playback = mediaItem?.mediaMetadata?.playback
         val playlist = mediaItem?.mediaMetadata?.associatedPlaylist
-        invokeEvent {
-            it.onPlaybackTransition(playback, playlist)
-        }
+        _associatedPlaylistState.update { playlist }
+        _playbackState.update { playback }
     }
 
-    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) = invokeEvent {
-        it.onIsPlayingChanged(playWhenReady)
+    override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        _playWhenReadyState.update { playWhenReady }
     }
 
     override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
@@ -212,13 +228,10 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController,
         args: Bundle
     ): ListenableFuture<SessionResult> = future(Dispatchers.Main) {
         when (command) {
-            MediaAction.timingDataAdvancedCommand -> {
-                invokeEvent {
-                    it.onTimingDataAdvanced(args.getInt(MetadataKeys.TimingData))
-                }
+            MediaAction.timingDataUpdatedCommand -> {
+                _timingDataState.update { args.parcelable(MetadataKeys.TimingData) }
             }
         }
-
 
         SessionResult(SessionResult.RESULT_SUCCESS)
     }

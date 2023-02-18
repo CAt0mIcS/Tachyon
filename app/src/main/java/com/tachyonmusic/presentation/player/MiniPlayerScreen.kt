@@ -31,11 +31,12 @@ fun MiniPlayerScreen(
     viewModel: MiniPlayerViewModel = hiltViewModel()
 ) {
     val playback by viewModel.playback.collectAsState()
-    val artwork by playback?.artwork?.collectAsState() ?: remember {
-        mutableStateOf(PlaceholderArtwork)
-    }
-    val isPlaying by viewModel.isPlaying.collectAsState()
 
+    if(playback == null)
+        return
+
+    val artwork by playback?.artwork?.collectAsState() ?: return
+    val isPlaying by viewModel.isPlaying.collectAsState()
 
     var currentPositionNormalized by remember { mutableStateOf(0f) }
 
@@ -47,13 +48,6 @@ fun MiniPlayerScreen(
         while (true) {
             currentPositionNormalized = viewModel.getCurrentPositionNormalized()
             delay(viewModel.audioUpdateInterval)
-        }
-    }
-
-    DisposableEffect(Unit) {
-        viewModel.registerMediaListener()
-        onDispose {
-            viewModel.unregisterMediaListener()
         }
     }
 

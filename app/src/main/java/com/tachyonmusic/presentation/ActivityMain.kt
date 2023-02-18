@@ -24,7 +24,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.presentation.player.Player
+import com.tachyonmusic.presentation.player.PlayerLayout
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.Permission
@@ -105,7 +105,11 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                                 modifier = Modifier
                                     .fillMaxSize(),
                             ) {
-                                Player(sheetState, miniPlayerHeight)
+                                PlayerLayout(
+                                    sheetState,
+                                    onMiniPlayerHeight = { miniPlayerHeight.value = it },
+                                    miniPlayerHeight = miniPlayerHeight.value
+                                )
                             }
                         },
                         sheetPeekHeight = miniPlayerHeight.value,

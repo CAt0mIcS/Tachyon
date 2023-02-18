@@ -5,9 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.domain.use_case.ItemClicked
+import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.main.ObserveHistory
 import com.tachyonmusic.domain.use_case.main.UnloadArtworks
 import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
@@ -25,7 +26,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val itemClicked: ItemClicked,
+    private val playPlayback: PlayPlayback,
     observeHistory: ObserveHistory,
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
@@ -57,7 +58,9 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onItemClicked(playback: Playback) {
-        itemClicked(playback)
+        if (playback is SinglePlayback)
+            playPlayback(playback)
+        else TODO()
     }
 
     fun refreshArtwork() {
