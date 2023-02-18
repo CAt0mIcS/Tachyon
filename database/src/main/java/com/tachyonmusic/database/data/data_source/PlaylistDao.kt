@@ -1,5 +1,6 @@
 package com.tachyonmusic.database.data.data_source
 
+import android.database.sqlite.SQLiteException
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
@@ -24,11 +25,12 @@ interface PlaylistDao {
     @Query("SELECT * FROM PlaylistEntity WHERE mediaId=:mediaId")
     suspend fun getPlaylistWithMediaId(mediaId: MediaId): PlaylistEntity?
 
-    // TODO: Handle abort
     @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Throws(SQLiteException::class)
     suspend fun add(playlist: PlaylistEntity)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Throws(SQLiteException::class)
     suspend fun addAll(playlists: List<PlaylistEntity>)
 
     @Query("UPDATE PlaylistEntity SET items=:playbacks WHERE mediaId=:mediaId")

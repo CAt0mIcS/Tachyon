@@ -1,15 +1,19 @@
 package com.tachyonmusic.database.data.repository
 
+import android.database.sqlite.SQLiteException
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.database.R
 import com.tachyonmusic.database.data.data_source.SongDao
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.util.toSong
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -59,8 +63,13 @@ class RoomSongRepository(
         }
     }
 
-    override suspend fun addAll(songs: List<SongEntity>) {
-        dao.addAll(songs)
+    override suspend fun addAll(songs: List<SongEntity>): Resource<Unit> {
+        return try {
+            dao.addAll(songs)
+            Resource.Success()
+        } catch (e: SQLiteException) {
+            Resource.Error(UiText.build(e.localizedMessage ?: R.string.database_insert_conflict))
+        }
     }
 
     override suspend fun updateArtwork(song: SongEntity, artworkType: String, artworkUrl: String?) {

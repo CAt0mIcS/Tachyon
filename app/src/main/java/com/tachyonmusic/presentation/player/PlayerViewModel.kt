@@ -12,6 +12,7 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetHistory
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
@@ -96,7 +97,7 @@ class PlayerViewModel @Inject constructor(
     val songAddedToPlaylists = mutableStateListOf<Pair<String, Boolean>>()
     private var playlists: List<Playlist> = emptyList()
 
-    var audioUpdateInterval: Duration = 100.ms
+    var audioUpdateInterval: Duration = SettingsEntity().audioUpdateInterval
         private set
 
     val currentPosition: Duration

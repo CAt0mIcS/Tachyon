@@ -92,6 +92,8 @@ class TimingDataController(
 
     override fun describeContents() = 0
 
+    override fun toString() = _timingData.joinToString(separator = ";") { it }
+
     companion object CREATOR : Parcelable.Creator<TimingDataController> {
         override fun createFromParcel(parcel: Parcel): TimingDataController {
             // TODO: Better implementation for loading arrays/lists/...

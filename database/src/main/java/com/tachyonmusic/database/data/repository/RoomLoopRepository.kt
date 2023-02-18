@@ -1,11 +1,13 @@
 package com.tachyonmusic.database.data.repository
 
+import android.database.sqlite.SQLiteException
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.database.R
 import com.tachyonmusic.database.data.data_source.LoopDao
 import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
@@ -13,6 +15,8 @@ import com.tachyonmusic.database.util.toLoop
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
 
 class RoomLoopRepository(
     private val dao: LoopDao
@@ -46,12 +50,22 @@ class RoomLoopRepository(
 
     override suspend fun getLoopEntities(): List<LoopEntity> = dao.getLoops()
 
-    override suspend fun add(loop: LoopEntity) {
-        dao.add(loop)
+    override suspend fun add(loop: LoopEntity): Resource<Unit> {
+        return try {
+            dao.add(loop)
+            Resource.Success()
+        } catch (e: SQLiteException) {
+            Resource.Error(UiText.build(e.localizedMessage ?: R.string.database_insert_conflict))
+        }
     }
 
-    override suspend fun addAll(loops: List<LoopEntity>) {
-        dao.addAll(loops)
+    override suspend fun addAll(loops: List<LoopEntity>): Resource<Unit> {
+        return try {
+            dao.addAll(loops)
+            Resource.Success()
+        } catch (e: SQLiteException) {
+            Resource.Error(UiText.build(e.localizedMessage ?: R.string.database_insert_conflict))
+        }
     }
 
     // TODO: Bad performance? Should be changed to have less db queries

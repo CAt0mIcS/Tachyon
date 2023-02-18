@@ -1,5 +1,6 @@
 package com.tachyonmusic.database.data.data_source
 
+import android.database.sqlite.SQLiteException
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
@@ -22,11 +23,12 @@ interface LoopDao {
     @Query("SELECT * FROM LoopEntity ORDER BY mediaId ASC")
     fun observe(): Flow<List<LoopEntity>>
 
-    // TODO: Handle abort
     @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Throws(SQLiteException::class)
     suspend fun add(loop: LoopEntity)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Throws(SQLiteException::class)
     suspend fun addAll(loops: List<LoopEntity>)
 
     @Query("SELECT * FROM LoopEntity WHERE songTitle=:songTitle AND songArtist=:songArtist AND songDuration=:songDuration")

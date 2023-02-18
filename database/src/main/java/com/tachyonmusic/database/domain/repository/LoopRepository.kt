@@ -6,6 +6,7 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.database.domain.model.LoopEntity
 import kotlinx.coroutines.flow.Flow
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.Resource
 
 interface LoopRepository {
     suspend fun getLoops(): List<Loop>
@@ -18,8 +19,8 @@ interface LoopRepository {
     fun observe(): Flow<List<Loop>>
 
     suspend fun getLoopEntities(): List<LoopEntity>
-    suspend fun add(loop: LoopEntity)
-    suspend fun addAll(loops: List<LoopEntity>)
+    suspend fun add(loop: LoopEntity): Resource<Unit>
+    suspend fun addAll(loops: List<LoopEntity>): Resource<Unit>
     suspend fun removeIf(pred: (LoopEntity) -> Boolean)
 
     suspend fun findBySong(songTitle: String, songArtist: String, songDuration: Duration): LoopEntity?

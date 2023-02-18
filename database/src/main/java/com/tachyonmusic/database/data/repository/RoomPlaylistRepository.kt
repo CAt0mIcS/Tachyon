@@ -1,17 +1,21 @@
 package com.tachyonmusic.database.data.repository
 
+import android.database.sqlite.SQLiteException
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.database.R
 import com.tachyonmusic.database.data.data_source.PlaylistDao
 import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.util.toPlaylist
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -49,12 +53,22 @@ class RoomPlaylistRepository(
 
     override suspend fun getPlaylistEntities(): List<PlaylistEntity> = dao.getPlaylists()
 
-    override suspend fun add(playlist: PlaylistEntity) {
-        dao.add(playlist)
+    override suspend fun add(playlist: PlaylistEntity): Resource<Unit> {
+        return try {
+            dao.add(playlist)
+            Resource.Success()
+        } catch (e: SQLiteException) {
+            Resource.Error(UiText.build(e.localizedMessage ?: R.string.database_insert_conflict))
+        }
     }
 
-    override suspend fun addAll(playlists: List<PlaylistEntity>) {
-        dao.addAll(playlists)
+    override suspend fun addAll(playlists: List<PlaylistEntity>): Resource<Unit> {
+        return try {
+            dao.addAll(playlists)
+            Resource.Success()
+        } catch (e: SQLiteException) {
+            Resource.Error(UiText.build(e.localizedMessage ?: R.string.database_insert_conflict))
+        }
     }
 
     override suspend fun removeIf(pred: (PlaylistEntity) -> Boolean) {
@@ -64,7 +78,10 @@ class RoomPlaylistRepository(
         }
     }
 
-    override suspend fun setPlaybacksOfPlaylist(playlistMediaId: MediaId, playbacks: List<MediaId>) {
+    override suspend fun setPlaybacksOfPlaylist(
+        playlistMediaId: MediaId,
+        playbacks: List<MediaId>
+    ) {
         dao.setPlaybacks(playlistMediaId, playbacks)
     }
 

@@ -18,4 +18,7 @@
     <string name="unknown_error">An unknown error occurred</string>
 
     <string name="invalid_search_query">Invalid search query %1$s</string>
+    <string name="invalid_name">Invalid name \"%1$s\" specified</string>
+    <string name="cannot_create_loop">Cannot create invalid loop, Name: \"%1$s\"; Playback: \"%2$s\"; TimingData: \"%3$s\"</string>
+    <string name="song_not_found">Unable to find song \"%1$s\"</string>
 </resources>

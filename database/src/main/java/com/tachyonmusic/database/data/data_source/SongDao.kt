@@ -1,5 +1,6 @@
 package com.tachyonmusic.database.data.data_source
 
+import android.database.sqlite.SQLiteException
 import androidx.paging.PagingSource
 import androidx.room.*
 import com.tachyonmusic.core.domain.MediaId
@@ -30,11 +31,12 @@ interface SongDao {
     @Query("SELECT * FROM SongEntity WHERE artworkType IN (:artworkTypes)")
     suspend fun getSongsWithArtworkTypes(artworkTypes: Array<out String>): List<SongEntity>
 
-    // TODO: Handle abort
     @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Throws(SQLiteException::class)
     suspend fun add(song: SongEntity)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Throws(SQLiteException::class)
     suspend fun addAll(songs: List<SongEntity>)
 
     @Delete

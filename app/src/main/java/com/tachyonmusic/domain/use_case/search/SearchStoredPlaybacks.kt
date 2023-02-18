@@ -23,7 +23,7 @@ class SearchStoredPlaybacks(
                 Resource.Error(
                     UiText.StringResource(
                         R.string.invalid_search_query,
-                        "null or empty"
+                        "null/empty"
                     )
                 )
             )

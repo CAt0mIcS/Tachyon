@@ -39,4 +39,6 @@ android {
 
 dependencies {
     coroutines()
+
+    implementation("androidx.annotation:annotation:1.6.0-dev01")
 }

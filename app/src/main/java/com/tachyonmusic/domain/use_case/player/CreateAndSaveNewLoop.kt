@@ -1,5 +1,6 @@
 package com.tachyonmusic.domain.use_case.player
 
+import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
@@ -17,7 +18,6 @@ class CreateAndSaveNewLoop(
     private val loopRepository: LoopRepository,
     private val browser: MediaBrowserController
 ) {
-    // TODO: [UiText.StringResource] instead of [UiText.DynamicString]
     suspend operator fun invoke(
         name: String
     ): Resource<LoopEntity> {
@@ -30,7 +30,14 @@ class CreateAndSaveNewLoop(
             timingData = browser.timingData
         }
         if (isInvalid)
-            return Resource.Error(UiText.DynamicString("Invalid loop"))
+            return Resource.Error(
+                UiText.StringResource(
+                    R.string.cannot_create_loop,
+                    name,
+                    playback.toString(),
+                    timingData.toString()
+                )
+            )
 
 
         /**
@@ -40,7 +47,7 @@ class CreateAndSaveNewLoop(
          */
         val songMediaId = playback!!.mediaId.underlyingMediaId ?: playback!!.mediaId
         val song = songRepository.findByMediaId(songMediaId) ?: return Resource.Error(
-            UiText.DynamicString("Unknown song $songMediaId")
+            UiText.StringResource(R.string.song_not_found, songMediaId.toString())
         )
 
         val loop = LoopEntity(
@@ -52,7 +59,10 @@ class CreateAndSaveNewLoop(
             currentTimingDataIndex = 0 // TODO
         )
 
-        loopRepository.add(loop)
+        val res = loopRepository.add(loop)
+        if (res is Resource.Error)
+            return Resource.Error(res)
+
         return Resource.Success(loop)
     }
 

@@ -46,9 +46,10 @@ class UrlEncoderImpl : UrlEncoder {
             Resource.Success(URLEncoder.encode(value, "UTF-8"))
         } catch (e: UnsupportedEncodingException) {
             Resource.Error(
-                if (e.localizedMessage != null)
-                    UiText.DynamicString(e.localizedMessage!!)
-                else UiText.StringResource(R.string.unknown_encoder_error, value)
+                UiText.build(
+                    e.localizedMessage ?: R.string.unknown_encoder_error,
+                    value
+                )
             )
         }
     }

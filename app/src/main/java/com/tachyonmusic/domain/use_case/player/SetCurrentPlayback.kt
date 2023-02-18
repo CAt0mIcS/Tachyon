@@ -2,8 +2,8 @@ package com.tachyonmusic.domain.use_case.player
 
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.ms
 
 class SetCurrentPlayback(private val browser: MediaBrowserController) {
     operator fun invoke(
