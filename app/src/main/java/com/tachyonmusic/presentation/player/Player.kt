@@ -136,61 +136,7 @@ fun Player(
      * the bottom sheet peak height.
      */
     if (recentlyPlayed != null && !sheetState.isAtTop) {
-
-        val artwork by artworkState.artwork.collectAsState()
-
-        /**
-         * TODO
-         *   The MiniPlayer - if shown - recomposes every frame, but it should only recompose the
-         *   ProgressIndicator line
-         */
-        Layout(
-            modifier = Modifier.graphicsLayer(alpha = 1f - sheetState.currentFraction),
-            content = {
-                MiniPlayer(
-                    playback = recentlyPlayed,
-                    artwork = artwork ?: PlaceholderArtwork,
-                    currentPosition = currentPositionNormalized,
-                    isPlaying = isPlaying,
-                    onPlayPauseClicked = viewModel::pauseResume,
-                    onClick = {
-                        scope.launch {
-                            sheetState.expand()
-                        }
-                    }
-                )
-            }
-        ) { measurables, constraints ->
-            val looseConstraints = constraints.copy(
-                minWidth = 0,
-                maxWidth = constraints.maxWidth,
-                minHeight = 0,
-                maxHeight = constraints.maxHeight
-            )
-
-            // Measure each child
-            val placeables = measurables.map { measurable ->
-                measurable.measure(looseConstraints)
-            }
-
-            layout(constraints.maxWidth, constraints.maxHeight) {
-                // Place children in the parent layout
-                placeables.forEach { placeable ->
-                    // This applies bottom content padding to the LazyColumn handling the entire other screen
-                    // so that we can scroll down far enough
-                    if (miniPlayerHeight.value == 0.dp && placeable.height != 0) {
-                        miniPlayerHeight.value = placeable.height.toDp()
-                        log.debug("BottomPadding ${miniPlayerHeight.value}")
-                    }
-
-                    // Position items
-                    placeable.placeRelative(
-                        x = 0,
-                        y = 0
-                    )
-                }
-            }
-        }
+        MiniPlayerScreen(sheetState, onMiniPlayerHeight = { miniPlayerHeight.value = it })
     }
 
     /**

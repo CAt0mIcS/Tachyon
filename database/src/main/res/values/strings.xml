@@ -1,0 +1,3 @@
+<resources>
+    <string name="database_insert_conflict">Database insertion conflict occurred</string>
+</resources>
