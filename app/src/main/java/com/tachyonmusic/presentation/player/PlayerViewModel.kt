@@ -125,8 +125,8 @@ class PlayerViewModel @Inject constructor(
 
     fun getCurrentPosition() = getCurrentPlaybackPos() ?: 0.ms
     fun seekTo(pos: Duration) = seekToPosition(pos)
-    fun seekBack() = seekToPosition(getCurrentPosition() + seekIncrements.value.back)
-    fun seekForward() = seekToPosition(getCurrentPosition() - seekIncrements.value.forward)
+    fun seekBack() = seekToPosition(getCurrentPosition() - seekIncrements.value.back)
+    fun seekForward() = seekToPosition(getCurrentPosition() + seekIncrements.value.forward)
 
     fun pauseResume() {
         if (isPlaying.value)
