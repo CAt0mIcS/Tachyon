@@ -108,10 +108,11 @@ fun PlayerScreen(
                 .aspectRatio(1f)
                 .shadow(Theme.shadow.small, shape = Theme.shapes.large)
 
+//            val artworkInfo by viewModel.artwork.collectAsState()
             val artwork by playback.artwork.collectAsState()
-            val isArtworkLoading by playback.isArtworkLoading.collectAsState()
+            val isLoading by playback.isArtworkLoading.collectAsState()
 
-            if (isArtworkLoading)
+            if (isLoading)
                 CircularProgressIndicator(modifier = artworkModifier)
             else
                 artwork?.Image(modifier = artworkModifier, contentDescription = null)

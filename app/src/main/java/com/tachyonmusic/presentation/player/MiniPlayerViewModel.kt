@@ -2,6 +2,7 @@ package com.tachyonmusic.presentation.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.GetHistory
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
@@ -14,6 +15,7 @@ import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.normalize
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collect
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,9 +41,17 @@ class MiniPlayerViewModel @Inject constructor(
 
     val playback = getPlaybackState().map {
         it?.underlyingSong ?: getHistory().firstOrNull()?.underlyingSong
-    }.onEach {
-        loadArtworkAsync()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+    }.onEach { song ->
+        if (song == null)
+            return@onEach
+
+        withContext(Dispatchers.IO) {
+            getOrLoadArtwork(song).onEach { res ->
+                song.artwork.update { res.data?.artwork }
+                song.isArtworkLoading.update { false }
+            }.collect()
+        }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val isPlaying = getIsPlayingState()
 
@@ -66,15 +77,6 @@ class MiniPlayerViewModel @Inject constructor(
             viewModelScope.launch(Dispatchers.IO) {
                 playRecentlyPlayed(playback.value)
             }
-        }
-    }
-
-    private fun loadArtworkAsync() {
-        viewModelScope.launch(Dispatchers.IO) {
-            getOrLoadArtwork(playback.value ?: return@launch).onEach { res ->
-                playback.value?.artwork?.update { res.data?.artwork }
-                playback.value?.isArtworkLoading?.update { false }
-            }.collect()
         }
     }
 }

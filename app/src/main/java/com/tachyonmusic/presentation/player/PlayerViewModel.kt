@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.data.playback.LocalSongImpl
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.GetHistory
+import com.tachyonmusic.domain.use_case.ObservePlaylists
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewPlaylist
@@ -26,8 +28,10 @@ import com.tachyonmusic.domain.use_case.player.SetRepeatMode
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -40,12 +44,18 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
 data class SeekIncrements(
     var forward: Duration = SettingsEntity().seekForwardIncrement,
     var back: Duration = SettingsEntity().seekBackIncrement
+)
+
+data class ArtworkState(
+    val artwork: Artwork?,
+    val isLoading: Boolean
 )
 
 
@@ -70,6 +80,7 @@ class PlayerViewModel @Inject constructor(
     private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
     private val removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
     private val createAndSaveNewPlaylist: CreateAndSaveNewPlaylist,
+    observePlaylists: ObservePlaylists,
 
     private val getOrLoadArtwork: GetOrLoadArtwork
 ) : ViewModel() {
@@ -79,15 +90,20 @@ class PlayerViewModel @Inject constructor(
      **********************************************************************************************/
     private val _playback = getPlaybackState().map {
         it ?: getHistory().firstOrNull() as SinglePlayback?
-    }.onEach {
-        loadArtworkAsync()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+    }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val playback = _playback.map {
         it!!
+    }.onEach { playback ->
+        withContext(Dispatchers.IO) {
+            getOrLoadArtwork(playback.underlyingSong ?: return@withContext).onEach { res ->
+                playback.artwork.update { res.data?.artwork }
+                playback.isArtworkLoading.update { false }
+            }.collect()
+        }
     }.stateIn(
         viewModelScope,
-        SharingStarted.WhileSubscribed(),
+        SharingStarted.Lazily,
         LocalSongImpl(MediaId(""), "", "", 0.ms)
     )
 
@@ -166,8 +182,14 @@ class PlayerViewModel @Inject constructor(
     /***********************************************************************************************
      ************************************ PLAYLIST CONTROL *****************************************
      **********************************************************************************************/
-    private val _playlists = MutableStateFlow(emptyList<PlaylistInfo>())
-    val playlists = _playlists.asStateFlow()
+    val playlists = combine(observePlaylists(), _playback) { playlists, currentPlayback ->
+        if (currentPlayback == null)
+            return@combine emptyList()
+
+        playlists.map { playlist ->
+            PlaylistInfo(playlist.name, playlist.hasPlayback(currentPlayback))
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
     fun editPlaylist(i: Int, shouldAdd: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -181,16 +203,6 @@ class PlayerViewModel @Inject constructor(
     fun createPlaylist(name: String) {
         viewModelScope.launch(Dispatchers.IO) {
             createAndSaveNewPlaylist(name)
-        }
-    }
-
-
-    private fun loadArtworkAsync() {
-        viewModelScope.launch(Dispatchers.IO) {
-            getOrLoadArtwork(_playback.value?.underlyingSong ?: return@launch).onEach { res ->
-                _playback.value?.artwork?.update { res.data?.artwork }
-                _playback.value?.isArtworkLoading?.update { false }
-            }.collect()
         }
     }
 }
