@@ -54,8 +54,6 @@ interface SinglePlayback : Playback {
     override val artist: String
     override val duration: Duration
 
-    fun toMediaItem(associatedPlaylist: Playlist? = null): MediaItem
-
     override var timingData: TimingDataController
 
     override val uri: Uri

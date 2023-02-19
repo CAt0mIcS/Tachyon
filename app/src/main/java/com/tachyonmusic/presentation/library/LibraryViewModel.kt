@@ -95,9 +95,6 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun onItemClicked(playback: Playback) {
-        if (playback is SinglePlayback)
-            playPlayback(playback)
-        else
-            TODO()
+        playPlayback(playback)
     }
 }

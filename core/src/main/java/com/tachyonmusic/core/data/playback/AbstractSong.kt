@@ -35,15 +35,13 @@ abstract class AbstractSong(
         "mediaId" to mediaId.toString()
     )
 
-    override fun toMediaItem() = toMediaItem(null)
-
-    override fun toMediaItem(associatedPlaylist: Playlist?) = MediaItem.Builder().apply {
+    override fun toMediaItem() = MediaItem.Builder().apply {
         setMediaId(mediaId.toString())
         setUri(uri)
-        setMediaMetadata(toMediaMetadata(associatedPlaylist))
+        setMediaMetadata(toMediaMetadata())
     }.build()
 
-    private fun toMediaMetadata(associatedPlaylist: Playlist?) = MediaMetadata.Builder().apply {
+    private fun toMediaMetadata() = MediaMetadata.Builder().apply {
         setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
         setIsPlayable(true)
 
@@ -61,8 +59,6 @@ abstract class AbstractSong(
             // Empty here to allow custom setting of timing data
             putParcelable(MetadataKeys.TimingData, TimingDataController())
             putParcelable(MetadataKeys.Playback, this@AbstractSong)
-            if(associatedPlaylist != null)
-                putParcelable(MetadataKeys.AssociatedPlaylist, associatedPlaylist)
         })
     }.build()
 

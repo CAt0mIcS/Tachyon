@@ -24,6 +24,3 @@ var MediaMetadata.timingData: TimingDataController?
 
 val MediaMetadata.playback: SinglePlayback?
     get() = extras?.parcelable(MetadataKeys.Playback)
-
-val MediaMetadata.associatedPlaylist: Playlist?
-    get() = extras?.parcelable(MetadataKeys.AssociatedPlaylist)

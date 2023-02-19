@@ -95,6 +95,12 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
     private val _playWhenReadyState = MutableStateFlow(false)
     override val playWhenReadyState = _playWhenReadyState.asStateFlow()
 
+    override fun playPlaylist(playlist: Playlist?) {
+        _playbackState.update { null }
+        _associatedPlaylistState.update { playlist }
+        browser?.sendSetPlaybackEvent(playlist)
+    }
+
     override var repeatMode: RepeatMode = RepeatMode.One
         set(value) {
             if (browser != null) {
@@ -131,6 +137,13 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
 
     override fun seekBack() {
         browser?.seekBack()
+    }
+
+    override fun seekTo(playback: SinglePlayback, pos: Duration) {
+        val i = associatedPlaylistState.value?.playbacks?.indexOfOrNull(playback)
+            ?: throw IllegalArgumentException("playback not in playlist")
+
+        browser?.seekTo(i, if (pos == 0.ms) C.TIME_UNSET else pos.inWholeMilliseconds)
     }
 
     override suspend fun getChildren(
@@ -185,8 +198,6 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val playback = mediaItem?.mediaMetadata?.playback
-        val playlist = mediaItem?.mediaMetadata?.associatedPlaylist
-        _associatedPlaylistState.update { playlist }
         _playbackState.update { playback }
         _timingDataState.update { playback?.timingData }
     }

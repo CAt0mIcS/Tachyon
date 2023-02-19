@@ -12,6 +12,7 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
+import com.tachyonmusic.util.ms
 import kotlinx.coroutines.flow.StateFlow
 
 interface MediaBrowserController : DefaultLifecycleObserver,
@@ -30,6 +31,11 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     val playbackState: StateFlow<SinglePlayback?>
     val associatedPlaylistState: StateFlow<Playlist?>
     val playWhenReadyState: StateFlow<Boolean>
+
+    /**
+     * Start playing specified playlist
+     */
+    fun playPlaylist(playlist: Playlist?)
 
     var repeatMode: RepeatMode
     val nextMediaItemIndex: Int
@@ -63,6 +69,11 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     fun seekTo(pos: Duration)
     fun seekForward()
     fun seekBack()
+
+    /**
+     * Find [playback] in current [associatedPlaylistState] and start it
+     */
+    fun seekTo(playback: SinglePlayback, pos: Duration = 0.ms)
 
     interface EventListener {
         fun onConnected() {}

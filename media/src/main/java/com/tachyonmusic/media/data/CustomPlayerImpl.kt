@@ -120,7 +120,10 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player),
              * the first timing data in the list. Currently we handle this in [TimingDataController.advanceToCurrentPosition]
              * by checking if the position is 0ms and returning index 0 in this case
              */
-            if (reason == Player.DISCONTINUITY_REASON_SEEK)
+            if (reason == DISCONTINUITY_REASON_SEEK ||
+                reason == DISCONTINUITY_REASON_AUTO_TRANSITION ||
+                reason == DISCONTINUITY_REASON_SKIP
+            )
                 updateTimingData(timingData)
         }
     }

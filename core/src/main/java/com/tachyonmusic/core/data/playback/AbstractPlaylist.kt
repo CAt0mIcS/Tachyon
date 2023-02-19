@@ -70,8 +70,7 @@ abstract class AbstractPlaylist(
         })
     }.build()
 
-    override fun toMediaItemList(): List<MediaItem> =
-        playbacks.map { it.toMediaItem(associatedPlaylist = this) }
+    override fun toMediaItemList(): List<MediaItem> = playbacks.map { it.toMediaItem() }
 
     override fun add(playback: SinglePlayback) {
         _playbacks.add(playback)

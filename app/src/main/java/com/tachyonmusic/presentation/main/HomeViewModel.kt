@@ -56,9 +56,7 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onItemClicked(playback: Playback) {
-        if (playback is SinglePlayback)
-            playPlayback(playback)
-        else TODO()
+        playPlayback(playback)
     }
 
     fun refreshArtwork() {

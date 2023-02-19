@@ -10,3 +10,8 @@ fun <T> MutableList<T>.removeFirst(predicate: (T) -> Boolean): Boolean {
     return false
 }
 
+
+fun <E> Collection<E>.indexOfOrNull(element: E): Int? {
+    val i = indexOf(element)
+    return if (i == -1) null else i
+}

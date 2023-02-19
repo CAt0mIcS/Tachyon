@@ -249,10 +249,10 @@ class MediaPlaybackService(
             )
             setHandleAudioBecomingNoisy(true)
         }.build().apply {
-
             // TODO: Debug only
             addAnalyticsListener(EventLogger())
-            repeatMode = Player.REPEAT_MODE_ONE
+
+            repeatMode = Player.REPEAT_MODE_ALL
         }).apply {
             registerEventListener(CustomPlayerEventListener())
         }

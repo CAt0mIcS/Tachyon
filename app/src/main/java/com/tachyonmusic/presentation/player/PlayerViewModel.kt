@@ -103,7 +103,7 @@ class PlayerViewModel @Inject constructor(
 
     val isPlaying = getIsPlayingState()
 
-    private val _repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.One)
+    private val _repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.All)
     val repeatMode = _repeatMode.asStateFlow()
 
     fun getCurrentPosition() = getCurrentPlaybackPos() ?: 0.ms
@@ -126,7 +126,8 @@ class PlayerViewModel @Inject constructor(
         setRepeatMode(repeatMode.value)
     }
 
-    fun play(playback: SinglePlayback) = playPlayback(playback)
+    fun play(playback: SinglePlayback) =
+        playPlayback(playback, playInPlaylist = playbackType.value is PlaybackType.Playlist)
 
 
     /***********************************************************************************************
