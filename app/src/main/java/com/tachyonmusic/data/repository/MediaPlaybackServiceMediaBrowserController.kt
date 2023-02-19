@@ -38,6 +38,14 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
     private var browser: MediaBrowser? = null
 
     /**
+     * When swiping the app and then swiping the notification and then relaunching the app
+     * the service somehow doesn't get fully reset and we can't seek properly. This controls
+     * if we should save the seek position in [cachedSeekPositionWhenAvailable] despite having
+     * the seek player command available
+     */
+    private var allowSeek = true
+
+    /**
      * We might want to seek to the position while the player is still preparing. Cache
      * the position and seek to it in [onMediaItemTransition]
      */
@@ -62,6 +70,25 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
             browser?.addListener(this@MediaPlaybackServiceMediaBrowserController)
             invokeEvent {
                 it.onConnected()
+            }
+
+            /**
+             * TODO: Bug
+             *  * Start playback
+             *  * Swipe app from recent app stack
+             *  * Pause playback using player notification and swipe it
+             *  * Open app again --> Play/Pause Icon in MiniPlayer will be incorrect (Pause Icon)
+             *
+             *  Below is a quick fix to detect if the playback is currently playing. When doing the
+             *  above steps to reproduce the bug [playWhenReady] will be set to true despite the playback
+             *  not playing
+             */
+            val oldPos = browser?.currentPosition
+            delay(1.ms)
+            if (oldPos == browser?.currentPosition) {
+                _playWhenReadyState.update { false }
+                _playbackState.update { null }
+                allowSeek = false
             }
         }
     }
@@ -101,7 +128,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         browser?.sendSetPlaybackEvent(playlist)
     }
 
-    override var repeatMode: RepeatMode = RepeatMode.One
+    override var repeatMode: RepeatMode = RepeatMode.All
         set(value) {
             if (browser != null) {
                 field = value
@@ -125,7 +152,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
     }
 
     override fun seekTo(pos: Duration) {
-        if (browser?.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) != true)
+        if (browser?.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) != true || !allowSeek)
             cachedSeekPositionWhenAvailable = pos
         else
             browser?.seekTo(pos.inWholeMilliseconds)
@@ -210,7 +237,8 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         if (cachedSeekPositionWhenAvailable != null &&
             availableCommands.contains(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
         ) {
-            seekTo(cachedSeekPositionWhenAvailable ?: 0.ms)
+            allowSeek = true
+            seekTo(cachedSeekPositionWhenAvailable ?: return)
             cachedSeekPositionWhenAvailable = null
         }
     }

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
@@ -54,6 +55,13 @@ abstract class AbstractLoop(
     private fun toMediaMetadata() = MediaMetadata.Builder().apply {
         setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
         setIsPlayable(true)
+
+        // EmbeddedArtwork automatically handled by media3
+        when (val artworkVal = artwork.value) {
+            null -> {}
+            is RemoteArtwork -> setArtworkUri(Uri.parse(artworkVal.uri.toURL().toString()))
+        }
+
         setTitle(title)
         setArtist(artist)
         setExtras(Bundle().apply {

@@ -1,6 +1,5 @@
 package com.tachyonmusic.domain.use_case.player
 
-import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
@@ -19,21 +18,21 @@ class PlayRecentlyPlayed(
         runOnUiThread {
             if (playback == null)
                 return@runOnUiThread
+            val prevTime = recentlyPlayedInfo?.position ?: browser.currentPosition ?: 0.ms
 
             if (isBrowserPlaybackSet(playback)) {
                 if (!browser.playWhenReady)
                     browser.play()
+                browser.seekTo(prevTime)
                 return@runOnUiThread
             }
 
-
-            val prevTime = browser.currentPosition ?: recentlyPlayedInfo?.position ?: 0.ms
             browser.playWhenReady = true
             browser.playback = playback
             browser.seekTo(prevTime)
         }
     }
 
-    private fun isBrowserPlaybackSet(playback: Playback) =
-        playback == browser.playback && browser.currentPosition != null
+    private fun isBrowserPlaybackSet(playback: SinglePlayback) =
+        playback == browser.playback && playback == browser.playbackState.value && browser.currentPosition != null
 }
