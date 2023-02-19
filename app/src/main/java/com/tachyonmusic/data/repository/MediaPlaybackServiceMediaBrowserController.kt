@@ -229,7 +229,12 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
     ): ListenableFuture<SessionResult> = future(Dispatchers.Main) {
         when (command) {
             MediaAction.timingDataUpdatedCommand -> {
-                _timingDataState.update { args.parcelable(MetadataKeys.TimingData) }
+                _timingDataState.update {
+                    val new: TimingDataController =
+                        args.parcelable(MetadataKeys.TimingData) ?: return@update null
+
+                    TimingDataController(new.timingData, new.currentIndex)
+                }
             }
         }
 
