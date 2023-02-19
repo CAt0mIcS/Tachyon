@@ -1,9 +1,12 @@
 package com.tachyonmusic.presentation.player
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.isNullOrEmpty
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
 import com.tachyonmusic.domain.use_case.player.GetCurrentPlaybackState
 import com.tachyonmusic.domain.use_case.player.GetTimingDataState
@@ -17,11 +20,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class TimingDataSeek(
-    val i: Int,
-    val start: Duration,
-    val end: Duration
-)
 
 @HiltViewModel
 class LoopEditorViewModel @Inject constructor(
@@ -37,47 +35,56 @@ class LoopEditorViewModel @Inject constructor(
         it?.duration ?: 0.ms
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0.ms)
 
-    private val _timingDataSeek = MutableStateFlow<TimingDataSeek?>(null)
-    val timingDataSeek = _timingDataSeek.asStateFlow()
+    private val _timingData = mutableStateListOf<TimingData>()
+    val timingData: List<TimingData> = _timingData
 
-    val timingData =
-        combine(getTimingDataState(), duration, timingDataSeek) { timingData, duration, seekInfo ->
-            var current = timingData ?: TimingDataController(listOf(TimingData(0.ms, duration)))
+    private val _currentIndex = MutableStateFlow(0)
+    val currentIndex = _currentIndex.asStateFlow()
 
-            if(seekInfo != null) {
-                current = TimingDataController(current.timingData.apply {
-                    this[seekInfo.i].startTime = seekInfo.start
-                    this[seekInfo.i].endTime = seekInfo.end
-                }, current.currentIndex)
-            }
+    init {
+        combine(getTimingDataState(), duration) { timingData, duration ->
+            val newTimingData = if (timingData.isNullOrEmpty())
+                listOf(TimingData(0.ms, duration))
+            else
+                timingData.timingData
 
-            println("TD: $current, $seekInfo")
-            current
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), TimingDataController())
+            _timingData.update { newTimingData }
+            _currentIndex.update { timingData?.currentIndex ?: 0 }
+        }.launchIn(viewModelScope)
+    }
 
     fun updateTimingData(i: Int, start: Duration, end: Duration) {
-        _timingDataSeek.update { TimingDataSeek(i, start, end) }
+        _timingData.update {
+            it[i].startTime = start
+            it[i].endTime = end
+            it
+        }
     }
 
     fun setNewTimingData() {
-        setBrowserTimingData(timingData.value)
-        _timingDataSeek.update { null }
+        setBrowserTimingData(TimingDataController(timingData.toList(), currentIndex.value))
     }
 
     fun addNewTimingData(i: Int) {
-        val new = TimingDataController(timingData.value.timingData.apply {
-            add(i, TimingData(0.ms, duration.value))
-        }, timingData.value.currentIndex)
-
-        setBrowserTimingData(new)
+        setBrowserTimingData(
+            TimingDataController(
+                _timingData.apply {
+                    add(i, TimingData(0.ms, duration.value))
+                }.toList(),
+                currentIndex.value
+            )
+        )
     }
 
     fun removeTimingData(i: Int) {
-        val new = TimingDataController(timingData.value.timingData.apply {
-            removeAt(i)
-        }, timingData.value.currentIndex)
-
-        setBrowserTimingData(new)
+        setBrowserTimingData(
+            TimingDataController(
+                _timingData.apply {
+                    removeAt(i)
+                }.toList(),
+                currentIndex.value
+            )
+        )
     }
 
     fun saveNewLoop(name: String) {
@@ -89,4 +96,11 @@ class LoopEditorViewModel @Inject constructor(
                 _loopError.value = res.message
         }
     }
+}
+
+
+fun <T> SnapshotStateList<T>.update(action: (List<T>) -> List<T>) {
+    val old = this.toMutableList()
+    clear()
+    addAll(action(old))
 }

@@ -39,7 +39,7 @@ fun LoopEditor(
     modifier: Modifier = Modifier,
     viewModel: LoopEditorViewModel = hiltViewModel()
 ) {
-    val timingData by viewModel.timingData.collectAsState()
+    val timingData = viewModel.timingData
 
     Column(modifier = modifier.padding(start = Theme.padding.extraSmall)) {
         IconButton(
@@ -62,8 +62,10 @@ fun LoopEditor(
         }
 
         val duration by viewModel.duration.collectAsState()
+        val currentIndex by viewModel.currentIndex.collectAsState()
 
         for (i in timingData.indices) {
+
             RangeSlider(
                 value = timingData[i].startTime.inWholeMilliseconds.toFloat()..timingData[i].endTime.inWholeMilliseconds.toFloat(),
                 onValueChange = {
@@ -72,7 +74,7 @@ fun LoopEditor(
                 onValueChangeFinished = viewModel::setNewTimingData,
                 valueRange = 0f..duration.inWholeMilliseconds.toFloat(),
                 colors = SliderDefaults.colors(
-                    thumbColor = if (i == timingData.currentIndex) Theme.colors.orange else Theme.colors.contrastLow,
+                    thumbColor = if (i == currentIndex) Theme.colors.orange else Theme.colors.contrastLow,
                     activeTrackColor = Theme.colors.orange,
                     inactiveTrackColor = Theme.colors.partialOrange1
                 )

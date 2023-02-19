@@ -4,6 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Song
@@ -46,7 +47,7 @@ class RemoteLoopImpl(
             return RemoteLoopImpl(
                 mediaId,
                 name,
-                TimingDataController(map["timingData"]!! as ArrayList<String>),
+                TimingDataController(map["timingData"]!! as List<TimingData>),
                 LocalSongImpl.build(mediaId.underlyingMediaId!!)
             )
         }

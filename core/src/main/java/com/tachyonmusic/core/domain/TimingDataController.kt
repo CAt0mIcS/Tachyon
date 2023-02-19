@@ -4,31 +4,19 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.Duration
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
-class TimingDataController(
-    private val _timingData: ArrayList<String> = arrayListOf(),
-    currentIndex: Int = 0
-) : Parcelable {
+data class TimingDataController(
+    val timingData: List<TimingData> = listOf(),
     var currentIndex: Int = 0
-        private set
-
+) : Parcelable {
     val next: TimingData
         get() = nextTimingData()
 
     val current: TimingData
         get() = currentTimingData()
 
-    val timingData: MutableList<TimingData>
-        get() = _timingData.map { TimingData.deserialize(it) }.toMutableList()
-
-    constructor(
-        timingData: List<TimingData>,
-        currentIndex: Int = 0
-    ) : this(timingData.map { it.toString() } as ArrayList<String>, currentIndex)
-
-    init {
-        this.currentIndex = currentIndex
-    }
 
     fun advanceToCurrentPosition(position: Duration) {
         currentIndex = getIndexOfCurrentPosition(position)
@@ -36,7 +24,7 @@ class TimingDataController(
 
     fun advanceToNext() {
         currentIndex++
-        if (currentIndex >= _timingData.size)
+        if (currentIndex >= timingData.size)
             currentIndex = 0
     }
 
@@ -45,8 +33,8 @@ class TimingDataController(
         if (position == 0.ms)
             return 0
 
-        for (i in _timingData.indices) {
-            if (TimingData.deserialize(_timingData[i]).surrounds(position))
+        for (i in timingData.indices) {
+            if (timingData[i].surrounds(position))
                 return i
         }
 
@@ -56,9 +44,9 @@ class TimingDataController(
     fun closestTimingDataIndexAfter(position: Duration): Int {
         var closestApproachIndex = 0
         var closestApproach = Int.MAX_VALUE
-        for (i in _timingData.indices) {
+        for (i in timingData.indices) {
             val distance =
-                (TimingData.deserialize(_timingData[i]).startTime - position).inWholeMilliseconds.toInt()
+                (timingData[i].startTime - position).inWholeMilliseconds.toInt()
             if (distance > 0 && distance < closestApproach) {
                 closestApproach = distance
                 closestApproachIndex = i
@@ -68,57 +56,62 @@ class TimingDataController(
     }
 
     fun anySurrounds(position: Duration): Boolean {
-        for (item in _timingData)
-            if (TimingData.deserialize(item).surrounds(position))
+        for (item in timingData)
+            if (item.surrounds(position))
                 return true
         return false
     }
 
     private fun nextTimingData(): TimingData {
         var nextIdx = currentIndex + 1
-        if (nextIdx >= _timingData.size)
+        if (nextIdx >= timingData.size)
             nextIdx = 0
-        return TimingData.deserialize(_timingData[nextIdx])
+        return timingData[nextIdx]
     }
 
-    private fun currentTimingData() = TimingData.deserialize(_timingData[currentIndex])
+    private fun currentTimingData() = timingData[currentIndex]
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-//        parcel.writeParcelableArray(this.toTypedArray(), flags)
-
-        parcel.writeStringArray(_timingData.toTypedArray())
+        // TODO: API
+        parcel.writeParcelableList(timingData, flags)
         parcel.writeInt(currentIndex)
     }
 
     override fun describeContents() = 0
 
-    override fun toString() = _timingData.joinToString(separator = ";") { it }
+    override fun toString() = timingData.joinToString(separator = ";") { it.toString() }
 
     companion object CREATOR : Parcelable.Creator<TimingDataController> {
         override fun createFromParcel(parcel: Parcel): TimingDataController {
-            // TODO: Better implementation for loading arrays/lists/...
-//            val list = parcel.readParcelableArray(TimingData::class.java.classLoader)
-//                ?.map { it as TimingData } ?: emptyList()
-
-            val str = parcel.createStringArray()!!.toMutableList() as ArrayList<String>
+            val timingData = mutableListOf<TimingData>()
+            // TODO: API
+            parcel.readParcelableList(timingData, TimingData::class.java.classLoader)
 
             val index = parcel.readInt()
-            return TimingDataController(str, index)
+            return TimingDataController(timingData, index)
         }
 
         override fun newArray(size: Int): Array<TimingDataController?> = arrayOfNulls(size)
     }
 
-    fun getOrNull(index: Int) = TimingData.deserializeIfValid(_timingData.getOrNull(index))
-    fun isEmpty() = _timingData.isEmpty()
-    fun isNotEmpty() = _timingData.isNotEmpty()
-    val size get() = _timingData.size
-    val indices get() = _timingData.indices
-    operator fun get(index: Int) = TimingData.deserialize(_timingData[index])
+    fun getOrNull(index: Int) = timingData.getOrNull(index)
+    fun isEmpty() = timingData.isEmpty()
+    fun isNotEmpty() = timingData.isNotEmpty()
+    val size get() = timingData.size
+    val indices get() = timingData.indices
+    operator fun get(index: Int) = timingData[index]
 
     override fun equals(other: Any?): Boolean {
         if (other !is TimingDataController) return false
-        return other._timingData == _timingData && other.currentIndex == currentIndex
+        return timingData == other.timingData && currentIndex == other.currentIndex
     }
 }
 
+@OptIn(ExperimentalContracts::class)
+fun TimingDataController?.isNullOrEmpty(): Boolean {
+    contract {
+        returns(false) implies (this@isNullOrEmpty != null)
+    }
+
+    return this == null || timingData.isEmpty()
+}

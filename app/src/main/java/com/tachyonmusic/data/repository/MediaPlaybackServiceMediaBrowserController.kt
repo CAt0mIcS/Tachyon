@@ -202,6 +202,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         val playlist = mediaItem?.mediaMetadata?.associatedPlaylist
         _associatedPlaylistState.update { playlist }
         _playbackState.update { playback }
+        _timingDataState.update { playback?.timingData }
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {

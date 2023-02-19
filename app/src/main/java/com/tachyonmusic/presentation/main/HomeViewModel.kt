@@ -42,8 +42,7 @@ class HomeViewModel @Inject constructor(
         observeHistory().map { newHistory ->
             _history.value = newHistory
 
-            // TODO: Cast
-            getOrLoadArtwork(newHistory.map { it as Song }).onEach {
+            getOrLoadArtwork(newHistory.mapNotNull { it.underlyingSong }).onEach {
                 if (it is Resource.Success)
                     history.value[it.data!!.i].artwork.value = it.data!!.artwork
 

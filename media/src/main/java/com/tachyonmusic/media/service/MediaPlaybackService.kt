@@ -21,6 +21,7 @@ import com.tachyonmusic.core.data.constants.MediaAction.sendOnTimingDataUpdatedE
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.logger.LoggerImpl
@@ -161,9 +162,8 @@ class MediaPlaybackService(
         ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
             return@future when (customCommand) {
                 MediaAction.setPlaybackCommand -> {
-                    val loadingRes = getPlaylistForPlayback(
-                        args.parcelable(MetadataKeys.Playback)
-                    )
+                    val playback: Playback? = args.parcelable(MetadataKeys.Playback)
+                    val loadingRes = getPlaylistForPlayback(playback)
 
                     if (loadingRes is Resource.Error)
                         return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
@@ -177,6 +177,9 @@ class MediaPlaybackService(
 
                         if (prepareRes is Resource.Error)
                             return@withContext SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
+
+                        mediaSession.sendOnTimingDataUpdatedEvent(playback?.timingData)
+
                         SessionResult(SessionResult.RESULT_SUCCESS)
                     }
                 }
