@@ -7,8 +7,8 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
-import kotlinx.coroutines.flow.MutableStateFlow
 import com.tachyonmusic.util.Duration
+import kotlinx.coroutines.flow.MutableStateFlow
 
 interface Playback : Parcelable {
     val title: String?

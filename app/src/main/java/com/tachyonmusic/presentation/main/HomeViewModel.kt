@@ -6,13 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.main.ObserveHistory
 import com.tachyonmusic.domain.use_case.main.UnloadArtworks
 import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.main.UpdateSongDatabase
+import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers

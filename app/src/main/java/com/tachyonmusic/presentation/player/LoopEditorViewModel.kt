@@ -1,7 +1,6 @@
 package com.tachyonmusic.presentation.player
 
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
@@ -11,10 +10,7 @@ import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
 import com.tachyonmusic.domain.use_case.player.GetCurrentPlaybackState
 import com.tachyonmusic.domain.use_case.player.GetTimingDataState
 import com.tachyonmusic.domain.use_case.player.SetNewTimingData
-import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.UiText
-import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -32,12 +28,13 @@ class LoopEditorViewModel @Inject constructor(
     val loopError = _loopError.asStateFlow()
 
     val duration = getPlaybackState().map {
-        it?.duration ?: 0.ms
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0.ms)
+        it?.duration ?: Long.MAX_VALUE.ms
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
     private val _timingData = mutableStateListOf<TimingData>()
     val timingData: List<TimingData> = _timingData
 
+    // TODO: When adding new timing data while playing loop index sometimes won't be updated anymore
     private val _currentIndex = MutableStateFlow(0)
     val currentIndex = _currentIndex.asStateFlow()
 
@@ -96,11 +93,4 @@ class LoopEditorViewModel @Inject constructor(
                 _loopError.value = res.message
         }
     }
-}
-
-
-fun <T> SnapshotStateList<T>.update(action: (List<T>) -> List<T>) {
-    val old = this.toMutableList()
-    clear()
-    addAll(action(old))
 }

@@ -7,13 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
+import com.tachyonmusic.util.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.tachyonmusic.util.Duration
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(

@@ -1,6 +1,5 @@
 package com.tachyonmusic.domain.use_case.player
 
-import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.util.Duration

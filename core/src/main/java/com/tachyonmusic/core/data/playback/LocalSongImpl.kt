@@ -10,9 +10,9 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.File
 import com.tachyonmusic.util.ms
-import com.tachyonmusic.util.Duration
 
 /**
  * Song stored in local storage with a path in the filesystem

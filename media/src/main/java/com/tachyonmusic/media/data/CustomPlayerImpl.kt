@@ -10,12 +10,12 @@ import androidx.media3.common.util.Clock
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.media.util.timingData
 import com.tachyonmusic.media.domain.CustomPlayer
+import com.tachyonmusic.media.util.timingData
+import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
 import com.tachyonmusic.util.ms
-import com.tachyonmusic.util.Duration
 
 /**
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands

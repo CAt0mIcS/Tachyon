@@ -1,8 +1,8 @@
 package com.tachyonmusic.database.domain.repository
 
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import kotlinx.coroutines.flow.Flow
 import com.tachyonmusic.util.Duration
+import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {
     suspend fun getSettings(): SettingsEntity

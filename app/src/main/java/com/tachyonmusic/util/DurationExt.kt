@@ -1,6 +1,6 @@
 package com.tachyonmusic.util
 
-import java.util.Locale
+import java.util.*
 
 fun Duration.toReadableString(includeMilliseconds: Boolean): String {
     val valueMs = inWholeMilliseconds

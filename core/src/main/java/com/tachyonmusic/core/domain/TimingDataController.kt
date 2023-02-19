@@ -2,8 +2,8 @@ package com.tachyonmusic.core.domain
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.ms
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -72,8 +72,7 @@ data class TimingDataController(
     private fun currentTimingData() = timingData[currentIndex]
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        // TODO: API
-        parcel.writeParcelableList(timingData, flags)
+        parcel.writeTypedArray(timingData.toTypedArray(), flags)
         parcel.writeInt(currentIndex)
     }
 
@@ -83,12 +82,10 @@ data class TimingDataController(
 
     companion object CREATOR : Parcelable.Creator<TimingDataController> {
         override fun createFromParcel(parcel: Parcel): TimingDataController {
-            val timingData = mutableListOf<TimingData>()
-            // TODO: API
-            parcel.readParcelableList(timingData, TimingData::class.java.classLoader)
+            val timingData = parcel.createTypedArray(TimingData.CREATOR)!!
 
             val index = parcel.readInt()
-            return TimingDataController(timingData, index)
+            return TimingDataController(timingData.toList(), index)
         }
 
         override fun newArray(size: Int): Array<TimingDataController?> = arrayOfNulls(size)

@@ -3,12 +3,7 @@ package com.tachyonmusic.di
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
-import com.tachyonmusic.database.domain.repository.DataRepository
-import com.tachyonmusic.database.domain.repository.HistoryRepository
-import com.tachyonmusic.database.domain.repository.LoopRepository
-import com.tachyonmusic.database.domain.repository.PlaylistRepository
-import com.tachyonmusic.database.domain.repository.SettingsRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -22,9 +17,8 @@ import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.ArtworkCodex
-import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.media.domain.use_case.GetIsInternetConnectionMetered
+import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
 import dagger.Module
 import dagger.Provides

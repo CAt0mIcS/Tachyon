@@ -8,14 +8,14 @@ import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.core.data.ext.toInt
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.core.data.ext.toInt
 import com.tachyonmusic.core.domain.playback.Playlist
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Duration
+import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class AbstractSong(
     final override val mediaId: MediaId,

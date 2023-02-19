@@ -21,14 +21,8 @@ class RemotePlaylistImpl(
         val CREATOR = object : Parcelable.Creator<RemotePlaylistImpl> {
             override fun createFromParcel(parcel: Parcel): RemotePlaylistImpl {
                 val name = parcel.readString()!!
-                // TODO: More efficient way to convert Array<Parcelable> to MutableList<SinglePlayback>
-                val playbacks =
-                    parcel.readParcelableArray(SinglePlayback::class.java.classLoader)!!
-                        .let { array ->
-                            MutableList<SinglePlayback>(array.size) { i ->
-                                array[i] as SinglePlayback
-                            }
-                        }
+                val playbacks = parcel.readParcelableArray(SinglePlayback::class.java.classLoader)!!
+                    .map { it as SinglePlayback }.toMutableList()
 
                 val currentPlaylistIndex = parcel.readInt()
 

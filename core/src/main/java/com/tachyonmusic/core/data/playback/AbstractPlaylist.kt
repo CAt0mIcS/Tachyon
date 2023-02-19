@@ -11,8 +11,8 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import kotlinx.coroutines.flow.MutableStateFlow
 import com.tachyonmusic.util.Duration
+import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class AbstractPlaylist(
     final override val mediaId: MediaId,

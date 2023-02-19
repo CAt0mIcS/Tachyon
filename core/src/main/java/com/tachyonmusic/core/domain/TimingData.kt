@@ -6,9 +6,9 @@ import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
+import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
 import java.security.InvalidParameterException
-import com.tachyonmusic.util.Duration
 
 /**
  * Class which holds one start and end time of a loop

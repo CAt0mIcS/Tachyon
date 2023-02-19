@@ -12,7 +12,6 @@ import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.util.ms
 
 fun SongEntity.toSong() = LocalSongImpl(mediaId, title, artist, duration)
 

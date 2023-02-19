@@ -13,8 +13,8 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
-import kotlinx.coroutines.flow.MutableStateFlow
 import com.tachyonmusic.util.Duration
+import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class AbstractLoop(
     final override val mediaId: MediaId,

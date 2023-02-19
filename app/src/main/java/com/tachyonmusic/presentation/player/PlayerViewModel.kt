@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.data.playback.LocalSongImpl
-import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
@@ -13,50 +12,18 @@ import com.tachyonmusic.domain.use_case.GetHistory
 import com.tachyonmusic.domain.use_case.ObservePlaylists
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.PlayPlayback
-import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewPlaylist
-import com.tachyonmusic.domain.use_case.player.GetAssociatedPlaylistState
-import com.tachyonmusic.domain.use_case.player.GetCurrentPlaybackState
-import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
-import com.tachyonmusic.domain.use_case.player.GetIsPlayingState
-import com.tachyonmusic.domain.use_case.player.GetPlaybackChildren
-import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
-import com.tachyonmusic.domain.use_case.player.PlayRecentlyPlayed
-import com.tachyonmusic.domain.use_case.player.RemovePlaybackFromPlaylist
-import com.tachyonmusic.domain.use_case.player.SavePlaybackToPlaylist
-import com.tachyonmusic.domain.use_case.player.SeekToPosition
-import com.tachyonmusic.domain.use_case.player.SetRepeatMode
+import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
+import com.tachyonmusic.presentation.player.data.SeekIncrements
 import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-
-
-data class SeekIncrements(
-    var forward: Duration = SettingsEntity().seekForwardIncrement,
-    var back: Duration = SettingsEntity().seekBackIncrement
-)
-
-data class ArtworkState(
-    val artwork: Artwork?,
-    val isLoading: Boolean
-)
 
 
 @HiltViewModel
@@ -189,7 +156,7 @@ class PlayerViewModel @Inject constructor(
         playlists.map { playlist ->
             PlaylistInfo(playlist.name, playlist.hasPlayback(currentPlayback))
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun editPlaylist(i: Int, shouldAdd: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
