@@ -105,6 +105,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
                 browser!!.sendSetPlaybackEvent(value)
             else
                 stop()
+            _associatedPlaylistState.update { null }
         }
 
     override var playWhenReady: Boolean
