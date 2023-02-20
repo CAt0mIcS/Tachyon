@@ -152,11 +152,11 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         browser?.pause()
     }
 
-    override fun seekTo(pos: Duration) {
+    override fun seekTo(pos: Duration?) {
         if (browser?.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) != true || !allowSeek)
             cachedSeekPositionWhenAvailable = pos
         else
-            browser?.seekTo(pos.inWholeMilliseconds)
+            browser?.seekTo(pos?.inWholeMilliseconds ?: C.TIME_UNSET)
     }
 
     override fun seekForward() {
@@ -167,11 +167,11 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         browser?.seekBack()
     }
 
-    override fun seekTo(playback: SinglePlayback, pos: Duration) {
+    override fun seekTo(playback: SinglePlayback, pos: Duration?) {
         val i = associatedPlaylistState.value?.playbacks?.indexOfOrNull(playback)
             ?: throw IllegalArgumentException("playback not in playlist")
 
-        browser?.seekTo(i, if (pos == 0.ms) C.TIME_UNSET else pos.inWholeMilliseconds)
+        browser?.seekTo(i, pos?.inWholeMilliseconds ?: C.TIME_UNSET)
     }
 
     override suspend fun getChildren(
@@ -214,7 +214,8 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         }
 
     override val currentPosition: Duration?
-        get() = if (browser?.currentMediaItem == null) null else browser?.currentPosition?.ms
+        get() = if (browser?.currentMediaItem == null) null else cachedSeekPositionWhenAvailable
+            ?: browser?.currentPosition?.ms
 
     private val _timingDataState = MutableStateFlow<TimingDataController?>(null)
     override val timingDataState = _timingDataState.asStateFlow()
@@ -240,7 +241,23 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         ) {
             allowSeek = true
             seekTo(cachedSeekPositionWhenAvailable ?: return)
-            cachedSeekPositionWhenAvailable = null
+
+            /**
+             * TODO: Bug
+             *  When first starting playback of recently played [MediaBrowser.getCurrentPosition] will
+             *  first return 0.ms despite seeking to [cachedSeekPositionWhenAvailable]. Bellow code
+             *  waits for [MediaBrowser.getCurrentPosition] to update with the correct value
+             */
+            launch(Dispatchers.Main) {
+                while (true) {
+                    val currPos = browser?.currentPosition?.ms ?: 0.ms
+                    if (currPos > (cachedSeekPositionWhenAvailable ?: 0.ms))
+                        break
+                    delay(100.ms)
+                }
+
+                cachedSeekPositionWhenAvailable = null
+            }
         }
     }
 

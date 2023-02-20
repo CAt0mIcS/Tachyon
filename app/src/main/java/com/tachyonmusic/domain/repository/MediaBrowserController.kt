@@ -12,7 +12,6 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
-import com.tachyonmusic.util.ms
 import kotlinx.coroutines.flow.StateFlow
 
 interface MediaBrowserController : DefaultLifecycleObserver,
@@ -66,14 +65,14 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     fun stop()
     fun play()
     fun pause()
-    fun seekTo(pos: Duration)
+    fun seekTo(pos: Duration?)
     fun seekForward()
     fun seekBack()
 
     /**
      * Find [playback] in current [associatedPlaylistState] and start it
      */
-    fun seekTo(playback: SinglePlayback, pos: Duration = 0.ms)
+    fun seekTo(playback: SinglePlayback, pos: Duration? = null)
 
     interface EventListener {
         fun onConnected() {}
