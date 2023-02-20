@@ -8,10 +8,7 @@ import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.use_case.GetHistory
-import com.tachyonmusic.domain.use_case.ObservePlaylists
-import com.tachyonmusic.domain.use_case.ObserveSettings
-import com.tachyonmusic.domain.use_case.PlayPlayback
+import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
@@ -36,6 +33,7 @@ class PlayerViewModel @Inject constructor(
     getIsPlayingState: GetIsPlayingState,
     private val getCurrentPlaybackPos: GetCurrentPosition,
     private val seekToPosition: SeekToPosition,
+    getRecentlyPlayed: GetRecentlyPlayed,
     private val pauseResumePlayback: PauseResumePlayback,
     private val playRecentlyPlayed: PlayRecentlyPlayed,
     private val setRepeatMode: SetRepeatMode,
@@ -106,10 +104,18 @@ class PlayerViewModel @Inject constructor(
     private val _repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.All)
     val repeatMode = _repeatMode.asStateFlow()
 
-    fun getCurrentPosition() = getCurrentPlaybackPos() ?: 0.ms
+    private var recentlyPlayedPos: Duration? = null
+
+    fun getCurrentPosition() = getCurrentPlaybackPos() ?: recentlyPlayedPos ?: 0.ms
     fun seekTo(pos: Duration) = seekToPosition(pos)
     fun seekBack() = seekToPosition(getCurrentPosition() - seekIncrements.value.back)
     fun seekForward() = seekToPosition(getCurrentPosition() + seekIncrements.value.forward)
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            recentlyPlayedPos = getRecentlyPlayed()?.position
+        }
+    }
 
     fun pauseResume() {
         if (isPlaying.value)
