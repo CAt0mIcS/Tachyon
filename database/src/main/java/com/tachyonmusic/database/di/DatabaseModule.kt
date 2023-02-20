@@ -86,9 +86,6 @@ object DatabaseUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideConvertHistoryEntityToPlaybackUseCase(
-        findPlaybackByMediaId: FindPlaybackByMediaId,
-        songRepository: SongRepository,
-        loopRepository: LoopRepository,
-    ) = ConvertHistoryEntityToPlayback(findPlaybackByMediaId, songRepository, loopRepository)
+    fun provideConvertHistoryEntityToPlaybackUseCase(findPlaybackByMediaId: FindPlaybackByMediaId) =
+        ConvertHistoryEntityToPlayback(findPlaybackByMediaId)
 }

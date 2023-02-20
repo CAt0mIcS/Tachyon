@@ -6,10 +6,8 @@ import com.tachyonmusic.core.data.playback.RemoteLoopImpl
 import com.tachyonmusic.core.data.playback.RemotePlaylistImpl
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.database.domain.model.LoopEntity
-import com.tachyonmusic.database.domain.model.PlaybackEntity
-import com.tachyonmusic.database.domain.model.PlaylistEntity
-import com.tachyonmusic.database.domain.model.SongEntity
+import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.database.domain.model.*
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 
@@ -27,6 +25,12 @@ fun LoopEntity.toLoop() =
             duration
         )
     )
+
+fun SinglePlaybackEntity.toPlayback(): SinglePlayback = when (this) {
+    is SongEntity -> toSong()
+    is LoopEntity -> toLoop()
+    else -> TODO("Invalid SinglePlayback type ${this::class.java.name}")
+}
 
 suspend fun PlaylistEntity.toPlaylist(
     songRepository: SongRepository,

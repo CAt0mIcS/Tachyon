@@ -54,7 +54,7 @@ class PlayerViewModel @Inject constructor(
      ************************************ CURRENT PLAYBACK *****************************************
      **********************************************************************************************/
     private val _playback = getPlaybackState().map {
-        it ?: getHistory().firstOrNull() as SinglePlayback?
+        it ?: getHistory().firstOrNull()
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val playback = _playback.map {

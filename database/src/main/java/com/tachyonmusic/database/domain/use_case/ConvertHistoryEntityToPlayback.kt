@@ -1,20 +1,20 @@
 package com.tachyonmusic.database.domain.use_case
 
-import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.HistoryEntity
-import com.tachyonmusic.database.domain.repository.LoopRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.util.toPlayback
 
 class ConvertHistoryEntityToPlayback(
-    private val findPlaybackByMediaId: FindPlaybackByMediaId,
-    private val songRepository: SongRepository,
-    private val loopRepository: LoopRepository
+    private val findPlaybackByMediaId: FindPlaybackByMediaId
 ) {
-    suspend operator fun invoke(history: HistoryEntity?): Playback? {
+    suspend operator fun invoke(history: HistoryEntity?): SinglePlayback? {
         if (history == null)
             return null
 
-        return findPlaybackByMediaId(history.mediaId)?.toPlayback(songRepository, loopRepository)
+        return when (val playbackEntity = findPlaybackByMediaId(history.mediaId)) {
+            is SinglePlaybackEntity? -> playbackEntity?.toPlayback()
+            else -> null
+        }
     }
 }

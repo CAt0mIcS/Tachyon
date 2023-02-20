@@ -6,9 +6,11 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.data.data_source.HistoryDao
 import com.tachyonmusic.database.domain.model.HistoryEntity
 import com.tachyonmusic.database.domain.model.PlaybackEntity
+import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.use_case.ConvertHistoryEntityToPlayback
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +27,7 @@ class RoomHistoryRepository(
         pageSize: Int,
         prefetchDistance: Int,
         initialLoadSize: Int
-    ): Flow<PagingData<Playback>> {
+    ): Flow<PagingData<SinglePlayback>> {
         val pagingSourceFactory = { dao.getPagedHistory() }
         return Pager(
             config = PagingConfig(pageSize, prefetchDistance, initialLoadSize = initialLoadSize),
@@ -45,16 +47,16 @@ class RoomHistoryRepository(
         }
     }
 
-    override suspend fun getHistory(): List<Playback> =
+    override suspend fun getHistory(): List<SinglePlayback> =
         dao.getHistory().map {
             entityToPlayback(it) ?: TODO("Playback not found ${it.mediaId}")
         }
 
-    override suspend fun plusAssign(playback: PlaybackEntity) {
+    override suspend fun plusAssign(playback: SinglePlaybackEntity) {
         dao.addHistory(HistoryEntity(playback.mediaId))
     }
 
-    override suspend fun minusAssign(playback: PlaybackEntity) {
+    override suspend fun minusAssign(playback: SinglePlaybackEntity) {
         dao.removeHistory(playback.mediaId)
     }
 
