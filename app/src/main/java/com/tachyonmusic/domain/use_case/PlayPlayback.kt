@@ -36,8 +36,10 @@ class PlayPlayback(
             else -> TODO("Invalid playback type ${playback?.javaClass?.name.toString()}")
         }
 
-        if (playback != null)
+        if (playback != null) {
             browser.playWhenReady = true
+            browser.prepare()
+        }
 
         return Resource.Success()
     }
