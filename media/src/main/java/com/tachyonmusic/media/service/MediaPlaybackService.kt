@@ -64,10 +64,11 @@ class MediaPlaybackService(
     @Inject
     lateinit var getSettings: GetSettings
 
-    private val supervisor = SupervisorJob()
-    private val ioScope = CoroutineScope(supervisor + Dispatchers.IO)
+    private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var mediaSession: MediaLibrarySession
+
+    private var queuedPlayback: SinglePlayback? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -92,6 +93,8 @@ class MediaPlaybackService(
 
     override fun onDestroy() {
         super.onDestroy()
+        ioScope.coroutineContext.cancelChildren()
+
         exoPlayer.release()
         castPlayer.release()
         mediaSession.release()
@@ -159,6 +162,7 @@ class MediaPlaybackService(
                             val idx = currentPlayer.indexOfMediaItem(playback.mediaId)
 
                             if (idx >= 0) {
+                                queuedPlayback = playback
                                 currentPlayer.seekTo(idx, 0)
                                 return@runOnUiThread true
                             }
@@ -174,6 +178,7 @@ class MediaPlaybackService(
                     if (loadingRes is Resource.Error)
                         return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
 
+                    queuedPlayback = playback.underlyingSinglePlayback
                     runOnUiThread {
                         val prepareRes =
                             currentPlayer.prepare(
@@ -233,17 +238,13 @@ class MediaPlaybackService(
          * this would mean having the first item in the playlist in history as well as the one
          * we actually want to play
          */
-        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED ||
-            equalsFirstMediaItem(mediaItem)
-        ) {
+        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || queuedPlayback != null) {
             ioScope.launch {
-                addNewPlaybackToHistory(mediaItem?.mediaMetadata?.playback)
+                addNewPlaybackToHistory(queuedPlayback ?: mediaItem?.mediaMetadata?.playback)
+                queuedPlayback = null
             }
         }
     }
-
-    private fun equalsFirstMediaItem(mediaItem: MediaItem?) =
-        currentPlayer.mediaItemCount > 0 && mediaItem?.mediaId == currentPlayer.getMediaItemAt(0).mediaId
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (!isPlaying) {

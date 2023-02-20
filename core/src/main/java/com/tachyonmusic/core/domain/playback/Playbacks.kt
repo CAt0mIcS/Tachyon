@@ -41,10 +41,20 @@ interface Playback : Parcelable {
      * @return Either the underlying song in the loop or the first song in the playlist
      */
     val underlyingSong: Song?
-        get() = when(this) {
+        get() = when (this) {
             is Song -> this
             is Loop -> song
             is Playlist -> playbacks.firstOrNull()?.underlyingSong
+            else -> TODO("Invalid Playback ${this.javaClass.name}")
+        }
+
+    /**
+     * @return Either a song, loop or the first item in the playlist (could be song or loop)
+     */
+    val underlyingSinglePlayback: SinglePlayback?
+        get() = when (this) {
+            is SinglePlayback -> this
+            is Playlist -> playbacks.firstOrNull()?.underlyingSinglePlayback
             else -> TODO("Invalid Playback ${this.javaClass.name}")
         }
 }
