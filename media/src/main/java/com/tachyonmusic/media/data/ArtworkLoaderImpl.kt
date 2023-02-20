@@ -73,17 +73,8 @@ internal class ArtworkLoaderImpl(
             }
 
             else -> {
-                if (!fetchOnline)
-                    return Resource.Error(
-                        UiText.StringResource(
-                            R.string.connection_metered_artwork_download_denied,
-                            entity.artist,
-                            entity.title
-                        )
-                    )
-
                 log.debug("Entity ${entity.title} - ${entity.artist} has no artwork type, trying to find artwork...")
-                val newArtwork = tryFindArtwork(entity)
+                val newArtwork = tryFindArtwork(entity, fetchOnline)
                 val ret: Resource<ArtworkData> =
                     when (val artwork = newArtwork.data) {
                         is RemoteArtwork -> {
@@ -101,14 +92,17 @@ internal class ArtworkLoaderImpl(
                         }
 
                         else -> {
-                            log.debug("Entity ${entity.title} - ${entity.artist} found ${ArtworkType.NO_ARTWORK}")
-                            entity.artworkType = ArtworkType.NO_ARTWORK
+                            log.debug("Entity ${entity.title} - ${entity.artist} found ${ArtworkType.NO_ARTWORK}, fetchOnline: $fetchOnline")
+
+                            // Only update entity in database if we also searched the web for artwork
+                            if (fetchOnline)
+                                entity.artworkType = ArtworkType.NO_ARTWORK
                             Resource.Error(
                                 message = UiText.StringResource(
                                     R.string.no_artwork_found,
                                     "${entity.title} - ${entity.artist}"
                                 ),
-                                data = ArtworkData(entityToUpdate = entity)
+                                data = ArtworkData(entityToUpdate = if(fetchOnline) entity else null)
                             )
                         }
                     }
@@ -119,10 +113,11 @@ internal class ArtworkLoaderImpl(
     }
 
     private suspend fun tryFindArtwork(
-        entity: SongEntity
+        entity: SongEntity,
+        fetchOnline: Boolean
     ): Resource<Artwork?> {
         var res = tryFindEmbeddedArtwork(entity)
-        if (res is Resource.Success) // TODO: Return error message from embedded artwork loading too
+        if (!fetchOnline || res is Resource.Success) // TODO: Return error message from embedded artwork loading too
             return res
 
         res = tryFindRemoteArtwork(entity)
