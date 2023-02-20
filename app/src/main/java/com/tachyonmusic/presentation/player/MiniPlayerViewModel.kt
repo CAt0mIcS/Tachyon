@@ -33,15 +33,15 @@ class MiniPlayerViewModel @Inject constructor(
 ) : ViewModel() {
 
     val playback = getPlaybackState().map {
-        it?.underlyingSong ?: getHistory().firstOrNull()?.underlyingSong
-    }.onEach { song ->
-        if (song == null)
+        it?.underlyingSong ?: getHistory().firstOrNull()
+    }.onEach { singlePb ->
+        if (singlePb == null)
             return@onEach
 
         withContext(Dispatchers.IO) {
-            getOrLoadArtwork(song).onEach { res ->
-                song.artwork.update { res.data?.artwork }
-                song.isArtworkLoading.update { false }
+            getOrLoadArtwork(singlePb.underlyingSong ?: return@withContext).onEach { res ->
+                singlePb.artwork.update { res.data?.artwork }
+                singlePb.isArtworkLoading.update { false }
             }.collect()
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
