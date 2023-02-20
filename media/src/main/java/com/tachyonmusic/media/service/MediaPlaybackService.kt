@@ -18,6 +18,7 @@ import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.logger.LoggerImpl
@@ -28,10 +29,7 @@ import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.*
 import com.tachyonmusic.media.util.*
-import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.future
-import com.tachyonmusic.util.ms
-import com.tachyonmusic.util.runOnUiThreadAsync
+import com.tachyonmusic.util.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -146,12 +144,27 @@ class MediaPlaybackService(
             return@future when (customCommand) {
                 MediaAction.setPlaybackCommand -> {
                     val playback: Playback? = args.parcelable(MetadataKeys.Playback)
+                    if (playback is SinglePlayback) {
+                        val playbackChanged = runOnUiThread {
+                            val idx = currentPlayer.indexOfMediaItem(playback.mediaId)
+
+                            if (idx >= 0) {
+                                currentPlayer.seekTo(idx, 0)
+                                return@runOnUiThread true
+                            }
+                            false
+                        }
+
+                        if (playbackChanged)
+                            return@future SessionResult(SessionResult.RESULT_SUCCESS)
+                    }
+
                     val loadingRes = getPlaylistForPlayback(playback)
 
                     if (loadingRes is Resource.Error)
                         return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
 
-                    withContext(Dispatchers.Main) {
+                    runOnUiThread {
                         val prepareRes =
                             currentPlayer.prepare(
                                 loadingRes.data?.mediaItems,
@@ -159,7 +172,7 @@ class MediaPlaybackService(
                             )
 
                         if (prepareRes is Resource.Error)
-                            return@withContext SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
+                            return@runOnUiThread SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
 
                         mediaSession.sendOnTimingDataUpdatedEvent(playback?.timingData)
 
@@ -212,11 +225,17 @@ class MediaPlaybackService(
          * this would mean having the first item in the playlist in history as well as the one
          * we actually want to play
          */
-        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
+        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED ||
+            equalsFirstMediaItem(mediaItem)
+        ) {
             ioScope.launch {
                 addNewPlaybackToHistory(mediaItem?.mediaMetadata?.playback)
             }
+        }
     }
+
+    private fun equalsFirstMediaItem(mediaItem: MediaItem?) =
+        currentPlayer.mediaItemCount > 0 && mediaItem?.mediaId == currentPlayer.getMediaItemAt(0).mediaId
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (!isPlaying) {

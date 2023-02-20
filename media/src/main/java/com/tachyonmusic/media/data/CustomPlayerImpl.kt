@@ -9,7 +9,9 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.Clock
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.util.timingData
 import com.tachyonmusic.util.Duration
@@ -64,6 +66,14 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player),
 
             else -> TODO("createMessage for other types of players")
         }
+
+    override fun indexOfMediaItem(mediaId: MediaId): Int {
+        for(i in 0 until mediaItemCount) {
+            if(MediaId.deserializeIfValid(getMediaItemAt(i).mediaId) == mediaId)
+                return i
+        }
+        return -1
+    }
 
     override fun seekToNext() {
         if (currentTimeline.isEmpty || isPlayingAd) {
