@@ -38,14 +38,6 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
     var browser: MediaBrowser? = null
 
     /**
-     * When swiping the app and then swiping the notification and then relaunching the app
-     * the service somehow doesn't get fully reset and we can't seek properly. This controls
-     * if we should save the seek position in [cachedSeekPositionWhenAvailable] despite having
-     * the seek player command available
-     */
-//    private var allowSeek = true
-
-    /**
      * We might want to seek to the position while the player is still preparing. Cache
      * the position and seek to it in [onMediaItemTransition]
      */
@@ -71,36 +63,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
             invokeEvent {
                 it.onConnected()
             }
-
-            /**
-             * TODO: Bug
-             *  * Start playback
-             *  * Swipe app from recent app stack
-             *  * Pause playback using player notification and swipe it
-             *  * Open app again --> Play/Pause Icon in MiniPlayer will be incorrect (Pause Icon)
-             *
-             *  Below is a quick fix to detect if the playback is currently playing. When doing the
-             *  above steps to reproduce the bug [playWhenReady] will be set to true despite the playback
-             *  not playing
-             */
-//            val oldPos = browser?.currentPosition
-//            delay(1.ms)
-//            if (oldPos == browser?.currentPosition) {
-//                _playWhenReadyState.update { false }
-//                _playbackState.update { null }
-//                allowSeek = false
-//            }
-
-            info()
         }
-    }
-
-    private fun info() {
-//        debugPrint("pbS: ${playbackState.value}")
-//        debugPrint("pwrS: ${playWhenReadyState.value}")
-//
-//        debugPrint("pb: $playback")
-//        debugPrint("pwr: $playWhenReady")
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
@@ -147,6 +110,10 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
     override val nextMediaItemIndex: Int
         get() = browser?.nextMediaItemIndex ?: C.INDEX_UNSET
 
+    override fun prepare() {
+        browser?.prepare()
+    }
+
     override fun stop() {
         browser?.stop()
     }
@@ -160,19 +127,9 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
     }
 
     override fun seekTo(pos: Duration?) {
-//        if (browser?.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) != true || !allowSeek)
-//            cachedSeekPositionWhenAvailable = pos
-//        else
-//            browser?.seekTo(pos?.inWholeMilliseconds ?: C.TIME_UNSET)
-
-        debugPrint("seek")
-        info()
-
         if (browser?.isCommandAvailable(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM) != true) {
-            debugPrint("cached to $pos")
             cachedSeekPositionWhenAvailable = pos
         } else {
-            debugPrint("seek to $pos")
             browser?.seekTo(pos?.inWholeMilliseconds ?: C.TIME_UNSET)
         }
     }
@@ -247,18 +204,9 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         val playback = mediaItem?.mediaMetadata?.playback
         _playbackState.update { playback }
         _timingDataState.update { playback?.timingData }
-
-        debugPrint("transition")
-        info()
-    }
-
-    override fun onPlaybackStateChanged(playbackState: Int) {
-        debugPrint(playbackState.toString())
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
-        debugPrint("playwhenready")
-        info()
         _playWhenReadyState.update { playWhenReady }
     }
 
@@ -266,28 +214,8 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         if (cachedSeekPositionWhenAvailable != null &&
             availableCommands.contains(Player.COMMAND_SEEK_IN_CURRENT_MEDIA_ITEM)
         ) {
-            debugPrint("commands")
-            info()
-
-//            allowSeek = true
             seekTo(cachedSeekPositionWhenAvailable ?: return)
-
-            /**
-             * TODO: Bug
-             *  When first starting playback of recently played [MediaBrowser.getCurrentPosition] will
-             *  first return 0.ms despite seeking to [cachedSeekPositionWhenAvailable]. Bellow code
-             *  waits for [MediaBrowser.getCurrentPosition] to update with the correct value
-             */
-//            launch(Dispatchers.Main) {
-//                while (true) {
-//                    val currPos = browser?.currentPosition?.ms ?: 0.ms
-//                    if (currPos > (cachedSeekPositionWhenAvailable ?: 0.ms))
-//                        break
-//                    delay(100.ms)
-//                }
-//
             cachedSeekPositionWhenAvailable = null
-//            }
         }
     }
 

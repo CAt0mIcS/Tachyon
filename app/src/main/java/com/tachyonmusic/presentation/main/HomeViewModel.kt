@@ -5,7 +5,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.main.ObserveHistory
@@ -14,9 +13,6 @@ import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.main.UpdateSongDatabase
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.debugPrint
-import com.tachyonmusic.util.delay
-import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -59,13 +55,6 @@ class HomeViewModel @Inject constructor(
             updateSettingsDatabase()
             updateSongDatabase()
         }
-
-//        viewModelScope.launch {
-//            while(true) {
-//                debugPrint("PB: ${browser.playback}")
-//                delay(1000.ms)
-//            }
-//        }
     }
 
     fun onItemClicked(playback: Playback) {

@@ -62,6 +62,7 @@ interface MediaBrowserController : DefaultLifecycleObserver,
 
     val timingDataState: StateFlow<TimingDataController?>
 
+    fun prepare()
     fun stop()
     fun play()
     fun pause()
@@ -77,4 +78,5 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     interface EventListener {
         fun onConnected() {}
     }
+
 }
