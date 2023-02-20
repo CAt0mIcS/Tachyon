@@ -144,6 +144,16 @@ class MediaPlaybackService(
             return@future when (customCommand) {
                 MediaAction.setPlaybackCommand -> {
                     val playback: Playback? = args.parcelable(MetadataKeys.Playback)
+                    mediaSession.sendOnTimingDataUpdatedEvent(playback?.timingData)
+
+                    if (playback == null) {
+                        runOnUiThread {
+                            currentPlayer.stop()
+                            currentPlayer.clearMediaItems()
+                        }
+                        return@future SessionResult(SessionResult.RESULT_SUCCESS)
+                    }
+
                     if (playback is SinglePlayback) {
                         val playbackChanged = runOnUiThread {
                             val idx = currentPlayer.indexOfMediaItem(playback.mediaId)
@@ -173,8 +183,6 @@ class MediaPlaybackService(
 
                         if (prepareRes is Resource.Error)
                             return@runOnUiThread SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
-
-                        mediaSession.sendOnTimingDataUpdatedEvent(playback?.timingData)
 
                         SessionResult(SessionResult.RESULT_SUCCESS)
                     }
