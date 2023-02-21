@@ -63,6 +63,10 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
             invokeEvent {
                 it.onConnected()
             }
+
+            _playbackState.update { playback }
+            _playWhenReadyState.update { playWhenReady }
+            _timingDataState.update { timingData }
         }
     }
 
@@ -229,7 +233,6 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         _timingDataState.update { null }
         _associatedPlaylistState.update { null }
         cachedSeekPositionWhenAvailable = null
-        playback = null
     }
 
     override fun onCustomCommand(
