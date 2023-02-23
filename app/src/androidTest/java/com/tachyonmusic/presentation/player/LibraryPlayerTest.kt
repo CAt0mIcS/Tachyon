@@ -5,9 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.unit.dp
@@ -44,7 +42,7 @@ internal class LibraryPlayerTest {
                 val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
                 val scope = rememberCoroutineScope()
 
-                val miniPlayerHeight = remember { mutableStateOf(0.dp) }
+                var miniPlayerHeight by remember { mutableStateOf(0.dp) }
 
                 Scaffold(bottomBar = {
                     // Simulate [BottomNavigation] bar
@@ -64,16 +62,22 @@ internal class LibraryPlayerTest {
                                 modifier = Modifier
                                     .fillMaxSize(),
                             ) {
-                                PlayerLayout(sheetState, miniPlayerHeight)
+                                PlayerLayout(
+                                    sheetState,
+                                    { miniPlayerHeight = it },
+                                    miniPlayerHeight
+                                )
                             }
                         },
-                        sheetPeekHeight = miniPlayerHeight.value,
+                        sheetPeekHeight = miniPlayerHeight,
                         sheetBackgroundColor = Theme.colors.primary
                     ) { innerPaddingSheet ->
 
-                        Box(modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPaddingSheet)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPaddingSheet)
+                        ) {
                             LibraryScreen(sheetState)
                         }
                     }

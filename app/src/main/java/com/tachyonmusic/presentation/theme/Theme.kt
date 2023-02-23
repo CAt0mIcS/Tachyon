@@ -34,7 +34,6 @@ private val LightColorPalette = lightColors(
     onSurface = LightContrastHigh,
 )
 
-// TODO: Dark palette
 private val DarkCustomColorPalette = Colors(
     primary = DarkPrimary,
     secondary = DarkSecondary,

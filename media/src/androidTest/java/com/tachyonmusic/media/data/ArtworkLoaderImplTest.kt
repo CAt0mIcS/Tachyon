@@ -8,11 +8,13 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.assertResource
 import com.tachyonmusic.util.File
 import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.ms
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -124,11 +126,11 @@ internal class ArtworkLoaderImplTest {
     }
 
 
-    private fun getEntity(artworkType: String, artworkUrl: String? = null) = SinglePlaybackEntity(
+    private fun getEntity(artworkType: String, artworkUrl: String? = null) = SongEntity(
         mediaId,
         "SomeTitle",
         "SomeArtist",
-        duration = 10000L,
+        duration = 10000.ms,
         artworkType,
         artworkUrl
     )

@@ -7,6 +7,7 @@ import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.testutils.tryInject
+import com.tachyonmusic.util.ms
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,7 +45,7 @@ internal class UpdateArtworkTest {
                         songMediaId,
                         "",
                         "",
-                        0,
+                        0.ms,
                         ArtworkType.NO_ARTWORK,
                         artworkUrl = null
                     )
@@ -57,19 +58,15 @@ internal class UpdateArtworkTest {
                         loopMediaId1,
                         "",
                         "",
-                        0,
-                        listOf(),
-                        artworkType = ArtworkType.NO_ARTWORK,
-                        artworkUrl = null
+                        0.ms,
+                        listOf()
                     ),
                     LoopEntity(
                         loopMediaId2,
                         "",
                         "",
-                        0,
-                        listOf(),
-                        artworkType = ArtworkType.NO_ARTWORK,
-                        artworkUrl = null
+                        0.ms,
+                        listOf()
                     )
                 )
             )
@@ -77,7 +74,7 @@ internal class UpdateArtworkTest {
     }
 
     @Test
-    fun updatingSongEntityUpdatesAllOccurrencesOfArtwork(): Unit = runTest {
+    fun updatingSongEntityUpdatesArtwork(): Unit = runTest {
         val url = "ExampleUrl.com/example-search"
 
         val entityToEdit = songRepo.findByMediaId(songMediaId)!!
@@ -92,20 +89,12 @@ internal class UpdateArtworkTest {
             val databaseSong = songRepo.findByMediaId(songMediaId)!!
             assert(databaseSong.artworkType == artworkType)
             assert(databaseSong.artworkUrl == url)
-
-            var databaseLoop = loopRepo.findByMediaId(loopMediaId1)!!
-            assert(databaseLoop.artworkType == artworkType)
-            assert(databaseLoop.artworkUrl == url)
-
-            databaseLoop = loopRepo.findByMediaId(loopMediaId2)!!
-            assert(databaseLoop.artworkType == artworkType)
-            assert(databaseLoop.artworkUrl == url)
         }
     }
 
 
     @Test
-    fun updatingLoopEntityUpdatesAllOccurrencesOfArtwork(): Unit = runTest {
+    fun updatingLoopEntityUpdatesSongEntitiesArtwork(): Unit = runTest {
         val url = "ExampleUrl.com/example-search"
 
         val entityToEdit = loopRepo.findByMediaId(loopMediaId2)!!
@@ -119,14 +108,6 @@ internal class UpdateArtworkTest {
             val databaseSong = songRepo.findByMediaId(songMediaId)!!
             assert(databaseSong.artworkType == artworkType)
             assert(databaseSong.artworkUrl == url)
-
-            var databaseLoop = loopRepo.findByMediaId(loopMediaId1)!!
-            assert(databaseLoop.artworkType == artworkType)
-            assert(databaseLoop.artworkUrl == url)
-
-            databaseLoop = loopRepo.findByMediaId(loopMediaId2)!!
-            assert(databaseLoop.artworkType == artworkType)
-            assert(databaseLoop.artworkUrl == url)
         }
     }
 

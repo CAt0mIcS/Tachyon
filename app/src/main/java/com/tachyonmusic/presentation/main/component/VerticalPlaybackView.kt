@@ -29,8 +29,6 @@ fun VerticalPlaybackView(
 ) {
     Column(
         modifier = modifier
-            // Constrain width to padding + album art size (TODO)
-            // TODO: text should be animated to move in if it's too long
             .width(Theme.padding.extraSmall * 2 + 100.dp)
             .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
             .background(Theme.colors.secondary, shape = Theme.shapes.medium)

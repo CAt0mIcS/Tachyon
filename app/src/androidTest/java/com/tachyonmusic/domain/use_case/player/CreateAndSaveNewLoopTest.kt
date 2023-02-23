@@ -17,6 +17,7 @@ import com.tachyonmusic.testutils.tryInject
 import com.tachyonmusic.util.File
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.getTestFiles
+import com.tachyonmusic.util.ms
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -66,7 +67,7 @@ internal class CreateAndSaveNewLoopTest {
         } returns getTestFiles { File(it) }
 
         every { metadataExtractor.loadMetadata(any()) } answers {
-            SongMetadataExtractor.SongMetadata("Title", "Artist", 10000L, firstArg())
+            SongMetadataExtractor.SongMetadata("Title", "Artist", 10000.ms, firstArg())
         }
         every { metadataExtractor.loadBitmap(any()) } returns null
 
@@ -105,22 +106,26 @@ internal class CreateAndSaveNewLoopTest {
             MediaId("*0*DoesntExist.mp3"),
             "Title",
             "Artist",
-            10000L
+            10000.ms
         )
 
         assert(createAndSaveNewLoop(name) is Resource.Error)
 
-        every { browser.timingData } returns mutableListOf()
+        every { browser.timingData } returns TimingDataController()
         assert(createAndSaveNewLoop(name) is Resource.Error)
 
-        every { browser.duration } returns 10000L
-        every { browser.timingData } returns mutableListOf(TimingData(0L, 10000L))
+        every { browser.duration } returns 10000.ms
+        every { browser.timingData } returns TimingDataController(
+            listOf(TimingData(0.ms, 10000.ms))
+        )
         assert(createAndSaveNewLoop(name) is Resource.Error)
 
-        every { browser.duration } returns 10000L
-        every { browser.timingData } returns mutableListOf(
-            TimingData(0L, 10000L),
-            TimingData(0L, 10000L)
+        every { browser.duration } returns 10000.ms
+        every { browser.timingData } returns TimingDataController(
+            listOf(
+                TimingData(0.ms, 10000.ms),
+                TimingData(0.ms, 10000.ms)
+            )
         )
         assert(createAndSaveNewLoop(name) is Resource.Error)
     }
@@ -130,10 +135,12 @@ internal class CreateAndSaveNewLoopTest {
         runTest {
             every { browser.playback } returns getSong()
 
-            every { browser.duration } returns 10000L
-            every { browser.timingData } returns mutableListOf(
-                TimingData(0L, 10000L),
-                TimingData(32L, 5634L)
+            every { browser.duration } returns 10000.ms
+            every { browser.timingData } returns TimingDataController(
+                listOf(
+                    TimingData(0.ms, 10000.ms),
+                    TimingData(32.ms, 5634.ms)
+                )
             )
             assert(createAndSaveNewLoop(name) is Resource.Success)
         }
@@ -144,7 +151,7 @@ internal class CreateAndSaveNewLoopTest {
             MediaId("*0*DoesntExist.mp3"),
             "Title",
             "Artist",
-            10000L
+            10000.ms
         )
         assert(createAndSaveNewLoop(name) is Resource.Error)
     }
@@ -152,9 +159,11 @@ internal class CreateAndSaveNewLoopTest {
     @Test
     fun correctSongReturnsCorrectLoop() = runTest {
         every { browser.playback } returns getSong()
-        every { browser.timingData } returns mutableListOf(
-            TimingData(0, 323L),
-            TimingData(443L, 6666L)
+        every { browser.timingData } returns TimingDataController(
+            listOf(
+                TimingData(0.ms, 323.ms),
+                TimingData(443.ms, 6666.ms)
+            )
         )
 
         val loopRes = createAndSaveNewLoop(name)
@@ -164,9 +173,11 @@ internal class CreateAndSaveNewLoopTest {
     @Test
     fun correctLoopReturnsCorrectLoop() = runTest {
         every { browser.playback } returns getLoop()
-        every { browser.timingData } returns mutableListOf(
-            TimingData(0, 323L),
-            TimingData(443L, 6666L)
+        every { browser.timingData } returns TimingDataController(
+            listOf(
+                TimingData(0.ms, 323.ms),
+                TimingData(443.ms, 6666.ms)
+            )
         )
 
         val loopRes = createAndSaveNewLoop(name)
@@ -184,8 +195,9 @@ internal class CreateAndSaveNewLoopTest {
 
         assert(loop.songTitle == "Title")
         assert(loop.songArtist == "Artist")
-        assert(loop.songDuration == 10000L)
-        assert(loop.timingData == browser.timingData)
+        assert(loop.songDuration == 10000.ms)
+        assert(loop.timingData == browser.timingData?.timingData)
+        assert(loop.currentTimingDataIndex == browser.timingData?.currentIndex)
         // TODO: Check if artwork is correct
     }
 
@@ -195,7 +207,7 @@ internal class CreateAndSaveNewLoopTest {
                 File(""),
                 listOf()
             )[0]
-        ), "Title", "Artist", 10000L
+        ), "Title", "Artist", 10000.ms
     )
 
     private fun getLoop(): RemoteLoopImpl {
@@ -203,7 +215,7 @@ internal class CreateAndSaveNewLoopTest {
         return RemoteLoopImpl(
             MediaId.ofRemoteLoop(name + "2", song.mediaId),
             name + "2",
-            TimingDataController(listOf(TimingData(323L, 3233L))),
+            TimingDataController(listOf(TimingData(323.ms, 3233.ms))),
             song
         )
     }

@@ -1,4 +1,4 @@
-package com.tachyonmusic.media.domain.model
+package com.tachyonmusic.media.util
 
 import android.net.Uri
 import com.tachyonmusic.core.data.constants.PlaybackType
@@ -9,13 +9,14 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.File
 
 internal class TestSong(
     mediaId: MediaId,
     title: String,
     artist: String,
-    duration: Long
+    duration: Duration
 ) : AbstractSong(mediaId, title, artist, duration) {
 
     override val playbackType = PlaybackType.Song.Local()

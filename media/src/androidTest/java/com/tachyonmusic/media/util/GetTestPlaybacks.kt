@@ -2,10 +2,8 @@ package com.tachyonmusic.media.util
 
 import com.tachyonmusic.core.data.constants.Constants
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.media.domain.model.TestLoop
-import com.tachyonmusic.media.domain.model.TestPlaylist
-import com.tachyonmusic.media.domain.model.TestSong
 import com.tachyonmusic.util.File
+import com.tachyonmusic.util.ms
 
 internal fun getSongs() = MutableList(50) { i ->
     return@MutableList when {
@@ -40,7 +38,7 @@ private fun oneSong(i: Int, artistI: Int): TestSong {
         MediaId.ofLocalSong(File(Constants.EXTERNAL_STORAGE_DIRECTORY + title + artist)),
         title,
         artist,
-        i.toLong() * 1000L
+        (i.toLong() * 1000L).ms
     )
 }
 

@@ -1,6 +1,7 @@
 package com.tachyonmusic.core.domain
 
 import com.tachyonmusic.testutils.assertEquals
+import com.tachyonmusic.util.ms
 import org.junit.Test
 
 
@@ -24,33 +25,33 @@ internal class TimingDataControllerTest {
     @Test
     fun `getIndexOfCurrentPosition gets the correct index in ordered list`() {
         val timingData = loadInOrderTimingData()
-        assertEquals(timingData.getIndexOfCurrentPosition(0), 0)
-        assertEquals(timingData.getIndexOfCurrentPosition(36), 1)
-        assertEquals(timingData.getIndexOfCurrentPosition(63), 3)
-        assertEquals(timingData.getIndexOfCurrentPosition(90), 0)
+        assertEquals(timingData.getIndexOfCurrentPosition(0.ms), 0)
+        assertEquals(timingData.getIndexOfCurrentPosition(36.ms), 1)
+        assertEquals(timingData.getIndexOfCurrentPosition(63.ms), 3)
+        assertEquals(timingData.getIndexOfCurrentPosition(90.ms), 0)
     }
 
     @Test
     fun `getIndexOfCurrentPosition gets the correct index in intersecting list`() {
         val timingData = loadIntersectingTimingData()
-        assertEquals(timingData.getIndexOfCurrentPosition(0), 0)
-        assertEquals(timingData.getIndexOfCurrentPosition(19), 1)
-        assertEquals(timingData.getIndexOfCurrentPosition(24), 1)
-        assertEquals(timingData.getIndexOfCurrentPosition(31), 0)
-        assertEquals(timingData.getIndexOfCurrentPosition(40), 4)
-        assertEquals(timingData.getIndexOfCurrentPosition(70), 2)
+        assertEquals(timingData.getIndexOfCurrentPosition(0.ms), 0)
+        assertEquals(timingData.getIndexOfCurrentPosition(19.ms), 1)
+        assertEquals(timingData.getIndexOfCurrentPosition(24.ms), 1)
+        assertEquals(timingData.getIndexOfCurrentPosition(31.ms), 0)
+        assertEquals(timingData.getIndexOfCurrentPosition(40.ms), 4)
+        assertEquals(timingData.getIndexOfCurrentPosition(70.ms), 2)
     }
 
     @Test
     fun `getIndexOfCurrentPosition gets the first index when position is 0 and there's no timing data surrounding 0`() {
         val timingData = TimingDataController(
             listOf(
-                TimingData(48, 90),
-                TimingData(10, 20),
+                TimingData(48.ms, 90.ms),
+                TimingData(10.ms, 20.ms),
             )
         )
 
-        assertEquals(timingData.getIndexOfCurrentPosition(0), 0)
+        assertEquals(timingData.getIndexOfCurrentPosition(0.ms), 0)
     }
 
     /**
@@ -59,10 +60,10 @@ internal class TimingDataControllerTest {
      */
     private fun loadInOrderTimingData() = TimingDataController(
         listOf(
-            TimingData(10, 20),
-            TimingData(24, 40),
-            TimingData(46, 59),
-            TimingData(69, 80),
+            TimingData(10.ms, 20.ms),
+            TimingData(24.ms, 40.ms),
+            TimingData(46.ms, 59.ms),
+            TimingData(69.ms, 80.ms),
         )
     )
 
@@ -72,11 +73,13 @@ internal class TimingDataControllerTest {
      */
     private fun loadIntersectingTimingData() = TimingDataController(
         listOf(
-            TimingData(28, 32),
-            TimingData(18, 26),
-            TimingData(70, 5),
-            TimingData(10, 20),
-            TimingData(30, 60),
+            TimingData(28.ms, 32.ms),
+            TimingData(18.ms, 26.ms),
+            TimingData(70.ms, 5.ms),
+            TimingData(10.ms, 20.ms),
+            TimingData(30.ms, 60.ms),
         )
     )
+
+    // TODO: Test if Duration.sec, Duration.min, ... also work
 }

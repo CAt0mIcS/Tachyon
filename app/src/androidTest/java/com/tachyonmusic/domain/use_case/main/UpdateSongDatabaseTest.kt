@@ -9,6 +9,7 @@ import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.tryInject
 import com.tachyonmusic.util.File
 import com.tachyonmusic.util.getTestFiles
+import com.tachyonmusic.util.ms
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
@@ -48,7 +49,7 @@ internal class UpdateSongDatabaseTest {
         }
 
         every { metadataExtractor.loadMetadata(any()) } answers {
-            SongMetadataExtractor.SongMetadata("Title", "Artist", 10000L, firstArg())
+            SongMetadataExtractor.SongMetadata("Title", "Artist", 10000.ms, firstArg())
         }
         every { metadataExtractor.loadBitmap(any()) } returns null
 
