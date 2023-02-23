@@ -144,6 +144,7 @@ object LibraryScreen :
 
             items(playbackItems) { playback ->
 
+                // TODO: Use playback.underlyingSong?
                 lateinit var artwork: State<Artwork?>
                 lateinit var isArtworkLoading: State<Boolean>
                 when (playback) {

@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.presentation.core_components.MarqueeText
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.displaySubtitle
 import com.tachyonmusic.presentation.util.displayTitle
@@ -65,19 +66,22 @@ fun MiniPlayer(
                     .padding(start = Theme.padding.small),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Text(
+                Column(modifier = Modifier.weight(1f)) {
+                    MarqueeText(
                         modifier = Modifier.padding(top = Theme.padding.small),
                         text = playback.displayTitle,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        maxLines = 2
+                        gradientEdgeColor = Theme.colors.tertiary
                     )
 
-                    Text(
+                    MarqueeText(
                         modifier = Modifier.padding(
                             start = Theme.padding.small, bottom = Theme.padding.small
-                        ), text = playback.displaySubtitle, fontSize = 12.sp, maxLines = 1
+                        ),
+                        text = playback.displaySubtitle,
+                        fontSize = 12.sp,
+                        gradientEdgeColor = Theme.colors.tertiary
                     )
                 }
 
