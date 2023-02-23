@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
-import com.tachyonmusic.presentation.main.component.MiniPlayer
+import com.tachyonmusic.presentation.player.component.MiniPlayer
 import com.tachyonmusic.presentation.util.currentFraction
 import com.tachyonmusic.util.delay
 import kotlinx.coroutines.launch

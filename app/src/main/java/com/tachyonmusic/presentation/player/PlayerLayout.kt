@@ -5,7 +5,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.Dp
-import com.tachyonmusic.presentation.main.component.MiniPlayer
+import com.tachyonmusic.presentation.player.component.MiniPlayer
 import com.tachyonmusic.presentation.util.isAtBottom
 import com.tachyonmusic.presentation.util.isAtTop
 import kotlinx.coroutines.launch

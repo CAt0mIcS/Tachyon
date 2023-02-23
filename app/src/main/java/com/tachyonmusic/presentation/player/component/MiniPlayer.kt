@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation.main.component
+package com.tachyonmusic.presentation.player.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.presentation.core_components.MarqueeText
+import com.tachyonmusic.presentation.core_components.marquee
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.displaySubtitle
 import com.tachyonmusic.presentation.util.displayTitle
@@ -67,21 +67,21 @@ fun MiniPlayer(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    MarqueeText(
-                        modifier = Modifier.padding(top = Theme.padding.small),
+                    Text(
+                        modifier = Modifier
+                            .padding(top = Theme.padding.small)
+                            .marquee(gradientEdgeColor = Theme.colors.tertiary),
                         text = playback.displayTitle,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        gradientEdgeColor = Theme.colors.tertiary
+                        fontSize = 14.sp
                     )
 
-                    MarqueeText(
-                        modifier = Modifier.padding(
-                            start = Theme.padding.small, bottom = Theme.padding.small
-                        ),
+                    Text(
+                        modifier = Modifier
+                            .padding(start = Theme.padding.small, bottom = Theme.padding.small)
+                            .marquee(gradientEdgeColor = Theme.colors.tertiary),
                         text = playback.displaySubtitle,
-                        fontSize = 12.sp,
-                        gradientEdgeColor = Theme.colors.tertiary
+                        fontSize = 12.sp
                     )
                 }
 

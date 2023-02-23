@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation.main.component
+package com.tachyonmusic.presentation.player.component
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable

@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.presentation.core_components.MarqueeText
+import com.tachyonmusic.presentation.core_components.marquee
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.displaySubtitle
 import com.tachyonmusic.presentation.util.displayTitle
@@ -51,23 +51,25 @@ fun VerticalPlaybackView(
                     .clip(Theme.shapes.medium)
             )
 
-        MarqueeText(
-            modifier = Modifier.padding(start = Theme.padding.small, end = Theme.padding.small),
+        Text(
+            modifier = Modifier
+                .padding(start = Theme.padding.small, end = Theme.padding.small)
+                .marquee(gradientEdgeColor = Theme.colors.secondary),
             text = playback.displayTitle,
             fontWeight = FontWeight.Bold,
-            fontSize = 12.sp,
-            gradientEdgeColor = Theme.colors.secondary
+            fontSize = 12.sp
         )
 
-        MarqueeText(
-            modifier = Modifier.padding(
-                start = Theme.padding.small * 2,
-                bottom = Theme.padding.small,
-                end = Theme.padding.small
-            ),
+        Text(
+            modifier = Modifier
+                .padding(
+                    start = Theme.padding.small * 2,
+                    bottom = Theme.padding.small,
+                    end = Theme.padding.small
+                )
+                .marquee(gradientEdgeColor = Theme.colors.secondary),
             text = playback.displaySubtitle,
-            fontSize = 10.sp,
-            gradientEdgeColor = Theme.colors.secondary
+            fontSize = 10.sp
         )
     }
 }
