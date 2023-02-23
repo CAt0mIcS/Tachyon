@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,24 +54,24 @@ fun HorizontalPlaybackView(
             )
 
         Column(modifier = Modifier.padding(start = Theme.padding.small)) {
-            Text(
+            MarqueeText(
                 modifier = Modifier
-                    .padding(top = Theme.padding.small)
-                    .marquee(gradientEdgeColor = Theme.colors.secondary),
+                    .padding(top = Theme.padding.small),
                 text = playback.displayTitle,
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
+                fontSize = 14.sp,
+                gradientEdgeColor = Theme.colors.secondary
             )
 
-            Text(
+            MarqueeText(
                 modifier = Modifier
                     .padding(
                         start = Theme.padding.small,
                         bottom = Theme.padding.small
-                    )
-                    .marquee(gradientEdgeColor = Theme.colors.secondary),
+                    ),
                 text = playback.displaySubtitle,
-                fontSize = 12.sp
+                fontSize = 12.sp,
+                gradientEdgeColor = Theme.colors.secondary
             )
         }
     }

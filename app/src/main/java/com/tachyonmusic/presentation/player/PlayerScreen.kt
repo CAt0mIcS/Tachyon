@@ -24,7 +24,7 @@ import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
-import com.tachyonmusic.presentation.core_components.marquee
+import com.tachyonmusic.presentation.core_components.MarqueeText
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
 import com.tachyonmusic.presentation.player.data.LoopEditor
 import com.tachyonmusic.presentation.theme.Theme
@@ -110,26 +110,24 @@ fun PlayerScreen(
             ) {
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    MarqueeText(
                         modifier = Modifier
                             .padding(
                                 start = Theme.padding.medium,
                                 top = Theme.padding.medium,
                                 end = Theme.padding.medium
-                            )
-                            .marquee(gradientEdgeColor = Theme.colors.primary),
+                            ),
                         text = playback.displayTitle,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                     )
 
-                    Text(
+                    MarqueeText(
                         modifier = Modifier
                             .padding(
                                 start = Theme.padding.medium * 2,
                                 end = Theme.padding.medium
-                            )
-                            .marquee(gradientEdgeColor = Theme.colors.primary),
+                            ),
                         text = playback.displaySubtitle,
                         fontSize = 18.sp,
                     )

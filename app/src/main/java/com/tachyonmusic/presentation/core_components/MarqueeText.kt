@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
@@ -22,16 +21,114 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.util.delay
-import com.tachyonmusic.util.ms
-import kotlinx.coroutines.isActive
 
 
-// TODO: Fade in/out gradient (https://github.com/victorbrndls/BlogProjects/blob/marquee/app/src/main/java/com/victorbrandalise/MarqueeText.kt)
-//  (github implementation has a bug where text won't show at all if not moving and recomposed, thus we're using basicMarquee for now)
-
+/**
+ * First measures the width of the [Text] composable and if that width exceeds bounds it will
+ * add the gradient and [Modifier.basicMarquee] to the text. Otherwise a default [Text] composable
+ * will be drawn.
+ */
 @OptIn(ExperimentalFoundationApi::class)
-fun Modifier.marquee(gradientEdgeColor: Color) = basicMarquee(iterations = Int.MAX_VALUE)
+@Composable
+fun MarqueeText(
+    text: String,
+    modifier: Modifier = Modifier,
+    gradientEdgeColor: Color = Theme.colors.primary,
+    gradientWidth: Dp = 12.dp,
+    color: Color = Color.Unspecified,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    fontStyle: FontStyle? = null,
+    fontWeight: FontWeight? = null,
+    fontFamily: FontFamily? = null,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    textAlign: TextAlign? = null,
+    lineHeight: TextUnit = TextUnit.Unspecified,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+    style: TextStyle = LocalTextStyle.current
+) {
+    var gradientHeight by remember { mutableStateOf<Dp?>(null) }
+
+    val createText: @Composable (Modifier) -> Unit = {
+        Text(
+            text,
+            it,
+            color,
+            fontSize,
+            fontStyle,
+            fontWeight,
+            fontFamily,
+            letterSpacing,
+            textDecoration,
+            textAlign,
+            lineHeight,
+            overflow,
+            softWrap,
+            1,
+            1,
+            onTextLayout,
+            style
+        )
+    }
+
+    SubcomposeLayout(
+        modifier = Modifier.clipToBounds()
+    ) { constraints ->
+        val infiniteWidthConstraints = constraints.copy(maxWidth = Int.MAX_VALUE)
+
+        val placeable = subcompose(0) {
+            createText(Modifier)
+        }.first().measure(infiniteWidthConstraints)
+        gradientHeight = if (placeable.width > constraints.maxWidth) {
+            // requires gradient
+            placeable.height.toDp()
+        } else null
+
+        layout(
+            width = constraints.maxWidth,
+            height = 0
+        ) {}
+    }
+
+    if (gradientHeight != null) {
+        Box(modifier) {
+            createText(Modifier.basicMarquee(Int.MAX_VALUE))
+            Gradient(gradientHeight ?: return@Box, gradientEdgeColor, gradientWidth)
+        }
+    } else
+        createText(modifier)
+}
+
+@Composable
+private fun Gradient(height: Dp, gradientEdgeColor: Color, width: Dp) {
+    Row(Modifier.height(height)) {
+        GradientEdge(startColor = gradientEdgeColor, endColor = Color.Transparent, width = width)
+        Spacer(modifier = Modifier.weight(1f))
+        GradientEdge(startColor = Color.Transparent, endColor = gradientEdgeColor, width = width)
+    }
+}
+
+@Composable
+private fun GradientEdge(
+    startColor: Color,
+    endColor: Color,
+    width: Dp
+) {
+    Box(
+        modifier = Modifier
+            .width(width)
+            .fillMaxHeight()
+            .background(
+                brush = Brush.horizontalGradient(
+                    0f to startColor,
+                    1f to endColor
+                )
+            )
+    )
+}
