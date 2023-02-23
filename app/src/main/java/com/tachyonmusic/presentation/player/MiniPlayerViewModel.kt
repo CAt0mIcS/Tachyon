@@ -33,7 +33,7 @@ class MiniPlayerViewModel @Inject constructor(
 ) : ViewModel() {
 
     val playback = getPlaybackState().map {
-        it?.underlyingSong ?: getHistory().firstOrNull()
+        it ?: getHistory().firstOrNull()
     }.onEach { singlePb ->
         if (singlePb == null)
             return@onEach

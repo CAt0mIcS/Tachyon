@@ -18,12 +18,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.displaySubtitle
+import com.tachyonmusic.presentation.util.displayTitle
 
 @Composable
 fun MiniPlayer(
-    playback: Playback?,
+    playback: SinglePlayback?,
     currentPosition: Float,
     isPlaying: Boolean,
     onClick: () -> Unit,
@@ -66,7 +68,7 @@ fun MiniPlayer(
                 Column {
                     Text(
                         modifier = Modifier.padding(top = Theme.padding.small),
-                        text = playback.title ?: "No Title",
+                        text = playback.displayTitle,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
                         maxLines = 2
@@ -75,7 +77,7 @@ fun MiniPlayer(
                     Text(
                         modifier = Modifier.padding(
                             start = Theme.padding.small, bottom = Theme.padding.small
-                        ), text = playback.artist ?: "No Artist", fontSize = 12.sp, maxLines = 1
+                        ), text = playback.displaySubtitle, fontSize = 12.sp, maxLines = 1
                     )
                 }
 

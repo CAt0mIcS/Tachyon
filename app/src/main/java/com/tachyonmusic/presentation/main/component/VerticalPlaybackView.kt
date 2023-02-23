@@ -14,12 +14,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.displaySubtitle
+import com.tachyonmusic.presentation.util.displayTitle
 
 @Composable
 fun VerticalPlaybackView(
-    playback: Playback,
+    playback: SinglePlayback,
     artwork: Artwork,
     isArtworkLoading: Boolean,
     modifier: Modifier = Modifier
@@ -52,7 +54,7 @@ fun VerticalPlaybackView(
 
         Text(
             modifier = Modifier.padding(start = Theme.padding.small, end = Theme.padding.small),
-            text = playback.title ?: "No Title",
+            text = playback.displayTitle,
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
             maxLines = 1
@@ -64,7 +66,7 @@ fun VerticalPlaybackView(
                 bottom = Theme.padding.small,
                 end = Theme.padding.small
             ),
-            text = playback.artist ?: "No Artist",
+            text = playback.displaySubtitle,
             fontSize = 10.sp,
             maxLines = 1
         )

@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.main.ObserveHistory
 import com.tachyonmusic.domain.use_case.main.UnloadArtworks
@@ -30,13 +30,11 @@ class HomeViewModel @Inject constructor(
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
     private val unloadArtworks: UnloadArtworks,
-    getOrLoadArtwork: GetOrLoadArtwork,
-
-    browser: MediaBrowserController
+    getOrLoadArtwork: GetOrLoadArtwork
 ) : ViewModel() {
 
-    private val _history = mutableStateOf(listOf<Playback>())
-    val history: State<List<Playback>> = _history
+    private val _history = mutableStateOf(listOf<SinglePlayback>())
+    val history: State<List<SinglePlayback>> = _history
 
 
     init {

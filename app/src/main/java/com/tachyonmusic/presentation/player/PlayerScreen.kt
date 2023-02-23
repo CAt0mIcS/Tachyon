@@ -28,6 +28,8 @@ import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
 import com.tachyonmusic.presentation.player.data.LoopEditor
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.currentFraction
+import com.tachyonmusic.presentation.util.displaySubtitle
+import com.tachyonmusic.presentation.util.displayTitle
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
@@ -90,7 +92,6 @@ fun PlayerScreen(
                 .aspectRatio(1f)
                 .shadow(Theme.shadow.small, shape = Theme.shapes.large)
 
-//            val artworkInfo by viewModel.artwork.collectAsState()
             val artwork by playback.artwork.collectAsState()
             val isLoading by playback.isArtworkLoading.collectAsState()
 
@@ -114,7 +115,7 @@ fun PlayerScreen(
                             top = Theme.padding.medium,
                             end = Theme.padding.medium
                         ),
-                        text = playback.title,
+                        text = playback.displayTitle,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1
@@ -125,7 +126,7 @@ fun PlayerScreen(
                             start = Theme.padding.medium * 2,
                             end = Theme.padding.medium
                         ),
-                        text = playback.artist,
+                        text = playback.displaySubtitle,
                         fontSize = 18.sp,
                         maxLines = 1
                     )

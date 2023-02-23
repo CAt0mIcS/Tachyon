@@ -19,9 +19,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.displaySubtitle
+import com.tachyonmusic.presentation.util.displayTitle
 
 @Composable
 fun HorizontalPlaybackView(
@@ -54,24 +54,10 @@ fun HorizontalPlaybackView(
                     .clip(Theme.shapes.medium)
             )
 
-        val title: String
-        val subtitle: String
-        when(playback) {
-            is SinglePlayback -> {
-                title = playback.title
-                subtitle = playback.artist
-            }
-            is Playlist -> {
-                title = playback.name
-                subtitle = "${playback.playbacks.size} Item(s)"
-            }
-            else -> TODO("Invalid playback type ${playback.javaClass.name}")
-        }
-
         Column(modifier = Modifier.padding(start = Theme.padding.small)) {
             Text(
                 modifier = Modifier.padding(top = Theme.padding.small),
-                text = title,
+                text = playback.displayTitle,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
                 maxLines = 2
@@ -82,7 +68,7 @@ fun HorizontalPlaybackView(
                     start = Theme.padding.small,
                     bottom = Theme.padding.small
                 ),
-                text = subtitle,
+                text = playback.displaySubtitle,
                 fontSize = 12.sp,
                 maxLines = 1
             )

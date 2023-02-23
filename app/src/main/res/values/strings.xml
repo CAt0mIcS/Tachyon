@@ -5,6 +5,8 @@
     <string name="dialog_permission_button_positive">OK</string>
     <string name="storage_permission_rationale">We need to access your external storage to play your local device files. Denying this permission will disable local audio playback</string>
 
+    <string name="song_name_and_artist">%1$s by %2$s</string>
+
     <string name="btmNav_home">Home</string>
     <string name="btmNav_library">Library</string>
     <string name="btmNav_profile">Profile</string>

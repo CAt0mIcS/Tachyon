@@ -28,7 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
-import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.main.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
@@ -211,8 +211,8 @@ object HomeScreen :
 
 
 private fun LazyListScope.playbacksView(
-    playbacks: List<Playback>,
-    onClick: (Playback) -> Unit
+    playbacks: List<SinglePlayback>,
+    onClick: (SinglePlayback) -> Unit
 ) {
     items(playbacks) { playback ->
 
