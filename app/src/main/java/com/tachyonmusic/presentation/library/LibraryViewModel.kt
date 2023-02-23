@@ -2,7 +2,9 @@ package com.tachyonmusic.presentation.library
 
 import android.app.Application
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
@@ -20,10 +22,7 @@ import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,26 +32,27 @@ class LibraryViewModel @Inject constructor(
     getSongs: GetSongs,
     observeLoops: ObserveLoops,
     observePlaylists: ObservePlaylists,
-    getOrLoadArtwork: GetOrLoadArtwork,
+    private val getOrLoadArtwork: GetOrLoadArtwork,
     private val playPlayback: PlayPlayback,
     private val application: Application,
     private val log: Logger
 ) : ViewModel() {
 
-    var songs = listOf<Song>()
-        private set
+    private var songs = listOf<Song>()
     private var loops = listOf<Loop>()
     private var playlists = listOf<Playlist>()
 
-    private var filterType: PlaybackType = PlaybackType.Song.Local()
+    private var _filterType = MutableStateFlow<PlaybackType>(PlaybackType.Song.Local())
+    val filterType = _filterType.asStateFlow()
 
-    private val _items = mutableStateOf(listOf<Playback>())
-    val items: State<List<Playback>> = _items
+    private val _items = MutableStateFlow(listOf<Playback>())
+    val items = _items.asStateFlow()
 
     init {
         observeLoops().map {
             loops = it
-            if (filterType is PlaybackType.Loop.Remote) {
+            loadArtwork(loops)
+            if (filterType.value is PlaybackType.Loop) {
                 _items.value = emptyList()
                 _items.value = loops
             }
@@ -60,7 +60,8 @@ class LibraryViewModel @Inject constructor(
 
         observePlaylists().map {
             playlists = it
-            if (filterType is PlaybackType.Playlist.Remote) {
+            loadArtwork(playlists)
+            if (filterType.value is PlaybackType.Playlist) {
                 _items.value = emptyList()
                 _items.value = playlists
             }
@@ -68,36 +69,40 @@ class LibraryViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             songs = getSongs()
-            runOnUiThreadAsync { _items.value = songs }
-
-            getOrLoadArtwork(getSongs.entities()).onEach {
-                if (it is Resource.Success)
-                    songs[it.data!!.i].artwork.value = it.data!!.artwork
-                else
-                    log.debug(it.message?.asString(application) ?: "No message from artwork loader")
-
-                songs[it.data!!.i].isArtworkLoading.value = false
-            }.collect()
+            _items.update { songs }
+            loadArtwork(songs)
         }
     }
 
 
     fun onFilterSongs() {
         _items.value = songs
-        filterType = PlaybackType.Song.Local()
+        _filterType.value = PlaybackType.Song.Local()
     }
 
     fun onFilterLoops() {
         _items.value = loops
-        filterType = PlaybackType.Loop.Remote()
+        _filterType.value = PlaybackType.Loop.Remote()
     }
 
     fun onFilterPlaylists() {
         _items.value = playlists
-        filterType = PlaybackType.Playlist.Remote()
+        _filterType.value = PlaybackType.Playlist.Remote()
     }
 
     fun onItemClicked(playback: Playback) {
         playPlayback(playback)
+    }
+
+
+    private suspend fun loadArtwork(playbacks: List<Playback>) {
+        getOrLoadArtwork(playbacks.mapNotNull { it.underlyingSong }).onEach { res ->
+            if (res is Resource.Success)
+                playbacks[res.data!!.i].artwork.update { res.data!!.artwork }
+            else
+                log.debug(res.message?.asString(application) ?: "No message from artwork loader")
+
+            playbacks[res.data!!.i].isArtworkLoading.update { false }
+        }.collect()
     }
 }

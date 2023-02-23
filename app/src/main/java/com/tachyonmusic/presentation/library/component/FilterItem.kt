@@ -33,9 +33,7 @@ fun FilterItem(text: String, selected: Boolean = false, onClick: () -> Unit) {
                 backgroundColor = color,
                 contentColor = Theme.colors.contrastHigh
             ),
-            onClick = {
-                onClick()
-            }
+            onClick = onClick
         ) {
             Text(text = text, fontSize = 14.sp, fontWeight = FontWeight.Bold)
         }

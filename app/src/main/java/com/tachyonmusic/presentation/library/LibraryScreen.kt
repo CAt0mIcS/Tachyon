@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
@@ -40,13 +41,13 @@ object LibraryScreen :
         sheetState: BottomSheetState,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
-        var selectedFilter by remember { mutableStateOf(0) }
         var sortOptionsExpanded by remember { mutableStateOf(false) }
         var sortText by remember { mutableStateOf("Alphabetically") }
 
         val scope = rememberCoroutineScope()
 
-        val playbackItems by viewModel.items
+        val playbackType by viewModel.filterType.collectAsState()
+        val playbackItems by viewModel.items.collectAsState()
 
         LazyColumn(
             modifier = Modifier
@@ -75,18 +76,15 @@ object LibraryScreen :
                         ), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
 
-                    FilterItem("Songs", selectedFilter == 0) {
-                        selectedFilter = 0
+                    FilterItem("Songs", playbackType is PlaybackType.Song) {
                         viewModel.onFilterSongs()
                     }
 
-                    FilterItem("Loops", selectedFilter == 1) {
-                        selectedFilter = 1
+                    FilterItem("Loops", playbackType is PlaybackType.Loop) {
                         viewModel.onFilterLoops()
                     }
 
-                    FilterItem("Playlists", selectedFilter == 2) {
-                        selectedFilter = 2
+                    FilterItem("Playlists", playbackType is PlaybackType.Playlist) {
                         viewModel.onFilterPlaylists()
                     }
                 }
@@ -143,47 +141,13 @@ object LibraryScreen :
             }
 
             items(playbackItems) { playback ->
-
-                // TODO: Use playback.underlyingSong?
-                lateinit var artwork: State<Artwork?>
-                lateinit var isArtworkLoading: State<Boolean>
-                when (playback) {
-                    is Song -> {
-                        artwork = playback.artwork.collectAsState()
-                        isArtworkLoading = playback.isArtworkLoading.collectAsState()
-                    }
-
-                    is Loop -> {
-                        val song = viewModel.songs.find { it == playback.song }
-                        artwork = song?.artwork?.collectAsState() ?: remember {
-                            mutableStateOf(PlaceholderArtwork)
-                        }
-                        isArtworkLoading = song?.isArtworkLoading?.collectAsState() ?: remember {
-                            mutableStateOf(false)
-                        }
-                    }
-
-                    else -> {
-                        val singlePlayback = (playback as Playlist).playbacks.firstOrNull()
-                        val song = if (singlePlayback is Song?)
-                            viewModel.songs.find { it == singlePlayback }
-                        else
-                            viewModel.songs.find { it == (singlePlayback as Loop?)?.song }
-
-                        artwork = song?.artwork?.collectAsState() ?: remember {
-                            mutableStateOf(PlaceholderArtwork)
-                        }
-
-                        isArtworkLoading = song?.isArtworkLoading?.collectAsState() ?: remember {
-                            mutableStateOf(false)
-                        }
-                    }
-                }
+                val artwork by playback.artwork.collectAsState()
+                val isLoading by playback.isArtworkLoading.collectAsState()
 
                 HorizontalPlaybackView(
                     playback,
-                    artwork.value ?: PlaceholderArtwork,
-                    isArtworkLoading.value,
+                    artwork ?: PlaceholderArtwork,
+                    isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall),
