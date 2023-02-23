@@ -18,8 +18,10 @@ import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.presentation.player.PlayerLayout
+import com.tachyonmusic.presentation.theme.ComposeSettings
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.Permission
@@ -27,6 +29,8 @@ import com.tachyonmusic.presentation.util.PermissionManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,6 +42,11 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
 
     @Inject
     lateinit var mediaBrowser: MediaBrowserController
+
+    @Inject
+    lateinit var observeSettings: ObserveSettings
+
+    private var composeSettings = mutableStateOf(ComposeSettings())
 
     // TODO: Better way of awaiting two events
     private val permissionJob = CompletableDeferred<Boolean>()
@@ -60,6 +69,12 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
         mediaBrowser.registerLifecycle(lifecycle)
         mediaBrowser.registerEventListener(this)
 
+        observeSettings().map {
+            composeSettings.value = ComposeSettings(
+                animateText = it.animateText
+            )
+        }.launchIn(lifecycleScope)
+
         lifecycleScope.launch {
             mediaControllerConnectionJob.join()
             permissionJob.await()
@@ -75,7 +90,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
     @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
     private fun setupUi() {
         setContent {
-            TachyonTheme {
+            TachyonTheme(settings = composeSettings.value) {
 
                 val sheetState = rememberBottomSheetState(
                     initialValue = BottomSheetValue.Collapsed, animationSpec = tween(

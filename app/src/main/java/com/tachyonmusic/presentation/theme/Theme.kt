@@ -62,7 +62,11 @@ private val LightCustomColorPalette = Colors(
 
 
 @Composable
-fun TachyonTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
+fun TachyonTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    settings: ComposeSettings = ComposeSettings(),
+    content: @Composable () -> Unit
+) {
     val colors = if (darkTheme) DarkColorPalette else LightColorPalette
     val customColors = if (darkTheme) DarkCustomColorPalette else LightCustomColorPalette
 
@@ -70,7 +74,8 @@ fun TachyonTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composabl
         LocalPadding provides Padding(),
         LocalShadow provides Shadow(),
         LocalAnimation provides Animation(),
-        LocalCustomColors provides customColors
+        LocalCustomColors provides customColors,
+        LocalSettings provides settings
     ) {
         MaterialTheme(
             colors = colors,
@@ -128,6 +133,11 @@ object Theme {
         @Composable
         @ReadOnlyComposable
         get() = LocalAnimation.current
+
+    val settings: ComposeSettings
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalSettings.current
 }
 
 

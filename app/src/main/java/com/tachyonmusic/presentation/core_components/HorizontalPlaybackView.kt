@@ -54,7 +54,7 @@ fun HorizontalPlaybackView(
             )
 
         Column(modifier = Modifier.padding(start = Theme.padding.small)) {
-            MarqueeText(
+            AnimatedText(
                 modifier = Modifier
                     .padding(top = Theme.padding.small),
                 text = playback.displayTitle,
@@ -63,7 +63,7 @@ fun HorizontalPlaybackView(
                 gradientEdgeColor = Theme.colors.secondary
             )
 
-            MarqueeText(
+            AnimatedText(
                 modifier = Modifier
                     .padding(
                         start = Theme.padding.small,

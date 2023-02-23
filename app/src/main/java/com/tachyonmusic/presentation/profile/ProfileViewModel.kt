@@ -44,6 +44,12 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun onAnimateTextChanged(animateText: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            writeSettings(settings.value.copy(animateText = animateText))
+        }
+    }
+
     fun ignoreAudioFocusChanged(ignore: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             writeSettings(settings.value.copy(ignoreAudioFocus = ignore))

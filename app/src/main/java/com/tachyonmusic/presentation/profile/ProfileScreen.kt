@@ -87,6 +87,13 @@ object ProfileScreen :
                 )
             }
 
+            Setting(text = "Animate text") {
+                Switch(
+                    checked = settings.animateText,
+                    onCheckedChange = viewModel::onAnimateTextChanged
+                )
+            }
+
             Setting(text = "Maximum number of playbacks stored in history") {
                 TextField(
                     value = settings.maxPlaybacksInHistory.toString(),

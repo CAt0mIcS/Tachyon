@@ -16,6 +16,7 @@ data class SettingsEntity(
     val maxPlaybacksInHistory: Int = 25,
     val seekForwardIncrement: Duration = 10.sec,
     val seekBackIncrement: Duration = 10.sec,
+    val animateText: Boolean = true,
     /**
      * Specifies if milliseconds should be shown in the current position and duration texts above
      * the seek bar in the player

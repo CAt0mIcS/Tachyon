@@ -32,9 +32,8 @@ import com.tachyonmusic.presentation.theme.Theme
  * add the gradient and [Modifier.basicMarquee] to the text. Otherwise a default [Text] composable
  * will be drawn.
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MarqueeText(
+fun AnimatedText(
     text: String,
     modifier: Modifier = Modifier,
     gradientEdgeColor: Color = Theme.colors.primary,
@@ -48,10 +47,74 @@ fun MarqueeText(
     textDecoration: TextDecoration? = null,
     textAlign: TextAlign? = null,
     lineHeight: TextUnit = TextUnit.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    softWrap: Boolean = true,
+    maxLines: Int = 1,
+    minLines: Int = 1,
     onTextLayout: (TextLayoutResult) -> Unit = {},
     style: TextStyle = LocalTextStyle.current
+) {
+
+    if (Theme.settings.animateText)
+        MarqueeTextInternal(
+            text,
+            modifier,
+            gradientEdgeColor,
+            gradientWidth,
+            color,
+            fontSize,
+            fontStyle,
+            fontWeight,
+            fontFamily,
+            letterSpacing,
+            textDecoration,
+            textAlign,
+            lineHeight,
+            maxLines,
+            minLines,
+            onTextLayout,
+            style
+        )
+    else
+        Text(
+            text,
+            modifier,
+            color,
+            fontSize,
+            fontStyle,
+            fontWeight,
+            fontFamily,
+            letterSpacing,
+            textDecoration,
+            textAlign,
+            lineHeight,
+            TextOverflow.Ellipsis,
+            true,
+            maxLines,
+            minLines,
+            onTextLayout,
+            style
+        )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun MarqueeTextInternal(
+    text: String,
+    modifier: Modifier,
+    gradientEdgeColor: Color,
+    gradientWidth: Dp,
+    color: Color,
+    fontSize: TextUnit,
+    fontStyle: FontStyle?,
+    fontWeight: FontWeight?,
+    fontFamily: FontFamily?,
+    letterSpacing: TextUnit,
+    textDecoration: TextDecoration?,
+    textAlign: TextAlign?,
+    lineHeight: TextUnit,
+    maxLines: Int,
+    minLines: Int,
+    onTextLayout: (TextLayoutResult) -> Unit,
+    style: TextStyle,
 ) {
     var gradientHeight by remember { mutableStateOf<Dp?>(null) }
 
@@ -68,10 +131,10 @@ fun MarqueeText(
             textDecoration,
             textAlign,
             lineHeight,
-            overflow,
-            softWrap,
-            1,
-            1,
+            TextOverflow.Clip,
+            softWrap = true,
+            maxLines,
+            minLines,
             onTextLayout,
             style
         )
