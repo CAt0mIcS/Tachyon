@@ -106,7 +106,7 @@ object ProfileScreen :
 
             Setting(text = "Interval in milliseconds when the audio state is updated") {
                 TextField(
-                    value = settings.audioUpdateInterval.toString(),
+                    value = settings.audioUpdateInterval.inWholeMilliseconds.toString(),
                     onValueChange = {
                         viewModel.audioUpdateIntervalChanged(it.toLong().ms)
                     },
@@ -140,7 +140,7 @@ private fun Setting(
             },
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(text)
+        Text(text, modifier = Modifier.weight(1f))
         content()
     }
 }
