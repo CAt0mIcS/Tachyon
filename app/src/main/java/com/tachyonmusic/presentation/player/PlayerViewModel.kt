@@ -96,8 +96,9 @@ class PlayerViewModel @Inject constructor(
     /***********************************************************************************************
      ************************************ MEDIA CONTROLS *******************************************
      **********************************************************************************************/
-    private val _seekIncrements = MutableStateFlow(SeekIncrements())
-    val seekIncrements = _seekIncrements.asStateFlow()
+    val seekIncrements = observeSettings().map {
+        SeekIncrements(it.seekForwardIncrement, it.seekBackIncrement)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SeekIncrements())
 
     val isPlaying = getIsPlayingState()
 

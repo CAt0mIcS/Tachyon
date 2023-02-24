@@ -17,6 +17,7 @@ import com.tachyonmusic.app.R
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.sec
 
 object ProfileScreen :
     BottomNavigationItem(R.string.btmNav_profile, R.drawable.ic_profile, "profile") {
@@ -69,9 +70,9 @@ object ProfileScreen :
 
             Setting(text = "Increment when seeking forward") {
                 TextField(
-                    value = settings.seekForwardIncrement.toString(),
+                    value = settings.seekForwardIncrement.inWholeSeconds.toString(),
                     onValueChange = {
-                        viewModel.seekForwardIncrementChanged(it.toLong().ms)
+                        viewModel.seekForwardIncrementChanged(it.toLong().sec)
                     },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 )
@@ -79,9 +80,9 @@ object ProfileScreen :
 
             Setting(text = "Increment when seeking back") {
                 TextField(
-                    value = settings.seekBackIncrement.toString(),
+                    value = settings.seekBackIncrement.inWholeSeconds.toString(),
                     onValueChange = {
-                        viewModel.seekBackIncrementChanged(it.toLong().ms)
+                        viewModel.seekBackIncrementChanged(it.toLong().sec)
                     },
                     keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
                 )

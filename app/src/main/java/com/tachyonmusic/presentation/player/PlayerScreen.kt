@@ -25,6 +25,8 @@ import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.AnimatedText
+import com.tachyonmusic.presentation.player.component.IconForward
+import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
 import com.tachyonmusic.presentation.player.data.LoopEditor
 import com.tachyonmusic.presentation.theme.Theme
@@ -229,13 +231,13 @@ fun PlayerScreen(
                 // TODO: Decide if icons should seek e.g. 15s back/forward or seek to previous/next item
                 // TODO: Adjust icons if needed
 
+                val seekIncrements by viewModel.seekIncrements.collectAsState()
                 IconButton(
                     modifier = Modifier.scale(buttonScale),
                     onClick = viewModel::seekBack
                 ) {
-                    Icon(
-                        painterResource(R.drawable.ic_rewind_10),
-                        contentDescription = null,
+                    IconRewind(
+                        timeSeconds = seekIncrements.back.inWholeSeconds,
                         modifier = Modifier.scale(iconScale)
                     )
                 }
@@ -258,9 +260,8 @@ fun PlayerScreen(
                     modifier = Modifier.scale(buttonScale),
                     onClick = viewModel::seekForward
                 ) {
-                    Icon(
-                        painterResource(R.drawable.ic_forward_10),
-                        contentDescription = null,
+                    IconForward(
+                        timeSeconds = seekIncrements.forward.inWholeSeconds,
                         modifier = Modifier.scale(iconScale)
                     )
                 }

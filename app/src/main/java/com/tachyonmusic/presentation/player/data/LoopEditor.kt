@@ -37,7 +37,7 @@ fun LoopEditor(
             modifier = Modifier.padding(Theme.padding.small),
             onClick = { viewModel.removeTimingData(timingData.size - 1) }) {
             Icon(
-                painterResource(R.drawable.ic_rewind_10),
+                painterResource(R.drawable.ic_rewind),
                 contentDescription = "Remove loop time point"
             )
         }

@@ -42,6 +42,7 @@ private val DarkCustomColorPalette = Colors(
     orange = DarkOrange,
     partialOrange1 = DarkOrangePartial1,
     partialOrange2 = DarkOrangePartial2,
+    contrastExtreme = Color.White,
     contrastHigh = DarkContrastHigh,
     contrastLow = DarkContrastLow,
     border = DarkBorderColor
@@ -55,6 +56,7 @@ private val LightCustomColorPalette = Colors(
     orange = LightOrange,
     partialOrange1 = LightOrangePartial1,
     partialOrange2 = LightOrangePartial2,
+    contrastExtreme = Color.Black,
     contrastHigh = LightContrastHigh,
     contrastLow = LightContrastLow,
     border = LightBorderColor
@@ -95,6 +97,7 @@ class Colors(
     val orange: Color,
     val partialOrange1: Color,
     val partialOrange2: Color,
+    val contrastExtreme: Color,
     val contrastHigh: Color,
     val contrastLow: Color,
     val border: Color,
