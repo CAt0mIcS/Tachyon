@@ -9,13 +9,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PlaylistDao {
-    @Query("SELECT * FROM PlaylistEntity ORDER BY mediaId ASC")
+    @Query("SELECT * FROM PlaylistEntity")
     fun getPagedPlaylists(): PagingSource<Int, PlaylistEntity>
 
-    @Query("SELECT * FROM PlaylistEntity ORDER BY mediaId ASC")
+    @Query("SELECT * FROM PlaylistEntity")
     suspend fun getPlaylists(): List<PlaylistEntity>
 
-    @Query("SELECT * FROM PlaylistEntity ORDER BY mediaId ASC")
+    @Query("SELECT * FROM PlaylistEntity")
     fun observe(): Flow<List<PlaylistEntity>>
 
     @Query("SELECT * FROM PlaylistEntity WHERE mediaId=:mediaId")

@@ -18,13 +18,21 @@ import com.tachyonmusic.domain.use_case.ObservePlaylists
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.presentation.util.SortOrder
+import com.tachyonmusic.presentation.util.SortType
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.runOnUiThreadAsync
+import com.tachyonmusic.util.sortedBy
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class SortParameters(
+    val type: SortType,
+    val order: SortOrder
+)
 
 
 @HiltViewModel
@@ -38,56 +46,53 @@ class LibraryViewModel @Inject constructor(
     private val log: Logger
 ) : ViewModel() {
 
-    private var songs = listOf<Song>()
-    private var loops = listOf<Loop>()
-    private var playlists = listOf<Playlist>()
+    private var _sortParams =
+        MutableStateFlow(SortParameters(SortType.AlphabeticalTitle, SortOrder.Ascending))
+    val sortParams = _sortParams.asStateFlow()
+
+    private var songs = sortParams.map {
+        val songs = getSongs(it.type, it.order)
+        loadArtwork(songs)
+        songs
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
+    private var loops = combine(sortParams, observeLoops()) { sort, loops ->
+        loadArtwork(loops)
+        loops.sortedBy(sort.type, sort.order)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
+    private var playlists = combine(sortParams, observePlaylists()) { sort, playlists ->
+        loadArtwork(playlists)
+        playlists.sortedBy(sort.type, sort.order)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
     private var _filterType = MutableStateFlow<PlaybackType>(PlaybackType.Song.Local())
     val filterType = _filterType.asStateFlow()
 
-    private val _items = MutableStateFlow(listOf<Playback>())
-    val items = _items.asStateFlow()
-
-    init {
-        observeLoops().map {
-            loops = it
-            loadArtwork(loops)
-            if (filterType.value is PlaybackType.Loop) {
-                _items.value = emptyList()
-                _items.value = loops
+    val items =
+        combine(songs, loops, playlists, filterType) { songs, loops, playlists, filterType ->
+            when (filterType) {
+                is PlaybackType.Song -> songs
+                is PlaybackType.Loop -> loops
+                is PlaybackType.Playlist -> playlists
             }
-        }.launchIn(viewModelScope)
-
-        observePlaylists().map {
-            playlists = it
-            loadArtwork(playlists)
-            if (filterType.value is PlaybackType.Playlist) {
-                _items.value = emptyList()
-                _items.value = playlists
-            }
-        }.launchIn(viewModelScope)
-
-        viewModelScope.launch(Dispatchers.IO) {
-            songs = getSongs()
-            _items.update { songs }
-            loadArtwork(songs)
-        }
-    }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
     fun onFilterSongs() {
-        _items.value = songs
         _filterType.value = PlaybackType.Song.Local()
     }
 
     fun onFilterLoops() {
-        _items.value = loops
         _filterType.value = PlaybackType.Loop.Remote()
     }
 
     fun onFilterPlaylists() {
-        _items.value = playlists
         _filterType.value = PlaybackType.Playlist.Remote()
+    }
+
+    fun onSortTypeChanged(type: SortType) {
+        _sortParams.value = sortParams.value.copy(type = type)
     }
 
     fun onItemClicked(playback: Playback) {

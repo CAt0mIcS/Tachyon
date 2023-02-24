@@ -6,6 +6,15 @@
     <string name="storage_permission_rationale">We need to access your external storage to play your local device files. Denying this permission will disable local audio playback</string>
 
     <string name="song_name_and_artist">%1$s by %2$s</string>
+    <string name="sorted_by_alphabetical_title">Alphabetical by Title %1$s</string>
+    <string name="sorted_by_alphabetical_artist">Alphabetical by Artist %1$s</string>
+    <string name="sorted_by_last_played_date">Date Last Played %1$s</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
+
+    <string name="songs">Songs</string>
+    <string name="loops">Loops</string>
+    <string name="playlists">Playlists</string>
 
     <string name="btmNav_home">Home</string>
     <string name="btmNav_library">Library</string>

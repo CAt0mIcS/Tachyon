@@ -30,6 +30,8 @@ import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
+import com.tachyonmusic.presentation.util.SortType
+import com.tachyonmusic.presentation.util.asString
 import kotlinx.coroutines.launch
 
 object LibraryScreen :
@@ -42,7 +44,6 @@ object LibraryScreen :
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
         var sortOptionsExpanded by remember { mutableStateOf(false) }
-        var sortText by remember { mutableStateOf("Alphabetically") }
 
         val scope = rememberCoroutineScope()
 
@@ -63,9 +64,7 @@ object LibraryScreen :
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .shadow(
-                            Theme.shadow.small, shape = Theme.shapes.extraLarge
-                        ) // TODO: Shadow not working?
+                        .shadow(Theme.shadow.small, shape = Theme.shapes.extraLarge)
                         .horizontalScroll(rememberScrollState())
                         .background(Theme.colors.secondary, shape = Theme.shapes.extraLarge)
                         .padding(
@@ -76,15 +75,15 @@ object LibraryScreen :
                         ), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
 
-                    FilterItem("Songs", playbackType is PlaybackType.Song) {
+                    FilterItem(R.string.songs, playbackType is PlaybackType.Song) {
                         viewModel.onFilterSongs()
                     }
 
-                    FilterItem("Loops", playbackType is PlaybackType.Loop) {
+                    FilterItem(R.string.loops, playbackType is PlaybackType.Loop) {
                         viewModel.onFilterLoops()
                     }
 
-                    FilterItem("Playlists", playbackType is PlaybackType.Playlist) {
+                    FilterItem(R.string.playlists, playbackType is PlaybackType.Playlist) {
                         viewModel.onFilterPlaylists()
                     }
                 }
@@ -113,27 +112,27 @@ object LibraryScreen :
                             modifier = Modifier.scale(1.3f)
                         )
 
+
                         DropdownMenu(expanded = sortOptionsExpanded,
                             onDismissRequest = { sortOptionsExpanded = false }) {
-                            DropdownMenuItem(onClick = {
-                                sortText = "Alphabetically"
-                                sortOptionsExpanded = false
-                            }) {
-                                Text("Alphabetically")
-                            }
-
-                            DropdownMenuItem(onClick = {
-                                sortText = "Creation Date"
-                                sortOptionsExpanded = false
-                            }) {
-                                Text("Creation Date")
+                            SortType.values().forEach {
+                                DropdownMenuItem(
+                                    onClick = {
+                                        viewModel.onSortTypeChanged(it)
+                                        sortOptionsExpanded = false
+                                    }
+                                ) {
+                                    Text(it.asString())
+                                }
                             }
                         }
                     }
 
+                    val sortParams by viewModel.sortParams.collectAsState()
+
                     Text(
                         modifier = Modifier.padding(start = Theme.padding.medium),
-                        text = sortText,
+                        text = sortParams.type.asString(sortParams.order),
                         fontSize = 18.sp,
                         color = iconAndTextColor
                     )

@@ -11,15 +11,15 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface SongDao {
     // TODO: Temporary, user should be able to choose how to sort
-    @Query("SELECT * FROM SongEntity ORDER BY title ASC")
+    @Query("SELECT * FROM SongEntity")
     fun getPagedSongs(): PagingSource<Int, SongEntity>
 
     // TODO: Temporary, user should be able to choose how to sort
-    @Query("SELECT * FROM SongEntity ORDER BY title ASC")
+    @Query("SELECT * FROM SongEntity")
     suspend fun getSongs(): List<SongEntity>
 
     // TODO: Temporary, user should be able to choose how to sort
-    @Query("SELECT * FROM SongEntity ORDER BY title ASC")
+    @Query("SELECT * FROM SongEntity")
     fun observe(): Flow<List<SongEntity>>
 
     @Query("SELECT * FROM SongEntity WHERE mediaId=:mediaId")

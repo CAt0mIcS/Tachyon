@@ -10,13 +10,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LoopDao {
-    @Query("SELECT * FROM LoopEntity ORDER BY mediaId ASC")
+    @Query("SELECT * FROM LoopEntity")
     fun getPagedLoops(): PagingSource<Int, LoopEntity>
 
-    @Query("SELECT * FROM LoopEntity ORDER BY mediaId ASC")
+    @Query("SELECT * FROM LoopEntity")
     suspend fun getLoops(): List<LoopEntity>
 
-    @Query("SELECT * FROM LoopEntity ORDER BY mediaId ASC")
+    @Query("SELECT * FROM LoopEntity")
     fun observe(): Flow<List<LoopEntity>>
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
