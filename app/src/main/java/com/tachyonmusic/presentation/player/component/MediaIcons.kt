@@ -25,7 +25,6 @@ fun IconForward(timeSeconds: Long, modifier: Modifier = Modifier) {
             timeSeconds.toString(),
             fontWeight = FontWeight.ExtraBold,
             fontSize = 6.sp,
-            color = Theme.colors.contrastExtreme,
             modifier = Modifier.align(Alignment.Center).offset(y = 1.dp)
         )
     }
@@ -42,7 +41,6 @@ fun IconRewind(timeSeconds: Long, modifier: Modifier = Modifier) {
             timeSeconds.toString(),
             fontWeight = FontWeight.ExtraBold,
             fontSize = 6.sp,
-            color = Theme.colors.contrastExtreme,
             modifier = Modifier.align(Alignment.Center).offset(y = 1.dp)
         )
     }
