@@ -1,6 +1,6 @@
 package com.tachyonmusic.domain.use_case.player
 
-import com.tachyonmusic.core.data.constants.RepeatMode
+import com.tachyonmusic.media.core.RepeatMode
 import com.tachyonmusic.domain.repository.MediaBrowserController
 
 class SetRepeatMode(private val browser: MediaBrowserController) {

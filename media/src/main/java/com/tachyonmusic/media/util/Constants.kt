@@ -4,7 +4,7 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionCommands
-import com.tachyonmusic.core.data.constants.MediaAction
+import com.tachyonmusic.media.core.*
 
 
 // TODO: Sort out which commands to enable/disable
@@ -20,11 +20,12 @@ internal val supportedCommands = MediaSession.ConnectionResult.accept(
 
         ////////////////////////////////////////////////////////////////////////////////////////
         // CustomCommands
-        add(MediaAction.setPlaybackCommand)
-        add(MediaAction.setTimingDataCommand)
-        add(MediaAction.setRepeatModeCommand)
+        add(SetPlaybackEvent.command)
+        add(SetTimingDataEvent.command)
+        add(SetRepeatModeEvent.command)
+        add(SetSortingParamsEvent.command)
 
-        add(MediaAction.timingDataUpdatedCommand)
+        add(TimingDataUpdatedEvent.command)
     }.build(),
     Player.Commands.Builder().apply {
         add(Player.COMMAND_PLAY_PAUSE)

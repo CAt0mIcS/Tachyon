@@ -1,7 +1,7 @@
-package com.tachyonmusic.core.data.constants
+package com.tachyonmusic.media.core
 
 import androidx.annotation.DrawableRes
-import com.tachyonmusic.core.R
+import com.tachyonmusic.media.R
 
 sealed class RepeatMode(val id: Int) {
     abstract val next: RepeatMode

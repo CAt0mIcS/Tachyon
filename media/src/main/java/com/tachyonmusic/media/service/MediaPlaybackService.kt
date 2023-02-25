@@ -12,23 +12,22 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.data.RemoteArtwork
-import com.tachyonmusic.core.data.constants.MediaAction
-import com.tachyonmusic.core.data.constants.MediaAction.sendOnTimingDataUpdatedEvent
-import com.tachyonmusic.core.data.constants.MetadataKeys
-import com.tachyonmusic.core.data.constants.RepeatMode
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.*
-import com.tachyonmusic.media.util.*
+import com.tachyonmusic.media.util.playback
+import com.tachyonmusic.media.util.prepare
+import com.tachyonmusic.media.util.supportedCommands
+import com.tachyonmusic.media.util.updateTimingDataOfCurrentPlayback
 import com.tachyonmusic.util.*
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -144,12 +143,11 @@ class MediaPlaybackService(
             customCommand: SessionCommand,
             args: Bundle
         ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
-            return@future when (customCommand) {
-                MediaAction.setPlaybackCommand -> {
-                    val playback: Playback? = args.parcelable(MetadataKeys.Playback)
-                    mediaSession.sendOnTimingDataUpdatedEvent(playback?.timingData)
+            return@future when (val event = customCommand.toMediaBrowserEvent(args)) {
+                is SetPlaybackEvent -> {
+                    mediaSession.dispatchMediaEvent(TimingDataUpdatedEvent(event.playback?.timingData))
 
-                    if (playback == null) {
+                    if (event.playback == null) {
                         runOnUiThread {
                             currentPlayer.stop()
                             currentPlayer.clearMediaItems()
@@ -157,12 +155,12 @@ class MediaPlaybackService(
                         return@future SessionResult(SessionResult.RESULT_SUCCESS)
                     }
 
-                    if (playback is SinglePlayback) {
+                    if (event.playback is SinglePlayback) {
                         val playbackChanged = runOnUiThread {
-                            val idx = currentPlayer.indexOfMediaItem(playback.mediaId)
+                            val idx = currentPlayer.indexOfMediaItem(event.playback.mediaId)
 
                             if (idx >= 0) {
-                                queuedPlayback = playback
+                                queuedPlayback = event.playback
                                 currentPlayer.seekTo(idx, 0)
                                 return@runOnUiThread true
                             }
@@ -173,12 +171,12 @@ class MediaPlaybackService(
                             return@future SessionResult(SessionResult.RESULT_SUCCESS)
                     }
 
-                    val loadingRes = getPlaylistForPlayback(playback)
+                    val loadingRes = getPlaylistForPlayback(event.playback)
 
                     if (loadingRes is Resource.Error)
                         return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
 
-                    queuedPlayback = playback.underlyingSinglePlayback
+                    queuedPlayback = event.playback.underlyingSinglePlayback
                     runOnUiThread {
                         val prepareRes =
                             currentPlayer.prepare(
@@ -193,11 +191,9 @@ class MediaPlaybackService(
                     }
                 }
 
-                MediaAction.setTimingDataCommand -> {
+                is SetTimingDataEvent -> {
                     val res = withContext(Dispatchers.Main) {
-                        currentPlayer.updateTimingDataOfCurrentPlayback(
-                            args.parcelable(MetadataKeys.TimingData)
-                        )
+                        currentPlayer.updateTimingDataOfCurrentPlayback(event.timingData)
                     }
 
                     if (res is Resource.Error)
@@ -205,9 +201,9 @@ class MediaPlaybackService(
                     SessionResult(SessionResult.RESULT_SUCCESS)
                 }
 
-                MediaAction.setRepeatModeCommand -> {
+                is SetRepeatModeEvent -> {
                     runOnUiThreadAsync {
-                        when (RepeatMode.fromId(args.getInt(MetadataKeys.RepeatMode))) {
+                        when (event.repeatMode) {
                             RepeatMode.All -> {
                                 currentPlayer.shuffleModeEnabled = false
                                 currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
@@ -227,7 +223,9 @@ class MediaPlaybackService(
                     SessionResult(SessionResult.RESULT_SUCCESS)
                 }
 
-                else -> SessionResult(SessionResult.RESULT_ERROR_NOT_SUPPORTED)
+                is SetSortingParamsEvent -> {
+                    TODO()
+                }
             }
         }
     }
@@ -287,7 +285,7 @@ class MediaPlaybackService(
 
     private inner class CustomPlayerEventListener : CustomPlayer.Listener {
         override fun onTimingDataUpdated(controller: TimingDataController?) {
-            mediaSession.sendOnTimingDataUpdatedEvent(controller)
+            mediaSession.dispatchMediaEvent(TimingDataUpdatedEvent(controller))
         }
     }
 }

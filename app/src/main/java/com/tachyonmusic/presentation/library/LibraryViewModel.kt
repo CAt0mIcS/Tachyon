@@ -1,32 +1,22 @@
 package com.tachyonmusic.presentation.library
 
 import android.app.Application
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.GetSongs
 import com.tachyonmusic.domain.use_case.ObserveLoops
 import com.tachyonmusic.domain.use_case.ObservePlaylists
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.core.SortOrder
+import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.presentation.util.SortOrder
-import com.tachyonmusic.presentation.util.SortType
 import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.runOnUiThreadAsync
 import com.tachyonmusic.util.sortedBy
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SortParameters(

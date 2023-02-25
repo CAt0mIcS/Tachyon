@@ -1,9 +1,9 @@
 package com.tachyonmusic.domain.use_case
 
-import com.tachyonmusic.presentation.util.SortOrder
-import com.tachyonmusic.presentation.util.SortType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.media.core.SortOrder
+import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.util.sortedBy
 import kotlinx.coroutines.flow.map
 

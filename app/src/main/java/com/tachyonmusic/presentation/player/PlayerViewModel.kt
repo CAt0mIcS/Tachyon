@@ -3,7 +3,7 @@ package com.tachyonmusic.presentation.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.core.data.constants.RepeatMode
+import com.tachyonmusic.media.core.RepeatMode
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback

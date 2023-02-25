@@ -1,8 +1,8 @@
 package com.tachyonmusic.util
 
-import com.tachyonmusic.presentation.util.SortOrder
-import com.tachyonmusic.presentation.util.SortType
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.media.core.SortOrder
+import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.presentation.util.displayTitle
 
 fun <T> MutableList<T>.removeFirst(predicate: (T) -> Boolean): Boolean {

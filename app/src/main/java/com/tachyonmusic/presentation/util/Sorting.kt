@@ -4,16 +4,8 @@ import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.tachyonmusic.app.R
-
-enum class SortOrder {
-    Ascending, Descending
-}
-
-enum class SortType {
-    AlphabeticalTitle,
-    AlphabeticalArtist,
-    LastPlayedDate
-}
+import com.tachyonmusic.media.core.SortOrder
+import com.tachyonmusic.media.core.SortType
 
 
 @SuppressLint("ComposableNaming")
