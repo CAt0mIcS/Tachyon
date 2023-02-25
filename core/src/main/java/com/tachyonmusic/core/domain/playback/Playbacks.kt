@@ -66,5 +66,12 @@ interface SinglePlayback : Playback {
 
     override var timingData: TimingDataController
 
+    override val underlyingSong: Song
+    get() = when(this) {
+        is Song -> this
+        is Loop -> song
+        else -> TODO("Invalid SinglePlayback ${this.javaClass.name}")
+    }
+
     override val uri: Uri
 }

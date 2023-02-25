@@ -80,21 +80,22 @@ data class SetRepeatModeEvent(
 }
 
 data class SetSortingParamsEvent(
-    val sortType: SortType,
-    val sortOrder: SortOrder
+    val sortParameters: SortParameters
 ) : MediaBrowserEvent {
     override val command: SessionCommand
         get() = Companion.command
 
     override fun toBundle() = Bundle().apply {
-        putInt(MetadataKeys.SortType, sortType.ordinal)
-        putInt(MetadataKeys.SortOrder, sortOrder.ordinal)
+        putInt(MetadataKeys.SortType, sortParameters.type.ordinal)
+        putInt(MetadataKeys.SortOrder, sortParameters.order.ordinal)
     }
 
     companion object {
         fun fromBundle(bundle: Bundle) = SetSortingParamsEvent(
-            SortType.fromInt(bundle.getInt(MetadataKeys.SortType)),
-            SortOrder.fromInt(bundle.getInt(MetadataKeys.SortOrder))
+            SortParameters(
+                SortType.fromInt(bundle.getInt(MetadataKeys.SortType)),
+                SortOrder.fromInt(bundle.getInt(MetadataKeys.SortOrder))
+            )
         )
 
         val command = SessionCommand("${actionPrefix}SET_SORTING_PARAMS", Bundle.EMPTY)

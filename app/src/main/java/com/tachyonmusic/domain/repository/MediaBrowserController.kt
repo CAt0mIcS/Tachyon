@@ -10,9 +10,13 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.media.core.SortOrder
+import com.tachyonmusic.media.core.SortParameters
+import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import kotlinx.coroutines.flow.StateFlow
+
 
 interface MediaBrowserController : DefaultLifecycleObserver,
     IListenable<MediaBrowserController.EventListener> {
@@ -30,6 +34,9 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     val playbackState: StateFlow<SinglePlayback?>
     val associatedPlaylistState: StateFlow<Playlist?>
     val playWhenReadyState: StateFlow<Boolean>
+    val sortParamsState: StateFlow<SortParameters>
+
+    var sortParams: SortParameters
 
     /**
      * Start playing specified playlist

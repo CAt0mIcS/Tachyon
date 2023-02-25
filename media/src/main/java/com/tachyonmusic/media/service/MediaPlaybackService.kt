@@ -69,7 +69,9 @@ class MediaPlaybackService(
 
     private var queuedPlayback: SinglePlayback? = null
 
-    override fun onCreate() {
+    private var sortParams = SortParameters()
+
+    override fun  onCreate() {
         super.onCreate()
 
         runBlocking {
@@ -171,7 +173,7 @@ class MediaPlaybackService(
                             return@future SessionResult(SessionResult.RESULT_SUCCESS)
                     }
 
-                    val loadingRes = getPlaylistForPlayback(event.playback)
+                    val loadingRes = getPlaylistForPlayback(event.playback, sortParams)
 
                     if (loadingRes is Resource.Error)
                         return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
@@ -224,7 +226,8 @@ class MediaPlaybackService(
                 }
 
                 is SetSortingParamsEvent -> {
-                    TODO()
+                    sortParams = event.sortParameters
+                    SessionResult(SessionResult.RESULT_SUCCESS)
                 }
             }
         }

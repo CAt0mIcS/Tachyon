@@ -8,6 +8,8 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.util.toLoop
 import com.tachyonmusic.database.util.toSong
 import com.tachyonmusic.media.R
+import com.tachyonmusic.media.core.SortParameters
+import com.tachyonmusic.media.core.sortedBy
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.flow.collect
@@ -25,7 +27,10 @@ class GetPlaylistForPlayback(
         val initialWindowIndex: Int
     )
 
-    suspend operator fun invoke(playback: Playback?): Resource<ActivePlaylist> {
+    suspend operator fun invoke(
+        playback: Playback?,
+        sortParams: SortParameters,
+    ): Resource<ActivePlaylist> {
         if (playback == null)
             return Resource.Error(UiText.StringResource(R.string.invalid_playback))
 
@@ -38,9 +43,10 @@ class GetPlaylistForPlayback(
             is Song -> {
                 val songEntities = songRepository.getSongEntities()
                 val playbacks = if (combinePlaybackTypes)
-                    songEntities.map { it.toSong() } + loopRepository.getLoops()
+                    songEntities.map { it.toSong() }.sortedBy(sortParams) +
+                            loopRepository.getLoops().sortedBy(sortParams)
                 else
-                    songEntities.map { it.toSong() }
+                    songEntities.map { it.toSong() }.sortedBy(sortParams)
 
                 getOrLoadArtwork(songEntities).onEach {
                     if (it is Resource.Success)
@@ -56,9 +62,10 @@ class GetPlaylistForPlayback(
                 val loopEntities = loopRepository.getLoopEntities()
                 val songEntities = songRepository.getSongEntities()
                 val playbacks = if (combinePlaybackTypes)
-                    loopEntities.map { it.toLoop() } + songRepository.getSongs()
+                    loopEntities.map { it.toLoop() }.sortedBy(sortParams) +
+                            songRepository.getSongs().sortedBy(sortParams)
                 else
-                    loopEntities.map { it.toLoop() }
+                    loopEntities.map { it.toLoop() }.sortedBy(sortParams)
 
                 val songsOfLoops = loopEntities.map { loop ->
                     songEntities.find { loop.mediaId.underlyingMediaId == it.mediaId }!!

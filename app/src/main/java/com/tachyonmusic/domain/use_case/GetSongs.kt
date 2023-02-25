@@ -1,17 +1,16 @@
 package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.media.core.SortOrder
-import com.tachyonmusic.media.core.SortType
-import com.tachyonmusic.util.sortedBy
+import com.tachyonmusic.media.core.SortParameters
+import com.tachyonmusic.media.core.sortedBy
+
 
 class GetSongs(
     private val repository: SongRepository
 ) {
     suspend operator fun invoke(
-        sortType: SortType = SortType.AlphabeticalTitle,
-        sortOrder: SortOrder = SortOrder.Ascending
+        sortParams: SortParameters = SortParameters()
     ) = repository.getSongs().onEach {
         it.isArtworkLoading.value = true
-    }.sortedBy(sortType, sortOrder)
+    }.sortedBy(sortParams)
 }

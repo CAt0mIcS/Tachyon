@@ -95,6 +95,16 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
     private val _playWhenReadyState = MutableStateFlow(false)
     override val playWhenReadyState = _playWhenReadyState.asStateFlow()
 
+    private val _sortParamsState = MutableStateFlow(SortParameters())
+    override val sortParamsState = _sortParamsState.asStateFlow()
+
+    override var sortParams: SortParameters
+        get() = sortParamsState.value
+        set(value) {
+            browser?.dispatchMediaEvent(SetSortingParamsEvent(value)) ?: return
+            _sortParamsState.update { value }
+        }
+
     override fun playPlaylist(playlist: Playlist?) {
         _playbackState.update { null }
         _associatedPlaylistState.update { playlist }

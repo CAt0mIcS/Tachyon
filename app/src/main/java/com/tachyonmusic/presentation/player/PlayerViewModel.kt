@@ -9,6 +9,7 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.*
+import com.tachyonmusic.domain.use_case.library.GetSortParametersState
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
@@ -40,6 +41,7 @@ class PlayerViewModel @Inject constructor(
     private val playPlayback: PlayPlayback,
 
     getAssociatedPlaylistState: GetAssociatedPlaylistState,
+    getSortParametersState: GetSortParametersState,
     private val getPlaybackChildren: GetPlaybackChildren,
 
     private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
@@ -61,7 +63,7 @@ class PlayerViewModel @Inject constructor(
         it!!
     }.onEach { playback ->
         withContext(Dispatchers.IO) {
-            getOrLoadArtwork(playback.underlyingSong ?: return@withContext).onEach { res ->
+            getOrLoadArtwork(playback.underlyingSong).onEach { res ->
                 playback.artwork.update { res.data?.artwork }
                 playback.isArtworkLoading.update { false }
             }.collect()
@@ -148,10 +150,21 @@ class PlayerViewModel @Inject constructor(
         else PlaybackType.build(playback)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlaybackType.Song.Local())
 
-    val subPlaybackItems =
-        combine(_playback, associatedPlaylist, repeatMode) { playback, playlist, repeatMode ->
-            getPlaybackChildren(playlist ?: playback, repeatMode)
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    val subPlaybackItems = combine(
+        _playback,
+        associatedPlaylist,
+        repeatMode,
+        getSortParametersState()
+    ) { playback, playlist, repeatMode, sortParams ->
+        val children = getPlaybackChildren(playlist ?: playback, repeatMode, sortParams)
+
+        getOrLoadArtwork(children.map { it.underlyingSong }).onEach { res ->
+            children[res.data!!.i].artwork.update { res.data?.artwork }
+            children[res.data!!.i].isArtworkLoading.update { false }
+        }.collect()
+
+        children
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
     /***********************************************************************************************
