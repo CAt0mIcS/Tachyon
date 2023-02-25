@@ -10,7 +10,6 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
-import com.tachyonmusic.domain.use_case.library.GetSortParametersState
 import com.tachyonmusic.domain.use_case.library.SetSortParameters
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.*
@@ -179,16 +178,6 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetAssociatedPlaylistStateUseCase(browser: MediaBrowserController) =
-        GetAssociatedPlaylistState(browser)
-
-    @Provides
-    @Singleton
-    fun provideGetSortParametersStateUseCase(browser: MediaBrowserController) =
-        GetSortParametersState(browser)
-
-    @Provides
-    @Singleton
     fun provideSetSortParametersStateUseCase(browser: MediaBrowserController) =
         SetSortParameters(browser)
 
@@ -201,18 +190,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetIsPlayingStateUseCase(browser: MediaBrowserController) =
-        GetIsPlayingState(browser)
-
-    @Provides
-    @Singleton
-    fun provideGetPlaybackStateStateUseCase(browser: MediaBrowserController) =
-        GetCurrentPlaybackState(browser)
-
-    @Provides
-    @Singleton
-    fun provideGetTimingDataStateUseCase(browser: MediaBrowserController) =
-        GetTimingDataState(browser)
+    fun provideGetMediaStatesUseCase(browser: MediaBrowserController) = GetMediaStates(browser)
 
     @Provides
     @Singleton

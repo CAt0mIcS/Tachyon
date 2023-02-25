@@ -6,9 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.isNullOrEmpty
+import com.tachyonmusic.domain.use_case.GetMediaStates
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
-import com.tachyonmusic.domain.use_case.player.GetCurrentPlaybackState
-import com.tachyonmusic.domain.use_case.player.GetTimingDataState
 import com.tachyonmusic.domain.use_case.player.SetNewTimingData
 import com.tachyonmusic.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,15 +18,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoopEditorViewModel @Inject constructor(
-    getTimingDataState: GetTimingDataState,
-    getPlaybackState: GetCurrentPlaybackState,
+    getMediaStates: GetMediaStates,
     private val setBrowserTimingData: SetNewTimingData,
     private val createAndSaveNewLoop: CreateAndSaveNewLoop,
 ) : ViewModel() {
     private val _loopError = MutableStateFlow<UiText?>(null)
     val loopError = _loopError.asStateFlow()
 
-    val duration = getPlaybackState().map {
+    val duration = getMediaStates.playback().map {
         it?.duration ?: Long.MAX_VALUE.ms
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
@@ -39,7 +37,7 @@ class LoopEditorViewModel @Inject constructor(
     val currentIndex = _currentIndex.asStateFlow()
 
     init {
-        combine(getTimingDataState(), duration) { timingData, duration ->
+        combine(getMediaStates.timingData(), duration) { timingData, duration ->
             val newTimingData = if (timingData.isNullOrEmpty())
                 listOf(TimingData(0.ms, duration))
             else

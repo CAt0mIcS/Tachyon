@@ -3,14 +3,13 @@ package com.tachyonmusic.presentation.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.media.core.RepeatMode
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.*
-import com.tachyonmusic.domain.use_case.library.GetSortParametersState
 import com.tachyonmusic.domain.use_case.player.*
+import com.tachyonmusic.media.core.RepeatMode
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.player.data.SeekIncrements
@@ -26,12 +25,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    getPlaybackState: GetCurrentPlaybackState,
+    getMediaStates: GetMediaStates,
     getHistory: GetHistory,
 
     observeSettings: ObserveSettings,
 
-    getIsPlayingState: GetIsPlayingState,
     private val getCurrentPlaybackPos: GetCurrentPosition,
     private val seekToPosition: SeekToPosition,
     getRecentlyPlayed: GetRecentlyPlayed,
@@ -40,8 +38,6 @@ class PlayerViewModel @Inject constructor(
     private val setRepeatMode: SetRepeatMode,
     private val playPlayback: PlayPlayback,
 
-    getAssociatedPlaylistState: GetAssociatedPlaylistState,
-    getSortParametersState: GetSortParametersState,
     private val getPlaybackChildren: GetPlaybackChildren,
 
     private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
@@ -55,7 +51,7 @@ class PlayerViewModel @Inject constructor(
     /***********************************************************************************************
      ************************************ CURRENT PLAYBACK *****************************************
      **********************************************************************************************/
-    private val _playback = getPlaybackState().map {
+    private val _playback = getMediaStates.playback().map {
         it ?: getHistory().firstOrNull()
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
@@ -102,10 +98,11 @@ class PlayerViewModel @Inject constructor(
         SeekIncrements(it.seekForwardIncrement, it.seekBackIncrement)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SeekIncrements())
 
-    val isPlaying = getIsPlayingState()
+    val isPlaying = getMediaStates.playWhenReady()
 
     private val _repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.All)
     val repeatMode = _repeatMode.asStateFlow()
+//    val repeatMode = getMediaStates.repeatMode()
 
     private var recentlyPlayedPos: Duration? = null
 
@@ -131,7 +128,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun nextRepeatMode() {
-        _repeatMode.value = repeatMode.value.next
+        _repeatMode.update { it.next }
         setRepeatMode(repeatMode.value)
     }
 
@@ -142,7 +139,7 @@ class PlayerViewModel @Inject constructor(
     /***********************************************************************************************
      *************************** NEXT PLAYBACK ITEMS / PLAYLIST ITEMS ******************************
      **********************************************************************************************/
-    private val associatedPlaylist = getAssociatedPlaylistState()
+    private val associatedPlaylist = getMediaStates.associatedPlaylist()
 
     val playbackType = combine(_playback, associatedPlaylist) { playback, playlist ->
         if (playlist != null)
@@ -154,7 +151,7 @@ class PlayerViewModel @Inject constructor(
         _playback,
         associatedPlaylist,
         repeatMode,
-        getSortParametersState()
+        getMediaStates.sortParameters()
     ) { playback, playlist, repeatMode, sortParams ->
         val children = getPlaybackChildren(playlist ?: playback, repeatMode, sortParams)
 

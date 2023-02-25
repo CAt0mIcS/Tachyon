@@ -5,11 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.domain.use_case.GetSongs
-import com.tachyonmusic.domain.use_case.ObserveLoops
-import com.tachyonmusic.domain.use_case.ObservePlaylists
-import com.tachyonmusic.domain.use_case.PlayPlayback
-import com.tachyonmusic.domain.use_case.library.GetSortParametersState
+import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.library.SetSortParameters
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.core.SortType
@@ -23,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    getSortParametersState: GetSortParametersState,
+    getMediaStates: GetMediaStates,
     getSongs: GetSongs,
     observeLoops: ObserveLoops,
     observePlaylists: ObservePlaylists,
@@ -34,7 +30,7 @@ class LibraryViewModel @Inject constructor(
     private val log: Logger
 ) : ViewModel() {
 
-    val sortParams = getSortParametersState()
+    val sortParams = getMediaStates.sortParameters()
 
     private var songs = sortParams.map {
         val songs = getSongs(it)

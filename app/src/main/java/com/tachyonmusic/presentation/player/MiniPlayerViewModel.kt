@@ -4,10 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.GetHistory
+import com.tachyonmusic.domain.use_case.GetMediaStates
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.main.NormalizeCurrentPosition
-import com.tachyonmusic.domain.use_case.player.GetCurrentPlaybackState
-import com.tachyonmusic.domain.use_case.player.GetIsPlayingState
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.PlayRecentlyPlayed
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
@@ -22,8 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MiniPlayerViewModel @Inject constructor(
-    getPlaybackState: GetCurrentPlaybackState,
-    getIsPlayingState: GetIsPlayingState,
+    getMediaStates: GetMediaStates,
     private val getHistory: GetHistory,
     private val normalizeCurrentPosition: NormalizeCurrentPosition,
     private val getOrLoadArtwork: GetOrLoadArtwork,
@@ -32,7 +30,7 @@ class MiniPlayerViewModel @Inject constructor(
     private val playRecentlyPlayed: PlayRecentlyPlayed,
 ) : ViewModel() {
 
-    val playback = getPlaybackState().map {
+    val playback = getMediaStates.playback().map {
         it ?: getHistory().firstOrNull()
     }.onEach { singlePb ->
         if (singlePb == null)
@@ -46,7 +44,7 @@ class MiniPlayerViewModel @Inject constructor(
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    val isPlaying = getIsPlayingState()
+    val isPlaying = getMediaStates.playWhenReady()
 
     var audioUpdateInterval: Duration = SettingsEntity().audioUpdateInterval
         private set
