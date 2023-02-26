@@ -1,7 +1,9 @@
 package com.tachyonmusic.presentation.player
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
@@ -99,10 +101,7 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SeekIncrements())
 
     val isPlaying = getMediaStates.playWhenReady()
-
-    private val _repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.All)
-    val repeatMode = _repeatMode.asStateFlow()
-//    val repeatMode = getMediaStates.repeatMode()
+    val repeatMode = getMediaStates.repeatMode()
 
     private var recentlyPlayedPos: Duration? = null
 
@@ -128,8 +127,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun nextRepeatMode() {
-        _repeatMode.update { it.next }
-        setRepeatMode(repeatMode.value)
+        setRepeatMode(repeatMode.value.next)
     }
 
     fun play(playback: SinglePlayback) =

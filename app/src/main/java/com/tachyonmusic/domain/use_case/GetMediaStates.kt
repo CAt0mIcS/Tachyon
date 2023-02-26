@@ -8,4 +8,5 @@ class GetMediaStates(private val browser: MediaBrowserController) {
     fun playWhenReady() = browser.playWhenReadyState
     fun timingData() = browser.timingDataState
     fun sortParameters() = browser.sortParamsState
+    fun repeatMode() = browser.repeatModeState
 }

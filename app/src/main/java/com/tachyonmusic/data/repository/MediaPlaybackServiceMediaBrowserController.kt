@@ -25,6 +25,7 @@ import com.tachyonmusic.media.util.timingData
 import com.tachyonmusic.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
@@ -111,13 +112,17 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         browser?.dispatchMediaEvent(SetPlaybackEvent(playlist))
     }
 
-    override var repeatMode: RepeatMode = RepeatMode.All
+    override var repeatMode: RepeatMode
+        get() = repeatModeState.value
         set(value) {
             if (browser != null) {
-                field = value
-                browser!!.dispatchMediaEvent(SetRepeatModeEvent(repeatMode))
+                browser!!.dispatchMediaEvent(SetRepeatModeEvent(value))
+                _repeatModeState.update { value }
             }
         }
+
+    private val _repeatModeState = MutableStateFlow<RepeatMode>(RepeatMode.All)
+    override val repeatModeState = _repeatModeState.asStateFlow()
 
     override val nextMediaItemIndex: Int
         get() = browser?.nextMediaItemIndex ?: C.INDEX_UNSET
