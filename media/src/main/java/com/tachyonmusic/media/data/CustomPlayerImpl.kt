@@ -25,7 +25,7 @@ import com.tachyonmusic.util.ms
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands
  */
 @OptIn(UnstableApi::class)
-class CustomPlayerImpl(player: Player, log: Logger) : ForwardingPlayer(player),
+class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlayer(player),
     CustomPlayer,
     Player.Listener,
     IListenable<CustomPlayer.Listener> by Listenable() {
@@ -169,6 +169,7 @@ class CustomPlayerImpl(player: Player, log: Logger) : ForwardingPlayer(player),
             val timingData = currentMediaItem?.mediaMetadata?.timingData
             if (timingData != null) {
                 if (timingData.currentIndex + 1 == timingData.size && repeatMode == REPEAT_MODE_ALL) {
+                    log.debug("Timing data end reached, seeking to next playback item...")
                     seekToNext()
                     return@createMessage
                 }
@@ -176,8 +177,7 @@ class CustomPlayerImpl(player: Player, log: Logger) : ForwardingPlayer(player),
                 timingData.advanceToNext()
                 invokeEvent { it.onTimingDataUpdated(timingData) }
                 postLoopMessage(timingData.next.startTime, timingData.current.endTime)
-                Log.d(
-                    "CustomPlayer",
+                log.debug(
                     "The next timing data will be loaded at ${timingData.current.endTime} and will seek to ${timingData.next.startTime}"
                 )
             }

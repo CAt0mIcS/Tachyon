@@ -12,6 +12,8 @@ import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class CreateAndSaveNewLoop(
     private val songRepository: SongRepository,
@@ -20,7 +22,7 @@ class CreateAndSaveNewLoop(
 ) {
     suspend operator fun invoke(
         name: String
-    ): Resource<LoopEntity> {
+    ) = withContext(Dispatchers.IO) {
         var isInvalid = false
         var playback: Playback? = null
         var timingData: TimingDataController? = null
@@ -30,7 +32,7 @@ class CreateAndSaveNewLoop(
             timingData = browser.timingData
         }
         if (isInvalid)
-            return Resource.Error(
+            return@withContext Resource.Error(
                 UiText.StringResource(
                     R.string.cannot_create_loop,
                     name,
@@ -46,7 +48,7 @@ class CreateAndSaveNewLoop(
          * playback which means that it's a song TODO: Saving current playlist item as loop
          */
         val songMediaId = playback!!.mediaId.underlyingMediaId ?: playback!!.mediaId
-        val song = songRepository.findByMediaId(songMediaId) ?: return Resource.Error(
+        val song = songRepository.findByMediaId(songMediaId) ?: return@withContext Resource.Error(
             UiText.StringResource(R.string.song_not_found, songMediaId.toString())
         )
 
@@ -61,9 +63,9 @@ class CreateAndSaveNewLoop(
 
         val res = loopRepository.add(loop)
         if (res is Resource.Error)
-            return Resource.Error(res)
+            return@withContext Resource.Error(res)
 
-        return Resource.Success(loop)
+        Resource.Success(loop)
     }
 
     private fun isInvalidPlayback() = browser.playback == null

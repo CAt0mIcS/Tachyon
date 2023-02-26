@@ -1,30 +1,14 @@
+@file:OptIn(ExperimentalContracts::class)
+
 package com.tachyonmusic.util
 
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.*
 import java.util.concurrent.Callable
-import kotlin.coroutines.CoroutineContext
-
-
-/**
- * Launches a new coroutine using the [context] specified
- * @return the job that was launched using [CoroutineScope.launch]
- */
-fun launch(context: CoroutineContext, block: suspend CoroutineScope.() -> Unit): Job =
-    CoroutineScope(context).launch {
-        block()
-    }
-
-
-/**
- * Launches a new coroutine using the [context] specified
- * @return the deferred that was launched using [CoroutineScope.launch]
- */
-fun <T> async(context: CoroutineContext, block: suspend CoroutineScope.() -> T) =
-    CoroutineScope(context).async {
-        block()
-    }
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 
 fun <T> future(
@@ -39,18 +23,19 @@ fun <T> future(
 
     }, context.asExecutor())
 
-fun runOnUiThreadAsync(block: suspend CoroutineScope.() -> Unit) =
-    launch(Dispatchers.Main) {
-        block()
-    }
 
 /**
  * Dispatches [block] to UI thread while suspending current coroutine until [block] finishes
  */
-suspend fun <T> runOnUiThread(block: suspend CoroutineScope.() -> T) =
-    withContext(Dispatchers.Main) {
+suspend fun <T> runOnUiThread(block: suspend CoroutineScope.() -> T): T {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+
+    return withContext(Dispatchers.Main) {
         block()
     }
+}
 
 /**
  * Dispatches [block] to UI thread without suspending current coroutine

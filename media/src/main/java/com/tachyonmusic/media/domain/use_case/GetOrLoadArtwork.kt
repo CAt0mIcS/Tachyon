@@ -34,7 +34,7 @@ class GetOrLoadArtwork(
         withContext(Dispatchers.IO) {
             val settings = settingsRepository.getSettings()
             val fetchOnline =
-                !(!settings.autoDownloadAlbumArtwork || (settings.autoDownloadAlbumArtworkWifiOnly && isInternetMetered()))
+                settings.autoDownloadAlbumArtwork && !(settings.autoDownloadAlbumArtworkWifiOnly && isInternetMetered())
 
             songs.forEachIndexed { i, entity ->
                 launch {

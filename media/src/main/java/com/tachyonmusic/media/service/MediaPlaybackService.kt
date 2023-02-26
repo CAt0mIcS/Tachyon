@@ -148,94 +148,97 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             customCommand: SessionCommand,
             args: Bundle
         ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
-            return@future when (val event = customCommand.toMediaBrowserEvent(args)) {
-                is SetPlaybackEvent -> {
-                    mediaSession.dispatchMediaEvent(TimingDataUpdatedEvent(event.playback?.timingData))
-
-                    if (event.playback == null) {
-                        runOnUiThread {
-                            currentPlayer.stop()
-                            currentPlayer.clearMediaItems()
-                        }
-                        return@future SessionResult(SessionResult.RESULT_SUCCESS)
-                    }
-
-                    if (event.playback is SinglePlayback) {
-                        val playbackChanged = runOnUiThread {
-                            val idx = currentPlayer.indexOfMediaItem(event.playback.mediaId)
-
-                            if (idx >= 0) {
-                                queuedPlayback = event.playback
-                                currentPlayer.seekTo(idx, 0)
-                                return@runOnUiThread true
-                            }
-                            false
-                        }
-
-                        if (playbackChanged)
-                            return@future SessionResult(SessionResult.RESULT_SUCCESS)
-                    }
-
-                    val loadingRes = getPlaylistForPlayback(event.playback, sortParams)
-
-                    if (loadingRes is Resource.Error)
-                        return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
-
-                    queuedPlayback = event.playback.underlyingSinglePlayback
-                    runOnUiThread {
-                        val prepareRes =
-                            currentPlayer.prepare(
-                                loadingRes.data?.mediaItems,
-                                loadingRes.data?.initialWindowIndex
-                            )
-
-                        if (prepareRes is Resource.Error)
-                            return@runOnUiThread SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
-
-                        SessionResult(SessionResult.RESULT_SUCCESS)
-                    }
-                }
-
-                is SetTimingDataEvent -> {
-                    val res = withContext(Dispatchers.Main) {
-                        currentPlayer.updateTimingDataOfCurrentPlayback(event.timingData)
-                    }
-
-                    if (res is Resource.Error)
-                        return@future SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
-                    SessionResult(SessionResult.RESULT_SUCCESS)
-                }
-
-                is SetRepeatModeEvent -> {
-                    runOnUiThreadAsync {
-                        when (event.repeatMode) {
-                            RepeatMode.All -> {
-                                currentPlayer.shuffleModeEnabled = false
-                                currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
-                            }
-
-                            RepeatMode.One -> {
-                                currentPlayer.shuffleModeEnabled = false
-                                currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
-                            }
-
-                            RepeatMode.Shuffle -> {
-                                currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
-                                currentPlayer.shuffleModeEnabled = true
-                            }
-                        }
-                    }
-                    SessionResult(SessionResult.RESULT_SUCCESS)
-                }
-
-                is SetSortingParamsEvent -> {
-                    sortParams = event.sortParameters
-                    SessionResult(SessionResult.RESULT_SUCCESS)
+            runOnUiThread {
+                when (val event = customCommand.toMediaBrowserEvent(args)) {
+                    is SetPlaybackEvent -> handleSetPlaybackEvent(event)
+                    is SetTimingDataEvent -> handleSetTimingDataEvent(event)
+                    is SetRepeatModeEvent -> handleSetRepeatModeEvent(event)
+                    is SetSortingParamsEvent -> handleSetSortingParamsEvent(event)
                 }
             }
         }
     }
 
+    /**************************************************************************
+     ********** BROWSER EVENT HANDLERS
+     *************************************************************************/
+    suspend fun handleSetPlaybackEvent(event: SetPlaybackEvent): SessionResult {
+        mediaSession.dispatchMediaEvent(TimingDataUpdatedEvent(event.playback?.timingData))
+
+        /**
+         * Stop playback and clear media items if [playback] is null
+         */
+        if (event.playback == null) {
+            currentPlayer.stop()
+            currentPlayer.clearMediaItems()
+            return SessionResult(SessionResult.RESULT_SUCCESS)
+        }
+
+        /**
+         * Ensure that we only reload the playlist if [playback] is not in the current media items
+         */
+        if (event.playback is SinglePlayback) {
+            val idx = currentPlayer.indexOfMediaItem(event.playback.mediaId)
+
+            if (idx >= 0) {
+                queuedPlayback = event.playback
+                currentPlayer.seekTo(idx, 0)
+                return SessionResult(SessionResult.RESULT_SUCCESS)
+            }
+        }
+
+        val playlistRes = getPlaylistForPlayback(event.playback, sortParams)
+        if (playlistRes is Resource.Error)
+            return SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
+
+        queuedPlayback = event.playback.underlyingSinglePlayback
+        val prepareRes = currentPlayer.prepare(
+            playlistRes.data?.mediaItems,
+            playlistRes.data?.initialWindowIndex
+        )
+
+        if (prepareRes is Resource.Error)
+            return SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
+        return SessionResult(SessionResult.RESULT_SUCCESS)
+    }
+
+    fun handleSetTimingDataEvent(event: SetTimingDataEvent): SessionResult {
+        val res = currentPlayer.updateTimingDataOfCurrentPlayback(event.timingData)
+
+        if (res is Resource.Error)
+            return SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
+        return SessionResult(SessionResult.RESULT_SUCCESS)
+    }
+
+    fun handleSetRepeatModeEvent(event: SetRepeatModeEvent): SessionResult {
+        when (event.repeatMode) {
+            RepeatMode.All -> {
+                currentPlayer.shuffleModeEnabled = false
+                currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
+            }
+
+            RepeatMode.One -> {
+                currentPlayer.shuffleModeEnabled = false
+                currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
+            }
+
+            RepeatMode.Shuffle -> {
+                currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
+                currentPlayer.shuffleModeEnabled = true
+            }
+        }
+        return SessionResult(SessionResult.RESULT_SUCCESS)
+    }
+
+    fun handleSetSortingParamsEvent(event: SetSortingParamsEvent): SessionResult {
+        sortParams = event.sortParameters
+        return SessionResult(SessionResult.RESULT_SUCCESS)
+    }
+
+
+    /**************************************************************************
+     ********** PLAYER LISTENERS
+     *************************************************************************/
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         /**
          * When changing playlist [onMediaItemTransition] is also called with the bellow reason
@@ -270,6 +273,10 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }
     }
 
+
+    /**************************************************************************
+     ********** HELPER FUNCTIONS
+     *************************************************************************/
     private fun buildExoPlayer(handleAudioFocus: Boolean): CustomPlayer =
         CustomPlayerImpl(ExoPlayer.Builder(this).apply {
             setAudioAttributes(

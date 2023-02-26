@@ -2,6 +2,8 @@ package com.tachyonmusic.domain.use_case.main
 
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.util.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Updates [SettingsEntity.excludedSongFiles] to make sure that all songs in the list exist
@@ -10,7 +12,7 @@ import com.tachyonmusic.util.File
 class UpdateSettingsDatabase(
     private val repository: SettingsRepository
 ) {
-    suspend operator fun invoke() {
+    suspend operator fun invoke() = withContext(Dispatchers.IO) {
         val toRemove = mutableListOf<String>()
         val settings = repository.getSettings()
 

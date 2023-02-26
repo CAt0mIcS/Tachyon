@@ -1,9 +1,7 @@
 package com.tachyonmusic.presentation.player
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
@@ -11,7 +9,6 @@ import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.player.*
-import com.tachyonmusic.media.core.RepeatMode
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.player.data.SeekIncrements
@@ -50,9 +47,9 @@ class PlayerViewModel @Inject constructor(
     private val getOrLoadArtwork: GetOrLoadArtwork
 ) : ViewModel() {
 
-    /***********************************************************************************************
-     ************************************ CURRENT PLAYBACK *****************************************
-     **********************************************************************************************/
+    /**************************************************************************
+     ********** CURRENT PLAYBACK
+     *************************************************************************/
     private val _playback = getMediaStates.playback().map {
         it ?: getHistory().firstOrNull()
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
@@ -77,9 +74,9 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
 
-    /***********************************************************************************************
-     ************************************ SETTINGS *************************************************
-     **********************************************************************************************/
+    /**************************************************************************
+     ********** SETTINGS
+     *************************************************************************/
     var showMillisecondsInPositionText = SettingsEntity().shouldMillisecondsBeShown
         private set
     var audioUpdateInterval = SettingsEntity().audioUpdateInterval
@@ -93,9 +90,9 @@ class PlayerViewModel @Inject constructor(
     }
 
 
-    /***********************************************************************************************
-     ************************************ MEDIA CONTROLS *******************************************
-     **********************************************************************************************/
+    /**************************************************************************
+     ********** MEDIA CONTROLS
+     *************************************************************************/
     val seekIncrements = observeSettings().map {
         SeekIncrements(it.seekForwardIncrement, it.seekBackIncrement)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SeekIncrements())
@@ -134,9 +131,9 @@ class PlayerViewModel @Inject constructor(
         playPlayback(playback, playInPlaylist = playbackType.value is PlaybackType.Playlist)
 
 
-    /***********************************************************************************************
-     *************************** NEXT PLAYBACK ITEMS / PLAYLIST ITEMS ******************************
-     **********************************************************************************************/
+    /**************************************************************************
+     ********** NEXT PLAYBACK ITEMS / PLAYLIST ITEMS
+     *************************************************************************/
     private val associatedPlaylist = getMediaStates.associatedPlaylist()
 
     val playbackType = combine(_playback, associatedPlaylist) { playback, playlist ->
@@ -162,9 +159,9 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
-    /***********************************************************************************************
-     ************************************ PLAYLIST CONTROL *****************************************
-     **********************************************************************************************/
+    /**************************************************************************
+     ********** PLAYLIST CONTROLS
+     *************************************************************************/
     val playlists = combine(observePlaylists(), _playback) { playlists, currentPlayback ->
         if (currentPlayback == null)
             return@combine emptyList()

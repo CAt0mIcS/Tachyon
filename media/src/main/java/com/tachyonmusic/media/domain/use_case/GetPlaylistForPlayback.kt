@@ -12,8 +12,10 @@ import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.media.core.sortedBy
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.withContext
 
 class GetPlaylistForPlayback(
     private val songRepository: SongRepository,
@@ -30,9 +32,9 @@ class GetPlaylistForPlayback(
     suspend operator fun invoke(
         playback: Playback?,
         sortParams: SortParameters,
-    ): Resource<ActivePlaylist> {
+    ): Resource<ActivePlaylist> = withContext(Dispatchers.IO) {
         if (playback == null)
-            return Resource.Error(UiText.StringResource(R.string.invalid_playback))
+            return@withContext Resource.Error(UiText.StringResource(R.string.invalid_playback))
 
         var initialWindowIndex: Int? = null
         var mediaItems: List<MediaItem>? = null
@@ -98,8 +100,8 @@ class GetPlaylistForPlayback(
         }
 
         if (mediaItems == null || initialWindowIndex == null || playbackItems == null)
-            return Resource.Error(UiText.StringResource(R.string.invalid_arguments))
+            return@withContext Resource.Error(UiText.StringResource(R.string.invalid_arguments))
 
-        return Resource.Success(ActivePlaylist(mediaItems, playbackItems, initialWindowIndex))
+        Resource.Success(ActivePlaylist(mediaItems, playbackItems, initialWindowIndex))
     }
 }

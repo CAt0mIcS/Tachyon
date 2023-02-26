@@ -6,19 +6,31 @@ import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class CreateAndSaveNewPlaylist(
     private val playlistRepository: PlaylistRepository
 ) {
-    suspend operator fun invoke(name: String?): Resource<Unit> {
+    suspend operator fun invoke(name: String?) = withContext(Dispatchers.IO) {
         if (name.isNullOrBlank())
-            return Resource.Error(UiText.StringResource(R.string.invalid_name, name.toString()))
+            return@withContext Resource.Error(
+                UiText.StringResource(
+                    R.string.invalid_name,
+                    name.toString()
+                )
+            )
 
         // TODO: Optimize
         if (playlistRepository.getPlaylists().any { it.name == name })
-            return Resource.Error(UiText.StringResource(R.string.invalid_name, name.toString()))
+            return@withContext Resource.Error(
+                UiText.StringResource(
+                    R.string.invalid_name,
+                    name.toString()
+                )
+            )
 
-        return playlistRepository.add(
+        playlistRepository.add(
             PlaylistEntity(
                 MediaId.ofRemotePlaylist(name),
                 emptyList()

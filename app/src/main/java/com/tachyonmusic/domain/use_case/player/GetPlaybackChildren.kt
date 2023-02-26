@@ -20,7 +20,11 @@ class GetPlaybackChildren(
     private val browser: MediaBrowserController,
     private val getPlaylistForPlayback: GetPlaylistForPlayback
 ) {
-    suspend operator fun invoke(playback: Playback?, repeatMode: RepeatMode, sortParams: SortParameters): List<SinglePlayback> {
+    suspend operator fun invoke(
+        playback: Playback?,
+        repeatMode: RepeatMode,
+        sortParams: SortParameters
+    ): List<SinglePlayback> {
         if (playback == null)
             return emptyList()
 
@@ -31,7 +35,10 @@ class GetPlaybackChildren(
         }
     }
 
-    private suspend fun repeatModeAll(playback: Playback, sortParams: SortParameters): List<SinglePlayback> {
+    private suspend fun repeatModeAll(
+        playback: Playback,
+        sortParams: SortParameters
+    ): List<SinglePlayback> {
         if (playback is Playlist)
             return playback.playbacks
 
@@ -52,20 +59,29 @@ class GetPlaybackChildren(
         else
             (playback as Playlist).playbacks
 
-    private suspend fun repeatModeShuffle(playback: Playback, sortParams: SortParameters): List<SinglePlayback> {
-        if(playback is Playlist)
+    private suspend fun repeatModeShuffle(
+        playback: Playback,
+        sortParams: SortParameters
+    ): List<SinglePlayback> {
+        if (playback is Playlist)
             return playback.playbacks
 
         return listOf(
-            getPlaylist(playback, sortParams).getOrNull(browser.nextMediaItemIndex) ?: return emptyList()
+            getPlaylist(playback, sortParams).getOrNull(browser.nextMediaItemIndex)
+                ?: return emptyList()
         )
     }
 
 
-    private suspend fun getPlaylist(playback: Playback, sortParams: SortParameters): List<SinglePlayback> {
+    private suspend fun getPlaylist(
+        playback: Playback,
+        sortParams: SortParameters
+    ): List<SinglePlayback> {
         /**
          * TODO: We only need [GetPlaylistForPlayback.ActivePlaylist.playbackItems]. Optimize
          *  so that we don't create [GetPlaylistForPlayback.ActivePlaylist.mediaItems]
+         *
+         * TODO: Currently runs on UI thread due to bug when switching from [RepeatMode.All] to [RepeatMode.Shuffle]
          */
         val playlistRes = getPlaylistForPlayback(playback, sortParams)
 
