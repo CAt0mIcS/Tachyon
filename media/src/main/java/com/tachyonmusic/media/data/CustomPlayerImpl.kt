@@ -2,16 +2,18 @@ package com.tachyonmusic.media.data
 
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.OptIn
 import androidx.media3.cast.CastPlayer
 import androidx.media3.common.C
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.Player
 import androidx.media3.common.util.Clock
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.util.timingData
 import com.tachyonmusic.util.Duration
@@ -22,7 +24,8 @@ import com.tachyonmusic.util.ms
 /**
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands
  */
-class CustomPlayerImpl(player: Player) : ForwardingPlayer(player),
+@OptIn(UnstableApi::class)
+class CustomPlayerImpl(player: Player, log: Logger) : ForwardingPlayer(player),
     CustomPlayer,
     Player.Listener,
     IListenable<CustomPlayer.Listener> by Listenable() {
@@ -68,8 +71,8 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player),
         }
 
     override fun indexOfMediaItem(mediaId: MediaId): Int {
-        for(i in 0 until mediaItemCount) {
-            if(MediaId.deserializeIfValid(getMediaItemAt(i).mediaId) == mediaId)
+        for (i in 0 until mediaItemCount) {
+            if (MediaId.deserializeIfValid(getMediaItemAt(i).mediaId) == mediaId)
                 return i
         }
         return -1
@@ -165,17 +168,17 @@ class CustomPlayerImpl(player: Player) : ForwardingPlayer(player),
             seekWithoutCallback(payload as Long)
             val timingData = currentMediaItem?.mediaMetadata?.timingData
             if (timingData != null) {
+                if (timingData.currentIndex + 1 == timingData.size && repeatMode == REPEAT_MODE_ALL) {
+                    seekToNext()
+                    return@createMessage
+                }
+
                 timingData.advanceToNext()
-
                 invokeEvent { it.onTimingDataUpdated(timingData) }
-
-                postLoopMessage(
-                    timingData.next.startTime,
-                    timingData.current.endTime
-                )
+                postLoopMessage(timingData.next.startTime, timingData.current.endTime)
                 Log.d(
                     "CustomPlayer",
-                    "The next timing data will be loaded at ${timingData.current.endTime}ms and will seek to ${timingData.next.startTime}ms"
+                    "The next timing data will be loaded at ${timingData.current.endTime} and will seek to ${timingData.next.startTime}"
                 )
             }
         }.apply {

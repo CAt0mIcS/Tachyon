@@ -1,13 +1,16 @@
 package com.tachyonmusic.media.util
 
+
+// TODO: Sort out which commands to enable/disable
+import androidx.annotation.OptIn
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionCommands
 import com.tachyonmusic.media.core.*
 
-
-// TODO: Sort out which commands to enable/disable
+@OptIn(UnstableApi::class)
 internal val supportedCommands = MediaSession.ConnectionResult.accept(
     SessionCommands.Builder().apply {
         add(SessionCommand.COMMAND_CODE_LIBRARY_GET_LIBRARY_ROOT)

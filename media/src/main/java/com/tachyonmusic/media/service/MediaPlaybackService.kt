@@ -1,10 +1,12 @@
 package com.tachyonmusic.media.service
 
 import android.os.Bundle
+import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.session.*
@@ -16,7 +18,6 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
-import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.data.BrowserTree
@@ -33,11 +34,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-
+@OptIn(UnstableApi::class)
 @AndroidEntryPoint
-class MediaPlaybackService(
-    private val log: Logger = LoggerImpl()
-) : MediaLibraryService(), Player.Listener {
+class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     private lateinit var exoPlayer: CustomPlayer
     private lateinit var currentPlayer: CustomPlayer
@@ -63,6 +62,9 @@ class MediaPlaybackService(
     @Inject
     lateinit var getSettings: GetSettings
 
+    @Inject
+    lateinit var log: Logger
+
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var mediaSession: MediaLibrarySession
@@ -71,7 +73,8 @@ class MediaPlaybackService(
 
     private var sortParams = SortParameters()
 
-    override fun  onCreate() {
+
+    override fun onCreate() {
         super.onCreate()
 
         runBlocking {
@@ -282,7 +285,7 @@ class MediaPlaybackService(
             addAnalyticsListener(EventLogger())
 
             repeatMode = Player.REPEAT_MODE_ALL
-        }).apply {
+        }, log).apply {
             registerEventListener(CustomPlayerEventListener())
         }
 
