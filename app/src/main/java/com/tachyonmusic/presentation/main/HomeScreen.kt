@@ -47,7 +47,7 @@ object HomeScreen :
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var searchText by remember { mutableStateOf("") }
-        val history by viewModel.history
+        val history by viewModel.history.collectAsState()
 
         val scope = rememberCoroutineScope()
 

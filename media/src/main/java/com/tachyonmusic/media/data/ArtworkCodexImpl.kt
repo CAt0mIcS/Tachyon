@@ -11,6 +11,8 @@ import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.ms
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class ArtworkCodexImpl internal constructor(
     private val artworkLoader: ArtworkLoader,
@@ -26,7 +28,7 @@ class ArtworkCodexImpl internal constructor(
     override suspend fun awaitOrLoad(
         entity: SongEntity,
         fetchOnline: Boolean
-    ): Resource<SongEntity?> {
+    ): Flow<Resource<SongEntity?>> {
         val data = synchronized(codex) {
             val data = codex[entity.mediaId]
 
@@ -38,25 +40,28 @@ class ArtworkCodexImpl internal constructor(
 
         if (data == null) {
             log.debug("Requesting artwork for ${entity.title} - ${entity.artist}")
-            return internalRequest(entity, fetchOnline)
+
+            return flow {
+                emit(Resource.Loading())
+                emit(internalRequest(entity, fetchOnline))
+            }
         } else if (internalAwait(data.job, entity.mediaId)) {
             /**
              * Doesn't require [SinglePlaybackEntity] database update since the other thread that
              * started the loading job will update it
              */
-            return Resource.Success(data = null)
+            return flow { emit(Resource.Success(data = null)) }
         }
 
         log.debug("Artwork already loaded for ${entity.title} - ${entity.artist}")
-        return Resource.Success(data = null)
+        return flow { emit(Resource.Success(data = null)) }
     }
 
     override suspend fun awaitOrLoad(
         mediaId: MediaId,
         artworkType: String,
-        artworkUrl: String?,
-        fetchOnline: Boolean
-    ): Resource<SongEntity?> {
+        artworkUrl: String?
+    ): Flow<Resource<SongEntity?>> {
         return awaitOrLoad(
             SongEntity(
                 title = "UNKNOWN",
@@ -66,7 +71,7 @@ class ArtworkCodexImpl internal constructor(
                 artworkType = artworkType,
                 artworkUrl = artworkUrl
             ),
-            fetchOnline
+            fetchOnline = false
         )
     }
 

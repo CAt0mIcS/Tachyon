@@ -8,6 +8,7 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
 import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.runOnUiThread
 
 /**
  * For songs and loops:
@@ -67,7 +68,10 @@ class GetPlaybackChildren(
             return playback.playbacks
 
         return listOf(
-            getPlaylist(playback, sortParams).getOrNull(browser.nextMediaItemIndex)
+            getPlaylist(
+                playback,
+                sortParams
+            ).getOrNull(runOnUiThread { browser.nextMediaItemIndex })
                 ?: return emptyList()
         )
     }

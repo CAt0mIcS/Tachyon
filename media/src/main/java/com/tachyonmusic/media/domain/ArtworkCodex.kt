@@ -4,6 +4,7 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.util.Resource
+import kotlinx.coroutines.flow.Flow
 
 interface ArtworkCodex {
     /**
@@ -26,14 +27,13 @@ interface ArtworkCodex {
     suspend fun awaitOrLoad(
         entity: SongEntity,
         fetchOnline: Boolean = true
-    ): Resource<SongEntity?>
+    ): Flow<Resource<SongEntity?>>
 
     suspend fun awaitOrLoad(
         mediaId: MediaId,
         artworkType: String,
-        artworkUrl: String? = null,
-        fetchOnline: Boolean = true
-    ): Resource<SongEntity?>
+        artworkUrl: String? = null
+    ): Flow<Resource<SongEntity?>>
 
     /**
      * Waits for artwork to be loaded if [awaitOrLoad] was called for [mediaId] or immediately returns

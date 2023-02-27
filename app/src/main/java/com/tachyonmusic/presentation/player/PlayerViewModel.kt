@@ -13,11 +13,13 @@ import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.player.data.SeekIncrements
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -57,14 +59,17 @@ class PlayerViewModel @Inject constructor(
     val playback = _playback.map {
         it!!
     }.onEach { playback ->
-        withContext(Dispatchers.IO) {
-            getOrLoadArtwork(playback.underlyingSong).onEach { res ->
-                playback.artwork.update { res.data?.artwork }
-                playback.isArtworkLoading.update { false }
-            }.collect()
-        }
+        getOrLoadArtwork(playback.underlyingSong).onEach { res ->
+            when (res) {
+                is Resource.Loading -> playback.isArtworkLoading.update { true }
+                else -> {
+                    playback.artwork.update { res.data!!.artwork }
+                    playback.isArtworkLoading.update { false }
+                }
+            }
+        }.collect()
     }.stateIn(
-        viewModelScope,
+        viewModelScope + Dispatchers.IO,
         SharingStarted.Lazily,
         LocalSongImpl(MediaId(""), "", "", 0.ms)
     )
@@ -151,12 +156,17 @@ class PlayerViewModel @Inject constructor(
         val children = getPlaybackChildren(playlist ?: playback, repeatMode, sortParams)
 
         getOrLoadArtwork(children.map { it.underlyingSong }).onEach { res ->
-            children[res.data!!.i].artwork.update { res.data?.artwork }
-            children[res.data!!.i].isArtworkLoading.update { false }
+            when (res) {
+                is Resource.Loading -> children[res.data!!.i].isArtworkLoading.update { true }
+                else -> {
+                    children[res.data!!.i].artwork.update { res.data!!.artwork }
+                    children[res.data!!.i].isArtworkLoading.update { false }
+                }
+            }
         }.collect()
 
         children
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
 
     /**************************************************************************

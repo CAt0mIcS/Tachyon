@@ -13,7 +13,9 @@ import com.tachyonmusic.media.core.sortedBy
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.plus
 import javax.inject.Inject
 
 
@@ -25,9 +27,7 @@ class LibraryViewModel @Inject constructor(
     observePlaylists: ObservePlaylists,
     private val getOrLoadArtwork: GetOrLoadArtwork,
     private val setSortParameters: SetSortParameters,
-    private val playPlayback: PlayPlayback,
-    private val application: Application,
-    private val log: Logger
+    private val playPlayback: PlayPlayback
 ) : ViewModel() {
 
     val sortParams = getMediaStates.sortParameters()
@@ -36,17 +36,17 @@ class LibraryViewModel @Inject constructor(
         val songs = getSongs(it)
         loadArtwork(songs)
         songs
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     private var loops = combine(sortParams, observeLoops()) { sort, loops ->
         loadArtwork(loops)
         loops.sortedBy(sort)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     private var playlists = combine(sortParams, observePlaylists()) { sort, playlists ->
         loadArtwork(playlists)
         playlists.sortedBy(sort)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     private var _filterType = MutableStateFlow<PlaybackType>(PlaybackType.Song.Local())
     val filterType = _filterType.asStateFlow()
@@ -84,12 +84,13 @@ class LibraryViewModel @Inject constructor(
 
     private suspend fun loadArtwork(playbacks: List<Playback>) {
         getOrLoadArtwork(playbacks.mapNotNull { it.underlyingSong }).onEach { res ->
-            if (res is Resource.Success)
-                playbacks[res.data!!.i].artwork.update { res.data!!.artwork }
-            else
-                log.debug(res.message?.asString(application) ?: "No message from artwork loader")
-
-            playbacks[res.data!!.i].isArtworkLoading.update { false }
+            when (res) {
+                is Resource.Loading -> playbacks[res.data!!.i].isArtworkLoading.update { true }
+                else -> {
+                    playbacks[res.data!!.i].artwork.update { res.data!!.artwork }
+                    playbacks[res.data!!.i].isArtworkLoading.update { false }
+                }
+            }
         }.collect()
     }
 }

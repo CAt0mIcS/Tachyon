@@ -15,6 +15,7 @@ import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 
 class GetPlaylistForPlayback(
@@ -50,9 +51,14 @@ class GetPlaylistForPlayback(
                 else
                     songEntities.map { it.toSong() }.sortedBy(sortParams)
 
-                getOrLoadArtwork(songEntities).onEach {
-                    if (it is Resource.Success)
-                        playbacks[it.data!!.i].artwork.value = it.data!!.artwork
+                getOrLoadArtwork(songEntities).onEach { res ->
+                    when (res) {
+                        is Resource.Loading -> playbacks[res.data!!.i].isArtworkLoading.update { true }
+                        else -> {
+                            playbacks[res.data!!.i].artwork.update { res.data!!.artwork }
+                            playbacks[res.data!!.i].isArtworkLoading.update { false }
+                        }
+                    }
                 }.collect()
 
                 initialWindowIndex = playbacks.indexOf(playback)

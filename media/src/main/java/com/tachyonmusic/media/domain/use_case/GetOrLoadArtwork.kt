@@ -12,6 +12,7 @@ import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,11 +41,17 @@ class GetOrLoadArtwork(
                 launch {
                     val mediaId = entity.mediaId.underlyingMediaId ?: entity.mediaId
                     if (!artworkCodex.isLoaded(mediaId)) {
-                        val res = artworkCodex.awaitOrLoad(entity, fetchOnline)
-                        val entityToUpdate = res.data
+                        var res: Resource<SongEntity?>? = null
+                        artworkCodex.awaitOrLoad(entity, fetchOnline).map {
+                            if (it is Resource.Loading)
+                                send(Resource.Loading(UpdateInfo(i, null)))
+
+                            res = it
+                        }.collect()
+                        val entityToUpdate = res!!.data
 
                         if (res is Resource.Error)
-                            send(Resource.Error(res, UpdateInfo(i, null)))
+                            send(Resource.Error(res as Resource.Error, UpdateInfo(i, null)))
                         else
                             send(Resource.Success(UpdateInfo(i, artworkCodex[mediaId])))
 

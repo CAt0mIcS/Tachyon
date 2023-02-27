@@ -12,8 +12,6 @@ class GetSongs(
 ) {
     suspend operator fun invoke(sortParams: SortParameters = SortParameters()) =
         withContext(Dispatchers.IO) {
-            repository.getSongs().onEach {
-                it.isArtworkLoading.value = true
-            }.sortedBy(sortParams)
+            repository.getSongs().sortedBy(sortParams)
         }
 }
