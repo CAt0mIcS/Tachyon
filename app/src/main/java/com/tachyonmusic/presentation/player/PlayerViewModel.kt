@@ -160,19 +160,7 @@ class PlayerViewModel @Inject constructor(
         repeatMode,
         getMediaStates.sortParameters()
     ) { playback, playlist, repeatMode, sortParams ->
-        val children = getPlaybackChildren(playlist ?: playback, repeatMode, sortParams)
-
-        getOrLoadArtwork(children.map { it.underlyingSong }).onEach { res ->
-            when (res) {
-                is Resource.Loading -> children[res.data!!.i].isArtworkLoading.update { true }
-                else -> {
-                    children[res.data!!.i].artwork.update { res.data!!.artwork }
-                    children[res.data!!.i].isArtworkLoading.update { false }
-                }
-            }
-        }.collect()
-
-        children
+        getPlaybackChildren(playlist ?: playback, repeatMode, sortParams)
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
 

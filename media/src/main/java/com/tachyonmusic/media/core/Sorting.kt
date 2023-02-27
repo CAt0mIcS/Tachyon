@@ -4,6 +4,9 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.database.domain.model.LoopEntity
+import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
+import com.tachyonmusic.database.domain.model.SongEntity
 
 enum class SortOrder {
     Ascending, Descending;
@@ -29,6 +32,7 @@ data class SortParameters(
 )
 
 
+@JvmName("sortedByPlayback")
 fun <T : Playback> Collection<T>.sortedBy(sortType: SortType, sortOrder: SortOrder): List<T> =
     when (sortType) {
         SortType.AlphabeticalTitle -> {
@@ -51,8 +55,33 @@ fun <T : Playback> Collection<T>.sortedBy(sortType: SortType, sortOrder: SortOrd
         }
     }
 
+@JvmName("sortedByPb")
 fun <T : Playback> Collection<T>.sortedBy(sortParams: SortParameters) =
     sortedBy(sortParams.type, sortParams.order)
+
+
+@JvmName("sortedByEntity")
+fun <T : SinglePlaybackEntity> Collection<T>.sortedBy(
+    sortType: SortType,
+    sortOrder: SortOrder
+): List<T> = when (sortType) {
+    SortType.AlphabeticalTitle -> {
+        sortWithOrder(sortOrder) { it.title }
+    }
+    SortType.AlphabeticalArtist -> {
+        sortWithOrder(sortOrder) { it.artist }
+    }
+    SortType.LastPlayedDate -> {
+//            sortWithOrder(sortOrder) { it.lastPlayedDate }
+        TODO()
+    }
+}
+
+
+@JvmName("sortedByE")
+fun <T : SinglePlaybackEntity> Collection<T>.sortedBy(sortParams: SortParameters) =
+    sortedBy(sortParams.type, sortParams.order)
+
 
 private inline fun <T, R : Comparable<R>> Collection<T>.sortWithOrder(
     sortOrder: SortOrder,

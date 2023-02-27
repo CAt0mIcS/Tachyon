@@ -44,21 +44,15 @@ class GetPlaylistForPlayback(
 
         when (playback) {
             is Song -> {
-                val songEntities = songRepository.getSongEntities()
+                val songEntities = songRepository.getSongEntities().sortedBy(sortParams)
                 val playbacks = if (combinePlaybackTypes)
-                    songEntities.map { it.toSong() }.sortedBy(sortParams) +
-                            loopRepository.getLoops().sortedBy(sortParams)
+                    songEntities.map { it.toSong() } + loopRepository.getLoops()
+                        .sortedBy(sortParams)
                 else
-                    songEntities.map { it.toSong() }.sortedBy(sortParams)
+                    songEntities.map { it.toSong() }
 
                 getOrLoadArtwork(songEntities).onEach { res ->
-                    when (res) {
-                        is Resource.Loading -> playbacks[res.data!!.i].isArtworkLoading.update { true }
-                        else -> {
-                            playbacks[res.data!!.i].artwork.update { res.data!!.artwork }
-                            playbacks[res.data!!.i].isArtworkLoading.update { false }
-                        }
-                    }
+                    handleArtworkResource(playbacks, res)
                 }.collect()
 
                 initialWindowIndex = playbacks.indexOf(playback)
@@ -67,21 +61,20 @@ class GetPlaylistForPlayback(
             }
 
             is Loop -> {
-                val loopEntities = loopRepository.getLoopEntities()
-                val songEntities = songRepository.getSongEntities()
+                val loopEntities = loopRepository.getLoopEntities().sortedBy(sortParams)
+                val songEntities = songRepository.getSongEntities().sortedBy(sortParams)
                 val playbacks = if (combinePlaybackTypes)
-                    loopEntities.map { it.toLoop() }.sortedBy(sortParams) +
-                            songRepository.getSongs().sortedBy(sortParams)
+                    loopEntities.map { it.toLoop() } + songRepository.getSongs()
+                        .sortedBy(sortParams)
                 else
-                    loopEntities.map { it.toLoop() }.sortedBy(sortParams)
+                    loopEntities.map { it.toLoop() }
 
                 val songsOfLoops = loopEntities.map { loop ->
                     songEntities.find { loop.mediaId.underlyingMediaId == it.mediaId }!!
                 } + if (combinePlaybackTypes) songEntities else emptyList()
 
-                getOrLoadArtwork(songsOfLoops).onEach {
-                    if (it is Resource.Success)
-                        playbacks[it.data!!.i].artwork.value = it.data!!.artwork
+                getOrLoadArtwork(songsOfLoops).onEach { res ->
+                    handleArtworkResource(playbacks, res)
                 }.collect()
 
                 initialWindowIndex = playbacks.indexOf(playback)
@@ -93,11 +86,10 @@ class GetPlaylistForPlayback(
                 initialWindowIndex = playback.currentPlaylistIndex
 
                 // TODO: What if it.underlying song is null? Warning? Error?
-                val underlyingSongs = playback.playbacks.mapNotNull { it.underlyingSong }
+                val underlyingSongs = playback.playbacks.map { it.underlyingSong }
 
-                getOrLoadArtwork(underlyingSongs).onEach {
-                    if (it is Resource.Success)
-                        playback.playbacks[it.data!!.i].artwork.value = it.data!!.artwork
+                getOrLoadArtwork(underlyingSongs).onEach { res ->
+                    handleArtworkResource(playback.playbacks, res)
                 }.collect()
 
                 mediaItems = playback.toMediaItemList()
@@ -109,5 +101,16 @@ class GetPlaylistForPlayback(
             return@withContext Resource.Error(UiText.StringResource(R.string.invalid_arguments))
 
         Resource.Success(ActivePlaylist(mediaItems, playbackItems, initialWindowIndex))
+    }
+
+
+    private fun handleArtworkResource(playbacks: List<SinglePlayback>, res: Resource<UpdateInfo>) {
+        when (res) {
+            is Resource.Loading -> playbacks[res.data!!.i].isArtworkLoading.update { true }
+            else -> {
+                playbacks[res.data!!.i].artwork.update { res.data!!.artwork }
+                playbacks[res.data!!.i].isArtworkLoading.update { false }
+            }
+        }
     }
 }
