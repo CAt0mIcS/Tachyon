@@ -3,6 +3,7 @@ package com.tachyonmusic.database.domain
 import androidx.room.TypeConverter
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
+import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.util.Duration
@@ -52,4 +53,12 @@ object Converters {
 
     @TypeConverter
     fun fromDurationToLong(value: Duration?): Long? = value?.inWholeMilliseconds
+
+
+    @TypeConverter
+    fun fromIntToRepeatMode(value: Int?): RepeatMode? =
+        if (value == null) null else RepeatMode.fromId(value)
+
+    @TypeConverter
+    fun fromRepeatModeToInt(value: RepeatMode?) = value?.id
 }

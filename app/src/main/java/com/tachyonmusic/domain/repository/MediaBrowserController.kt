@@ -5,14 +5,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.session.LibraryResult
 import com.google.common.collect.ImmutableList
-import com.tachyonmusic.media.core.RepeatMode
+import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.media.core.SortOrder
 import com.tachyonmusic.media.core.SortParameters
-import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import kotlinx.coroutines.flow.StateFlow
@@ -44,8 +42,6 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     fun playPlaylist(playlist: Playlist?)
 
     var repeatMode: RepeatMode
-    val repeatModeState: StateFlow<RepeatMode>
-
     val nextMediaItemIndex: Int
 
     suspend fun getChildren(

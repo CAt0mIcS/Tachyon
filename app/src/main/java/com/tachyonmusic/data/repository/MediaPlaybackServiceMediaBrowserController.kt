@@ -11,10 +11,12 @@ import androidx.media3.common.Player
 import androidx.media3.session.*
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.ListenableFuture
+import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.database.domain.model.DataEntity
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.service.MediaPlaybackService
@@ -25,7 +27,6 @@ import com.tachyonmusic.media.util.timingData
 import com.tachyonmusic.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
@@ -112,17 +113,13 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         browser?.dispatchMediaEvent(SetPlaybackEvent(playlist))
     }
 
-    override var repeatMode: RepeatMode
-        get() = repeatModeState.value
+    override var repeatMode: RepeatMode = DataEntity().repeatMode
         set(value) {
             if (browser != null) {
+                field = value
                 browser!!.dispatchMediaEvent(SetRepeatModeEvent(value))
-                _repeatModeState.update { value }
             }
         }
-
-    private val _repeatModeState = MutableStateFlow<RepeatMode>(RepeatMode.All)
-    override val repeatModeState = _repeatModeState.asStateFlow()
 
     override val nextMediaItemIndex: Int
         get() = browser?.nextMediaItemIndex ?: C.INDEX_UNSET

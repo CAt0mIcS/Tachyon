@@ -77,6 +77,16 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
+    fun provideObserveSavedDataUseCase(dataRepository: DataRepository) =
+        ObserveSavedData(dataRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetSavedDataUseCase(dataRepository: DataRepository) = GetSavedData(dataRepository)
+
+
+    @Provides
+    @Singleton
     fun provideGetOrLoadArtworkUseCase(
         songRepository: SongRepository,
         settingsRepository: SettingsRepository,
@@ -198,7 +208,10 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideSetRepeatModeUseCase(browser: MediaBrowserController) = SetRepeatMode(browser)
+    fun provideSetRepeatModeUseCase(
+        browser: MediaBrowserController,
+        dataRepository: DataRepository
+    ) = SetRepeatMode(browser, dataRepository)
 
     @Provides
     @Singleton

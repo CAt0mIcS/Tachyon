@@ -6,8 +6,10 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.database.domain.model.DataEntity
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.*
+import com.tachyonmusic.domain.use_case.main.GetSavedData
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
@@ -30,6 +32,7 @@ class PlayerViewModel @Inject constructor(
     getHistory: GetHistory,
 
     observeSettings: ObserveSettings,
+    observeSavedData: ObserveSavedData,
 
     private val getCurrentPlaybackPos: GetCurrentPosition,
     private val seekToPosition: SeekToPosition,
@@ -103,7 +106,9 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SeekIncrements())
 
     val isPlaying = getMediaStates.playWhenReady()
-    val repeatMode = getMediaStates.repeatMode()
+    val repeatMode = observeSavedData().map {
+        it.repeatMode
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), DataEntity().repeatMode)
 
     private var recentlyPlayedPos: Duration? = null
 
@@ -129,7 +134,9 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun nextRepeatMode() {
-        setRepeatMode(repeatMode.value.next)
+        viewModelScope.launch {
+            setRepeatMode(repeatMode.value.next)
+        }
     }
 
     fun play(playback: SinglePlayback) =
