@@ -10,12 +10,12 @@ import com.tachyonmusic.database.util.toSong
 import com.tachyonmusic.media.R
 import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.media.core.sortedBy
+import com.tachyonmusic.media.util.setArtworkFromResource
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 
 class GetPlaylistForPlayback(
@@ -52,7 +52,7 @@ class GetPlaylistForPlayback(
                     songEntities.map { it.toSong() }
 
                 getOrLoadArtwork(songEntities).onEach { res ->
-                    handleArtworkResource(playbacks, res)
+                    playbacks.setArtworkFromResource(res)
                 }.collect()
 
                 initialWindowIndex = playbacks.indexOf(playback)
@@ -74,7 +74,7 @@ class GetPlaylistForPlayback(
                 } + if (combinePlaybackTypes) songEntities else emptyList()
 
                 getOrLoadArtwork(songsOfLoops).onEach { res ->
-                    handleArtworkResource(playbacks, res)
+                    playbacks.setArtworkFromResource(res)
                 }.collect()
 
                 initialWindowIndex = playbacks.indexOf(playback)
@@ -89,7 +89,7 @@ class GetPlaylistForPlayback(
                 val underlyingSongs = playback.playbacks.map { it.underlyingSong }
 
                 getOrLoadArtwork(underlyingSongs).onEach { res ->
-                    handleArtworkResource(playback.playbacks, res)
+                    playback.playbacks.setArtworkFromResource(res)
                 }.collect()
 
                 mediaItems = playback.toMediaItemList()
@@ -101,16 +101,5 @@ class GetPlaylistForPlayback(
             return@withContext Resource.Error(UiText.StringResource(R.string.invalid_arguments))
 
         Resource.Success(ActivePlaylist(mediaItems, playbackItems, initialWindowIndex))
-    }
-
-
-    private fun handleArtworkResource(playbacks: List<SinglePlayback>, res: Resource<UpdateInfo>) {
-        when (res) {
-            is Resource.Loading -> playbacks[res.data!!.i].isArtworkLoading.update { true }
-            else -> {
-                playbacks[res.data!!.i].artwork.update { res.data!!.artwork }
-                playbacks[res.data!!.i].isArtworkLoading.update { false }
-            }
-        }
     }
 }

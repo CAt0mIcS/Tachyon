@@ -5,11 +5,9 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.data.data_source.HistoryDao
 import com.tachyonmusic.database.domain.model.HistoryEntity
-import com.tachyonmusic.database.domain.model.PlaybackEntity
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.use_case.ConvertHistoryEntityToPlayback

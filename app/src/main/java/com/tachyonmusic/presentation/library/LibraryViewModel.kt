@@ -1,20 +1,19 @@
 package com.tachyonmusic.presentation.library
 
-import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.library.SetSortParameters
-import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.media.core.sortedBy
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.util.Resource
+import com.tachyonmusic.media.util.setArtworkFromResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
 
@@ -34,18 +33,20 @@ class LibraryViewModel @Inject constructor(
 
     private var songs = sortParams.map {
         val songs = getSongs(it)
-        loadArtwork(songs)
+        loadArtworkAsync(songs)
         songs
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     private var loops = combine(sortParams, observeLoops()) { sort, loops ->
-        loadArtwork(loops)
-        loops.sortedBy(sort)
+        val newLoops = loops.sortedBy(sort)
+        loadArtworkAsync(newLoops)
+        newLoops
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     private var playlists = combine(sortParams, observePlaylists()) { sort, playlists ->
-        loadArtwork(playlists)
-        playlists.sortedBy(sort)
+        val newPlaylists = playlists.sortedBy(sort)
+        loadArtworkAsync(newPlaylists)
+        newPlaylists
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     private var _filterType = MutableStateFlow<PlaybackType>(PlaybackType.Song.Local())
@@ -82,15 +83,11 @@ class LibraryViewModel @Inject constructor(
     }
 
 
-    private suspend fun loadArtwork(playbacks: List<Playback>) {
-        getOrLoadArtwork(playbacks.mapNotNull { it.underlyingSong }).onEach { res ->
-            when (res) {
-                is Resource.Loading -> playbacks[res.data!!.i].isArtworkLoading.update { true }
-                else -> {
-                    playbacks[res.data!!.i].artwork.update { res.data!!.artwork }
-                    playbacks[res.data!!.i].isArtworkLoading.update { false }
-                }
-            }
-        }.collect()
+    private suspend fun loadArtworkAsync(playbacks: List<Playback>) {
+        viewModelScope.launch(Dispatchers.IO) {
+            getOrLoadArtwork(playbacks.mapNotNull { it.underlyingSong }).onEach { res ->
+                playbacks.setArtworkFromResource(res)
+            }.collect()
+        }
     }
 }

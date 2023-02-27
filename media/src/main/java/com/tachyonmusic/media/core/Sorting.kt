@@ -4,9 +4,7 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
-import com.tachyonmusic.database.domain.model.SongEntity
 
 enum class SortOrder {
     Ascending, Descending;

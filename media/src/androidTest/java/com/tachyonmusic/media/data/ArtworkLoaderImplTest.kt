@@ -7,7 +7,6 @@ import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.ArtworkType
-import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.testutils.assertEquals

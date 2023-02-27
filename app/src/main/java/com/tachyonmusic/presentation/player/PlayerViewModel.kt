@@ -9,20 +9,18 @@ import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.DataEntity
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.*
-import com.tachyonmusic.domain.use_case.main.GetSavedData
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.media.util.setArtworkFromResource
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.player.data.SeekIncrements
 import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -63,13 +61,7 @@ class PlayerViewModel @Inject constructor(
         it!!
     }.onEach { playback ->
         getOrLoadArtwork(playback.underlyingSong).onEach { res ->
-            when (res) {
-                is Resource.Loading -> playback.isArtworkLoading.update { true }
-                else -> {
-                    playback.artwork.update { res.data!!.artwork }
-                    playback.isArtworkLoading.update { false }
-                }
-            }
+            playback.setArtworkFromResource(res)
         }.collect()
     }.stateIn(
         viewModelScope + Dispatchers.IO,

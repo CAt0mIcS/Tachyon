@@ -7,10 +7,13 @@ import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.SetRepeatMode
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.util.Resource
+import com.tachyonmusic.media.util.setArtworkFromResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
@@ -32,15 +35,11 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     val history = observeHistory().onEach { history ->
-        getOrLoadArtwork(history.map { it.underlyingSong }).onEach { res ->
-            when (res) {
-                is Resource.Loading -> history[res.data!!.i].isArtworkLoading.update { true }
-                else -> {
-                    history[res.data!!.i].artwork.update { res.data!!.artwork }
-                    history[res.data!!.i].isArtworkLoading.update { false }
-                }
-            }
-        }.collect()
+        viewModelScope.launch(Dispatchers.IO) {
+            getOrLoadArtwork(history.map { it.underlyingSong }).onEach { res ->
+                history.setArtworkFromResource(res)
+            }.collect()
+        }
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
 

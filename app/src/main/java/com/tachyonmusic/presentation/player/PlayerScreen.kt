@@ -23,8 +23,8 @@ import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.AnimatedText
+import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
