@@ -3,6 +3,7 @@ package com.tachyonmusic.presentation.player.data
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -48,6 +49,7 @@ fun LoopEditor(
         for (i in timingData.indices) {
 
             RangeSlider(
+                modifier = Modifier.systemGestureExclusion(),
                 value = timingData[i].startTime.inWholeMilliseconds.toFloat()..timingData[i].endTime.inWholeMilliseconds.toFloat(),
                 onValueChange = {
                     viewModel.updateTimingData(i, it.start.ms, it.endInclusive.ms)

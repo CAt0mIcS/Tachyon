@@ -1,8 +1,10 @@
 package com.tachyonmusic.presentation.player
 
+import androidx.compose.foundation.excludeFromSystemGesture
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -174,11 +176,13 @@ fun PlayerScreen(
 
         item {
             SliderValueHorizontal(
-                modifier = Modifier.padding(
-                    start = Theme.padding.small,
-                    bottom = Theme.padding.medium,
-                    end = Theme.padding.small
-                ),
+                modifier = Modifier
+                    .padding(
+                        start = Theme.padding.small,
+                        bottom = Theme.padding.medium,
+                        end = Theme.padding.small
+                    )
+                    .systemGestureExclusion(),
                 value = currentPosition.inWholeMilliseconds.toFloat(),
                 onValueChange = {
                     isSeeking = true

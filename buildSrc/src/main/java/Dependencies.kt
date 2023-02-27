@@ -17,7 +17,7 @@ object Dependency {
         const val FOUNDATION = "androidx.compose.foundation:foundation:${Version.COMPOSE}"
         const val APP_COMPAT = "androidx.appcompat:appcompat:1.5.1"
         const val ANDROID_MATERIAL = "com.google.android.material:material:1.7.0"
-        const val COMPOSE_SLIDERS = "com.github.krottv:compose-sliders:0.1.14"
+        const val COMPOSE_SLIDERS = "com.github.krottv:compose-sliders:0.1.4"
         const val UI = "androidx.compose.ui:ui:${Version.COMPOSE}"
         const val COMPOSE_MATERIAL = "androidx.compose.material:material:${Version.COMPOSE}"
         const val UI_TOOLING_PREVIEW = "androidx.compose.ui:ui-tooling-preview:${Version.COMPOSE}"
