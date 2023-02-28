@@ -4,10 +4,12 @@ import android.content.Context
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
+import com.tachyonmusic.data.repository.UriPermissionRepositoryImpl
 import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.repository.UriPermissionRepository
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
@@ -109,13 +111,15 @@ object AppUseCaseModule {
         settingsRepository: SettingsRepository,
         artworkCodex: ArtworkCodex,
         findPlaybackByMediaId: FindPlaybackByMediaId,
-        isNetworkConnectionMetered: GetIsInternetConnectionMetered
+        isNetworkConnectionMetered: GetIsInternetConnectionMetered,
+        @ApplicationContext context: Context
     ) = GetOrLoadArtwork(
         songRepository,
         settingsRepository,
         artworkCodex,
         findPlaybackByMediaId,
-        isNetworkConnectionMetered
+        isNetworkConnectionMetered,
+        context
     )
 
     @Provides
@@ -259,6 +263,12 @@ object AppUseCaseModule {
         getPlaylistForPlayback: GetPlaylistForPlayback,
         @ApplicationContext context: Context
     ) = GetPlaybackChildren(browser, getPlaylistForPlayback, context)
+
+    @Provides
+    @Singleton
+    fun provideObserveUriPermissionsUseCase(repository: UriPermissionRepository) =
+        OnUriPermissionsChanged(repository)
+
 }
 
 
@@ -274,4 +284,8 @@ object AppRepositoryModule {
     @Singleton
     fun provideMediaBrowserController(): MediaBrowserController =
         MediaPlaybackServiceMediaBrowserController()
+
+    @Provides
+    @Singleton
+    fun provideUriPermissionRepository(): UriPermissionRepository = UriPermissionRepositoryImpl()
 }

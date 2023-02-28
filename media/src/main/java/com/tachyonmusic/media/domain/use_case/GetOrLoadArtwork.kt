@@ -1,5 +1,6 @@
 package com.tachyonmusic.media.domain.use_case
 
+import android.content.Context
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.model.SongEntity
@@ -8,6 +9,7 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.database.util.updateArtwork
 import com.tachyonmusic.media.domain.ArtworkCodex
+import com.tachyonmusic.media.util.isPlayable
 import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.channelFlow
@@ -27,7 +29,8 @@ class GetOrLoadArtwork(
     private val settingsRepository: SettingsRepository,
     private val artworkCodex: ArtworkCodex,
     private val findPlayback: FindPlaybackByMediaId,
-    private val isInternetMetered: GetIsInternetConnectionMetered
+    private val isInternetMetered: GetIsInternetConnectionMetered,
+    private val context: Context
 ) {
 
     @JvmName("invokePlaybackEntities")
@@ -38,6 +41,13 @@ class GetOrLoadArtwork(
                 settings.autoDownloadAlbumArtwork && !(settings.autoDownloadAlbumArtworkWifiOnly && isInternetMetered())
 
             songs.forEachIndexed { i, entity ->
+                // Don't store unplayable artwork in codex so that it will load once it becomes playable
+                if (!entity.mediaId.uri.isPlayable(context)) {
+                    send(Resource.Success(UpdateInfo(i, artwork = null)))
+                    return@forEachIndexed
+                }
+
+
                 launch {
                     val mediaId = entity.mediaId.underlyingMediaId ?: entity.mediaId
                     if (!artworkCodex.isLoaded(mediaId)) {

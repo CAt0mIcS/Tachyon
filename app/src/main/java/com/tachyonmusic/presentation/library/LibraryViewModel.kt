@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.library
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
@@ -10,7 +11,9 @@ import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.media.core.sortedBy
 import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.media.util.setArtworkFromResource
+import com.tachyonmusic.util.setPlayableState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -22,11 +25,15 @@ import javax.inject.Inject
 class LibraryViewModel @Inject constructor(
     getMediaStates: GetMediaStates,
     observeSongs: ObserveSongs,
+    onUriPermissionsChanged: OnUriPermissionsChanged,
     observeLoops: ObserveLoops,
     observePlaylists: ObservePlaylists,
     private val getOrLoadArtwork: GetOrLoadArtwork,
     private val setSortParameters: SetSortParameters,
-    private val playPlayback: PlayPlayback
+    private val playPlayback: PlayPlayback,
+
+    @ApplicationContext
+    context: Context
 ) : ViewModel() {
 
     val sortParams = getMediaStates.sortParameters()
@@ -60,6 +67,17 @@ class LibraryViewModel @Inject constructor(
                 is PlaybackType.Playlist -> playlists
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
+
+    init {
+        onUriPermissionsChanged().onEach {
+            songs.value.setPlayableState(context)
+            loadArtworkAsync(songs.value)
+
+            loops.value.setPlayableState(context)
+            loadArtworkAsync(loops.value)
+        }.launchIn(viewModelScope)
+    }
 
 
     fun onFilterSongs() {

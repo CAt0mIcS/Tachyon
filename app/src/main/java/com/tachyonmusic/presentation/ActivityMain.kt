@@ -1,14 +1,10 @@
 package com.tachyonmusic.presentation
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Binder
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -16,8 +12,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -25,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.repository.UriPermissionRepository
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.logger.domain.Logger
@@ -58,6 +53,9 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
     @Inject
     lateinit var writeSettings: WriteSettings
 
+    @Inject
+    lateinit var uriPermissionRepository: UriPermissionRepository
+
     private var composeSettings = mutableStateOf(ComposeSettings())
 
     private val requiresMusicPathSelection = mutableStateOf(false)
@@ -75,6 +73,11 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
 
             handleUriPermissions(it.musicDirectories)
         }.launchIn(lifecycleScope)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        uriPermissionRepository.dispatchUpdate()
     }
 
     override fun onConnected() {
