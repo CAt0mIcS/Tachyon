@@ -28,10 +28,12 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.presentation.core_components.UriPermissionDialog
 import com.tachyonmusic.presentation.player.PlayerLayout
 import com.tachyonmusic.presentation.theme.ComposeSettings
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.hasUriPermission
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
@@ -104,8 +106,15 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
         setContent {
             TachyonTheme(settings = composeSettings.value) {
 
-                if (requiresMusicPathSelection.value)
-                    UriPermissionDialog()
+                UriPermissionDialog(requiresMusicPathSelection.value) {
+                    if (it != null) {
+                        contentResolver.takePersistableUriPermission(
+                            it,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                        setNewMusicDirectory(it)
+                    }
+                }
 
                 val sheetState = rememberBottomSheetState(
                     initialValue = BottomSheetValue.Collapsed, animationSpec = tween(
@@ -151,32 +160,4 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
             }
         }
     }
-
-    @Composable
-    fun UriPermissionDialog() {
-        val launcher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.OpenDocumentTree(),
-            onResult = {
-                if (it != null) {
-                    contentResolver.takePersistableUriPermission(
-                        it,
-                        Intent.FLAG_GRANT_READ_URI_PERMISSION
-                    )
-                    setNewMusicDirectory(it)
-                }
-            }
-        )
-
-        LaunchedEffect(Unit) {
-            launcher.launch(null)
-        }
-    }
-
-    private fun hasUriPermission(uri: Uri) =
-        checkUriPermission(
-            uri,
-            Binder.getCallingPid(),
-            Binder.getCallingUid(),
-            Intent.FLAG_GRANT_READ_URI_PERMISSION
-        ) == PackageManager.PERMISSION_GRANTED
 }

@@ -21,7 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     getMediaStates: GetMediaStates,
-    getSongs: GetSongs,
+    observeSongs: ObserveSongs,
     observeLoops: ObserveLoops,
     observePlaylists: ObservePlaylists,
     private val getOrLoadArtwork: GetOrLoadArtwork,
@@ -31,10 +31,10 @@ class LibraryViewModel @Inject constructor(
 
     val sortParams = getMediaStates.sortParameters()
 
-    private var songs = sortParams.map {
-        val songs = getSongs(it)
-        loadArtworkAsync(songs)
-        songs
+    private var songs = combine(sortParams, observeSongs()) { sort, songs ->
+        val newSongs = songs.sortedBy(sort)
+        loadArtworkAsync(newSongs)
+        newSongs
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     private var loops = combine(sortParams, observeLoops()) { sort, loops ->

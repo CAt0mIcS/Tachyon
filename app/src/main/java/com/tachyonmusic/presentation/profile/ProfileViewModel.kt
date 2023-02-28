@@ -1,35 +1,32 @@
 package com.tachyonmusic.presentation.profile
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.ObserveSettings
+import com.tachyonmusic.domain.use_case.SetMusicDirectories
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.util.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     observeSettings: ObserveSettings,
-    private val writeSettings: WriteSettings
+    private val writeSettings: WriteSettings,
+    private val setMusicDirectories: SetMusicDirectories
 ) : ViewModel() {
 
-    private var _settings = mutableStateOf(SettingsEntity())
-    val settings: State<SettingsEntity> = _settings
-
-
-    init {
-        observeSettings().onEach {
-            _settings.value = it
-        }.launchIn(viewModelScope)
-    }
+    val settings = observeSettings().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(),
+        SettingsEntity()
+    )
 
 
     fun seekForwardIncrementChanged(inc: Duration) {
@@ -89,6 +86,13 @@ class ProfileViewModel @Inject constructor(
     fun shouldMillisecondsBeShownChanged(shouldShow: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             writeSettings(shouldMillisecondsBeShown = shouldShow)
+        }
+    }
+
+
+    fun onUriPermissionResult(uri: Uri?) {
+        viewModelScope.launch {
+            setMusicDirectories(settings.value.musicDirectories + uri)
         }
     }
 }

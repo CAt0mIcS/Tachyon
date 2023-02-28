@@ -120,6 +120,14 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
+    fun provideSetMusicDirectoriesUseCase(
+        settingsRepository: SettingsRepository,
+        @ApplicationContext context: Context
+    ) = SetMusicDirectories(settingsRepository, context)
+
+
+    @Provides
+    @Singleton
     fun provideObserveLoopsUseCase(loopRepository: LoopRepository) = ObserveLoops(loopRepository)
 
     @Provides

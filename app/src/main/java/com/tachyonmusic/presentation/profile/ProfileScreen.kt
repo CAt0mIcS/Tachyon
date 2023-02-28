@@ -4,17 +4,18 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.presentation.BottomNavigationItem
+import com.tachyonmusic.presentation.core_components.UriPermissionDialog
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.sec
@@ -26,6 +27,12 @@ object ProfileScreen :
     operator fun invoke(
         viewModel: ProfileViewModel = hiltViewModel()
     ) {
+        var showUriPermissionDialog by remember { mutableStateOf(false) }
+        UriPermissionDialog(showUriPermissionDialog) {
+            viewModel.onUriPermissionResult(it)
+            showUriPermissionDialog = false
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -33,7 +40,7 @@ object ProfileScreen :
                 .verticalScroll(rememberScrollState()),
         ) {
 
-            val settings by viewModel.settings
+            val settings by viewModel.settings.collectAsState()
 
             Setting(text = "Enable background audio mixing") {
                 Switch(
@@ -120,6 +127,13 @@ object ProfileScreen :
                     checked = settings.shouldMillisecondsBeShown,
                     onCheckedChange = viewModel::shouldMillisecondsBeShownChanged
                 )
+            }
+
+
+            Setting(text = "Add new music directory") {
+                Button(onClick = { showUriPermissionDialog = true }) {
+                    Text("Select")
+                }
             }
         }
     }
