@@ -16,7 +16,7 @@ class SetMusicDirectories(
 ) {
     @JvmName("invokeUris")
     suspend operator fun invoke(uris: List<Uri?>) = withContext(Dispatchers.IO) {
-        settingsRepository.update(musicDirectories = uris.filterNotNull().filter { uri ->
+        settingsRepository.update(musicDirectories = uris.toSet().filterNotNull().filter { uri ->
             context.contentResolver.takePersistableUriPermission(
                 uri,
                 Intent.FLAG_GRANT_READ_URI_PERMISSION
