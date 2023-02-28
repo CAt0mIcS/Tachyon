@@ -1,7 +1,10 @@
 package com.tachyonmusic.presentation
 
 import android.content.Intent
+import android.content.UriPermission
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Binder
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -34,6 +37,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -67,7 +71,17 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                 animateText = it.animateText
             )
 
-            requiresMusicPathSelection.value = it.musicDirectories.isEmpty()
+
+            val newDirs = it.musicDirectories.filter { uri ->
+                hasUriPermission(uri)
+            }
+            requiresMusicPathSelection.value = newDirs.isEmpty()
+
+            if (newDirs != it.musicDirectories)
+                withContext(Dispatchers.IO) {
+                    writeSettings(musicDirectories = newDirs)
+                }
+
         }.launchIn(lifecycleScope)
     }
 
@@ -77,7 +91,8 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
 
     fun setNewMusicDirectory(uri: Uri) {
         lifecycleScope.launch(Dispatchers.IO) {
-            writeSettings(musicDirectories = listOf(uri))
+            if (hasUriPermission(uri))
+                writeSettings(musicDirectories = listOf(uri))
         }
     }
 
@@ -92,11 +107,11 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                         contract = ActivityResultContracts.OpenDocumentTree(),
                         onResult = {
                             if (it != null) {
-                                setNewMusicDirectory(it)
                                 contentResolver.takePersistableUriPermission(
                                     it,
                                     Intent.FLAG_GRANT_READ_URI_PERMISSION
                                 )
+                                setNewMusicDirectory(it)
                             }
                         }
                     )
@@ -152,4 +167,12 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
             }
         }
     }
+
+    private fun hasUriPermission(uri: Uri) =
+        checkUriPermission(
+            uri,
+            Binder.getCallingPid(),
+            Binder.getCallingUid(),
+            Intent.FLAG_GRANT_READ_URI_PERMISSION
+        ) == PackageManager.PERMISSION_GRANTED
 }

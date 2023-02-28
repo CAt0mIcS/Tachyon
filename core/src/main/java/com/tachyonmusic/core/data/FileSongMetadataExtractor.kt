@@ -22,6 +22,8 @@ class FileSongMetadataExtractor : SongMetadataExtractor {
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
             TODO("Implement error handling: $uri, ${e.localizedMessage}")
+        } catch (_: SecurityException) {
+
         }
 
         return SongMetadataExtractor.SongMetadata(
@@ -43,6 +45,8 @@ class FileSongMetadataExtractor : SongMetadataExtractor {
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
             TODO("Implement error handling: $uri")
+        } catch (_: SecurityException) {
+
         }
 
         val art: ByteArray? = metaRetriever.embeddedPicture
