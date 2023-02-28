@@ -59,12 +59,14 @@ class MediaPlaybackUseCaseModule {
         songRepository: SongRepository,
         loopRepository: LoopRepository,
         settingsRepository: SettingsRepository,
-        getOrLoadArtwork: GetOrLoadArtwork
+        getOrLoadArtwork: GetOrLoadArtwork,
+        @ApplicationContext context: Context
     ) = GetPlaylistForPlayback(
         songRepository,
         loopRepository,
         settingsRepository,
-        getOrLoadArtwork
+        getOrLoadArtwork,
+        context
     )
 
     @Provides

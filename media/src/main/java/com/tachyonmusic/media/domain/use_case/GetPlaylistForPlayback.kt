@@ -1,5 +1,6 @@
 package com.tachyonmusic.media.domain.use_case
 
+import android.content.Context
 import androidx.media3.common.MediaItem
 import com.tachyonmusic.core.domain.playback.*
 import com.tachyonmusic.database.domain.repository.LoopRepository
@@ -10,7 +11,9 @@ import com.tachyonmusic.database.util.toSong
 import com.tachyonmusic.media.R
 import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.media.core.sortedBy
+import com.tachyonmusic.media.util.isPlayable
 import com.tachyonmusic.media.util.setArtworkFromResource
+import com.tachyonmusic.media.util.toMediaItems
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +25,8 @@ class GetPlaylistForPlayback(
     private val songRepository: SongRepository,
     private val loopRepository: LoopRepository,
     private val settingsRepository: SettingsRepository,
-    private val getOrLoadArtwork: GetOrLoadArtwork
+    private val getOrLoadArtwork: GetOrLoadArtwork,
+    private val context: Context
 ) {
     data class ActivePlaylist(
         val mediaItems: List<MediaItem>,
@@ -44,10 +48,9 @@ class GetPlaylistForPlayback(
 
         when (playback) {
             is Song -> {
-                val songEntities = songRepository.getSongEntities().sortedBy(sortParams)
+                val songEntities = songEntities(sortParams)
                 val playbacks = if (combinePlaybackTypes)
-                    songEntities.map { it.toSong() } + loopRepository.getLoops()
-                        .sortedBy(sortParams)
+                    songEntities.map { it.toSong() } + loops(sortParams)
                 else
                     songEntities.map { it.toSong() }
 
@@ -61,11 +64,10 @@ class GetPlaylistForPlayback(
             }
 
             is Loop -> {
-                val loopEntities = loopRepository.getLoopEntities().sortedBy(sortParams)
-                val songEntities = songRepository.getSongEntities().sortedBy(sortParams)
+                val loopEntities = loopEntities(sortParams)
+                val songEntities = songEntities(sortParams)
                 val playbacks = if (combinePlaybackTypes)
-                    loopEntities.map { it.toLoop() } + songRepository.getSongs()
-                        .sortedBy(sortParams)
+                    loopEntities.map { it.toLoop() } + songEntities.map { it.toSong() }
                 else
                     loopEntities.map { it.toLoop() }
 
@@ -86,14 +88,16 @@ class GetPlaylistForPlayback(
                 initialWindowIndex = playback.currentPlaylistIndex
 
                 // TODO: What if it.underlying song is null? Warning? Error?
-                val underlyingSongs = playback.playbacks.map { it.underlyingSong }
+                val validPlaybacks = playback.playbacks.filter {
+                    it.mediaId.uri.isPlayable(context)
+                }
 
-                getOrLoadArtwork(underlyingSongs).onEach { res ->
-                    playback.playbacks.setArtworkFromResource(res)
+                getOrLoadArtwork(validPlaybacks.map { it.underlyingSong }).onEach { res ->
+                    validPlaybacks.setArtworkFromResource(res)
                 }.collect()
 
-                mediaItems = playback.toMediaItemList()
-                playbackItems = playback.playbacks
+                mediaItems = validPlaybacks.toMediaItems()
+                playbackItems = validPlaybacks
             }
         }
 
@@ -102,4 +106,20 @@ class GetPlaylistForPlayback(
 
         Resource.Success(ActivePlaylist(mediaItems, playbackItems, initialWindowIndex))
     }
+
+
+    private suspend fun songEntities(sortParams: SortParameters) =
+        songRepository.getSongEntities().filter {
+            it.mediaId.uri.isPlayable(context)
+        }.sortedBy(sortParams)
+
+
+    private suspend fun loopEntities(sortParams: SortParameters) =
+        loopRepository.getLoopEntities().filter {
+            it.mediaId.uri.isPlayable(context)
+        }.sortedBy(sortParams)
+
+    private suspend fun loops(sortParams: SortParameters) = loopRepository.getLoops().filter {
+        it.mediaId.uri.isPlayable(context)
+    }.sortedBy(sortParams)
 }

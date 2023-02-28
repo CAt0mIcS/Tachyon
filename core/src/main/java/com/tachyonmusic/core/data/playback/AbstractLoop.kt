@@ -54,7 +54,7 @@ abstract class AbstractLoop(
 
     private fun toMediaMetadata() = MediaMetadata.Builder().apply {
         setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
-        setIsPlayable(true)
+        setIsPlayable(isPlayable.value)
 
         // EmbeddedArtwork automatically handled by media3
         when (val artworkVal = artwork.value) {

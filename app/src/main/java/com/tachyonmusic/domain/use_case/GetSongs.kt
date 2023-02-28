@@ -4,7 +4,8 @@ import android.content.Context
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.media.core.sortedBy
-import com.tachyonmusic.util.isPlayable
+import com.tachyonmusic.media.util.isPlayable
+import com.tachyonmusic.util.setPlayableState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
@@ -16,8 +17,6 @@ class GetSongs(
 ) {
     suspend operator fun invoke(sortParams: SortParameters = SortParameters()) =
         withContext(Dispatchers.IO) {
-            repository.getSongs().onEach { song ->
-                song.isPlayable.update { song.mediaId.uri.isPlayable(context) }
-            }.sortedBy(sortParams)
+            repository.getSongs().setPlayableState(context).sortedBy(sortParams)
         }
 }

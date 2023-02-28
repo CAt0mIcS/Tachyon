@@ -2,8 +2,7 @@ package com.tachyonmusic.domain.use_case
 
 import android.content.Context
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.util.isPlayable
-import kotlinx.coroutines.flow.map
+import com.tachyonmusic.media.util.isPlayable
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 

@@ -10,6 +10,7 @@ import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.util.toPlaylist
 import com.tachyonmusic.media.util.getItemsOnPageWithPageSize
+import com.tachyonmusic.media.util.toMediaItems
 import kotlinx.coroutines.*
 
 
@@ -58,7 +59,7 @@ class BrowserTree(
                             ?.toPlaylist(songRepository, loopRepository)
                         if (playback != null)
                             return@withContext constraintItems(
-                                playback.toMediaItemList(),
+                                playback.playbacks.toMediaItems(),
                                 page,
                                 pageSize
                             )

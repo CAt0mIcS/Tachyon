@@ -53,6 +53,7 @@ dependencies {
     media3()
     googleCast()
     dagger()
+    implementation("androidx.documentfile:documentfile:1.0.1")
 
     projectCore()
     projectDatabase()

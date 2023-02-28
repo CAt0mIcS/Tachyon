@@ -4,7 +4,8 @@ import android.content.Context
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.media.core.sortedBy
-import com.tachyonmusic.util.isPlayable
+import com.tachyonmusic.media.util.isPlayable
+import com.tachyonmusic.util.setPlayableState
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
@@ -15,8 +16,6 @@ class ObserveLoops(
     operator fun invoke(
         sortParams: SortParameters = SortParameters()
     ) = loopRepository.observe().map {
-        it.onEach { loop ->
-            loop.isPlayable.update { loop.mediaId.uri.isPlayable(context) }
-        }.sortedBy(sortParams)
+        it.setPlayableState(context).sortedBy(sortParams)
     }
 }

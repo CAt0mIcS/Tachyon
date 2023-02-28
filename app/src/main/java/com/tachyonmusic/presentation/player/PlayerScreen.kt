@@ -34,6 +34,7 @@ import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.currentFraction
 import com.tachyonmusic.presentation.util.displaySubtitle
 import com.tachyonmusic.presentation.util.displayTitle
+import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
@@ -345,12 +346,13 @@ fun PlayerScreen(
 
                 val artwork by playback.artwork.collectAsState()
                 val isArtworkLoading by playback.isArtworkLoading.collectAsState()
+                val isPlayable by playback.isPlayable.collectAsState()
 
                 HorizontalPlaybackView(
                     playback,
                     artwork ?: PlaceholderArtwork,
                     isArtworkLoading,
-                    onClick = { viewModel.play(playback) },
+                    onClick = { if (isPlayable) viewModel.play(playback) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
@@ -358,6 +360,7 @@ fun PlayerScreen(
                             end = Theme.padding.medium,
                             bottom = Theme.padding.extraSmall
                         )
+                        .isEnabled(isPlayable)
                 )
             }
         }

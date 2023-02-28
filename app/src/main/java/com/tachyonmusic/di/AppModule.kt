@@ -256,8 +256,9 @@ object AppUseCaseModule {
     @Singleton
     fun provideGetPlaybackChildrenUseCase(
         browser: MediaBrowserController,
-        getPlaylistForPlayback: GetPlaylistForPlayback
-    ) = GetPlaybackChildren(browser, getPlaylistForPlayback)
+        getPlaylistForPlayback: GetPlaylistForPlayback,
+        @ApplicationContext context: Context
+    ) = GetPlaybackChildren(browser, getPlaylistForPlayback, context)
 }
 
 

@@ -1,11 +1,15 @@
 package com.tachyonmusic.media.util
 
+import android.content.Context
+import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
+import kotlinx.coroutines.flow.update
 
 val MediaMetadata.name: String?
     get() = extras?.getString(MetadataKeys.Name)
@@ -23,3 +27,13 @@ var MediaMetadata.timingData: TimingDataController?
 
 val MediaMetadata.playback: SinglePlayback?
     get() = extras?.parcelable(MetadataKeys.Playback)
+
+
+/**************************************************************************
+ ********** Helpers
+ *************************************************************************/
+
+fun Uri?.isPlayable(context: Context) =
+    if (this == null) false else DocumentFile.fromTreeUri(context, this)!!.canRead()
+
+fun Collection<SinglePlayback>.toMediaItems() = map { it.toMediaItem() }
