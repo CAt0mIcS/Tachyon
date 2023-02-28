@@ -3,15 +3,11 @@ package com.tachyonmusic.core.data.playback
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
-import com.tachyonmusic.core.data.FileSongMetadataExtractor
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.ext.toBoolean
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.File
 import com.tachyonmusic.util.ms
 
 /**

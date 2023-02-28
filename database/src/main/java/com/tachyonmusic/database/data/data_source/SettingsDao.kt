@@ -7,7 +7,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.File
 import kotlinx.coroutines.flow.Flow
 
 @Dao

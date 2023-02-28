@@ -15,7 +15,7 @@ class SetRepeatMode(
         browser.repeatMode = repeatMode
 
         withContext(Dispatchers.IO) {
-            dataRepository.setRepeatMode(repeatMode)
+            dataRepository.update(repeatMode = repeatMode)
         }
     }
 }

@@ -20,6 +20,8 @@ interface DataRepository {
 
     fun observe(): Flow<DataEntity>
 
-    suspend fun setRecentlyPlayed(recentlyPlayed: RecentlyPlayed)
-    suspend fun setRepeatMode(repeatMode: RepeatMode)
+    suspend fun update(
+        recentlyPlayed: RecentlyPlayed? = null,
+        repeatMode: RepeatMode? = null
+    )
 }

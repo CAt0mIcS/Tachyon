@@ -12,5 +12,4 @@
     <string name="no_artwork_found">No artwork found for playback \"%1$s\"</string>
     <string name="invalid_uri">Invalid uri \"%1$s\"</string>
     <string name="unknown_error">An unknown error occurred</string>
-    <string name="connection_metered_artwork_download_denied">Artwork for %1$s %2$s will not be downloaded because you\'re on a metered connection. You can change this in the settings</string>
 </resources>

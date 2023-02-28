@@ -1,7 +1,6 @@
 package com.tachyonmusic.presentation
 
 import android.content.Intent
-import android.content.UriPermission
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Binder
@@ -17,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,17 +71,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                 animateText = it.animateText
             )
 
-
-            val newDirs = it.musicDirectories.filter { uri ->
-                hasUriPermission(uri)
-            }
-            requiresMusicPathSelection.value = newDirs.isEmpty()
-
-            if (newDirs != it.musicDirectories)
-                withContext(Dispatchers.IO) {
-                    writeSettings(musicDirectories = newDirs)
-                }
-
+            handleUriPermissions(it.musicDirectories)
         }.launchIn(lifecycleScope)
     }
 
@@ -89,11 +79,23 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
         setupUi()
     }
 
-    fun setNewMusicDirectory(uri: Uri) {
+    private fun setNewMusicDirectory(uri: Uri) {
         lifecycleScope.launch(Dispatchers.IO) {
             if (hasUriPermission(uri))
                 writeSettings(musicDirectories = listOf(uri))
         }
+    }
+
+    private suspend fun handleUriPermissions(musicDirs: List<Uri>) {
+        val newDirs = musicDirs.filter { uri ->
+            hasUriPermission(uri)
+        }
+        requiresMusicPathSelection.value = newDirs.isEmpty()
+
+        if (newDirs != musicDirs)
+            withContext(Dispatchers.IO) {
+                writeSettings(musicDirectories = newDirs)
+            }
     }
 
 
@@ -102,24 +104,8 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
         setContent {
             TachyonTheme(settings = composeSettings.value) {
 
-                if (requiresMusicPathSelection.value) {
-                    val launcher = rememberLauncherForActivityResult(
-                        contract = ActivityResultContracts.OpenDocumentTree(),
-                        onResult = {
-                            if (it != null) {
-                                contentResolver.takePersistableUriPermission(
-                                    it,
-                                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                                )
-                                setNewMusicDirectory(it)
-                            }
-                        }
-                    )
-
-                    LaunchedEffect(Unit) {
-                        launcher.launch(null)
-                    }
-                }
+                if (requiresMusicPathSelection.value)
+                    UriPermissionDialog()
 
                 val sheetState = rememberBottomSheetState(
                     initialValue = BottomSheetValue.Collapsed, animationSpec = tween(
@@ -129,7 +115,6 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                 val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
 
                 val miniPlayerHeight = remember { mutableStateOf(0.dp) }
-
                 val navController = rememberAnimatedNavController()
 
                 Scaffold(bottomBar = {
@@ -154,7 +139,6 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                         sheetPeekHeight = miniPlayerHeight.value,
                         sheetBackgroundColor = Theme.colors.primary
                     ) { innerPaddingSheet ->
-
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -165,6 +149,26 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                     }
                 }
             }
+        }
+    }
+
+    @Composable
+    fun UriPermissionDialog() {
+        val launcher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocumentTree(),
+            onResult = {
+                if (it != null) {
+                    contentResolver.takePersistableUriPermission(
+                        it,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                    setNewMusicDirectory(it)
+                }
+            }
+        )
+
+        LaunchedEffect(Unit) {
+            launcher.launch(null)
         }
     }
 

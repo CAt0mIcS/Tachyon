@@ -1,12 +1,10 @@
 package com.tachyonmusic.media.service
 
 import android.os.Bundle
-import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.session.*
@@ -30,12 +28,14 @@ import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.prepare
 import com.tachyonmusic.media.util.supportedCommands
 import com.tachyonmusic.media.util.updateTimingDataOfCurrentPlayback
-import com.tachyonmusic.util.*
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.future
+import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
 
-@OptIn(UnstableApi::class)
 @AndroidEntryPoint
 class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 

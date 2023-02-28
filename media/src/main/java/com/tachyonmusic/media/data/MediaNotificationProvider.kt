@@ -2,15 +2,12 @@ package com.tachyonmusic.media.data
 
 import android.content.Context
 import android.os.Bundle
-import androidx.annotation.OptIn
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.SessionCommand
 import com.tachyonmusic.media.R
 
-@OptIn(UnstableApi::class)
 class MediaNotificationProvider(val context: Context) : DefaultMediaNotificationProvider(context) {
     override fun getMediaButtons(
         playerCommands: Player.Commands,

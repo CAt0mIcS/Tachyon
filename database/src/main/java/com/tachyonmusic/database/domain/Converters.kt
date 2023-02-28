@@ -8,7 +8,6 @@ import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.File
 import com.tachyonmusic.util.ms
 import java.lang.reflect.Type
 

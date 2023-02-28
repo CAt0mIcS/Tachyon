@@ -2,9 +2,7 @@ package com.tachyonmusic.media.di
 
 import android.app.Service
 import android.content.Context
-import androidx.annotation.OptIn
 import androidx.media3.cast.CastPlayer
-import androidx.media3.common.util.UnstableApi
 import com.google.android.gms.cast.framework.CastContext
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.domain.SongMetadataExtractor
@@ -28,7 +26,6 @@ import dagger.hilt.android.scopes.ServiceScoped
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-@OptIn(UnstableApi::class)
 @Module
 @InstallIn(ServiceComponent::class)
 class MediaPlaybackServiceRepositoryModule {

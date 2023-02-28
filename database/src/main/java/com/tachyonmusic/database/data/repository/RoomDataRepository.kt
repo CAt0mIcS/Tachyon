@@ -19,17 +19,20 @@ class RoomDataRepository(
 
     override fun observe(): Flow<DataEntity> = dao.observe()
 
-    override suspend fun setRecentlyPlayed(recentlyPlayed: RecentlyPlayed) {
-        dao.setRecentlyPlayed(
-            recentlyPlayed.mediaId,
-            recentlyPlayed.position,
-            recentlyPlayed.duration,
-            recentlyPlayed.artworkType,
-            recentlyPlayed.artworkUrl
-        )
-    }
+    override suspend fun update(
+        recentlyPlayed: RecentlyPlayed?,
+        repeatMode: RepeatMode?
+    ) {
+        if (recentlyPlayed != null)
+            dao.setRecentlyPlayed(
+                recentlyPlayed.mediaId,
+                recentlyPlayed.position,
+                recentlyPlayed.duration,
+                recentlyPlayed.artworkType,
+                recentlyPlayed.artworkUrl
+            )
 
-    override suspend fun setRepeatMode(repeatMode: RepeatMode) {
-        dao.setRepeatMode(repeatMode)
+        if (repeatMode != null)
+            dao.setRepeatMode(repeatMode)
     }
 }

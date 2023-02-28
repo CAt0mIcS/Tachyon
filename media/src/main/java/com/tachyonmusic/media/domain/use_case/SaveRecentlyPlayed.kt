@@ -9,6 +9,6 @@ class SaveRecentlyPlayed(
     private val dataRepository: DataRepository
 ) {
     suspend operator fun invoke(recentlyPlayed: RecentlyPlayed) = withContext(Dispatchers.IO) {
-        dataRepository.setRecentlyPlayed(recentlyPlayed)
+        dataRepository.update(recentlyPlayed = recentlyPlayed)
     }
 }
