@@ -2,6 +2,7 @@ package com.tachyonmusic.domain.use_case.main
 
 import android.content.Context
 import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.model.SettingsEntity
@@ -34,12 +35,16 @@ class UpdateSongDatabase(
         /**
          * Remove all invalid or excluded paths in the [songRepo]
          * Update [paths] to only contain new songs that we need to add to [songRepo]
+         *
+         * TODO
+         *  Make sure all parts of the UI are updated if we remove a uri permission
          */
         songRepo.removeIf { song ->
-            val path = song.mediaId.uri
-            if (path != null) {
-                paths.removeFirst { it.uri == path }
-                settings.excludedSongFiles.contains(path)
+            val uri = song.mediaId.uri
+            if (uri != null) {
+                paths.removeFirst { it.uri == uri }
+                settings.excludedSongFiles.contains(uri) ||
+                        !DocumentFile.fromTreeUri(context, uri)!!.canRead()
             } else TODO("Invalid path null")
         }
 

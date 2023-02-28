@@ -39,15 +39,15 @@ class RoomHistoryRepository(
     }
 
     override fun observe() = dao.observe().map { history ->
-        history.map {
+        history.mapNotNull {
             // TODO: Slow!!!
-            entityToPlayback(it) ?: TODO("Playback not found ${it.mediaId}")
+            entityToPlayback(it)
         }
     }
 
     override suspend fun getHistory(): List<SinglePlayback> =
-        dao.getHistory().map {
-            entityToPlayback(it) ?: TODO("Playback not found ${it.mediaId}")
+        dao.getHistory().mapNotNull {
+            entityToPlayback(it)
         }
 
     override suspend fun plusAssign(playback: SinglePlaybackEntity) {
