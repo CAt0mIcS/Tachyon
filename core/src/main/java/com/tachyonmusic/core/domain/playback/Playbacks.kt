@@ -64,6 +64,12 @@ interface SinglePlayback : Playback {
     override val artist: String
     override val duration: Duration
 
+    /**
+     * Specifies if the current playback is playable. Could not be playable due to uri permissions
+     * being removed from the path where the playback is saved
+     */
+    val isPlayable: MutableStateFlow<Boolean>
+
     override var timingData: TimingDataController
 
     override val underlyingSong: Song

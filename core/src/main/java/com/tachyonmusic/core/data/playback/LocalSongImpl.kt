@@ -32,6 +32,7 @@ class LocalSongImpl(
     ) {
         artwork.value = parcel.readParcelable(Artwork::class.java.classLoader)
         isArtworkLoading.value = parcel.readInt().toBoolean()
+        isPlayable.value = parcel.readInt().toBoolean()
     }
 
     companion object {

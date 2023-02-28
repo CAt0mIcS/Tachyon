@@ -27,6 +27,8 @@ abstract class AbstractSong(
 
     abstract override val playbackType: PlaybackType.Song
 
+    override val isPlayable = MutableStateFlow(false)
+
     override val artwork = MutableStateFlow<Artwork?>(null)
     override val isArtworkLoading = MutableStateFlow(false)
 
@@ -69,5 +71,6 @@ abstract class AbstractSong(
         parcel.writeLong(duration.inWholeMilliseconds)
         parcel.writeParcelable(artwork.value, flags)
         parcel.writeInt(isArtworkLoading.value.toInt())
+        parcel.writeInt(isPlayable.value.toInt())
     }
 }

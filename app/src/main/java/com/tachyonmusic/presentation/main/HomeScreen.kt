@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -32,6 +33,7 @@ import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.main.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.isEnabled
 import kotlinx.coroutines.launch
 
 
@@ -218,6 +220,7 @@ private fun LazyListScope.playbacksView(
 
         val artwork by playback.artwork.collectAsState()
         val isArtworkLoading by playback.isArtworkLoading.collectAsState()
+        val isPlayable by playback.isPlayable.collectAsState()
 
         VerticalPlaybackView(
             modifier = Modifier
@@ -226,8 +229,10 @@ private fun LazyListScope.playbacksView(
                     end = Theme.padding.extraSmall / 2f
                 )
                 .clickable {
-                    onClick(playback)
-                },
+                    if (isPlayable)
+                        onClick(playback)
+                }
+                .isEnabled(isPlayable),
             playback = playback,
             artwork = artwork ?: PlaceholderArtwork,
             isArtworkLoading = isArtworkLoading

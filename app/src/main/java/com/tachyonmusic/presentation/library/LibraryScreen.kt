@@ -21,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
@@ -28,6 +29,7 @@ import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
 import com.tachyonmusic.presentation.util.asString
+import com.tachyonmusic.presentation.util.isEnabled
 import kotlinx.coroutines.launch
 
 object LibraryScreen :
@@ -138,6 +140,9 @@ object LibraryScreen :
             items(playbackItems) { playback ->
                 val artwork by playback.artwork.collectAsState()
                 val isLoading by playback.isArtworkLoading.collectAsState()
+                val isPlayable by (
+                        if (playback is SinglePlayback) playback.isPlayable.collectAsState()
+                        else remember { mutableStateOf(true) })
 
                 HorizontalPlaybackView(
                     playback,
@@ -145,11 +150,14 @@ object LibraryScreen :
                     isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = Theme.padding.extraSmall),
+                        .padding(bottom = Theme.padding.extraSmall)
+                        .isEnabled(isPlayable),
                     onClick = {
-                        viewModel.onItemClicked(playback)
-                        scope.launch {
-                            sheetState.expand()
+                        if (isPlayable) {
+                            viewModel.onItemClicked(playback)
+                            scope.launch {
+                                sheetState.expand()
+                            }
                         }
                     })
             }

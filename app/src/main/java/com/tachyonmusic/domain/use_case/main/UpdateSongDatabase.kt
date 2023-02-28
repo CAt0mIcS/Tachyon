@@ -43,8 +43,7 @@ class UpdateSongDatabase(
             val uri = song.mediaId.uri
             if (uri != null) {
                 paths.removeFirst { it.uri == uri }
-                settings.excludedSongFiles.contains(uri) ||
-                        !DocumentFile.fromTreeUri(context, uri)!!.canRead()
+                settings.excludedSongFiles.contains(uri)
             } else TODO("Invalid path null")
         }
 

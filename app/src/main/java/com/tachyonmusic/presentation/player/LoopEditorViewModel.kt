@@ -9,6 +9,7 @@ import com.tachyonmusic.core.domain.isNullOrEmpty
 import com.tachyonmusic.domain.use_case.GetMediaStates
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
 import com.tachyonmusic.domain.use_case.player.SetNewTimingData
+import com.tachyonmusic.presentation.util.update
 import com.tachyonmusic.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*

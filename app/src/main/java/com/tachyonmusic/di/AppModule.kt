@@ -47,11 +47,17 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideObserveSongsUseCase(songRepository: SongRepository) = ObserveSongs(songRepository)
+    fun provideObserveSongsUseCase(
+        songRepository: SongRepository,
+        @ApplicationContext context: Context
+    ) = ObserveSongs(songRepository, context)
 
     @Provides
     @Singleton
-    fun provideGetSongsUseCase(songRepository: SongRepository) = GetSongs(songRepository)
+    fun provideGetSongsUseCase(
+        songRepository: SongRepository,
+        @ApplicationContext context: Context
+    ) = GetSongs(songRepository, context)
 
     @Provides
     @Singleton
@@ -128,7 +134,10 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideObserveLoopsUseCase(loopRepository: LoopRepository) = ObserveLoops(loopRepository)
+    fun provideObserveLoopsUseCase(
+        loopRepository: LoopRepository,
+        @ApplicationContext context: Context
+    ) = ObserveLoops(loopRepository, context)
 
     @Provides
     @Singleton
@@ -137,13 +146,17 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetHistoryUseCase(historyRepository: HistoryRepository) =
-        GetHistory(historyRepository)
+    fun provideGetHistoryUseCase(
+        historyRepository: HistoryRepository,
+        @ApplicationContext context: Context
+    ) = GetHistory(historyRepository, context)
 
     @Provides
     @Singleton
-    fun provideObserveHistoryUseCase(historyRepository: HistoryRepository) =
-        ObserveHistory(historyRepository)
+    fun provideObserveHistoryUseCase(
+        historyRepository: HistoryRepository,
+        @ApplicationContext context: Context
+    ) = ObserveHistory(historyRepository, context)
 
     @Provides
     @Singleton
@@ -219,7 +232,10 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetMediaStatesUseCase(browser: MediaBrowserController) = GetMediaStates(browser)
+    fun provideGetMediaStatesUseCase(
+        browser: MediaBrowserController,
+        @ApplicationContext context: Context
+    ) = GetMediaStates(browser, context)
 
     @Provides
     @Singleton

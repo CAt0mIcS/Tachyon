@@ -138,11 +138,12 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                                 modifier = Modifier
                                     .fillMaxSize(),
                             ) {
-                                PlayerLayout(
-                                    sheetState,
-                                    onMiniPlayerHeight = { miniPlayerHeight.value = it },
-                                    miniPlayerHeight = miniPlayerHeight.value
-                                )
+                                if (!requiresMusicPathSelection.value)
+                                    PlayerLayout(
+                                        sheetState,
+                                        onMiniPlayerHeight = { miniPlayerHeight.value = it },
+                                        miniPlayerHeight = miniPlayerHeight.value
+                                    )
                             }
                         },
                         sheetPeekHeight = miniPlayerHeight.value,
@@ -153,7 +154,8 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                                 .fillMaxSize()
                                 .padding(innerPaddingSheet)
                         ) {
-                            NavigationGraph(navController, sheetState, miniPlayerHeight)
+                            if (!requiresMusicPathSelection.value)
+                                NavigationGraph(navController, sheetState, miniPlayerHeight)
                         }
                     }
                 }

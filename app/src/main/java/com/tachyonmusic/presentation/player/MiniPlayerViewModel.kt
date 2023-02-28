@@ -32,7 +32,8 @@ class MiniPlayerViewModel @Inject constructor(
 ) : ViewModel() {
 
     val playback = getMediaStates.playback().map {
-        it ?: getHistory().firstOrNull()
+        val pb = it ?: getHistory().find { history -> history.isPlayable.value }
+        if (pb?.isPlayable?.value == true) pb else null
     }.onEach { singlePb ->
         if (singlePb == null)
             return@onEach
