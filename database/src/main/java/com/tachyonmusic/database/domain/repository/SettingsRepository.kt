@@ -1,7 +1,11 @@
 package com.tachyonmusic.database.domain.repository
 
+import android.net.Uri
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.File
+import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.sec
 import kotlinx.coroutines.flow.Flow
 
 interface SettingsRepository {
@@ -10,9 +14,21 @@ interface SettingsRepository {
 
     fun observe(): Flow<SettingsEntity>
 
-    suspend fun removeExcludedFilesRange(toRemove: List<String>)
-    suspend fun addExcludedFilesRange(toAdd: List<String>)
-    suspend fun setSeekForwardIncrement(interval: Duration)
-    suspend fun setSeekBackIncrement(interval: Duration)
-    suspend fun setShouldMillisecondsBeShown(showMilliseconds: Boolean)
+    suspend fun removeExcludedFilesRange(toRemove: List<Uri>)
+    suspend fun addExcludedFilesRange(toAdd: List<Uri>)
+
+    suspend fun update(
+        ignoreAudioFocus: Boolean? = null,
+        autoDownloadAlbumArtwork: Boolean? = null,
+        autoDownloadAlbumArtworkWifiOnly: Boolean? = null,
+        combineDifferentPlaybackTypes: Boolean? = null,
+        audioUpdateInterval: Duration? = null,
+        maxPlaybacksInHistory: Int? = null,
+        seekForwardIncrement: Duration? = null,
+        seekBackIncrement: Duration? = null,
+        animateText: Boolean? = null,
+        shouldMillisecondsBeShown: Boolean? = null,
+        excludedSongFiles: List<Uri>? = null,
+        musicDirectories: List<Uri>? = null
+    )
 }

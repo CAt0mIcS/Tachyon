@@ -1,52 +1,48 @@
 package com.tachyonmusic.core.data
 
+import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.util.File
 import com.tachyonmusic.util.ms
-import com.tachyonmusic.util.nameWithoutExtension
 
 class FileSongMetadataExtractor : SongMetadataExtractor {
-    override fun loadMetadata(uri: Uri): SongMetadataExtractor.SongMetadata? {
-        if (!uri.isAbsolute || !File(uri.path!!).exists())
-            return null
-
-        val path = File(uri.path!!)
-
+    override fun loadMetadata(
+        contentResolver: ContentResolver,
+        uri: Uri,
+        defaultTitle: String
+    ): SongMetadataExtractor.SongMetadata? {
         val metaRetriever = MediaMetadataRetriever()
         try {
-            metaRetriever.setDataSource(path.absolutePath)
+            val fd = contentResolver.openFileDescriptor(uri, "r")
+            metaRetriever.setDataSource(fd?.fileDescriptor)
+            fd?.close()
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
-            TODO("Implement error handling: ${path.absolutePath}, ${e.localizedMessage}")
+            TODO("Implement error handling: $uri, ${e.localizedMessage}")
         }
 
         return SongMetadataExtractor.SongMetadata(
             title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
-                ?: path.nameWithoutExtension,
+                ?: defaultTitle,
             artist = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
                 ?: "Unknown Artist",
             duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                ?.toLong()?.ms ?: 0.ms,
-            uri = uri
+                ?.toLong()?.ms ?: 0.ms
         )
     }
 
-    override fun loadBitmap(uri: Uri): Bitmap? {
-        if (!uri.isAbsolute || !File(uri.path!!).exists())
-            return null
-
-        val path = File(uri.path!!)
-
+    override fun loadBitmap(contentResolver: ContentResolver, uri: Uri): Bitmap? {
         val metaRetriever = MediaMetadataRetriever()
         try {
-            metaRetriever.setDataSource(path.absolutePath)
+            val fd = contentResolver.openFileDescriptor(uri, "r")
+            metaRetriever.setDataSource(fd?.fileDescriptor)
+            fd?.close()
         } catch (e: IllegalArgumentException) {
             e.printStackTrace()
-            TODO("Implement error handling: ${path.absolutePath}")
+            TODO("Implement error handling: $uri")
         }
 
         val art: ByteArray? = metaRetriever.embeddedPicture

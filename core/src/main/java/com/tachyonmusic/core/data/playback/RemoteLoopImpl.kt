@@ -40,48 +40,5 @@ class RemoteLoopImpl(
 
             override fun newArray(size: Int): Array<RemoteLoopImpl?> = arrayOfNulls(size)
         }
-
-        fun build(map: Map<String, Any?>): Loop {
-            val mediaId = MediaId.deserialize(map["mediaId"]!! as String)
-            val name = mediaId.source.replace(PlaybackType.Loop.Remote().toString(), "")
-            return RemoteLoopImpl(
-                mediaId,
-                name,
-                TimingDataController(map["timingData"]!! as List<TimingData>),
-                LocalSongImpl.build(mediaId.underlyingMediaId!!)
-            )
-        }
-
-        fun build(mediaId: MediaId, timingData: TimingDataController): Loop = RemoteLoopImpl(
-            mediaId,
-            mediaId.source.replace(PlaybackType.Loop.Remote().toString(), ""),
-            timingData,
-            if (mediaId.underlyingMediaId?.isLocalSong == true) LocalSongImpl.build(mediaId.underlyingMediaId) else TODO(
-                "Unknown song type when deserializing loop"
-            )
-        )
-
-        fun build(name: String, songMediaId: MediaId, timingData: TimingDataController) =
-            build(MediaId.ofRemoteLoop(name, songMediaId), timingData)
-
-        fun build(
-            mediaId: MediaId,
-            timingData: TimingDataController,
-            songTitle: String,
-            songArtist: String,
-            songDuration: Duration
-        ): RemoteLoopImpl? {
-            return RemoteLoopImpl(
-                mediaId,
-                mediaId.source.replace(PlaybackType.Loop.Remote().toString(), ""),
-                timingData,
-                LocalSongImpl(
-                    mediaId.underlyingMediaId ?: return null,
-                    songTitle,
-                    songArtist,
-                    songDuration
-                )
-            )
-        }
     }
 }

@@ -43,7 +43,7 @@ internal class ArtworkLoaderImplTest {
 
     @Test
     fun EMBEDDED_ReturnsCorrectResource() = runTest {
-        every { mediaId.path } returns null
+        every { mediaId.uri } returns null
 
         var res = artworkLoader.requestLoad(getEntity(ArtworkType.EMBEDDED))
         assert(res is Resource.Error)
@@ -51,7 +51,7 @@ internal class ArtworkLoaderImplTest {
         assertEquals(res.data!!.entityToUpdate!!.artworkType, ArtworkType.UNKNOWN)
 
 
-        every { mediaId.path } returns File("SomePath.mp3")
+        every { mediaId.uri } returns File("SomePath.mp3")
         every { metadataExtractor.loadBitmap(any()) } returns null
 
         res = artworkLoader.requestLoad(getEntity(ArtworkType.EMBEDDED))
@@ -60,7 +60,7 @@ internal class ArtworkLoaderImplTest {
 
         val bitmap: Bitmap = mockk()
         val path = File("SomePath.mp3")
-        every { mediaId.path } returns path
+        every { mediaId.uri } returns path
         every { metadataExtractor.loadBitmap(any()) } returns bitmap
 
         res = artworkLoader.requestLoad(getEntity(ArtworkType.EMBEDDED))
@@ -91,7 +91,7 @@ internal class ArtworkLoaderImplTest {
         } returns flow {
             emit(Resource.Error())
         }
-        every { mediaId.path } returns null
+        every { mediaId.uri } returns null
 
         var res = artworkLoader.requestLoad(getEntity(ArtworkType.UNKNOWN))
         assert(res is Resource.Error)
@@ -101,7 +101,7 @@ internal class ArtworkLoaderImplTest {
 
         val bitmap: Bitmap = mockk()
         val file = File("SomeSong.mp3")
-        every { mediaId.path } returns file
+        every { mediaId.uri } returns file
         every { metadataExtractor.loadBitmap(any()) } returns bitmap
 
         res = artworkLoader.requestLoad(getEntity(ArtworkType.UNKNOWN))
@@ -111,7 +111,7 @@ internal class ArtworkLoaderImplTest {
 
 
         val url = "https://www.example.com/SomeImage.jpg"
-        every { mediaId.path } returns null
+        every { mediaId.uri } returns null
         coEvery {
             artworkFetcher.query(any(), any(), any())
         } returns flow {

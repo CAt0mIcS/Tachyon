@@ -60,7 +60,7 @@ internal class CreateAndSaveNewLoopTest {
         hiltRule.tryInject()
 
         every {
-            fileRepository.getFilesInDirectoryWithExtensions(
+            fileRepository.getFilesInDirectoriesWithExtensions(
                 any(),
                 any()
             )
@@ -203,7 +203,7 @@ internal class CreateAndSaveNewLoopTest {
 
     private fun getSong() = LocalSongImpl(
         MediaId.ofLocalSong(
-            fileRepository.getFilesInDirectoryWithExtensions(
+            fileRepository.getFilesInDirectoriesWithExtensions(
                 File(""),
                 listOf()
             )[0]

@@ -1,8 +1,10 @@
 package com.tachyonmusic.database.domain.model
 
+import android.net.Uri
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.File
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.sec
 
@@ -22,6 +24,8 @@ data class SettingsEntity(
      * the seek bar in the player
      */
     val shouldMillisecondsBeShown: Boolean = false,
-    val excludedSongFiles: List<String> = emptyList(),
+
+    val excludedSongFiles: List<Uri> = emptyList(),
+    val musicDirectories: List<Uri> = emptyList(),
     @PrimaryKey val id: Int = 0
 )

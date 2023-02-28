@@ -20,10 +20,10 @@ internal class TestSong(
 ) : AbstractSong(mediaId, title, artist, duration) {
 
     override val playbackType = PlaybackType.Song.Local()
-    override val uri: Uri = Uri.fromFile(mediaId.path!!.raw)
+    override val uri: Uri = Uri.fromFile(mediaId.uri!!.raw)
 
     val path: File
-        get() = mediaId.path!!
+        get() = mediaId.uri!!
 }
 
 internal class TestLoop(mediaId: MediaId, name: String, song: Song) :

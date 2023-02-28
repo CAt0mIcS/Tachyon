@@ -1,5 +1,6 @@
 package com.tachyonmusic.core.data
 
+import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Parcel
@@ -17,7 +18,7 @@ import com.tachyonmusic.util.File
  */
 class EmbeddedArtwork(
     val bitmap: Bitmap,
-    val path: File
+    val uri: Uri
 ) : Artwork {
 
     @Composable
@@ -29,24 +30,25 @@ class EmbeddedArtwork(
         )
     }
 
-    override fun equals(other: Any?) = other is EmbeddedArtwork && other.path == path
+    override fun equals(other: Any?) = other is EmbeddedArtwork && other.uri == uri
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeParcelable(bitmap, flags)
-        parcel.writeString(path.absolutePath)
+        parcel.writeString(uri.toString())
     }
 
     companion object {
         fun load(
-            path: File,
+            contentResolver: ContentResolver,
+            uri: Uri,
             metadataExtractor: SongMetadataExtractor = FileSongMetadataExtractor()
-        ) = metadataExtractor.loadBitmap(Uri.fromFile(path.raw))
+        ) = metadataExtractor.loadBitmap(contentResolver, uri)
 
         @JvmField
         val CREATOR = object : Parcelable.Creator<EmbeddedArtwork> {
             override fun createFromParcel(parcel: Parcel) = EmbeddedArtwork(
                 parcel.readParcelable(Bitmap::class.java.classLoader)!!,
-                File(parcel.readString()!!)
+                Uri.parse(parcel.readString()!!)
             )
 
             override fun newArray(size: Int) = arrayOfNulls<EmbeddedArtwork?>(size)

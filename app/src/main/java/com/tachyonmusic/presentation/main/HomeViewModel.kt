@@ -3,6 +3,7 @@ package com.tachyonmusic.presentation.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.SetRepeatMode
@@ -27,6 +28,7 @@ class HomeViewModel @Inject constructor(
 
     getSavedData: GetSavedData,
     setRepeatMode: SetRepeatMode,
+    observeSettings: ObserveSettings,
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
 
@@ -51,7 +53,11 @@ class HomeViewModel @Inject constructor(
 
         viewModelScope.launch(Dispatchers.IO) {
             updateSettingsDatabase()
-            updateSongDatabase()
+
+            observeSettings().onEach {
+                if (it.musicDirectories.isNotEmpty())
+                    updateSongDatabase(it)
+            }.collect()
         }
     }
 

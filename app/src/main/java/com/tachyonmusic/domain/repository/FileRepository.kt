@@ -1,11 +1,12 @@
 package com.tachyonmusic.domain.repository
 
-import com.tachyonmusic.util.File
+import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
 
 
 interface FileRepository {
     /**
      * @param extensions without the dot
      */
-    fun getFilesInDirectoryWithExtensions(directory: File, extensions: List<String>): List<File>
+    fun getFilesInDirectoriesWithExtensions(directories: List<Uri>, extensions: List<String>): List<DocumentFile>
 }

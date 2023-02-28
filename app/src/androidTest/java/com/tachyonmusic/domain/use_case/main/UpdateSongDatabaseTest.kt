@@ -54,7 +54,7 @@ internal class UpdateSongDatabaseTest {
         every { metadataExtractor.loadBitmap(any()) } returns null
 
         every {
-            fileRepository.getFilesInDirectoryWithExtensions(
+            fileRepository.getFilesInDirectoriesWithExtensions(
                 any(),
                 any()
             )
@@ -105,7 +105,7 @@ internal class UpdateSongDatabaseTest {
         updateSongDatabase()
         assertEquals(database.songDao.getSongs().size, expectedSize)
 
-        val songs = database.songDao.getSongs().map { it.mediaId.path!!.absolutePath }
+        val songs = database.songDao.getSongs().map { it.mediaId.uri!!.absolutePath }
         assert(songs.containsAll(expectedFiles.map { it.absolutePath }))
     }
 
@@ -135,7 +135,7 @@ internal class UpdateSongDatabaseTest {
         updateSongDatabase()
 
         assertEquals(database.songDao.getSongs().size, expectedFiles.size)
-        val databaseSongs = database.songDao.getSongs().map { it.mediaId.path!! }
+        val databaseSongs = database.songDao.getSongs().map { it.mediaId.uri!! }
         assertEquals(databaseSongs.map { it.absolutePath }, expectedFiles.map { it.absolutePath })
     }
 
@@ -171,7 +171,7 @@ internal class UpdateSongDatabaseTest {
         updateSongDatabase()
 
         assertEquals(database.songDao.getSongs().size, expectedFiles.size)
-        assert(database.songDao.getSongs().map { it.mediaId.path!! }.containsAll(expectedFiles))
+        assert(database.songDao.getSongs().map { it.mediaId.uri!! }.containsAll(expectedFiles))
     }
 
     // TODO: More possible tests

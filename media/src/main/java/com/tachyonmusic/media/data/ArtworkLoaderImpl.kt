@@ -1,5 +1,6 @@
 package com.tachyonmusic.media.data
 
+import android.content.Context
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
@@ -19,6 +20,7 @@ import java.net.URI
 
 internal class ArtworkLoaderImpl(
     private val artworkFetcher: ArtworkFetcher,
+    private val context: Context,
     private val log: Logger,
     private val metadataExtractor: SongMetadataExtractor
 ) : ArtworkLoader {
@@ -51,16 +53,16 @@ internal class ArtworkLoaderImpl(
 
             ArtworkType.EMBEDDED -> {
                 log.debug("Entity ${entity.title} - ${entity.artist} has ${ArtworkType.EMBEDDED}")
-                val path = entity.mediaId.path
-                if (path != null) {
-                    val embedded = EmbeddedArtwork.load(path, metadataExtractor)
+                val uri = entity.mediaId.uri
+                if (uri != null) {
+                    val embedded = EmbeddedArtwork.load(context.contentResolver, uri, metadataExtractor)
                     return if (embedded != null) {
-                        Resource.Success(ArtworkData(EmbeddedArtwork(embedded, path)))
+                        Resource.Success(ArtworkData(EmbeddedArtwork(embedded, uri)))
                     } else {
                         Resource.Error(
                             UiText.StringResource(
                                 R.string.no_embedded_artwork_despite_embedded_artwork_type,
-                                path.absolutePath
+                                uri.toString()
                             )
                         )
                     }
@@ -147,16 +149,16 @@ internal class ArtworkLoaderImpl(
     }
 
     private fun tryFindEmbeddedArtwork(entity: SongEntity): Resource<Artwork?> {
-        val path = entity.mediaId.path
-            ?: return Resource.Error(UiText.StringResource(R.string.invalid_path, "null"))
+        val uri = entity.mediaId.uri
+            ?: return Resource.Error(UiText.StringResource(R.string.invalid_uri, "null"))
 
-        val bitmap = EmbeddedArtwork.load(path, metadataExtractor) ?: return Resource.Error(
+        val bitmap = EmbeddedArtwork.load(context.contentResolver, uri, metadataExtractor) ?: return Resource.Error(
             UiText.StringResource(
-                R.string.invalid_path,
-                path.absolutePath
+                R.string.invalid_uri,
+                uri.toString()
             )
         )
 
-        return Resource.Success(EmbeddedArtwork(bitmap, path))
+        return Resource.Success(EmbeddedArtwork(bitmap, uri))
     }
 }

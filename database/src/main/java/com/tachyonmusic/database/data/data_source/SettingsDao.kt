@@ -1,11 +1,13 @@
 package com.tachyonmusic.database.data.data_source
 
+import android.net.Uri
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.File
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -23,8 +25,23 @@ interface SettingsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun setSettings(settings: SettingsEntity)
 
-    @Query("UPDATE SettingsEntity SET excludedSongFiles=:excludedFiles")
-    suspend fun updateExcludedSongFiles(excludedFiles: List<String>)
+    @Query("UPDATE SettingsEntity SET ignoreAudioFocus=:value")
+    suspend fun setIgnoreAudioFocus(value: Boolean)
+
+    @Query("UPDATE SettingsEntity SET autoDownloadAlbumArtwork=:value")
+    suspend fun setAutoDownloadAlbumArtwork(value: Boolean)
+
+    @Query("UPDATE SettingsEntity SET autoDownloadAlbumArtworkWifiOnly=:value")
+    suspend fun setAutoDownloadAlbumArtworkWifiOnly(value: Boolean)
+
+    @Query("UPDATE SettingsEntity SET combineDifferentPlaybackTypes=:value")
+    suspend fun setCombineDifferentPlaybackTypes(value: Boolean)
+
+    @Query("UPDATE SettingsEntity SET audioUpdateInterval=:value")
+    suspend fun setAudioUpdateInterval(value: Duration)
+
+    @Query("UPDATE SettingsEntity SET maxPlaybacksInHistory=:value")
+    suspend fun setMaxPlaybacksInHistory(value: Int)
 
     @Query("UPDATE SettingsEntity SET seekForwardIncrement=:interval")
     suspend fun setSeekForwardIncrement(interval: Duration)
@@ -32,6 +49,15 @@ interface SettingsDao {
     @Query("UPDATE SettingsEntity SET seekBackIncrement=:interval")
     suspend fun setSeekBackIncrement(interval: Duration)
 
-    @Query("UPDATE SettingsEntity SET shouldMillisecondsBeShown=:showMilliseconds")
-    suspend fun setShouldMillisecondsBeShown(showMilliseconds: Boolean)
+    @Query("UPDATE SettingsEntity SET animateText=:value")
+    suspend fun setAnimateText(value: Boolean)
+
+    @Query("UPDATE SettingsEntity SET shouldMillisecondsBeShown=:value")
+    suspend fun setShouldMillisecondsBeShown(value: Boolean)
+
+    @Query("UPDATE SettingsEntity SET excludedSongFiles=:excludedFiles")
+    suspend fun setExcludedSongFiles(excludedFiles: List<Uri>)
+
+    @Query("UPDATE SettingsEntity SET musicDirectories=:dirs")
+    suspend fun setMusicDirectories(dirs: List<Uri>)
 }

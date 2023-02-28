@@ -18,6 +18,7 @@ import com.tachyonmusic.util.ms
  * Song stored in local storage with a path in the filesystem
  */
 class LocalSongImpl(
+    override val uri: Uri,
     mediaId: MediaId,
     title: String,
     artist: String,
@@ -26,13 +27,8 @@ class LocalSongImpl(
 
     override val playbackType = PlaybackType.Song.Local()
 
-    val path: File
-        get() = mediaId.path!!
-
-    override val uri: Uri
-        get() = Uri.fromFile(path.raw)
-
     constructor(parcel: Parcel) : this(
+        parcel.readParcelable<Uri>(Uri::class.java.classLoader)!!,
         MediaId(parcel.readString()!!),
         parcel.readString()!!,
         parcel.readString()!!,
@@ -48,19 +44,5 @@ class LocalSongImpl(
             override fun createFromParcel(parcel: Parcel) = LocalSongImpl(parcel)
             override fun newArray(size: Int): Array<LocalSongImpl?> = arrayOfNulls(size)
         }
-
-        fun build(
-            path: File,
-            metadataExtractor: SongMetadataExtractor = FileSongMetadataExtractor()
-        ): Song =
-            metadataExtractor.loadMetadata(Uri.fromFile(path.raw)).run {
-                if (this != null)
-                    return@run LocalSongImpl(MediaId.ofLocalSong(path), title, artist, duration)
-                else TODO("Invalid playback $path")
-            }
-
-        fun build(mediaId: MediaId) = build(mediaId.path!!)
-
-        fun build(map: Map<String, Any?>) = build(MediaId(map["mediaId"]!! as String))
     }
 }

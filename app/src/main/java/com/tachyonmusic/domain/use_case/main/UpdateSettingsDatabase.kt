@@ -1,7 +1,11 @@
 package com.tachyonmusic.domain.use_case.main
 
+import android.content.Context
+import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.util.File
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -10,14 +14,17 @@ import kotlinx.coroutines.withContext
  * and that the browser's seek forward/backward increment is up to date with the settings
  */
 class UpdateSettingsDatabase(
-    private val repository: SettingsRepository
+    private val repository: SettingsRepository,
+
+    @ApplicationContext
+    private val context: Context
 ) {
     suspend operator fun invoke() = withContext(Dispatchers.IO) {
-        val toRemove = mutableListOf<String>()
+        val toRemove = mutableListOf<Uri>()
         val settings = repository.getSettings()
 
         for (excluded in settings.excludedSongFiles) {
-            if (!File(excluded).exists())
+            if (!DocumentFile.fromTreeUri(context, excluded)!!.exists())
                 toRemove += excluded
         }
 

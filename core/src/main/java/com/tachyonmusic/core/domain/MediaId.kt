@@ -1,5 +1,6 @@
 package com.tachyonmusic.core.domain
 
+import android.net.Uri
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
@@ -26,14 +27,8 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
                 null
             }
 
-        fun ofLocalSong(path: File) =
-            MediaId(
-                PlaybackType.Song.Local().toString() + path.absolutePath.substring(
-                    path.absolutePath.indexOf(
-                        Constants.EXTERNAL_STORAGE_DIRECTORY
-                    ) + Constants.EXTERNAL_STORAGE_DIRECTORY.length
-                )
-            )
+        fun ofLocalSong(uri: Uri) =
+            MediaId(PlaybackType.Song.Local().toString() + uri.toString())
 
         fun ofRemoteLoop(name: String, songMediaId: MediaId) =
             MediaId(PlaybackType.Loop.Remote().toString() + name, songMediaId)
@@ -58,17 +53,13 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
     val isRemotePlaylist: Boolean
         get() = source.contains(PlaybackType.Playlist.Remote().toString())
 
-    val path: File?
+    val uri: Uri?
         get() {
             if (isLocalSong)
-                return File(
-                    "${Constants.EXTERNAL_STORAGE_DIRECTORY}/${
-                        source.replaceFirst(
-                            PlaybackType.Song.Local().toString(), ""
-                        )
-                    }"
+                return Uri.parse(
+                    source.replaceFirst(PlaybackType.Song.Local().toString(), "")
                 )
-            return underlyingMediaId?.path
+            return underlyingMediaId?.uri
         }
 
     override fun equals(other: Any?): Boolean {

@@ -1,5 +1,6 @@
 package com.tachyonmusic.di
 
+import android.content.Context
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
@@ -24,6 +25,7 @@ import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -55,15 +57,24 @@ object AppUseCaseModule {
     @Singleton
     fun provideUpdateSongDatabaseUseCase(
         songRepository: SongRepository,
-        settingsRepository: SettingsRepository,
         fileRepository: FileRepository,
-        metadataExtractor: SongMetadataExtractor
-    ) = UpdateSongDatabase(songRepository, settingsRepository, fileRepository, metadataExtractor)
+        metadataExtractor: SongMetadataExtractor,
+        @ApplicationContext context: Context,
+        logger: Logger
+    ) = UpdateSongDatabase(
+        songRepository,
+        fileRepository,
+        metadataExtractor,
+        context,
+        logger
+    )
 
     @Provides
     @Singleton
-    fun provideUpdateSettingsDatabaseUseCase(settingsRepository: SettingsRepository) =
-        UpdateSettingsDatabase(settingsRepository)
+    fun provideUpdateSettingsDatabaseUseCase(
+        settingsRepository: SettingsRepository,
+        @ApplicationContext context: Context
+    ) = UpdateSettingsDatabase(settingsRepository, context)
 
     @Provides
     @Singleton
@@ -231,7 +242,8 @@ object AppUseCaseModule {
 object AppRepositoryModule {
     @Provides
     @Singleton
-    fun provideFileRepository(): FileRepository = FileRepositoryImpl()
+    fun provideFileRepository(@ApplicationContext context: Context): FileRepository =
+        FileRepositoryImpl(context)
 
     @Provides
     @Singleton

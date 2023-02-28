@@ -1,16 +1,15 @@
 package com.tachyonmusic.domain.use_case.main
 
+import android.content.Context
 import android.net.Uri
-import android.os.Environment
+import androidx.documentfile.provider.DocumentFile
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
+import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.model.SongEntity
-import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
-import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.util.File
 import com.tachyonmusic.util.removeFirst
 import kotlinx.coroutines.*
 
@@ -20,42 +19,42 @@ import kotlinx.coroutines.*
  */
 class UpdateSongDatabase(
     private val songRepo: SongRepository,
-    private val settingsRepo: SettingsRepository,
     private val fileRepository: FileRepository,
     private val metadataExtractor: SongMetadataExtractor,
-    private val log: Logger = LoggerImpl()
+    private val context: Context,
+    private val log: Logger
 ) {
-    suspend operator fun invoke() = withContext(Dispatchers.IO) {
-        val settings = settingsRepo.getSettings()
-
-        // TODO: Shouldn't hard-code path
+    suspend operator fun invoke(settings: SettingsEntity) = withContext(Dispatchers.IO) {
         // TODO: Support more extensions
-        val paths = fileRepository.getFilesInDirectoryWithExtensions(
-            File(Environment.getExternalStorageDirectory().absolutePath + "/Music/"),
+
+        val paths = fileRepository.getFilesInDirectoriesWithExtensions(
+            settings.musicDirectories,
             listOf("mp3")
-        ).filter { !settings.excludedSongFiles.contains(it.absolutePath) }.toMutableList()
+        ).filter { !settings.excludedSongFiles.contains(it.uri) }.toMutableList()
 
         /**
          * Remove all invalid or excluded paths in the [songRepo]
          * Update [paths] to only contain new songs that we need to add to [songRepo]
          */
         songRepo.removeIf { song ->
-            val path = song.mediaId.path
+            val path = song.mediaId.uri
             if (path != null) {
-                paths.removeFirst { it.absolutePath == path.absolutePath }
-                val contains = settings.excludedSongFiles.contains(path.absolutePath)
-                val notIsFile = !path.isFile
-                contains || notIsFile
+                paths.removeFirst { it.uri == path }
+                settings.excludedSongFiles.contains(path)
             } else TODO("Invalid path null")
         }
 
         // TODO: Better async song loading?
         if (paths.isNotEmpty()) {
             log.debug("Loading ${paths.size} songs...")
-            val songs = mutableListOf<Deferred<SongMetadataExtractor.SongMetadata?>>()
+            val songs = mutableListOf<Deferred<Pair<Uri, SongMetadataExtractor.SongMetadata?>>>()
             for (path in paths) {
                 songs += async(Dispatchers.IO) {
-                    metadataExtractor.loadMetadata(Uri.fromFile(path.raw))
+                    path.uri to metadataExtractor.loadMetadata(
+                        context.contentResolver,
+                        path.uri,
+                        path.name ?: "Unknown Title"
+                    )
                 }
             }
 
@@ -63,12 +62,12 @@ class UpdateSongDatabase(
 
             songRepo.addAll(
                 songs.awaitAll().map {
-                    return@map if (it != null)
+                    return@map if (it.second != null)
                         SongEntity(
-                            MediaId.ofLocalSong(File(it.uri.path!!)),
-                            it.title,
-                            it.artist,
-                            it.duration
+                            MediaId.ofLocalSong(it.first),
+                            it.second!!.title,
+                            it.second!!.artist,
+                            it.second!!.duration
                         )
                     else null // TODO: Warn user of invalid playback
                 }.filterNotNull()

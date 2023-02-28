@@ -112,9 +112,10 @@ class MediaPlaybackSingletonRepositoryModule {
     @Singleton
     internal fun provideArtworkLoader(
         artworkFetcher: ArtworkFetcher,
+        @ApplicationContext context: Context,
         log: Logger,
         metadataExtractor: SongMetadataExtractor
-    ): ArtworkLoader = ArtworkLoaderImpl(artworkFetcher, log, metadataExtractor)
+    ): ArtworkLoader = ArtworkLoaderImpl(artworkFetcher, context, log, metadataExtractor)
 
     @Provides
     @Singleton

@@ -1,9 +1,11 @@
 package com.tachyonmusic.database.data.repository
 
+import android.net.Uri
 import com.tachyonmusic.database.data.data_source.SettingsDao
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.File
 import kotlinx.coroutines.flow.map
 
 class RoomSettingsRepository(
@@ -19,27 +21,66 @@ class RoomSettingsRepository(
 
     override fun observe() = dao.observe().map { it ?: SettingsEntity() }
 
-    override suspend fun removeExcludedFilesRange(toRemove: List<String>) {
+    override suspend fun removeExcludedFilesRange(toRemove: List<Uri>) {
         val settings = getSettings()
         val newRange = settings.excludedSongFiles.toMutableList().apply { removeAll(toRemove) }
-        dao.updateExcludedSongFiles(newRange)
+        dao.setExcludedSongFiles(newRange)
     }
 
-    override suspend fun addExcludedFilesRange(toAdd: List<String>) {
+    override suspend fun addExcludedFilesRange(toAdd: List<Uri>) {
         val settings = getSettings()
         val newRange = settings.excludedSongFiles.toMutableSet().apply { addAll(toAdd) }
-        dao.updateExcludedSongFiles(newRange.toList())
+        dao.setExcludedSongFiles(newRange.toList())
     }
 
-    override suspend fun setSeekForwardIncrement(interval: Duration) {
-        dao.setSeekForwardIncrement(interval)
-    }
+    override suspend fun update(
+        ignoreAudioFocus: Boolean?,
+        autoDownloadAlbumArtwork: Boolean?,
+        autoDownloadAlbumArtworkWifiOnly: Boolean?,
+        combineDifferentPlaybackTypes: Boolean?,
+        audioUpdateInterval: Duration?,
+        maxPlaybacksInHistory: Int?,
+        seekForwardIncrement: Duration?,
+        seekBackIncrement: Duration?,
+        animateText: Boolean?,
+        shouldMillisecondsBeShown: Boolean?,
+        excludedSongFiles: List<Uri>?,
+        musicDirectories: List<Uri>?
+    ) {
+        if (ignoreAudioFocus != null)
+            dao.setIgnoreAudioFocus(ignoreAudioFocus)
 
-    override suspend fun setSeekBackIncrement(interval: Duration) {
-        dao.setSeekBackIncrement(interval)
-    }
+        if (autoDownloadAlbumArtwork != null)
+            dao.setAutoDownloadAlbumArtwork(autoDownloadAlbumArtwork)
 
-    override suspend fun setShouldMillisecondsBeShown(showMilliseconds: Boolean) {
-        dao.setShouldMillisecondsBeShown(showMilliseconds)
+        if (autoDownloadAlbumArtworkWifiOnly != null)
+            dao.setAutoDownloadAlbumArtworkWifiOnly(autoDownloadAlbumArtworkWifiOnly)
+
+        if (combineDifferentPlaybackTypes != null)
+            dao.setCombineDifferentPlaybackTypes(combineDifferentPlaybackTypes)
+
+        if (audioUpdateInterval != null)
+            dao.setAudioUpdateInterval(audioUpdateInterval)
+
+        if (maxPlaybacksInHistory != null)
+            dao.setMaxPlaybacksInHistory(maxPlaybacksInHistory)
+
+        if (seekForwardIncrement != null)
+            dao.setSeekForwardIncrement(seekForwardIncrement)
+
+        if (seekBackIncrement != null)
+            dao.setSeekBackIncrement(seekBackIncrement)
+
+        if (animateText != null)
+            dao.setAnimateText(animateText)
+
+        if (shouldMillisecondsBeShown != null)
+            dao.setShouldMillisecondsBeShown(shouldMillisecondsBeShown)
+
+        if (excludedSongFiles != null)
+            dao.setExcludedSongFiles(excludedSongFiles)
+
+        if (musicDirectories != null)
+            dao.setMusicDirectories(musicDirectories)
     }
 }

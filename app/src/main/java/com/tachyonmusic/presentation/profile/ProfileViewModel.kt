@@ -34,61 +34,61 @@ class ProfileViewModel @Inject constructor(
 
     fun seekForwardIncrementChanged(inc: Duration) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(seekForwardIncrement = inc))
+            writeSettings(seekForwardIncrement = inc)
         }
     }
 
     fun seekBackIncrementChanged(inc: Duration) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(seekBackIncrement = inc))
+            writeSettings(seekBackIncrement = inc)
         }
     }
 
     fun onAnimateTextChanged(animateText: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(animateText = animateText))
+            writeSettings(animateText = animateText)
         }
     }
 
     fun ignoreAudioFocusChanged(ignore: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(ignoreAudioFocus = ignore))
+            writeSettings(ignoreAudioFocus = ignore)
         }
     }
 
     fun autoDownloadAlbumArtworkChanged(autoDownload: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(autoDownloadAlbumArtwork = autoDownload))
+            writeSettings(autoDownloadAlbumArtwork = autoDownload)
         }
     }
 
     fun autoDownloadAlbumArtworkWifiOnly(downloadWifiOnly: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(autoDownloadAlbumArtworkWifiOnly = downloadWifiOnly))
+            writeSettings(autoDownloadAlbumArtworkWifiOnly = downloadWifiOnly)
         }
     }
 
     fun combineDifferentPlaybackTypesChanged(combine: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(combineDifferentPlaybackTypes = combine))
+            writeSettings(combineDifferentPlaybackTypes = combine)
         }
     }
 
     fun maxPlaybacksInHistoryChanged(maxPlaybacks: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(maxPlaybacksInHistory = maxPlaybacks))
+            writeSettings(maxPlaybacksInHistory = maxPlaybacks)
         }
     }
 
     fun audioUpdateIntervalChanged(interval: Duration) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(audioUpdateInterval = interval))
+            writeSettings(audioUpdateInterval = interval)
         }
     }
 
     fun shouldMillisecondsBeShownChanged(shouldShow: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(settings.value.copy(shouldMillisecondsBeShown = shouldShow))
+            writeSettings(shouldMillisecondsBeShown = shouldShow)
         }
     }
 }

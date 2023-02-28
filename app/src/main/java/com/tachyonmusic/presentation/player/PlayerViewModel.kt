@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.player
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
@@ -66,7 +67,7 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(
         viewModelScope + Dispatchers.IO,
         SharingStarted.Lazily,
-        LocalSongImpl(MediaId(""), "", "", 0.ms)
+        LocalSongImpl(Uri.EMPTY, MediaId(""), "", "", 0.ms)
     )
 
     val shouldShowPlayer = _playback.map {

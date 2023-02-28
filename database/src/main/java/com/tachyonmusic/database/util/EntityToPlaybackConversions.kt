@@ -11,7 +11,7 @@ import com.tachyonmusic.database.domain.model.*
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 
-fun SongEntity.toSong() = LocalSongImpl(mediaId, title, artist, duration)
+fun SongEntity.toSong() = LocalSongImpl(mediaId.uri!!, mediaId, title, artist, duration)
 
 fun LoopEntity.toLoop() =
     RemoteLoopImpl(
@@ -19,6 +19,7 @@ fun LoopEntity.toLoop() =
         mediaId.source.replace(PlaybackType.Loop.Remote().toString(), ""),
         TimingDataController(timingData, currentTimingDataIndex),
         LocalSongImpl(
+            mediaId.underlyingMediaId!!.uri!!,
             mediaId.underlyingMediaId!!,
             title,
             artist,

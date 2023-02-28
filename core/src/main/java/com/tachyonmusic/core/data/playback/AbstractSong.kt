@@ -62,6 +62,7 @@ abstract class AbstractSong(
     }.build()
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeParcelable(uri, flags)
         parcel.writeString(mediaId.source)
         parcel.writeString(title)
         parcel.writeString(artist)

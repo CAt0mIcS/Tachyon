@@ -1,5 +1,6 @@
 package com.tachyonmusic.database.domain
 
+import android.net.Uri
 import androidx.room.TypeConverter
 import com.google.common.reflect.TypeToken
 import com.google.gson.Gson
@@ -7,6 +8,7 @@ import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.File
 import com.tachyonmusic.util.ms
 import java.lang.reflect.Type
 
@@ -56,9 +58,15 @@ object Converters {
 
 
     @TypeConverter
-    fun fromIntToRepeatMode(value: Int?): RepeatMode? =
-        if (value == null) null else RepeatMode.fromId(value)
+    fun fromIntToRepeatMode(value: Int?) = if (value == null) null else RepeatMode.fromId(value)
 
     @TypeConverter
     fun fromRepeatModeToInt(value: RepeatMode?) = value?.id
+
+
+    @TypeConverter
+    fun fromListStringToListUri(value: List<String>?) = value?.map { Uri.parse(it) }
+
+    @TypeConverter
+    fun fromListUriToListString(value: List<Uri>?) = value?.map { it.toString() }
 }
