@@ -8,11 +8,10 @@ import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
-import com.tachyonmusic.media.util.isPlayable
+import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.runOnUiThread
 import com.tachyonmusic.util.setPlayableState
-import kotlinx.coroutines.flow.update
 
 /**
  * For songs and loops:
@@ -34,69 +33,52 @@ class GetPlaybackChildren(
         if (playback == null)
             return emptyList()
 
+        if (playback !is SinglePlayback)
+            return (playback as Playlist).playbacks.setPlayableState(context)
+
         return when (repeatMode) {
             RepeatMode.All -> repeatModeAll(playback, sortParams)
             RepeatMode.One -> repeatModeOne(playback)
-            RepeatMode.Shuffle -> repeatModeShuffle(playback, sortParams)
+            RepeatMode.Shuffle -> repeatModeShuffle()
         }
     }
 
     private suspend fun repeatModeAll(
-        playback: Playback,
+        playback: SinglePlayback,
         sortParams: SortParameters
     ): List<SinglePlayback> {
-        if (playback is Playlist)
-            return playback.playbacks.setPlayableState(context)
-
-        val playlist = getPlaylist(playback, sortParams)
-
-        val pbIdx = playlist.indexOfFirst { it.mediaId == playback.mediaId }
-        if (pbIdx == -1)
-            return emptyList()
-        if (pbIdx + 1 >= playlist.size)
-            return listOf(playlist[0])
-
-        return listOf(playlist[pbIdx + 1])
+        return nextItem() ?: resolveNextItem(playback, sortParams) ?: emptyList()
     }
 
-    private fun repeatModeOne(playback: Playback) =
-        if (playback is SinglePlayback)
-            listOf(playback)
-        else
-            (playback as Playlist).playbacks.setPlayableState(context)
+    private fun repeatModeOne(playback: SinglePlayback) = listOf(playback)
 
-    private suspend fun repeatModeShuffle(
-        playback: Playback,
+    private suspend fun repeatModeShuffle() = nextItem() ?: emptyList()
+
+
+    private suspend fun resolveNextItem(
+        playback: SinglePlayback,
         sortParams: SortParameters
-    ): List<SinglePlayback> {
-        if (playback is Playlist)
-            return playback.playbacks.setPlayableState(context)
-
-        return listOf(
-            getPlaylist(
-                playback,
-                sortParams
-            ).getOrNull(runOnUiThread { browser.nextMediaItemIndex })
-                ?: return emptyList()
-        )
-    }
-
-
-    private suspend fun getPlaylist(
-        playback: Playback,
-        sortParams: SortParameters
-    ): List<SinglePlayback> {
-        /**
-         * TODO: We only need [GetPlaylistForPlayback.ActivePlaylist.playbackItems]. Optimize
-         *  so that we don't create [GetPlaylistForPlayback.ActivePlaylist.mediaItems]
-         *
-         * TODO: Currently runs on UI thread due to bug when switching from [RepeatMode.All] to [RepeatMode.Shuffle]
-         */
+    ): List<SinglePlayback>? {
         val playlistRes = getPlaylistForPlayback(playback, sortParams)
 
         if (playlistRes is Resource.Error || playlistRes.data == null)
-            return emptyList()
+            return null
 
-        return playlistRes.data!!.playbackItems
+        val playlist = playlistRes.data!!.playbackItems
+
+        val pbIdx = playlist.indexOfFirst { it.mediaId == playback.mediaId }
+        if (pbIdx == -1)
+            return null
+        if (pbIdx + 1 >= playlist.size)
+            return listOf(playlist[0]).setPlayableState(context)
+
+        return listOf(playlist[pbIdx + 1]).setPlayableState(context)
+    }
+
+
+    private suspend fun nextItem() = runOnUiThread {
+        val next = browser.getMediaItemAt(browser.nextMediaItemIndex)?.mediaMetadata?.playback
+            ?: return@runOnUiThread null
+        listOf(next).setPlayableState(context)
     }
 }

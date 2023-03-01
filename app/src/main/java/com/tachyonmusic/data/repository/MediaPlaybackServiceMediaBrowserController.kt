@@ -183,6 +183,10 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         }
     }
 
+    override fun getMediaItemAt(i: Int) =
+        if (i == -1 || i >= (browser?.mediaItemCount ?: Int.MIN_VALUE)) null
+        else browser?.getMediaItemAt(i)
+
     override val isPlaying: Boolean
         get() = browser?.isPlaying ?: false
     override val title: String?

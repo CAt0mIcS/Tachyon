@@ -59,7 +59,7 @@ class GetPlaylistForPlayback(
                 }.collect()
 
                 initialWindowIndex = playbacks.indexOf(playback)
-                mediaItems = playbacks.map { it.toMediaItem() }
+                mediaItems = playbacks.toMediaItems()
                 playbackItems = playbacks
             }
 
@@ -80,7 +80,7 @@ class GetPlaylistForPlayback(
                 }.collect()
 
                 initialWindowIndex = playbacks.indexOf(playback)
-                mediaItems = playbacks.map { it.toMediaItem() }
+                mediaItems = playbacks.toMediaItems()
                 playbackItems = playbacks
             }
 

@@ -56,6 +56,8 @@ interface MediaBrowserController : DefaultLifecycleObserver,
         pageSize: Int = Int.MAX_VALUE
     ): List<Playback>
 
+    fun getMediaItemAt(i: Int): MediaItem?
+
     val isPlaying: Boolean
 
     val title: String?
