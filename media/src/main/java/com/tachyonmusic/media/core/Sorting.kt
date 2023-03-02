@@ -1,10 +1,8 @@
 package com.tachyonmusic.media.core
 
-import com.tachyonmusic.core.domain.playback.Loop
-import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.core.domain.playback.*
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
+import com.tachyonmusic.database.util.toPlayback
 
 enum class SortOrder {
     Ascending, Descending;
@@ -32,25 +30,8 @@ data class SortParameters(
 
 @JvmName("sortedByPlayback")
 fun <T : Playback> Collection<T>.sortedBy(sortType: SortType, sortOrder: SortOrder): List<T> =
-    when (sortType) {
-        SortType.AlphabeticalTitle -> {
-            sortWithOrder(sortOrder) {
-                when (it) {
-                    is Song -> it.title
-                    is Loop -> it.name
-                    is Playlist -> it.name
-                    else -> TODO("Invalid playback type ${this.javaClass.name}")
-                    // TODO: Use it.displayTitle
-                }
-            }
-        }
-        SortType.AlphabeticalArtist -> {
-            sortWithOrder(sortOrder) { it.underlyingSinglePlayback?.artist }
-        }
-        SortType.LastPlayedDate -> {
-//            sortWithOrder(sortOrder) { it.lastPlayedDate }
-            TODO()
-        }
+    sortWithOrder(sortOrder) {
+        it.getComparedString(sortType)
     }
 
 @JvmName("sortedByPb")
@@ -62,19 +43,9 @@ fun <T : Playback> Collection<T>.sortedBy(sortParams: SortParameters) =
 fun <T : SinglePlaybackEntity> Collection<T>.sortedBy(
     sortType: SortType,
     sortOrder: SortOrder
-): List<T> = when (sortType) {
-    SortType.AlphabeticalTitle -> {
-        sortWithOrder(sortOrder) { it.title }
-    }
-    SortType.AlphabeticalArtist -> {
-        sortWithOrder(sortOrder) { it.artist }
-    }
-    SortType.LastPlayedDate -> {
-//            sortWithOrder(sortOrder) { it.lastPlayedDate }
-        TODO()
-    }
+): List<T> = sortWithOrder(sortOrder) {
+    it.toPlayback().getComparedString(sortType)
 }
-
 
 @JvmName("sortedByE")
 fun <T : SinglePlaybackEntity> Collection<T>.sortedBy(sortParams: SortParameters) =
@@ -87,4 +58,32 @@ private inline fun <T, R : Comparable<R>> Collection<T>.sortWithOrder(
 ) = when (sortOrder) {
     SortOrder.Ascending -> sortedBy(selector)
     SortOrder.Descending -> sortedByDescending(selector)
+}
+
+private fun Playback.getComparedString(type: SortType) = when (this) {
+    is Song -> {
+        when (type) {
+            SortType.AlphabeticalTitle -> title + artist
+            SortType.AlphabeticalArtist -> artist + title
+            SortType.LastPlayedDate -> TODO()
+        }
+    }
+
+    is Loop -> {
+        when (type) {
+            SortType.AlphabeticalTitle -> name + title + artist
+            SortType.AlphabeticalArtist -> artist + name + title
+            SortType.LastPlayedDate -> TODO()
+        }
+    }
+
+    is Playlist -> {
+        when (type) {
+            SortType.AlphabeticalTitle -> name + title + artist
+            SortType.AlphabeticalArtist -> artist + name + title
+            SortType.LastPlayedDate -> TODO()
+        }
+    }
+
+    else -> TODO("Invalid playback type ${this::javaClass.name}")
 }
