@@ -64,7 +64,6 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
             _playbackState.update { playback }
             _playWhenReadyState.update { playWhenReady }
             _timingDataState.update { timingData }
-            _repeatModeState.update { repeatMode }
         }
     }
 
@@ -255,7 +254,6 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         _playWhenReadyState.update { false }
         _timingDataState.update { null }
         _associatedPlaylistState.update { null }
-        _repeatModeState.update { null }
         cachedSeekPositionWhenAvailable = null
     }
 
