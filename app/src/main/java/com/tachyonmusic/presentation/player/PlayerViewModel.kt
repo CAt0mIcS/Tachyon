@@ -100,9 +100,9 @@ class PlayerViewModel @Inject constructor(
 
     val isPlaying = getMediaStates.playWhenReady()
     val repeatMode =
-        combine(observeSavedData(), getMediaStates.repeatMode()) { savedData, browserRepeatMode ->
+        combine(getMediaStates.repeatMode(), observeSavedData()) { browserRepeatMode, savedData ->
             browserRepeatMode ?: savedData.repeatMode
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), DataEntity().repeatMode)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     private var recentlyPlayedPos: Duration? = null
 
@@ -129,7 +129,7 @@ class PlayerViewModel @Inject constructor(
 
     fun nextRepeatMode() {
         viewModelScope.launch {
-            setRepeatMode(repeatMode.value.next)
+            setRepeatMode(repeatMode.value?.next)
         }
     }
 
@@ -149,12 +149,16 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlaybackType.Song.Local())
 
     val subPlaybackItems = combine(
-        _playback,
+        getMediaStates.playback(),
         associatedPlaylist,
         repeatMode,
         getMediaStates.sortParameters()
     ) { playback, playlist, repeatMode, sortParams ->
-        getPlaybackChildren(playlist ?: playback, repeatMode, sortParams)
+        getPlaybackChildren(
+            playlist ?: playback ?: getHistory().firstOrNull(),
+            repeatMode,
+            sortParams
+        )
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
 

@@ -28,10 +28,10 @@ class GetPlaybackChildren(
 ) {
     suspend operator fun invoke(
         playback: Playback?,
-        repeatMode: RepeatMode,
+        repeatMode: RepeatMode?,
         sortParams: SortParameters
     ) = withContext(Dispatchers.IO) {
-        if (playback == null)
+        if (playback == null || repeatMode == null)
             return@withContext emptyList()
 
         if (playback !is SinglePlayback)

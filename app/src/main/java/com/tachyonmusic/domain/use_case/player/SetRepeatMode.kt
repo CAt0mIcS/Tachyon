@@ -11,11 +11,16 @@ class SetRepeatMode(
     private val browser: MediaBrowserController,
     private val dataRepository: DataRepository
 ) {
-    suspend operator fun invoke(repeatMode: RepeatMode) = runOnUiThread {
-        browser.repeatMode = repeatMode
+    suspend operator fun invoke(repeatMode: RepeatMode?) {
+        if (repeatMode == null)
+            return
 
-        withContext(Dispatchers.IO) {
-            dataRepository.update(repeatMode = repeatMode)
+        runOnUiThread {
+            browser.repeatMode = repeatMode
+
+            withContext(Dispatchers.IO) {
+                dataRepository.update(repeatMode = repeatMode)
+            }
         }
     }
 }

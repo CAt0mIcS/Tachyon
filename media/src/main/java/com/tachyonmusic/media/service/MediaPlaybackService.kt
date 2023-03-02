@@ -274,8 +274,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }.build().apply {
             // TODO: Debug only
             addAnalyticsListener(EventLogger())
-
-            repeatMode = Player.REPEAT_MODE_ALL
         }, log).apply {
             registerEventListener(CustomPlayerEventListener())
         }

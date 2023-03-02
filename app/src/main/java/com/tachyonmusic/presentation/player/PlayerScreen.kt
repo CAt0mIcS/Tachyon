@@ -290,11 +290,15 @@ fun PlayerScreen(
                 ) {
                     val repeatMode by viewModel.repeatMode.collectAsState()
 
-                    Icon(
-                        painterResource(repeatMode.icon),
-                        contentDescription = null,
-                        modifier = Modifier.scale(iconScale)
-                    )
+                    // TODO
+                    if (repeatMode == null)
+                        CircularProgressIndicator(Modifier.scale(iconScale))
+                    else
+                        Icon(
+                            painterResource(repeatMode!!.icon),
+                            contentDescription = null,
+                            modifier = Modifier.scale(iconScale)
+                        )
                 }
 
                 IconButton(
