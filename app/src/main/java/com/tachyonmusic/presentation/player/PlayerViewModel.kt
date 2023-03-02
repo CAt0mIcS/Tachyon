@@ -99,9 +99,10 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SeekIncrements())
 
     val isPlaying = getMediaStates.playWhenReady()
-    val repeatMode = observeSavedData().map {
-        it.repeatMode
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), DataEntity().repeatMode)
+    val repeatMode =
+        combine(observeSavedData(), getMediaStates.repeatMode()) { savedData, browserRepeatMode ->
+            browserRepeatMode ?: savedData.repeatMode
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), DataEntity().repeatMode)
 
     private var recentlyPlayedPos: Duration? = null
 

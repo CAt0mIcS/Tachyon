@@ -24,10 +24,8 @@ import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.*
-import com.tachyonmusic.media.util.playback
-import com.tachyonmusic.media.util.prepare
+import com.tachyonmusic.media.util.*
 import com.tachyonmusic.media.util.supportedCommands
-import com.tachyonmusic.media.util.updateTimingDataOfCurrentPlayback
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
@@ -212,22 +210,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     }
 
     fun handleSetRepeatModeEvent(event: SetRepeatModeEvent): SessionResult {
-        when (event.repeatMode) {
-            RepeatMode.All -> {
-                currentPlayer.shuffleModeEnabled = false
-                currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
-            }
-
-            RepeatMode.One -> {
-                currentPlayer.shuffleModeEnabled = false
-                currentPlayer.repeatMode = Player.REPEAT_MODE_ONE
-            }
-
-            RepeatMode.Shuffle -> {
-                currentPlayer.repeatMode = Player.REPEAT_MODE_ALL
-                currentPlayer.shuffleModeEnabled = true
-            }
-        }
+        currentPlayer.coreRepeatMode = event.repeatMode
         return SessionResult(SessionResult.RESULT_SUCCESS)
     }
 

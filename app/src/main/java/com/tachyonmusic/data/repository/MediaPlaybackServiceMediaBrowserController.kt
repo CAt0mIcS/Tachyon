@@ -20,10 +20,7 @@ import com.tachyonmusic.database.domain.model.DataEntity
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.service.MediaPlaybackService
-import com.tachyonmusic.media.util.duration
-import com.tachyonmusic.media.util.name
-import com.tachyonmusic.media.util.playback
-import com.tachyonmusic.media.util.timingData
+import com.tachyonmusic.media.util.*
 import com.tachyonmusic.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,6 +64,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
             _playbackState.update { playback }
             _playWhenReadyState.update { playWhenReady }
             _timingDataState.update { timingData }
+            _repeatModeState.update { repeatMode }
         }
     }
 
@@ -113,13 +111,16 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         browser?.dispatchMediaEvent(SetPlaybackEvent(playlist))
     }
 
-    override var repeatMode: RepeatMode = DataEntity().repeatMode
+    override var repeatMode: RepeatMode?
+        get() = repeatModeState.value
         set(value) {
-            if (browser != null) {
-                field = value
+            if (browser != null && value != null) {
                 browser!!.dispatchMediaEvent(SetRepeatModeEvent(value))
             }
         }
+
+    private val _repeatModeState = MutableStateFlow<RepeatMode?>(RepeatMode.All)
+    override val repeatModeState = _repeatModeState.asStateFlow()
 
     override val nextMediaItemIndex: Int
         get() = browser?.nextMediaItemIndex ?: C.INDEX_UNSET
@@ -237,6 +238,14 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         }
     }
 
+    override fun onRepeatModeChanged(repeatMode: Int) {
+        _repeatModeState.update { browser?.coreRepeatMode }
+    }
+
+    override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+        _repeatModeState.update { browser?.coreRepeatMode }
+    }
+
     /***********************************************************************************************
      * [MediaBrowser.Listener]
      **********************************************************************************************/
@@ -246,6 +255,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         _playWhenReadyState.update { false }
         _timingDataState.update { null }
         _associatedPlaylistState.update { null }
+        _repeatModeState.update { null }
         cachedSeekPositionWhenAvailable = null
     }
 

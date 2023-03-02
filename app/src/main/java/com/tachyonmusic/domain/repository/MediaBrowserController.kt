@@ -41,7 +41,8 @@ interface MediaBrowserController : DefaultLifecycleObserver,
      */
     fun playPlaylist(playlist: Playlist?)
 
-    var repeatMode: RepeatMode
+    var repeatMode: RepeatMode?
+    val repeatModeState: StateFlow<RepeatMode?>
     val nextMediaItemIndex: Int
 
     suspend fun getChildren(

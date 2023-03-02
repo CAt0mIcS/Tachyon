@@ -9,9 +9,10 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
 import com.tachyonmusic.media.util.playback
-import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.runOnUiThread
-import com.tachyonmusic.util.setPlayableState
+import com.tachyonmusic.util.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
 
 /**
  * For songs and loops:
@@ -29,32 +30,24 @@ class GetPlaybackChildren(
         playback: Playback?,
         repeatMode: RepeatMode,
         sortParams: SortParameters
-    ): List<SinglePlayback> {
+    ) = withContext(Dispatchers.IO) {
         if (playback == null)
-            return emptyList()
+            return@withContext emptyList()
 
         if (playback !is SinglePlayback)
-            return (playback as Playlist).playbacks.setPlayableState(context)
+            return@withContext (playback as Playlist).playbacks.setPlayableState(context)
 
-        return when (repeatMode) {
-            RepeatMode.All -> repeatModeAll(playback, sortParams)
-            RepeatMode.One -> repeatModeOne(playback)
-            RepeatMode.Shuffle -> repeatModeShuffle()
+        when (repeatMode) {
+            RepeatMode.All -> nextItem() ?: resolveNextItem(playback, sortParams) ?: emptyList()
+            RepeatMode.One -> listOf(playback)
+            RepeatMode.Shuffle -> nextItem() ?: emptyList()
         }
     }
 
-    private suspend fun repeatModeAll(
-        playback: SinglePlayback,
-        sortParams: SortParameters
-    ): List<SinglePlayback> {
-        return nextItem() ?: resolveNextItem(playback, sortParams) ?: emptyList()
-    }
 
-    private fun repeatModeOne(playback: SinglePlayback) = listOf(playback)
-
-    private suspend fun repeatModeShuffle() = nextItem() ?: emptyList()
-
-
+    /**
+     * Uses the playlist which will be used by the player once started
+     */
     private suspend fun resolveNextItem(
         playback: SinglePlayback,
         sortParams: SortParameters
@@ -76,9 +69,13 @@ class GetPlaybackChildren(
     }
 
 
+    /**
+     * Uses the index of the next playing media item. Only works if playback is already started
+     */
     private suspend fun nextItem() = runOnUiThread {
         val next = browser.getMediaItemAt(browser.nextMediaItemIndex)?.mediaMetadata?.playback
             ?: return@runOnUiThread null
+
         listOf(next).setPlayableState(context)
     }
 }
