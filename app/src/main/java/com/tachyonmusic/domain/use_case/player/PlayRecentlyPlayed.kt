@@ -31,7 +31,9 @@ class PlayRecentlyPlayed(
 
             browser.playback = playback
             browser.playWhenReady = true
-            browser.seekTo(prevTime)
+
+            if (!browser.isProcessingSeek)
+                browser.seekTo(prevTime)
         }
     }
 }

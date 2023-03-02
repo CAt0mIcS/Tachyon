@@ -104,6 +104,9 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
             _sortParamsState.update { value }
         }
 
+    override val isProcessingSeek: Boolean
+        get() = cachedSeekPositionWhenAvailable != null
+
     override fun playPlaylist(playlist: Playlist?) {
         _playbackState.update { null }
         _associatedPlaylistState.update { playlist }
@@ -207,8 +210,7 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         }
 
     override val currentPosition: Duration?
-        get() = if (browser?.currentMediaItem == null) null else cachedSeekPositionWhenAvailable
-            ?: browser?.currentPosition?.ms
+        get() = if (browser?.currentMediaItem == null) cachedSeekPositionWhenAvailable else browser?.currentPosition?.ms
 
     private val _timingDataState = MutableStateFlow<TimingDataController?>(null)
     override val timingDataState = _timingDataState.asStateFlow()

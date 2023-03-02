@@ -7,7 +7,6 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.database.domain.model.DataEntity
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.player.*

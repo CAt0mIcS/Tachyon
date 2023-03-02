@@ -36,6 +36,8 @@ interface MediaBrowserController : DefaultLifecycleObserver,
 
     var sortParams: SortParameters
 
+    val isProcessingSeek: Boolean
+
     /**
      * Start playing specified playlist
      */
