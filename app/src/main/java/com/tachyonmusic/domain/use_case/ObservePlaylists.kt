@@ -9,6 +9,9 @@ class ObservePlaylists(
     private val playlistRepository: PlaylistRepository
 ) {
     operator fun invoke(
-        sortParams: SortParameters = SortParameters()
-    ) = playlistRepository.observe().map { it.sortedBy(sortParams) }
+        sortParams: SortParameters? = null
+    ) = playlistRepository.observe().apply {
+        if (sortParams != null)
+            map { it.sortedBy(sortParams) }
+    }
 }

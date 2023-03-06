@@ -15,8 +15,11 @@ class GetSongs(
     private val repository: SongRepository,
     private val context: Context
 ) {
-    suspend operator fun invoke(sortParams: SortParameters = SortParameters()) =
+    suspend operator fun invoke(sortParams: SortParameters? = null) =
         withContext(Dispatchers.IO) {
-            repository.getSongs().setPlayableState(context).sortedBy(sortParams)
+            repository.getSongs().setPlayableState(context).apply {
+                if (sortParams != null)
+                    sortedBy(sortParams)
+            }
         }
 }

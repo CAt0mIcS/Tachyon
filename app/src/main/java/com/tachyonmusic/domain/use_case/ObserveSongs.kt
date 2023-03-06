@@ -15,9 +15,12 @@ class ObserveSongs(
     private val context: Context
 ) {
     operator fun invoke(
-        sortParams: SortParameters = SortParameters()
+        sortParams: SortParameters? = null
     ) = repository.observe().map {
-        it.setPlayableState(context).sortedBy(sortParams)
+        it.setPlayableState(context).apply {
+            if (sortParams != null)
+                sortedBy(sortParams)
+        }
     }
 
     operator fun invoke(mediaId: MediaId) = repository.observeByMediaId(mediaId)

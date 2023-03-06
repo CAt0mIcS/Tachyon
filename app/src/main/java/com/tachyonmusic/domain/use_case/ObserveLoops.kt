@@ -14,8 +14,11 @@ class ObserveLoops(
     private val context: Context
 ) {
     operator fun invoke(
-        sortParams: SortParameters = SortParameters()
+        sortParams: SortParameters? = null
     ) = loopRepository.observe().map {
-        it.setPlayableState(context).sortedBy(sortParams)
+        it.setPlayableState(context).apply {
+            if (sortParams != null)
+                sortedBy(sortParams)
+        }
     }
 }
