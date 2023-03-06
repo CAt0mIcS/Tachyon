@@ -157,8 +157,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                                 .fillMaxSize()
                                 .padding(innerPaddingSheet)
                         ) {
-                            if (!requiresMusicPathSelection.value)
-                                NavigationGraph(navController, sheetState, miniPlayerHeight)
+                            NavigationGraph(navController, sheetState, miniPlayerHeight)
                         }
                     }
                 }
