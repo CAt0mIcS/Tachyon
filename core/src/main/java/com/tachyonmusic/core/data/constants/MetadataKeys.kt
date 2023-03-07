@@ -7,6 +7,7 @@ object MetadataKeys {
     const val RepeatMode = "com.tachyonmusic.REPEAT_MODE"
     const val SortType = "com.tachyonmusic.SORT_TYPE"
     const val SortOrder = "com.tachyonmusic.SORT_ORDER"
+    const val Index = "com.tachyonmusic.INDEX"
 
     /**
      * Name of loop or playlist

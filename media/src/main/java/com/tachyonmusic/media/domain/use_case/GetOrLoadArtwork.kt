@@ -84,8 +84,8 @@ class GetOrLoadArtwork(
     suspend operator fun invoke(songs: List<Song>) = channelFlow {
         withContext(Dispatchers.IO) {
             val entities = List(songs.size) { i ->
-                findPlayback(songs[i].mediaId) as SongEntity
-            }
+                findPlayback(songs[i].mediaId) as SongEntity?
+            }.filterNotNull()
 
             invoke(entities).onEach {
                 send(it)

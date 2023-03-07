@@ -24,6 +24,9 @@ interface HistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addHistory(history: HistoryEntity)
 
+    @Query("DELETE FROM HistoryEntity WHERE mediaId LIKE '%' || :mediaId || '%'")
+    suspend fun removeHistoryHierarchical(mediaId: MediaId)
+
     @Query("DELETE FROM HistoryEntity WHERE mediaId=:mediaId")
     suspend fun removeHistory(mediaId: MediaId)
 

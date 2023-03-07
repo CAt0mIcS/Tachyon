@@ -25,6 +25,7 @@ import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
+import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
@@ -137,29 +138,41 @@ object LibraryScreen :
                 }
             }
 
-            items(playbackItems) { playback ->
+            items(playbackItems, key = { it.mediaId.toString() }) { playback ->
+                val updatedPlayback by rememberUpdatedState(playback)
+                val dismissState = rememberDismissState {
+                    if (it == DismissValue.DismissedToStart) {
+                        viewModel.excludePlayback(updatedPlayback)
+                        true
+                    } else false
+                }
+
                 val artwork by playback.artwork.collectAsState()
                 val isLoading by playback.isArtworkLoading.collectAsState()
-                val isPlayable by (
-                        if (playback is SinglePlayback) playback.isPlayable.collectAsState()
-                        else remember { mutableStateOf(true) })
+                val isPlayable =
+                    if (playback is SinglePlayback) playback.isPlayable.collectAsState().value else true
 
-                HorizontalPlaybackView(
-                    playback,
-                    artwork ?: PlaceholderArtwork,
-                    isLoading,
+                SwipeDelete(
+                    dismissState,
+                    shape = Theme.shapes.medium,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall)
-                        .isEnabled(isPlayable),
-                    onClick = {
-                        if (isPlayable) {
-                            viewModel.onItemClicked(playback)
-                            scope.launch {
-                                sheetState.expand()
+                ) {
+                    HorizontalPlaybackView(
+                        playback,
+                        artwork ?: PlaceholderArtwork,
+                        isLoading,
+                        modifier = Modifier.isEnabled(isPlayable),
+                        onClick = {
+                            if (isPlayable) {
+                                viewModel.onItemClicked(playback)
+                                scope.launch {
+                                    sheetState.expand()
+                                }
                             }
-                        }
-                    })
+                        })
+                }
             }
         }
     }

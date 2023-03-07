@@ -13,6 +13,7 @@ import com.tachyonmusic.domain.repository.UriPermissionRepository
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
+import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.domain.use_case.library.SetSortParameters
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.*
@@ -180,13 +181,17 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideSavePlaybackToPlaylistUseCase(playlistRepository: PlaylistRepository) =
-        SavePlaybackToPlaylist(playlistRepository)
+    fun provideSavePlaybackToPlaylistUseCase(
+        playlistRepository: PlaylistRepository,
+        browser: MediaBrowserController
+    ) = SavePlaybackToPlaylist(playlistRepository, browser)
 
     @Provides
     @Singleton
-    fun provideRemovePlaybackFromPlaylistUseCase(playlistRepository: PlaylistRepository) =
-        RemovePlaybackFromPlaylist(playlistRepository)
+    fun provideRemovePlaybackFromPlaylistUseCase(
+        playlistRepository: PlaylistRepository,
+        browser: MediaBrowserController
+    ) = RemovePlaybackFromPlaylist(playlistRepository, browser)
 
     @Provides
     @Singleton
@@ -226,6 +231,31 @@ object AppUseCaseModule {
     @Singleton
     fun provideSetSortParametersStateUseCase(browser: MediaBrowserController) =
         SetSortParameters(browser)
+
+    @Provides
+    @Singleton
+    fun provideAddSongToExcludedSongsUseCase(
+        settingsRepository: SettingsRepository,
+        songRepository: SongRepository,
+        historyRepository: HistoryRepository,
+        loopRepository: LoopRepository,
+        playlistRepository: PlaylistRepository
+    ) = AddSongToExcludedSongs(
+        settingsRepository,
+        songRepository,
+        historyRepository,
+        loopRepository,
+        playlistRepository
+    )
+
+    @Provides
+    @Singleton
+    fun provideDeletePlaybackUseCase(
+        loopRepository: LoopRepository,
+        playlistRepository: PlaylistRepository,
+        historyRepository: HistoryRepository
+    ) = DeletePlayback(loopRepository, playlistRepository, historyRepository)
+
 
     @Provides
     @Singleton

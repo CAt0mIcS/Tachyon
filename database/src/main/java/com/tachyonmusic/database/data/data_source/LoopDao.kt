@@ -28,11 +28,15 @@ interface LoopDao {
     suspend fun addAll(loops: List<LoopEntity>)
 
     @Query("SELECT * FROM LoopEntity WHERE songTitle=:songTitle AND songArtist=:songArtist AND songDuration=:songDuration")
-    suspend fun findBySong(songTitle: String, songArtist: String, songDuration: Duration): LoopEntity?
+    suspend fun findBySong(
+        songTitle: String,
+        songArtist: String,
+        songDuration: Duration
+    ): LoopEntity?
 
     @Query("SELECT * FROM LoopEntity WHERE mediaId=:mediaId")
     suspend fun findByMediaId(mediaId: MediaId): LoopEntity?
 
-    @Delete
-    suspend fun delete(loop: LoopEntity)
+    @Query("DELETE FROM LoopEntity WHERE mediaId=:mediaId")
+    suspend fun delete(mediaId: MediaId)
 }

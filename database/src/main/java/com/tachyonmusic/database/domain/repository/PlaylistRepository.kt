@@ -20,7 +20,10 @@ interface PlaylistRepository {
     suspend fun getPlaylistEntities(): List<PlaylistEntity>
     suspend fun add(playlist: PlaylistEntity): Resource<Unit>
     suspend fun addAll(playlists: List<PlaylistEntity>): Resource<Unit>
+
+    suspend fun remove(mediaId: MediaId)
     suspend fun removeIf(pred: (PlaylistEntity) -> Boolean)
+
     suspend fun setPlaybacksOfPlaylist(
         playlistMediaId: MediaId,
         playbacks: List<MediaId>

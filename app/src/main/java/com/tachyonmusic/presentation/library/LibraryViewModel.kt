@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.*
+import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.domain.use_case.library.SetSortParameters
 import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.media.core.sortedBy
@@ -31,6 +33,9 @@ class LibraryViewModel @Inject constructor(
     private val getOrLoadArtwork: GetOrLoadArtwork,
     private val setSortParameters: SetSortParameters,
     private val playPlayback: PlayPlayback,
+
+    private val addSongToExcludedSongs: AddSongToExcludedSongs,
+    private val deletePlayback: DeletePlayback,
 
     @ApplicationContext
     context: Context
@@ -98,6 +103,15 @@ class LibraryViewModel @Inject constructor(
 
     fun onItemClicked(playback: Playback) {
         playPlayback(playback)
+    }
+
+    fun excludePlayback(playback: Playback) {
+        viewModelScope.launch {
+            if(playback is Song)
+                addSongToExcludedSongs(playback)
+            else
+                deletePlayback(playback)
+        }
     }
 
 

@@ -33,6 +33,8 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
 
         fun ofRemotePlaylist(name: String) =
             MediaId(PlaybackType.Playlist.Remote().toString() + name)
+
+        val EMPTY = MediaId("")
     }
 
     val playbackType: PlaybackType

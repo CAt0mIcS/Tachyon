@@ -39,8 +39,8 @@ interface SongDao {
     @Throws(SQLiteException::class)
     suspend fun addAll(songs: List<SongEntity>)
 
-    @Delete
-    suspend fun delete(song: SongEntity)
+    @Query("DELETE FROM SongEntity WHERE mediaId=:mediaId")
+    suspend fun delete(mediaId: MediaId)
 
     @Query("UPDATE SongEntity SET artworkType=:artworkType, artworkUrl=:artworkUrl WHERE id=:id")
     suspend fun updateArtwork(id: Int, artworkType: String?, artworkUrl: String? = null)

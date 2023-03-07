@@ -6,8 +6,10 @@ interface Playlist : Playback {
 
     fun hasPlayback(playback: SinglePlayback) = playbacks.contains(playback)
 
+    fun copy(): Playlist
+
     val name: String
     val playbacks: List<SinglePlayback>
-    val currentPlaylistIndex: Int
+    var currentPlaylistIndex: Int
     val current: SinglePlayback?
 }

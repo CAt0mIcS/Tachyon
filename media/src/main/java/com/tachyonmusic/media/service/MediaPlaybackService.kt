@@ -14,6 +14,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
@@ -69,6 +70,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     private lateinit var mediaSession: MediaLibrarySession
 
     private var queuedPlayback: SinglePlayback? = null
+    private var currentPlaylist: Playlist? = null
 
     private var sortParams = SortParameters()
 
@@ -193,8 +195,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         queuedPlayback = event.playback.underlyingSinglePlayback
         val prepareRes = currentPlayer.prepare(
             playlistRes.data?.mediaItems,
-            playlistRes.data?.initialWindowIndex
+            playlistRes.data?.initialWindowIndex,
+            if (event.playback.mediaId == currentPlaylist?.mediaId) currentPlayer.currentPosition else C.TIME_UNSET
         )
+
+        if (event.playback is Playlist)
+            currentPlaylist = event.playback
 
         if (prepareRes is Resource.Error)
             return SessionResult(SessionResult.RESULT_ERROR_BAD_VALUE)
@@ -230,9 +236,16 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
          * we actually want to play
          */
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || queuedPlayback != null) {
+            val newPlayback = queuedPlayback ?: mediaItem?.mediaMetadata?.playback
             ioScope.launch {
-                addNewPlaybackToHistory(queuedPlayback ?: mediaItem?.mediaMetadata?.playback)
+                addNewPlaybackToHistory(newPlayback)
                 queuedPlayback = null
+            }
+
+            val idx = currentPlaylist?.playbacks?.indexOf(newPlayback ?: return) ?: -1
+            if (idx != -1) {
+                currentPlaylist?.currentPlaylistIndex = idx
+                mediaSession.dispatchMediaEvent(CurrentPlaylistIndexChanged(idx))
             }
         }
     }

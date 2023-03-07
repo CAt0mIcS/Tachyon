@@ -10,13 +10,14 @@ import com.tachyonmusic.util.UiText
 
 fun CustomPlayer.prepare(
     items: List<MediaItem>?,
-    initialWindowIndex: Int?
+    initialWindowIndex: Int?,
+    positionMs: Long = C.TIME_UNSET
 ): Resource<Unit> {
     if (items == null || initialWindowIndex == null)
         return Resource.Error(UiText.StringResource(R.string.invalid_arguments))
 
     setMediaItems(items)
-    seekTo(initialWindowIndex, C.TIME_UNSET)
+    seekTo(initialWindowIndex, positionMs)
     prepare()
     return Resource.Success()
 }

@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 abstract class AbstractPlaylist(
     final override val mediaId: MediaId,
     final override val name: String,
-    private val _playbacks: MutableList<SinglePlayback>,
+    protected val _playbacks: MutableList<SinglePlayback>,
     currentPlaylistIndex: Int = 0
 ) : Playlist, AbstractPlayback() {
 
@@ -25,7 +25,6 @@ abstract class AbstractPlaylist(
         get() = _playbacks
 
     final override var currentPlaylistIndex: Int = 0
-        protected set
 
     override val title: String?
         get() = current?.title
@@ -90,5 +89,11 @@ abstract class AbstractPlaylist(
         parcel.writeString(name)
         parcel.writeParcelableArray(playbacks.toTypedArray(), flags)
         parcel.writeInt(currentPlaylistIndex)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is AbstractPlaylist) return false
+        return mediaId == other.mediaId && playbacks == other.playbacks &&
+                currentPlaylistIndex == other.currentPlaylistIndex
     }
 }

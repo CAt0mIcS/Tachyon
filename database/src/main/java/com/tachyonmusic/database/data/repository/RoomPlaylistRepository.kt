@@ -71,10 +71,14 @@ class RoomPlaylistRepository(
         }
     }
 
+    override suspend fun remove(mediaId: MediaId) {
+        dao.delete(mediaId)
+    }
+
     override suspend fun removeIf(pred: (PlaylistEntity) -> Boolean) {
         getPlaylistEntities().forEach {
             if (pred(it))
-                dao.delete(it)
+                dao.delete(it.mediaId)
         }
     }
 

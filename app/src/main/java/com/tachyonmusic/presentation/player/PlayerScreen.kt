@@ -3,6 +3,7 @@ package com.tachyonmusic.presentation.player
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -26,6 +27,7 @@ import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
+import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
@@ -346,26 +348,54 @@ fun PlayerScreen(
                 )
             }
 
-            items(subPlaybackItems) { playback ->
+            items(subPlaybackItems, key = { it.mediaId.toString() }) { playback ->
 
                 val artwork by playback.artwork.collectAsState()
                 val isArtworkLoading by playback.isArtworkLoading.collectAsState()
                 val isPlayable by playback.isPlayable.collectAsState()
 
-                HorizontalPlaybackView(
-                    playback,
-                    artwork ?: PlaceholderArtwork,
-                    isArtworkLoading,
-                    onClick = { if (isPlayable) viewModel.play(playback) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = Theme.padding.medium,
-                            end = Theme.padding.medium,
-                            bottom = Theme.padding.extraSmall
-                        )
-                        .isEnabled(isPlayable)
-                )
+                val content = @Composable {
+                    HorizontalPlaybackView(
+                        playback,
+                        artwork ?: PlaceholderArtwork,
+                        isArtworkLoading,
+                        onClick = { if (isPlayable) viewModel.play(playback) }
+                    )
+                }
+
+                val modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(
+                        start = Theme.padding.medium,
+                        end = Theme.padding.medium,
+                        bottom = Theme.padding.extraSmall
+                    )
+                    .isEnabled(isPlayable)
+
+
+                if (playbackType is PlaybackType.Playlist) {
+                    val updatedPlayback by rememberUpdatedState(playback)
+                    val dismissState = rememberDismissState {
+                        if (it == DismissValue.DismissedToStart) {
+                            viewModel.removeFromCurrentPlaylist(updatedPlayback)
+                            true
+                        } else false
+                    }
+
+                    SwipeDelete(
+                        dismissState,
+                        shape = Theme.shapes.medium,
+                        modifier = modifier
+                    ) {
+                        content()
+                    }
+
+                } else {
+                    Box(modifier = modifier) {
+                        content()
+                    }
+                }
+
             }
         }
     }

@@ -6,6 +6,7 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.util.copy
 
 class RemotePlaylistImpl(
     mediaId: MediaId,
@@ -15,6 +16,9 @@ class RemotePlaylistImpl(
 ) : AbstractPlaylist(mediaId, name, playbacks, currentPlaylistIndex) {
 
     override val playbackType = PlaybackType.Playlist.Remote()
+
+    override fun copy(): Playlist =
+        RemotePlaylistImpl(mediaId, name, _playbacks.copy(), currentPlaylistIndex)
 
     companion object {
         @JvmField

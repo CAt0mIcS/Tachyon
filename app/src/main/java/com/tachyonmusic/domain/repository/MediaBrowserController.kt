@@ -42,6 +42,7 @@ interface MediaBrowserController : DefaultLifecycleObserver,
      * Start playing specified playlist
      */
     fun playPlaylist(playlist: Playlist?)
+    fun updatePlaylistState(playlist: Playlist?)
 
     var repeatMode: RepeatMode?
     val repeatModeState: StateFlow<RepeatMode?>

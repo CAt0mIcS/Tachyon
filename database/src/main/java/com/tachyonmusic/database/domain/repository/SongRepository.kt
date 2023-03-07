@@ -21,7 +21,10 @@ interface SongRepository {
     suspend fun findByMediaId(mediaId: MediaId): SongEntity?
 
     suspend fun getSongEntities(): List<SongEntity>
+
+    suspend fun remove(mediaId: MediaId)
     suspend fun removeIf(pred: (SongEntity) -> Boolean)
+
     suspend fun addAll(songs: List<SongEntity>): Resource<Unit>
     suspend fun updateArtwork(song: SongEntity, artworkType: String, artworkUrl: String? = null)
     suspend fun getSongsWithArtworkTypes(vararg artworkTypes: String): List<SongEntity>

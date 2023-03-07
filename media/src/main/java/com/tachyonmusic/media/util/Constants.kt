@@ -26,6 +26,7 @@ internal val supportedCommands = MediaSession.ConnectionResult.accept(
         add(SetSortingParamsEvent.command)
 
         add(TimingDataUpdatedEvent.command)
+        add(CurrentPlaylistIndexChanged.command)
     }.build(),
     Player.Commands.Builder().apply {
         add(Player.COMMAND_PLAY_PAUSE)

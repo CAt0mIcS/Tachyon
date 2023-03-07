@@ -55,11 +55,15 @@ class RoomSongRepository(
 
     override suspend fun getSongEntities(): List<SongEntity> = dao.getSongs()
 
+    override suspend fun remove(mediaId: MediaId) {
+        dao.delete(mediaId)
+    }
+
     // TODO: Bad performance? Should be changed to have less db queries
     override suspend fun removeIf(pred: (SongEntity) -> Boolean) {
         getSongEntities().forEach {
             if (pred(it))
-                dao.delete(it)
+                dao.delete(it.mediaId)
         }
     }
 

@@ -16,7 +16,6 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.database.domain.model.DataEntity
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.service.MediaPlaybackService
@@ -111,6 +110,10 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         _playbackState.update { null }
         _associatedPlaylistState.update { playlist }
         browser?.dispatchMediaEvent(SetPlaybackEvent(playlist))
+    }
+
+    override fun updatePlaylistState(playlist: Playlist?) {
+        _associatedPlaylistState.update { playlist }
     }
 
     override var repeatMode: RepeatMode?
@@ -269,6 +272,13 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
                 _timingDataState.update {
                     val new = event.timingData ?: return@update null
                     TimingDataController(new.timingData, new.currentIndex)
+                }
+            }
+            is CurrentPlaylistIndexChanged -> {
+                _associatedPlaylistState.update {
+                    associatedPlaylistState.value?.apply {
+                        currentPlaylistIndex = event.idx
+                    }
                 }
             }
         }

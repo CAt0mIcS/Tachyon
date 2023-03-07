@@ -19,7 +19,15 @@ interface HistoryRepository {
 
     suspend fun getHistory(): List<SinglePlayback>
     suspend operator fun plusAssign(playback: SinglePlaybackEntity)
+
+    /**
+     * Removes elements containing [mediaId]. If it's a song's media id
+     * it will also remove any loops with that song
+     */
+    suspend fun removeHierarchical(mediaId: MediaId)
+
     suspend operator fun minusAssign(playback: SinglePlaybackEntity)
     suspend operator fun minusAssign(playbacks: List<MediaId>)
+
     suspend fun clear()
 }

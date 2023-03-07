@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.*
@@ -142,9 +143,7 @@ class PlayerViewModel @Inject constructor(
     private val associatedPlaylist = getMediaStates.associatedPlaylist()
 
     val playbackType = combine(_playback, associatedPlaylist) { playback, playlist ->
-        if (playlist != null)
-            PlaybackType.Playlist.Remote()
-        else PlaybackType.build(playback)
+        PlaybackType.build(playlist ?: playback)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlaybackType.Song.Local())
 
     val subPlaybackItems = combine(
@@ -174,7 +173,7 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun editPlaylist(i: Int, shouldAdd: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             if (shouldAdd)
                 savePlaybackToPlaylist(playback.value, i)
             else
@@ -185,6 +184,13 @@ class PlayerViewModel @Inject constructor(
     fun createPlaylist(name: String) {
         viewModelScope.launch(Dispatchers.IO) {
             createAndSaveNewPlaylist(name)
+        }
+    }
+
+    fun removeFromCurrentPlaylist(toRemove: SinglePlayback) {
+        viewModelScope.launch {
+            removePlaybackFromPlaylist(toRemove, associatedPlaylist.value)
+            playPlayback(associatedPlaylist.value)
         }
     }
 }

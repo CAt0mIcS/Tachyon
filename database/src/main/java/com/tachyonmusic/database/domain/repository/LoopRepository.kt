@@ -21,6 +21,8 @@ interface LoopRepository {
     suspend fun getLoopEntities(): List<LoopEntity>
     suspend fun add(loop: LoopEntity): Resource<Unit>
     suspend fun addAll(loops: List<LoopEntity>): Resource<Unit>
+
+    suspend fun remove(mediaId: MediaId)
     suspend fun removeIf(pred: (LoopEntity) -> Boolean)
 
     suspend fun findBySong(songTitle: String, songArtist: String, songDuration: Duration): LoopEntity?

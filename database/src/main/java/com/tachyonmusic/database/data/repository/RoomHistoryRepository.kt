@@ -54,6 +54,10 @@ class RoomHistoryRepository(
         dao.addHistory(HistoryEntity(playback.mediaId))
     }
 
+    override suspend fun removeHierarchical(mediaId: MediaId) {
+        dao.removeHistoryHierarchical(mediaId)
+    }
+
     override suspend fun minusAssign(playback: SinglePlaybackEntity) {
         dao.removeHistory(playback.mediaId)
     }
