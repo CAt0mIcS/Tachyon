@@ -7,11 +7,9 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.core.SortParameters
-import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
-import com.tachyonmusic.media.util.playback
+import com.tachyonmusic.domain.use_case.GetPlaylistForPlayback
 import com.tachyonmusic.util.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.withContext
 
 /**
@@ -73,9 +71,6 @@ class GetPlaybackChildren(
      * Uses the index of the next playing media item. Only works if playback is already started
      */
     private suspend fun nextItem() = runOnUiThread {
-        val next = browser.getMediaItemAt(browser.nextMediaItemIndex)?.mediaMetadata?.playback
-            ?: return@runOnUiThread null
-
-        listOf(next).setPlayableState(context)
+        listOf(browser.nextPlayback ?: return@runOnUiThread null).setPlayableState(context)
     }
 }

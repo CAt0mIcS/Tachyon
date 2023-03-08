@@ -4,12 +4,12 @@ import android.content.Context
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
-import com.tachyonmusic.data.repository.UriPermissionRepositoryImpl
+import com.tachyonmusic.permission.data.UriPermissionRepositoryImpl
 import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.UriPermissionRepository
+import com.tachyonmusic.permission.domain.UriPermissionRepository
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
@@ -21,10 +21,10 @@ import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.domain.ArtworkCodex
-import com.tachyonmusic.media.domain.use_case.GetIsInternetConnectionMetered
-import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
+import com.tachyonmusic.artwork.domain.ArtworkCodex
+import com.tachyonmusic.artwork.domain.GetIsInternetConnectionMetered
+import com.tachyonmusic.database.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.domain.use_case.GetPlaylistForPlayback
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -110,9 +110,9 @@ object AppUseCaseModule {
     fun provideGetOrLoadArtworkUseCase(
         songRepository: SongRepository,
         settingsRepository: SettingsRepository,
-        artworkCodex: ArtworkCodex,
+        artworkCodex: com.tachyonmusic.artwork.domain.ArtworkCodex,
         findPlaybackByMediaId: FindPlaybackByMediaId,
-        isNetworkConnectionMetered: GetIsInternetConnectionMetered,
+        isNetworkConnectionMetered: com.tachyonmusic.artwork.domain.GetIsInternetConnectionMetered,
         @ApplicationContext context: Context
     ) = GetOrLoadArtwork(
         songRepository,
@@ -296,7 +296,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideObserveUriPermissionsUseCase(repository: UriPermissionRepository) =
+    fun provideObserveUriPermissionsUseCase(repository: com.tachyonmusic.permission.domain.UriPermissionRepository) =
         OnUriPermissionsChanged(repository)
 
 }
@@ -317,5 +317,6 @@ object AppRepositoryModule {
 
     @Provides
     @Singleton
-    fun provideUriPermissionRepository(): UriPermissionRepository = UriPermissionRepositoryImpl()
+    fun provideUriPermissionRepository(): com.tachyonmusic.permission.domain.UriPermissionRepository =
+        com.tachyonmusic.permission.data.UriPermissionRepositoryImpl()
 }

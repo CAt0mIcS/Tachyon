@@ -129,24 +129,6 @@ data class TimingDataUpdatedEvent(
     }
 }
 
-data class CurrentPlaylistIndexChanged(
-    val idx: Int
-) : MediaSessionEvent {
-    override val command: SessionCommand
-        get() = Companion.command
-
-    override fun toBundle() = Bundle().apply {
-        putInt(MetadataKeys.Index, idx)
-    }
-
-    companion object {
-        fun fromBundle(bundle: Bundle) =
-            CurrentPlaylistIndexChanged(bundle.getInt(MetadataKeys.Index))
-
-        val command = SessionCommand("${actionPrefix}CURRENT_PLAYLIST_INDEX_CHANGED", Bundle.EMPTY)
-    }
-}
-
 
 internal fun MediaSession.dispatchMediaEvent(event: MediaSessionEvent) {
     broadcastCustomCommand(event.command, event.toBundle())

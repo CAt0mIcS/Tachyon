@@ -6,7 +6,8 @@ import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.database.domain.ArtworkType
+import com.tachyonmusic.core.ArtworkType
+import com.tachyonmusic.artwork.data.ArtworkLoaderImpl
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.testutils.assertEquals
@@ -31,7 +32,8 @@ internal class ArtworkLoaderImplTest {
     private val artworkFetcher: ArtworkFetcher = mockk()
     private val mediaId: MediaId = mockk(relaxed = true)
     private val metadataExtractor: SongMetadataExtractor = mockk()
-    private val artworkLoader = ArtworkLoaderImpl(artworkFetcher, log, metadataExtractor)
+    private val artworkLoader =
+        com.tachyonmusic.artwork.data.ArtworkLoaderImpl(artworkFetcher, log, metadataExtractor)
 
     @Test
     fun NO_ARTWORK_ReturnsCorrectResource() = runTest {

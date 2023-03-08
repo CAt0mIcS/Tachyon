@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
@@ -39,11 +40,14 @@ abstract class AbstractPlaylist(
     override val artwork = MutableStateFlow(current?.artwork?.value)
     override val isArtworkLoading = MutableStateFlow(false)
 
+    override var artworkType: String
+        get() = current?.artworkType ?: ArtworkType.NO_ARTWORK
+        set(value) {
+            current?.artworkType = value
+        }
+
     override val uri: Uri?
         get() = current?.uri
-
-    override val timingData: TimingDataController?
-        get() = current?.timingData
 
     abstract override val playbackType: PlaybackType.Playlist
 

@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.UriPermissionRepository
+import com.tachyonmusic.permission.domain.UriPermissionRepository
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.logger.domain.Logger
@@ -54,7 +54,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
     lateinit var writeSettings: WriteSettings
 
     @Inject
-    lateinit var uriPermissionRepository: UriPermissionRepository
+    lateinit var uriPermissionRepository: com.tachyonmusic.permission.domain.UriPermissionRepository
 
     private var composeSettings = mutableStateOf(ComposeSettings())
 

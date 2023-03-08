@@ -2,8 +2,8 @@ package com.tachyonmusic.domain.use_case.player
 
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.isNullOrEmpty
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
@@ -24,12 +24,10 @@ class CreateAndSaveNewLoop(
         name: String
     ) = withContext(Dispatchers.IO) {
         var isInvalid = false
-        var playback: Playback? = null
-        var timingData: TimingDataController? = null
+        var playback: SinglePlayback? = null
         runOnUiThread {
             isInvalid = isInvalidPlayback() || hasNoTimingData() || isInvalidTimingData()
-            playback = browser.playback
-            timingData = browser.timingData
+            playback = browser.currentPlayback.value
         }
         if (isInvalid)
             return@withContext Resource.Error(
@@ -37,7 +35,7 @@ class CreateAndSaveNewLoop(
                     R.string.cannot_create_loop,
                     name,
                     playback.toString(),
-                    timingData.toString()
+                    playback?.timingData.toString()
                 )
             )
 
@@ -57,7 +55,7 @@ class CreateAndSaveNewLoop(
             song.title,
             song.artist,
             song.duration,
-            timingData!!.timingData,
+            playback!!.timingData!!.timingData,
             currentTimingDataIndex = 0 // TODO
         )
 
@@ -68,14 +66,15 @@ class CreateAndSaveNewLoop(
         Resource.Success(loop)
     }
 
-    private fun isInvalidPlayback() = browser.playback == null
-    private fun hasNoTimingData() = browser.timingData?.timingData.isNullOrEmpty()
+    private fun isInvalidPlayback() = browser.currentPlayback.value == null
+    private fun hasNoTimingData() = browser.currentPlayback.value?.timingData.isNullOrEmpty()
 
     /**
      * Invalid if we only have one entry and it goes from the beginning to the end
      */
-    private fun isInvalidTimingData() = browser.timingData!!.timingData.all {
-        it.startTime == 0.ms && it.endTime == browser.playback?.duration
-    }
+    private fun isInvalidTimingData() =
+        browser.currentPlayback.value!!.timingData!!.timingData.all {
+            it.startTime == 0.ms && it.endTime == browser.currentPlayback.value?.duration
+        }
 
 }

@@ -10,7 +10,7 @@ class PauseResumePlayback(
     }
 
     operator fun invoke(action: Action) {
-        if (browser.playback == null)
+        if (browser.currentPlayback.value == null)
             return
 
         when (action) {

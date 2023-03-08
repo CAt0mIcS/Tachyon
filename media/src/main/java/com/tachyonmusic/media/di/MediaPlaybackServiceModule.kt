@@ -8,13 +8,15 @@ import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
+import com.tachyonmusic.database.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.data.ArtworkCodexImpl
-import com.tachyonmusic.media.data.ArtworkLoaderImpl
+import com.tachyonmusic.artwork.data.ArtworkCodexImpl
+import com.tachyonmusic.artwork.data.ArtworkLoaderImpl
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
-import com.tachyonmusic.media.domain.ArtworkCodex
-import com.tachyonmusic.media.domain.ArtworkLoader
+import com.tachyonmusic.artwork.domain.ArtworkCodex
+import com.tachyonmusic.artwork.domain.ArtworkLoader
+import com.tachyonmusic.artwork.domain.GetIsInternetConnectionMetered
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.*
 import dagger.Module
@@ -61,7 +63,7 @@ class MediaPlaybackUseCaseModule {
         settingsRepository: SettingsRepository,
         getOrLoadArtwork: GetOrLoadArtwork,
         @ApplicationContext context: Context
-    ) = GetPlaylistForPlayback(
+    ) = com.tachyonmusic.domain.use_case.GetPlaylistForPlayback(
         songRepository,
         loopRepository,
         settingsRepository,
@@ -96,7 +98,7 @@ class MediaPlaybackUseCaseModule {
     @Provides
     @Singleton
     fun provideGetIsInternetConnectionMetered(@ApplicationContext context: Context) =
-        GetIsInternetConnectionMetered(context)
+        com.tachyonmusic.artwork.domain.GetIsInternetConnectionMetered(context)
 }
 
 
@@ -114,12 +116,19 @@ class MediaPlaybackSingletonRepositoryModule {
         @ApplicationContext context: Context,
         log: Logger,
         metadataExtractor: SongMetadataExtractor
-    ): ArtworkLoader = ArtworkLoaderImpl(artworkFetcher, context, log, metadataExtractor)
+    ): com.tachyonmusic.artwork.domain.ArtworkLoader =
+        com.tachyonmusic.artwork.data.ArtworkLoaderImpl(
+            artworkFetcher,
+            context,
+            log,
+            metadataExtractor
+        )
 
     @Provides
     @Singleton
     fun provideArtworkCodex(
-        artworkLoader: ArtworkLoader,
+        artworkLoader: com.tachyonmusic.artwork.domain.ArtworkLoader,
         log: Logger
-    ): ArtworkCodex = ArtworkCodexImpl(artworkLoader, log)
+    ): com.tachyonmusic.artwork.domain.ArtworkCodex =
+        com.tachyonmusic.artwork.data.ArtworkCodexImpl(artworkLoader, log)
 }

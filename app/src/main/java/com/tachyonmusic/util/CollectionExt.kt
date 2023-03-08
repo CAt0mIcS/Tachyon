@@ -20,6 +20,3 @@ fun <E> Collection<E>.indexOfOrNull(element: E): Int? {
     val i = indexOf(element)
     return if (i == -1) null else i
 }
-
-fun List<SinglePlayback>.setPlayableState(context: Context) =
-    onEach { pb -> pb.isPlayable.update { pb.mediaId.uri.isPlayable(context) } }

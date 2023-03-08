@@ -52,17 +52,5 @@ class RemotePlaylistImpl(
                 playbacks,
                 currentPlaylistIndex
             )
-
-        fun build(
-            name: String,
-            playbacks: MutableList<SinglePlayback>,
-            currentPlaylistIndex: Int
-        ): Playlist =
-            RemotePlaylistImpl(
-                MediaId.ofRemotePlaylist(name),
-                name,
-                playbacks,
-                currentPlaylistIndex
-            )
     }
 }

@@ -9,7 +9,7 @@ import com.tachyonmusic.domain.use_case.OnUriPermissionsChanged
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.SetRepeatMode
-import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.database.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.media.util.setArtworkFromResource
 import com.tachyonmusic.util.setPlayableState
 import dagger.hilt.android.lifecycle.HiltViewModel

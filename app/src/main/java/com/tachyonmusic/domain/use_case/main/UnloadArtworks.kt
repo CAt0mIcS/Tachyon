@@ -1,6 +1,6 @@
 package com.tachyonmusic.domain.use_case.main
 
-import com.tachyonmusic.database.domain.ArtworkType
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.database.domain.repository.SongRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

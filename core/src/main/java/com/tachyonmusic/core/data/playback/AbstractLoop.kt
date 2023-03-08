@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
@@ -19,7 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 abstract class AbstractLoop(
     final override val mediaId: MediaId,
     final override val name: String,
-    final override var timingData: TimingDataController,
+    final override var timingData: TimingDataController?,
     final override val song: Song
 ) : Loop, AbstractPlayback() {
 
@@ -33,17 +34,21 @@ abstract class AbstractLoop(
     override val uri: Uri
         get() = song.uri
 
+    override var artworkType: String
+        get() = song.artworkType
+        set(value) {
+            song.artworkType = value
+        }
     abstract override val playbackType: PlaybackType.Loop
 
-    override val artwork: MutableStateFlow<Artwork?>
-        get() = song.artwork
+    override val artwork = song.artwork
     override val isArtworkLoading = song.isArtworkLoading
     override val isPlayable = song.isPlayable
 
 
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
         "mediaId" to mediaId.toString(),
-        "timingData" to timingData.timingData
+        "timingData" to timingData?.timingData
     )
 
     override fun toMediaItem() = MediaItem.Builder().apply {

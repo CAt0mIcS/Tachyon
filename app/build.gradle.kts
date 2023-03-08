@@ -94,7 +94,7 @@ dependencies {
 
     projectCore()
     projectMedia()
-    projectDatabase()
+    projectPlaybackLayerDatabase()
     projectUtil()
     projectLogger()
 

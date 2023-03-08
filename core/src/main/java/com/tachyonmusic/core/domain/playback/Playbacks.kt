@@ -17,21 +17,20 @@ interface Playback : Parcelable {
 
     val mediaId: MediaId
 
-    val timingData: TimingDataController?
-
     val uri: Uri?
 
     val artwork: MutableStateFlow<Artwork?>
     val isArtworkLoading: MutableStateFlow<Boolean>
+    var artworkType: String
 
     val playbackType: PlaybackType
 
     fun toMediaItem(): MediaItem
 
     fun toHashMap(): HashMap<String, Any?>
+    fun copy(): Playback
 
     override fun equals(other: Any?): Boolean
-
     override fun toString(): String
 
     val hasArtwork: Boolean
@@ -70,7 +69,7 @@ interface SinglePlayback : Playback {
      */
     val isPlayable: MutableStateFlow<Boolean>
 
-    override var timingData: TimingDataController
+    var timingData: TimingDataController?
 
     override val underlyingSong: Song
     get() = when(this) {
@@ -80,4 +79,6 @@ interface SinglePlayback : Playback {
     }
 
     override val uri: Uri
+
+    override fun copy(): SinglePlayback
 }

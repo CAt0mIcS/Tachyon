@@ -3,10 +3,13 @@ package com.tachyonmusic.core.data.playback
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.ext.toBoolean
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
 
@@ -23,6 +26,8 @@ class LocalSongImpl(
 
     override val playbackType = PlaybackType.Song.Local()
 
+    override fun copy(): Song = LocalSongImpl(uri, mediaId, title, artist, duration)
+
     constructor(parcel: Parcel) : this(
         parcel.readParcelable<Uri>(Uri::class.java.classLoader)!!,
         MediaId(parcel.readString()!!),
@@ -33,6 +38,7 @@ class LocalSongImpl(
         artwork.value = parcel.readParcelable(Artwork::class.java.classLoader)
         isArtworkLoading.value = parcel.readInt().toBoolean()
         isPlayable.value = parcel.readInt().toBoolean()
+        artworkType = parcel.readString()!!
     }
 
     companion object {

@@ -9,7 +9,7 @@ import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.main.NormalizeCurrentPosition
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.PlayRecentlyPlayed
-import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.database.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.media.util.setArtworkFromResource
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.normalize

@@ -6,7 +6,7 @@ interface Playlist : Playback {
 
     fun hasPlayback(playback: SinglePlayback) = playbacks.contains(playback)
 
-    fun copy(): Playlist
+    override fun copy(): Playlist
 
     val name: String
     val playbacks: List<SinglePlayback>

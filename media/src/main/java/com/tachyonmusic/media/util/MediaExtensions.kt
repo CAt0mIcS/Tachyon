@@ -33,7 +33,4 @@ val MediaMetadata.playback: SinglePlayback?
  ********** Helpers
  *************************************************************************/
 
-fun Uri?.isPlayable(context: Context) =
-    if (this == null) false else DocumentFile.fromTreeUri(context, this)!!.canRead()
-
 fun Collection<SinglePlayback>.toMediaItems() = map { it.toMediaItem() }

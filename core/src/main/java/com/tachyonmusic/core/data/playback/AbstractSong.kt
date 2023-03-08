@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
@@ -23,8 +24,9 @@ abstract class AbstractSong(
     final override val duration: Duration,
 ) : Song, AbstractPlayback() {
 
-    final override var timingData = TimingDataController(emptyList())
+    final override var timingData: TimingDataController? = TimingDataController(emptyList())
 
+    override var artworkType = ArtworkType.UNKNOWN
     abstract override val playbackType: PlaybackType.Song
 
     override val isPlayable = MutableStateFlow(false)
@@ -72,5 +74,6 @@ abstract class AbstractSong(
         parcel.writeParcelable(artwork.value, flags)
         parcel.writeInt(isArtworkLoading.value.toInt())
         parcel.writeInt(isPlayable.value.toInt())
+        parcel.writeString(artworkType)
     }
 }

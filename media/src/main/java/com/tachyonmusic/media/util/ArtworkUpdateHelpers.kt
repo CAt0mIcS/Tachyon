@@ -1,7 +1,7 @@
 package com.tachyonmusic.media.util
 
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.media.domain.use_case.UpdateInfo
+import com.tachyonmusic.database.domain.use_case.UpdateInfo
 import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.flow.update
 

@@ -11,7 +11,7 @@ import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.domain.use_case.library.SetSortParameters
 import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.media.core.sortedBy
-import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
+import com.tachyonmusic.database.domain.use_case.GetOrLoadArtwork
 import com.tachyonmusic.media.util.setArtworkFromResource
 import com.tachyonmusic.util.setPlayableState
 import dagger.hilt.android.lifecycle.HiltViewModel

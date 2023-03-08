@@ -5,16 +5,19 @@ import android.os.Parcelable
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Song
 
 class RemoteLoopImpl(
     mediaId: MediaId,
     name: String,
-    timingData: TimingDataController,
+    timingData: TimingDataController?,
     song: Song
 ) : AbstractLoop(mediaId, name, timingData, song) {
 
     override val playbackType = PlaybackType.Loop.Remote()
+
+    override fun copy(): Loop = RemoteLoopImpl(mediaId, name, timingData?.copy(), song.copy())
 
     companion object {
         @JvmField
