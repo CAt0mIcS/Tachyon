@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// TODO: Load artwork
 class ArtworkMapperRepositoryImpl(
     private val permissionMapperRepository: PermissionMapperRepository,
 
@@ -43,12 +42,20 @@ class ArtworkMapperRepositoryImpl(
             transformLoops(loopEntities, songs)
         }
 
-    override val playlistFlow = permissionMapperRepository.playlistFlow.map {
-        transformPlaylists(it)
+    override val playlistFlow = combine(
+        permissionMapperRepository.playlistFlow,
+        songFlow,
+        loopFlow
+    ) { playlists, songs, loops ->
+        transformPlaylists(playlists, songs, loops)
     }
 
-    override val historyFlow = permissionMapperRepository.historyFlow.map {
-        transformHistory(it)
+    override val historyFlow = combine(
+        permissionMapperRepository.historyFlow,
+        songFlow,
+        loopFlow
+    ) { history, songs, loops ->
+        transformHistory(history, songs, loops)
     }
 
     override suspend fun getSongs() = withContext(Dispatchers.IO) {
@@ -60,11 +67,11 @@ class ArtworkMapperRepositoryImpl(
     }
 
     override suspend fun getPlaylists() = withContext(Dispatchers.IO) {
-        transformPlaylists(permissionMapperRepository.getPlaylists())
+        transformPlaylists(permissionMapperRepository.getPlaylists(), getSongs(), getLoops())
     }
 
     override suspend fun getHistory() = withContext(Dispatchers.IO) {
-        transformHistory(permissionMapperRepository.getHistory())
+        transformHistory(permissionMapperRepository.getHistory(), getSongs(), getLoops())
     }
 
 
@@ -92,15 +99,25 @@ class ArtworkMapperRepositoryImpl(
         }
     }
 
-    private fun transformPlaylists(playlists: List<PlaylistPermissionEntity>) =
-        playlists.map { playlist ->
-            playlist.toPlaylist()
-        }
+    /**
+     * OPTIMIZE: Is it faster to always get [songs] and [loops] or is it faster
+     *  to just load the artwork twice. Same goes for [transformHistory]
+     */
+    private fun transformPlaylists(
+        playlists: List<PlaylistPermissionEntity>,
+        songs: List<Song>,
+        loops: List<Loop>
+    ) = playlists.map { playlist ->
+        playlist.toPlaylist(songs, loops)
+    }
 
-    private fun transformHistory(history: List<SinglePlaybackPermissionEntity>) =
-        history.map { historyItem ->
-            historyItem.toSinglePlayback()
-        }
+    private fun transformHistory(
+        history: List<SinglePlaybackPermissionEntity>,
+        songs: List<Song>,
+        loops: List<Loop>
+    ) = history.mapNotNull { historyItem ->
+        historyItem.getFrom(songs, loops)
+    }
 
 
     private suspend fun loadArtworkAsync(

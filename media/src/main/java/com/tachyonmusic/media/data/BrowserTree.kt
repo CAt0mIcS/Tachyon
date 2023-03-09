@@ -58,7 +58,10 @@ class BrowserTree(
                     val mediaId = MediaId.deserializeIfValid(parentId)
                     if (mediaId != null) {
                         val playback = playbackPermissionRepository.getPlaylists()
-                            .find { it.mediaId == mediaId }?.toPlaylist()
+                            .find { it.mediaId == mediaId }?.toPlaylist(
+                                playbackRepository.getSongs(),
+                                playbackRepository.getLoops()
+                            )
                         if (playback != null)
                             return@withContext constraintItems(
                                 playback.playbacks.toMediaItems(),
