@@ -23,24 +23,30 @@ class GetPlaylistForPlayback(
     private val playbackRepository: PlaybackRepository
 ) {
 
-    suspend operator fun invoke(playback: SinglePlayback?) = withContext(Dispatchers.IO) {
+    suspend operator fun invoke(
+        playback: SinglePlayback?,
+        sortParams: SortParameters = SortParameters()
+    ) = withContext(Dispatchers.IO) {
         if (playback == null)
             return@withContext null
 
         when (playback) {
-            is Song -> getSongPlaylist(playback)
-            is Loop -> getLoopPlaylist(playback)
+            is Song -> getSongPlaylist(playback, sortParams)
+            is Loop -> getLoopPlaylist(playback, sortParams)
             else -> null
         }
     }
 
 
-    private suspend fun getSongPlaylist(playback: SinglePlayback): Playlist {
+    private suspend fun getSongPlaylist(
+        playback: SinglePlayback,
+        sortParams: SortParameters
+    ): Playlist {
         val settings = settingsRepository.getSettings()
         val items = (if (settings.combineDifferentPlaybackTypes)
             playbackRepository.getSongs() + playbackRepository.getLoops()
         else
-            playbackRepository.getSongs()).sortedBy(SortParameters())
+            playbackRepository.getSongs()).sortedBy(sortParams)
 
         return RemotePlaylistImpl.build(
             MediaId.ofRemotePlaylist("com.tachyonmusic.SONGS:Combine:${settings.combineDifferentPlaybackTypes}"),
@@ -50,12 +56,15 @@ class GetPlaylistForPlayback(
     }
 
 
-    private suspend fun getLoopPlaylist(playback: SinglePlayback): Playlist {
+    private suspend fun getLoopPlaylist(
+        playback: SinglePlayback,
+        sortParams: SortParameters
+    ): Playlist {
         val settings = settingsRepository.getSettings()
         val items = (if (settings.combineDifferentPlaybackTypes)
             playbackRepository.getLoops() + playbackRepository.getSongs()
         else
-            playbackRepository.getLoops()).sortedBy(SortParameters())
+            playbackRepository.getLoops()).sortedBy(sortParams)
 
         return RemotePlaylistImpl.build(
             MediaId.ofRemotePlaylist("com.tachyonmusic.LOOPS:Combine:${settings.combineDifferentPlaybackTypes}"),

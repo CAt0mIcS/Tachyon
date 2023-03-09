@@ -22,7 +22,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    getMediaStates: GetMediaStates,
     playbackRepository: PlaybackRepository,
 
     private val addSongToExcludedSongs: AddSongToExcludedSongs,
@@ -71,6 +70,7 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun onSortTypeChanged(type: SortType) {
+        _sortParams.update { it.copy(type = type) }
     }
 
     fun onItemClicked(playback: Playback) {
