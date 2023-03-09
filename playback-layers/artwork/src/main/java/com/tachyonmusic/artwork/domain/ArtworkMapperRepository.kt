@@ -7,9 +7,16 @@ import com.tachyonmusic.core.domain.playback.Song
 import kotlinx.coroutines.flow.Flow
 
 interface ArtworkMapperRepository {
-    val songs: Flow<List<Song>>
-    val loops: Flow<List<Loop>>
-    val playlists: Flow<List<Playlist>>
+    val songFlow: Flow<List<Song>>
+    val loopFlow: Flow<List<Loop>>
+    val playlistFlow: Flow<List<Playlist>>
 
-    val history: Flow<List<SinglePlayback>>
+    val historyFlow: Flow<List<SinglePlayback>>
+
+
+    suspend fun getSongs(): List<Song>
+    suspend fun getLoops(): List<Loop>
+    suspend fun getPlaylists(): List<Playlist>
+
+    suspend fun getHistory(): List<SinglePlayback>
 }

@@ -56,9 +56,13 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     override fun onCreate() {
         super.onCreate()
 
-        settingsRepository.observe().onEach {
-            switchPlayer(exoPlayer, buildExoPlayer(!it.ignoreAudioFocus))
-        }.launchIn(ioScope)
+        runBlocking {
+            exoPlayer = buildExoPlayer(!settingsRepository.getSettings().ignoreAudioFocus)
+        }
+
+//        settingsRepository.observe().onEach {
+//            switchPlayer(exoPlayer, buildExoPlayer(!it.ignoreAudioFocus))
+//        }.launchIn(ioScope)
 
         setMediaNotificationProvider(MediaNotificationProvider(this))
 
@@ -78,7 +82,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         val currentIndex = oldPlayer.currentMediaItemIndex
         val playWhenReady = oldPlayer.playWhenReady
 
-        if(items.isNotEmpty()) {
+        if (items.isNotEmpty()) {
             newPlayer.setMediaItems(items)
             newPlayer.seekTo(currentIndex, pos)
             newPlayer.playWhenReady = playWhenReady

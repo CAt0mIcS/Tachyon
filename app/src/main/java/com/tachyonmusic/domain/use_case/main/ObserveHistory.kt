@@ -1,13 +1,9 @@
 package com.tachyonmusic.domain.use_case.main
 
-import android.content.Context
-import com.tachyonmusic.database.domain.repository.HistoryRepository
-import com.tachyonmusic.util.setPlayableState
-import kotlinx.coroutines.flow.map
+import com.tachyonmusic.playback_layers.PlaybackRepository
 
 class ObserveHistory(
-    private val historyRepository: HistoryRepository,
-    private val context: Context
+    private val playbackRepository: PlaybackRepository
 ) {
-    operator fun invoke() = historyRepository.observe().map { it.setPlayableState(context) }
+    operator fun invoke() = playbackRepository.historyFlow
 }

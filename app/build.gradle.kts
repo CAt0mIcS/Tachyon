@@ -94,7 +94,10 @@ dependencies {
 
     projectCore()
     projectMedia()
+    projectPlaybackLayers()
     projectPlaybackLayerDatabase()
+    projectPlaybackLayerPermission()
+    projectPlaybackLayerArtwork()
     projectUtil()
     projectLogger()
 

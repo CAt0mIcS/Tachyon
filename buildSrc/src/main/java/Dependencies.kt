@@ -225,6 +225,10 @@ fun DependencyHandler.projectUtil() {
     implementation(project(":util"))
 }
 
+fun DependencyHandler.projectPlaybackLayers() {
+    implementation(project(":playback-layers"))
+}
+
 fun DependencyHandler.projectPlaybackLayerDatabase() {
     implementation(project(":playback-layers:database"))
 }

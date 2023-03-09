@@ -32,7 +32,7 @@ interface MediaBrowserController : DefaultLifecycleObserver,
 
     val nextPlayback: SinglePlayback?
 
-    fun prepare()
+    suspend fun prepare()
     fun play()
     fun pause()
 

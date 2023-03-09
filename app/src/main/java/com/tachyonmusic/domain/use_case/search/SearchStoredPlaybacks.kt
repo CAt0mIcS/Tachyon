@@ -1,6 +1,7 @@
 package com.tachyonmusic.domain.use_case.search
 
 import com.tachyonmusic.app.R
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
@@ -31,13 +32,14 @@ class SearchStoredPlaybacks(
         }
 
         // TODO: Optimize
-        val playbacks =
-            songRepository.getSongs() + loopRepository.getLoops() + playlistRepository.getPlaylists()
+        val playbackNames =
+            (songRepository.getSongs() + loopRepository.getLoops()).map { it.title } + playlistRepository.getPlaylists()
+                .map { it.mediaId.source.replace(PlaybackType.Playlist.Remote().toString(), "") }
 
         // TODO: Better string searches?
-        for (playback in playbacks) {
-            val coefficient = diceCoefficient(playback.title, query)
-            emit(Resource.Success(playback to 1f - coefficient))
+        for (playbackName in playbackNames) {
+            val coefficient = diceCoefficient(playbackName, query)
+            emit(Resource.Success(playbackName to 1f - coefficient))
         }
     }
 }

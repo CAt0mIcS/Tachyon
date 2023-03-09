@@ -1,118 +1,66 @@
 package com.tachyonmusic.domain.use_case
 
-import android.content.Context
-import com.tachyonmusic.core.domain.playback.*
-import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.core.data.playback.RemotePlaylistImpl
+import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.repository.SettingsRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.util.toLoop
-import com.tachyonmusic.database.util.toSong
-import com.tachyonmusic.media.R
 import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.media.core.sortedBy
-import com.tachyonmusic.database.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.media.util.isPlayable
-import com.tachyonmusic.media.util.setArtworkFromResource
-import com.tachyonmusic.media.util.toMediaItems
-import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.UiText
+import com.tachyonmusic.playback_layers.PlaybackRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 
+/**
+ * OPTIMIZE: Only load artwork and isPlayable state if required
+ * OPTIMIZE: Only rebuild entire playlist if some part of the items changes. E.g. if a loop is added.
+ *  And not every time [invoke] is called
+ */
 class GetPlaylistForPlayback(
-    private val songRepository: SongRepository,
-    private val loopRepository: LoopRepository,
     private val settingsRepository: SettingsRepository,
-    private val getOrLoadArtwork: GetOrLoadArtwork,
-    private val context: Context
+    private val playbackRepository: PlaybackRepository
 ) {
 
-    suspend operator fun invoke(
-        playback: Playback?,
-        sortParams: SortParameters,
-    ): Resource<Playlist> = withContext(Dispatchers.IO) {
+    suspend operator fun invoke(playback: SinglePlayback?) = withContext(Dispatchers.IO) {
         if (playback == null)
-            return@withContext Resource.Error(UiText.StringResource(R.string.invalid_playback))
-
-        var initialWindowIndex: Int? = null
-        var playbackItems: List<SinglePlayback>? = null
-        val combinePlaybackTypes = settingsRepository.getSettings().combineDifferentPlaybackTypes
+            return@withContext null
 
         when (playback) {
-            is Song -> {
-                val songEntities = songEntities(sortParams)
-                val playbacks = if (combinePlaybackTypes)
-                    songEntities.map { it.toSong() } + loops(sortParams)
-                else
-                    songEntities.map { it.toSong() }
-
-                getOrLoadArtwork(songEntities).onEach { res ->
-                    playbacks.setArtworkFromResource(res)
-                }.collect()
-
-                initialWindowIndex = playbacks.indexOf(playback)
-                playbackItems = playbacks
-            }
-
-            is Loop -> {
-                val loopEntities = loopEntities(sortParams)
-                val songEntities = songEntities(sortParams)
-                val playbacks = if (combinePlaybackTypes)
-                    loopEntities.map { it.toLoop() } + songEntities.map { it.toSong() }
-                else
-                    loopEntities.map { it.toLoop() }
-
-                val songsOfLoops = loopEntities.map { loop ->
-                    songEntities.find { loop.mediaId.underlyingMediaId == it.mediaId }!!
-                } + if (combinePlaybackTypes) songEntities else emptyList()
-
-                getOrLoadArtwork(songsOfLoops).onEach { res ->
-                    playbacks.setArtworkFromResource(res)
-                }.collect()
-
-                initialWindowIndex = playbacks.indexOf(playback)
-                mediaItems = playbacks.toMediaItems()
-                playbackItems = playbacks
-            }
-
-            is Playlist -> {
-                initialWindowIndex = playback.currentPlaylistIndex
-
-                // TODO: What if it.underlying song is null? Warning? Error?
-                val validPlaybacks = playback.playbacks.filter {
-                    it.mediaId.uri.isPlayable(context)
-                }
-
-                getOrLoadArtwork(validPlaybacks.map { it.underlyingSong }).onEach { res ->
-                    validPlaybacks.setArtworkFromResource(res)
-                }.collect()
-
-                mediaItems = validPlaybacks.toMediaItems()
-                playbackItems = validPlaybacks
-            }
+            is Song -> getSongPlaylist(playback)
+            is Loop -> getLoopPlaylist(playback)
+            else -> null
         }
-
-        if (mediaItems == null || initialWindowIndex == null || playbackItems == null)
-            return@withContext Resource.Error(UiText.StringResource(R.string.invalid_arguments))
-
-        Resource.Success(ActivePlaylist(mediaItems, playbackItems, initialWindowIndex))
     }
 
 
-    private suspend fun songEntities(sortParams: SortParameters) =
-        songRepository.getSongEntities().filter {
-            it.mediaId.uri.isPlayable(context)
-        }.sortedBy(sortParams)
+    private suspend fun getSongPlaylist(playback: SinglePlayback): Playlist {
+        val settings = settingsRepository.getSettings()
+        val items = (if (settings.combineDifferentPlaybackTypes)
+            playbackRepository.getSongs() + playbackRepository.getLoops()
+        else
+            playbackRepository.getSongs()).sortedBy(SortParameters())
+
+        return RemotePlaylistImpl.build(
+            MediaId.ofRemotePlaylist("com.tachyonmusic.SONGS:Combine:${settings.combineDifferentPlaybackTypes}"),
+            items.toMutableList(),
+            items.indexOf(playback)
+        )
+    }
 
 
-    private suspend fun loopEntities(sortParams: SortParameters) =
-        loopRepository.getLoopEntities().filter {
-            it.mediaId.uri.isPlayable(context)
-        }.sortedBy(sortParams)
+    private suspend fun getLoopPlaylist(playback: SinglePlayback): Playlist {
+        val settings = settingsRepository.getSettings()
+        val items = (if (settings.combineDifferentPlaybackTypes)
+            playbackRepository.getLoops() + playbackRepository.getSongs()
+        else
+            playbackRepository.getLoops()).sortedBy(SortParameters())
 
-    private suspend fun loops(sortParams: SortParameters) = loopRepository.getLoops().filter {
-        it.mediaId.uri.isPlayable(context)
-    }.sortedBy(sortParams)
+        return RemotePlaylistImpl.build(
+            MediaId.ofRemotePlaylist("com.tachyonmusic.LOOPS:Combine:${settings.combineDifferentPlaybackTypes}"),
+            items.toMutableList(),
+            items.indexOf(playback)
+        )
+    }
 }

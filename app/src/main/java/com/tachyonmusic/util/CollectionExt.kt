@@ -1,10 +1,5 @@
 package com.tachyonmusic.util
 
-import android.content.Context
-import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.media.util.isPlayable
-import kotlinx.coroutines.flow.update
-
 fun <T> MutableList<T>.removeFirst(predicate: (T) -> Boolean): Boolean {
     for (i in 0 until size) {
         if (predicate(this[i])) {

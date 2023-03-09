@@ -8,9 +8,16 @@ import kotlinx.coroutines.flow.Flow
 
 interface PermissionMapperRepository {
 
-    val songs: Flow<List<SongPermissionEntity>>
-    val loops: Flow<List<LoopPermissionEntity>>
-    val playlists: Flow<List<PlaylistPermissionEntity>>
+    val songFlow: Flow<List<SongPermissionEntity>>
+    val loopFlow: Flow<List<LoopPermissionEntity>>
+    val playlistFlow: Flow<List<PlaylistPermissionEntity>>
 
-    val history: Flow<List<SinglePlaybackPermissionEntity>>
+    val historyFlow: Flow<List<SinglePlaybackPermissionEntity>>
+
+
+    suspend fun getSongs(): List<SongPermissionEntity>
+    suspend fun getLoops(): List<LoopPermissionEntity>
+    suspend fun getPlaylists(): List<PlaylistPermissionEntity>
+
+    suspend fun getHistory(): List<SinglePlaybackPermissionEntity>
 }

@@ -27,6 +27,10 @@ class AppModule {
 
     @Provides
     @Singleton
+    fun provideArtworkFetcher() = ArtworkFetcher()
+
+    @Provides
+    @Singleton
     fun provideArtworkLoader(
         artworkFetcher: ArtworkFetcher,
         @ApplicationContext context: Context,

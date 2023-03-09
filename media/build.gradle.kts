@@ -57,6 +57,9 @@ dependencies {
 
     projectCore()
     projectPlaybackLayerDatabase()
+    projectPlaybackLayers()
+    projectPlaybackLayerPermission()
+    projectPlaybackLayerArtwork()
     projectUtil()
     projectLogger()
     projectArtworkFetcher()

@@ -2,6 +2,7 @@ package com.tachyonmusic.data.repository
 
 import android.app.Activity
 import android.content.ComponentName
+import android.content.Context
 import android.os.Bundle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -18,7 +19,10 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.media.util.*
+import com.tachyonmusic.permission.isPlayable
 import com.tachyonmusic.util.*
+import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +30,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 
-class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Player.Listener,
+class MediaPlaybackServiceMediaBrowserController(
+    private val context: Context
+) : MediaBrowserController, Player.Listener,
     MediaBrowser.Listener, IListenable<MediaBrowserController.EventListener> by Listenable() {
 
     private var browser: MediaBrowser? = null
@@ -79,7 +85,9 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
         get() = browser?.currentPosition?.ms
 
     override val canPrepare: Boolean
-        get() = browser?.isConnected == true && browser?.playbackState == Player.STATE_IDLE
+        get() = browser?.isConnected == true
+                && browser?.playbackState == Player.STATE_IDLE
+                && (browser?.mediaItemCount ?: -1) > 0
 
     override val nextPlayback: SinglePlayback?
         get() {
@@ -89,11 +97,13 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
             return browser?.getMediaItemAt(idx)?.mediaMetadata?.playback
         }
 
-    override fun prepare() {
+    private var prepareJob: CompletableJob? = null
+    override suspend fun prepare() {
         assert(currentPlaylist.value != null)
-        assert(currentPlayback.value != null)
 
+        prepareJob = Job()
         browser?.prepare()
+        prepareJob?.join()
     }
 
     override fun play() {
@@ -118,7 +128,18 @@ class MediaPlaybackServiceMediaBrowserController : MediaBrowserController, Playe
 
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        _currentPlayback.update { mediaItem?.mediaMetadata?.playback }
+        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
+            _currentPlayback.update {
+                mediaItem?.mediaMetadata?.playback?.apply {
+                    isPlayable.update { mediaId.uri?.isPlayable(context) ?: false }
+                }
+            }
+    }
+
+    override fun onPlaybackStateChanged(playbackState: Int) {
+        if (playbackState == Player.STATE_READY) {
+            prepareJob?.complete()
+        }
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {

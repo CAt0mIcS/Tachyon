@@ -4,13 +4,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
-import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.isNullOrEmpty
 import com.tachyonmusic.domain.use_case.GetMediaStates
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
-import com.tachyonmusic.domain.use_case.player.SetNewTimingData
 import com.tachyonmusic.presentation.util.update
-import com.tachyonmusic.util.*
+import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -20,7 +20,6 @@ import javax.inject.Inject
 @HiltViewModel
 class LoopEditorViewModel @Inject constructor(
     getMediaStates: GetMediaStates,
-    private val setBrowserTimingData: SetNewTimingData,
     private val createAndSaveNewLoop: CreateAndSaveNewLoop,
 ) : ViewModel() {
     private val _loopError = MutableStateFlow<UiText?>(null)
@@ -38,15 +37,15 @@ class LoopEditorViewModel @Inject constructor(
     val currentIndex = _currentIndex.asStateFlow()
 
     init {
-        combine(getMediaStates.timingData(), duration) { timingData, duration ->
-            val newTimingData = if (timingData.isNullOrEmpty())
-                listOf(TimingData(0.ms, duration))
-            else
-                timingData.timingData
-
-            _timingData.update { newTimingData }
-            _currentIndex.update { timingData?.currentIndex ?: 0 }
-        }.launchIn(viewModelScope)
+//        combine(getMediaStates.timingData(), duration) { timingData, duration ->
+//            val newTimingData = if (timingData.isNullOrEmpty())
+//                listOf(TimingData(0.ms, duration))
+//            else
+//                timingData.timingData
+//
+//            _timingData.update { newTimingData }
+//            _currentIndex.update { timingData?.currentIndex ?: 0 }
+//        }.launchIn(viewModelScope)
     }
 
     fun updateTimingData(i: Int, start: Duration, end: Duration) {
@@ -58,29 +57,29 @@ class LoopEditorViewModel @Inject constructor(
     }
 
     fun setNewTimingData() {
-        setBrowserTimingData(TimingDataController(timingData.toList(), currentIndex.value))
+//        setBrowserTimingData(TimingDataController(timingData.toList(), currentIndex.value))
     }
 
     fun addNewTimingData(i: Int) {
-        setBrowserTimingData(
-            TimingDataController(
-                _timingData.apply {
-                    add(i, TimingData(0.ms, duration.value))
-                }.toList(),
-                currentIndex.value
-            )
-        )
+//        setBrowserTimingData(
+//            TimingDataController(
+//                _timingData.apply {
+//                    add(i, TimingData(0.ms, duration.value))
+//                }.toList(),
+//                currentIndex.value
+//            )
+//        )
     }
 
     fun removeTimingData(i: Int) {
-        setBrowserTimingData(
-            TimingDataController(
-                _timingData.apply {
-                    removeAt(i)
-                }.toList(),
-                currentIndex.value
-            )
-        )
+//        setBrowserTimingData(
+//            TimingDataController(
+//                _timingData.apply {
+//                    removeAt(i)
+//                }.toList(),
+//                currentIndex.value
+//            )
+//        )
     }
 
     fun saveNewLoop(name: String) {

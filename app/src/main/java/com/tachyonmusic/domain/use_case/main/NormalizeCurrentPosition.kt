@@ -5,6 +5,8 @@ import com.tachyonmusic.util.normalize
 
 class NormalizeCurrentPosition(private val browser: MediaBrowserController) {
     operator fun invoke(): Float? {
-        return browser.currentPosition?.normalize(browser.duration ?: return null)
+        return browser.currentPosition?.normalize(
+            browser.currentPlayback.value?.duration ?: return null
+        )
     }
 }

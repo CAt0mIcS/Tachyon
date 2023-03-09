@@ -26,7 +26,13 @@ class LocalSongImpl(
 
     override val playbackType = PlaybackType.Song.Local()
 
-    override fun copy(): Song = LocalSongImpl(uri, mediaId, title, artist, duration)
+    override fun copy(): Song = LocalSongImpl(uri, mediaId, title, artist, duration).let {
+        it.artwork.value = artwork.value
+        it.isArtworkLoading.value = isArtworkLoading.value
+        it.isPlayable.value = isPlayable.value
+        it.artworkType = artworkType
+        it
+    }
 
     constructor(parcel: Parcel) : this(
         parcel.readParcelable<Uri>(Uri::class.java.classLoader)!!,

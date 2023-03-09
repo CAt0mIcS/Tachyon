@@ -4,12 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.tachyonmusic.playback_layers"
-    compileSdk = 33
+    compileSdk = Version.COMPILE_SDK
 
     defaultConfig {
-        minSdk = 21
-        targetSdk = 33
+        minSdk = Version.MIN_SDK
+        targetSdk = Version.TARGET_SDK
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -17,28 +16,26 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = Version.JAVA
+        targetCompatibility = Version.JAVA
     }
+
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
+    namespace = "com.tachyonmusic.playback_layers"
 }
 
 dependencies {
-
-    implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("com.google.android.material:material:1.5.0")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    projectPlaybackLayerArtwork()
 }

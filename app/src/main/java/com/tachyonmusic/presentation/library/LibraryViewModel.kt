@@ -1,21 +1,18 @@
 package com.tachyonmusic.presentation.library
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.domain.use_case.*
+import com.tachyonmusic.domain.use_case.DeletePlayback
+import com.tachyonmusic.domain.use_case.GetMediaStates
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
-import com.tachyonmusic.domain.use_case.library.SetSortParameters
+import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.media.core.SortType
 import com.tachyonmusic.media.core.sortedBy
-import com.tachyonmusic.database.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.media.util.setArtworkFromResource
-import com.tachyonmusic.util.setPlayableState
+import com.tachyonmusic.playback_layers.PlaybackRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -26,40 +23,27 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     getMediaStates: GetMediaStates,
-    observeSongs: ObserveSongs,
-    onUriPermissionsChanged: OnUriPermissionsChanged,
-    observeLoops: ObserveLoops,
-    observePlaylists: ObservePlaylists,
-    private val getOrLoadArtwork: GetOrLoadArtwork,
-    private val setSortParameters: SetSortParameters,
-    private val playPlayback: PlayPlayback,
+    playbackRepository: PlaybackRepository,
 
     private val addSongToExcludedSongs: AddSongToExcludedSongs,
     private val deletePlayback: DeletePlayback,
-
-    @ApplicationContext
-    context: Context
 ) : ViewModel() {
 
-    val sortParams = getMediaStates.sortParameters()
+    private val _sortParams = MutableStateFlow(SortParameters())
+    val sortParams = _sortParams.asStateFlow()
 
-    private var songs = combine(sortParams, observeSongs()) { sort, songs ->
-        val newSongs = songs.sortedBy(sort)
-        loadArtworkAsync(newSongs)
-        newSongs
+    private var songs = combine(sortParams, playbackRepository.songFlow) { sort, songs ->
+        songs.sortedBy(sort)
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
-    private var loops = combine(sortParams, observeLoops()) { sort, loops ->
-        val newLoops = loops.sortedBy(sort)
-        loadArtworkAsync(newLoops)
-        newLoops
+    private var loops = combine(sortParams, playbackRepository.loopFlow) { sort, loops ->
+        loops.sortedBy(sort)
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
-    private var playlists = combine(sortParams, observePlaylists()) { sort, playlists ->
-        val newPlaylists = playlists.sortedBy(sort)
-        loadArtworkAsync(newPlaylists)
-        newPlaylists
-    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
+    private var playlists =
+        combine(sortParams, playbackRepository.playlistFlow) { sort, playlists ->
+            playlists.sortedBy(sort)
+        }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     private var _filterType = MutableStateFlow<PlaybackType>(PlaybackType.Song.Local())
     val filterType = _filterType.asStateFlow()
@@ -72,17 +56,6 @@ class LibraryViewModel @Inject constructor(
                 is PlaybackType.Playlist -> playlists
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
-
-
-    init {
-        onUriPermissionsChanged().onEach {
-            songs.value.setPlayableState(context)
-            loadArtworkAsync(songs.value)
-
-            loops.value.setPlayableState(context)
-            loadArtworkAsync(loops.value)
-        }.launchIn(viewModelScope)
-    }
 
 
     fun onFilterSongs() {
@@ -98,28 +71,17 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun onSortTypeChanged(type: SortType) {
-        setSortParameters(sortParams.value.copy(type = type))
     }
 
     fun onItemClicked(playback: Playback) {
-        playPlayback(playback)
     }
 
     fun excludePlayback(playback: Playback) {
         viewModelScope.launch {
-            if(playback is Song)
+            if (playback is Song)
                 addSongToExcludedSongs(playback)
             else
                 deletePlayback(playback)
-        }
-    }
-
-
-    private suspend fun loadArtworkAsync(playbacks: List<Playback>) {
-        viewModelScope.launch(Dispatchers.IO) {
-            getOrLoadArtwork(playbacks.mapNotNull { it.underlyingSong }).onEach { res ->
-                playbacks.setArtworkFromResource(res)
-            }.collect()
         }
     }
 }

@@ -2,6 +2,7 @@ package com.tachyonmusic.domain.use_case.library
 
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.repository.*
+import com.tachyonmusic.playback_layers.PlaybackRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -10,6 +11,7 @@ class AddSongToExcludedSongs(
     private val songRepository: SongRepository,
     private val historyRepository: HistoryRepository,
     private val loopRepository: LoopRepository,
+    private val playbackRepository: PlaybackRepository,
     private val playlistRepository: PlaylistRepository
 ) {
     suspend operator fun invoke(song: Song) = withContext(Dispatchers.IO) {
@@ -20,7 +22,7 @@ class AddSongToExcludedSongs(
             it.mediaId.underlyingMediaId == song.mediaId
         }
 
-        val playlists = playlistRepository.getPlaylists()
+        val playlists = playbackRepository.getPlaylists()
         for (i in playlists.indices) {
             playlists[i].apply {
                 if (hasPlayback(song)) {

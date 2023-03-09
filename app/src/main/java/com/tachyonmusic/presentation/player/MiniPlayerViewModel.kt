@@ -3,19 +3,19 @@ package com.tachyonmusic.presentation.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.use_case.GetHistory
 import com.tachyonmusic.domain.use_case.GetMediaStates
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.main.NormalizeCurrentPosition
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.PlayRecentlyPlayed
-import com.tachyonmusic.database.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.media.util.setArtworkFromResource
+import com.tachyonmusic.playback_layers.PlaybackRepository
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.normalize
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
@@ -23,27 +23,19 @@ import javax.inject.Inject
 @HiltViewModel
 class MiniPlayerViewModel @Inject constructor(
     getMediaStates: GetMediaStates,
-    private val getHistory: GetHistory,
+    private val playbackRepository: PlaybackRepository,
     private val normalizeCurrentPosition: NormalizeCurrentPosition,
-    private val getOrLoadArtwork: GetOrLoadArtwork,
     private val getRecentlyPlayed: GetRecentlyPlayed,
     private val pauseResumePlayback: PauseResumePlayback,
     private val playRecentlyPlayed: PlayRecentlyPlayed,
 ) : ViewModel() {
 
     val playback = getMediaStates.playback().map {
-        val pb = it ?: getHistory().find { history -> history.isPlayable.value }
+        val pb = it ?: playbackRepository.getHistory().find { history -> history.isPlayable.value }
         if (pb?.isPlayable?.value == true) pb else null
-    }.onEach { singlePb ->
-        if (singlePb == null)
-            return@onEach
-
-        getOrLoadArtwork(singlePb.underlyingSong).onEach { res ->
-            singlePb.setArtworkFromResource(res)
-        }.collect()
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Lazily, null)
 
-    val isPlaying = getMediaStates.playWhenReady()
+    val isPlaying = getMediaStates.isPlaying()
 
     var audioUpdateInterval: Duration = SettingsEntity().audioUpdateInterval
         private set

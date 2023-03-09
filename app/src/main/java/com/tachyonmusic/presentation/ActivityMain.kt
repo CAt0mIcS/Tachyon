@@ -54,7 +54,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
     lateinit var writeSettings: WriteSettings
 
     @Inject
-    lateinit var uriPermissionRepository: com.tachyonmusic.permission.domain.UriPermissionRepository
+    lateinit var uriPermissionRepository: UriPermissionRepository
 
     private var composeSettings = mutableStateOf(ComposeSettings())
 

@@ -12,7 +12,7 @@ fun Playback.toEntity(): PlaybackEntity = when (this) {
     else -> TODO("Invalid playback type ${this::class.java.name}")
 }
 
-fun SinglePlayback.toEntity(): SinglePlaybackEntity = when(this) {
+fun SinglePlayback.toEntity(): SinglePlaybackEntity = when (this) {
     is Song -> toEntity()
     is Loop -> toEntity()
     else -> TODO("Invalid SinglePlayback type ${this::class.java.name}")
@@ -38,8 +38,8 @@ fun Loop.toEntity(): LoopEntity {
         title,
         artist,
         duration,
-        timingData.timingData,
-        timingData.currentIndex,
+        timingData?.timingData ?: emptyList(),
+        timingData?.currentIndex ?: 0,
     )
 }
 
