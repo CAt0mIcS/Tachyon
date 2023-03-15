@@ -196,8 +196,9 @@ object AppUseCaseModule {
     @Singleton
     fun provideGetPlaylistForPlaybackUseCase(
         settingsRepository: SettingsRepository,
-        playbackRepository: PlaybackRepository
-    ) = GetPlaylistForPlayback(settingsRepository, playbackRepository)
+        playbackRepository: PlaybackRepository,
+        artworkCodex: ArtworkCodex
+    ) = GetPlaylistForPlayback(settingsRepository, playbackRepository, artworkCodex)
 
     @Provides
     @Singleton

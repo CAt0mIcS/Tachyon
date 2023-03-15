@@ -1,5 +1,6 @@
 package com.tachyonmusic.domain.use_case
 
+import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.core.data.playback.RemotePlaylistImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Loop
@@ -20,7 +21,8 @@ import kotlinx.coroutines.withContext
  */
 class GetPlaylistForPlayback(
     private val settingsRepository: SettingsRepository,
-    private val playbackRepository: PlaybackRepository
+    private val playbackRepository: PlaybackRepository,
+    private val artworkCodex: ArtworkCodex
 ) {
 
     suspend operator fun invoke(
@@ -47,6 +49,10 @@ class GetPlaylistForPlayback(
             playbackRepository.getSongs() + playbackRepository.getLoops()
         else
             playbackRepository.getSongs()).sortedBy(sortParams)
+
+        items.forEach {
+            artworkCodex.await(it.mediaId.underlyingMediaId ?: it.mediaId)
+        }
 
         return RemotePlaylistImpl.build(
             MediaId.ofRemotePlaylist("com.tachyonmusic.SONGS:Combine:${settings.combineDifferentPlaybackTypes}"),

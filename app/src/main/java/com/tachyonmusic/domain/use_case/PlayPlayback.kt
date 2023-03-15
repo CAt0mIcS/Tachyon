@@ -19,16 +19,12 @@ class PlayPlayback(
     ) = runOnUiThread {
         when (playback) {
             is SinglePlayback -> {
-                if (browser.canPrepare) {
-                    log.info("Browser can be prepared. Seeking to playback and preparing...")
-                    browser.prepare()
-                    browser.seekTo(playback.mediaId)
-                    browser.play()
-                } else if (playback == browser.currentPlayback.value && !browser.canPrepare) {
+                if (playback == browser.currentPlayback.value && !browser.canPrepare) {
                     log.info("Current playback is already set and browser can't prepare anymore, unpausing playback...")
                     browser.play()
                 } else {
-                    log.info("Unable to prepare and playback out of date. Setting a new playlist and preparing the player...")
+                    log.info("Playback out of date. Setting a new playlist and preparing the player...")
+                    // TODO: Optimize
                     val playlist =
                         getPlaylistForPlayback(playback, sortParams) ?: return@runOnUiThread
                     browser.setPlaylist(playlist)

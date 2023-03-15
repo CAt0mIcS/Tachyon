@@ -6,7 +6,6 @@ import com.tachyonmusic.database.data.data_source.*
 import com.tachyonmusic.database.data.data_source.room.RoomDatabase
 import com.tachyonmusic.database.data.repository.*
 import com.tachyonmusic.database.domain.repository.*
-import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -72,11 +71,4 @@ object DatabaseRepositoryModule {
 @InstallIn(SingletonComponent::class)
 object DatabaseUseCaseModule {
 
-    @Provides
-    @Singleton
-    fun provideFindPlaybackByMediaIdUseCase(
-        songRepository: SongRepository,
-        loopRepository: LoopRepository,
-        playlistRepository: PlaylistRepository
-    ) = FindPlaybackByMediaId(songRepository, loopRepository, playlistRepository)
 }
