@@ -1,6 +1,7 @@
 package com.tachyonmusic.di
 
 import android.content.Context
+import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
@@ -192,8 +193,9 @@ object AppUseCaseModule {
     @Singleton
     fun provideGetPlaylistForPlaybackUseCase(
         settingsRepository: SettingsRepository,
-        playbackRepository: PlaybackRepository
-    ) = GetPlaylistForPlayback(settingsRepository, playbackRepository)
+        playbackRepository: PlaybackRepository,
+        artworkCodex: ArtworkCodex
+    ) = GetPlaylistForPlayback(settingsRepository, playbackRepository, artworkCodex)
 
     @Provides
     @Singleton

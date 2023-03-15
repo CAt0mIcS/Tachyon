@@ -1,5 +1,6 @@
 package com.tachyonmusic.media.service
 
+import android.os.Bundle
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -20,6 +21,7 @@ import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.*
 import com.tachyonmusic.media.util.supportedCommands
+import com.tachyonmusic.media.util.toMediaItems
 import com.tachyonmusic.util.future
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -138,7 +140,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo,
             mediaItems: MutableList<MediaItem>
-        ): ListenableFuture<MutableList<MediaItem>> = future(Dispatchers.IO) {
+        ): ListenableFuture<List<MediaItem>> = future(Dispatchers.IO) {
             confirmAddedMediaItems(mediaItems)
         }
     }
