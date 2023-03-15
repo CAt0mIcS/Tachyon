@@ -4,9 +4,8 @@ import com.tachyonmusic.artwork.*
 import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
 import com.tachyonmusic.artwork.domain.GetIsInternetConnectionMetered
-import com.tachyonmusic.core.ArtworkType
-import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
@@ -15,13 +14,12 @@ import com.tachyonmusic.permission.domain.model.LoopPermissionEntity
 import com.tachyonmusic.permission.domain.model.PlaylistPermissionEntity
 import com.tachyonmusic.permission.domain.model.SinglePlaybackPermissionEntity
 import com.tachyonmusic.permission.domain.model.SongPermissionEntity
-import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 
 class ArtworkMapperRepositoryImpl(
     private val permissionMapperRepository: PermissionMapperRepository,
@@ -32,30 +30,27 @@ class ArtworkMapperRepositoryImpl(
     private val isInternetMetered: GetIsInternetConnectionMetered
 ) : ArtworkMapperRepository {
 
-    override val songFlow = permissionMapperRepository.songFlow.map { songEntities ->
-        transformSongs(songEntities)
-    }
+    private val reloadSongs = MutableStateFlow(false)
+
+    override val songFlow =
+        combine(permissionMapperRepository.songFlow, reloadSongs) { songEntities, _ ->
+            transformSongs(songEntities)
+        }
 
     override val loopFlow =
         combine(permissionMapperRepository.loopFlow, songFlow) { loopEntities, songs ->
             transformLoops(loopEntities, songs)
         }
 
-    override val playlistFlow = combine(
-        permissionMapperRepository.playlistFlow,
-        songFlow,
-        loopFlow
-    ) { playlists, songs, loops ->
-        transformPlaylists(playlists, songs, loops)
-    }
+    override val playlistFlow =
+        combine(permissionMapperRepository.playlistFlow, songFlow) { playlists, songs ->
+            transformPlaylists(playlists, songs)
+        }
 
-    override val historyFlow = combine(
-        permissionMapperRepository.historyFlow,
-        songFlow,
-        loopFlow
-    ) { history, songs, loops ->
-        transformHistory(history, songs, loops)
-    }
+    override val historyFlow =
+        combine(permissionMapperRepository.historyFlow, songFlow) { history, songs ->
+            transformHistory(history, songs)
+        }
 
     override suspend fun getSongs() = withContext(Dispatchers.IO) {
         transformSongs(permissionMapperRepository.getSongs())
@@ -66,26 +61,22 @@ class ArtworkMapperRepositoryImpl(
     }
 
     override suspend fun getPlaylists() = withContext(Dispatchers.IO) {
-        transformPlaylists(permissionMapperRepository.getPlaylists(), getSongs(), getLoops())
+        transformPlaylists(permissionMapperRepository.getPlaylists(), getSongs())
     }
 
     override suspend fun getHistory() = withContext(Dispatchers.IO) {
-        transformHistory(permissionMapperRepository.getHistory(), getSongs(), getLoops())
+        transformHistory(permissionMapperRepository.getHistory(), getSongs())
     }
 
 
-    private suspend fun transformSongs(songEntities: List<SongPermissionEntity>) =
-        withContext(Dispatchers.IO) {
-            val songs = songEntities.map { song ->
-                song.toSong()
-            }
+    override fun triggerSongReload() {
+        reloadSongs.update { !it }
+    }
 
-            loadArtwork(
-                songs,
-                songEntities.map { it.artworkType },
-                songEntities.map { it.artworkUrl })
 
-            songs
+    private fun transformSongs(songEntities: List<SongPermissionEntity>) =
+        songEntities.map { songEntity ->
+            songEntity.toSong().applyArtwork()
         }
 
     private fun transformLoops(
@@ -104,67 +95,44 @@ class ArtworkMapperRepositoryImpl(
      */
     private fun transformPlaylists(
         playlists: List<PlaylistPermissionEntity>,
-        songs: List<Song>,
-        loops: List<Loop>
+        songs: List<Song>
     ) = playlists.map { playlist ->
-        playlist.toPlaylist(songs, loops)
+        playlist.toPlaylist(playlist.items.mapNotNull {
+            it.toSinglePlayback(songs)
+        })
     }
 
     private fun transformHistory(
         history: List<SinglePlaybackPermissionEntity>,
-        songs: List<Song>,
-        loops: List<Loop>
-    ) = history.mapNotNull { historyItem ->
-        historyItem.getFrom(songs, loops)
+        songs: List<Song>
+    ) = history.mapNotNull {
+        it.toSinglePlayback(songs)
     }
 
 
-    private suspend fun loadArtwork(
-        items: List<Song>,
-        artworkTypes: List<String>,
-        artworkUrls: List<String?>
-    ) = withContext(Dispatchers.IO) {
-        val settings = settingsRepository.getSettings()
-        val fetchOnline =
-            settings.autoDownloadAlbumArtwork && !(settings.autoDownloadAlbumArtworkWifiOnly && isInternetMetered())
-
-        items.forEachIndexed { i, song ->
-            // Don't store unplayable artwork in codex so that it will load once it becomes playable (TODO: Should still load REMOTE)
-            if (!song.isPlayable.value) {
-                return@forEachIndexed
+    private fun SinglePlaybackPermissionEntity.toSinglePlayback(songs: List<Song>): SinglePlayback? {
+        return when (this) {
+            is SongPermissionEntity -> {
+                toSong().applyArtwork()
             }
 
-            launch {
-                if (!artworkCodex.isLoaded(song.mediaId)) {
-                    song.loadArtworkAsync(
-                        artworkCodex.awaitOrLoad(
-                            song.toPermissionEntity(
-                                artworkTypes[i],
-                                artworkUrls[i]
-                            ),
-                            fetchOnline
-                        ).map {
-                            when (it) {
-                                is Resource.Loading -> Resource.Loading()
-                                is Resource.Error -> Resource.Error(it)
-                                is Resource.Success -> Resource.Success(it.data?.artwork)
-                            }
-                        },
-                        onCompletion = { mediaId, artwork ->
-                            if (mediaId != null)
-                                songRepository.updateArtwork(
-                                    mediaId,
-                                    ArtworkType.getType(artwork),
-                                    if (artwork is RemoteArtwork) artwork.uri.toURL()
-                                        .toString() else null
-                                )
-                        }
-                    )
-                } else {
-                    song.artwork.update { artworkCodex[song.mediaId] }
-                    song.isArtworkLoading.update { false }
-                }
+            is LoopPermissionEntity -> {
+                toLoop(
+                    songs.find { it.mediaId == mediaId.underlyingMediaId }
+                        ?.applyArtwork()
+                        ?: return null
+                )
             }
+            else -> TODO("Invalid permission entity type ${this::class.java.name}")
         }
+    }
+
+    private fun Song.applyArtwork(): Song {
+        if (artworkCodex.isLoaded(mediaId)) {
+            artwork.update { artworkCodex[mediaId] }
+            isArtworkLoading.update { false }
+        } else
+            isArtworkLoading.update { true }
+        return this
     }
 }

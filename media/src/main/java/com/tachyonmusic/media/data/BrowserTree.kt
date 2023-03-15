@@ -3,16 +3,16 @@ package com.tachyonmusic.media.data
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.google.common.collect.ImmutableList
+import com.tachyonmusic.artwork.toLoop
 import com.tachyonmusic.artwork.toPlaylist
+import com.tachyonmusic.artwork.toSong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.database.domain.repository.LoopRepository
-import com.tachyonmusic.database.domain.repository.PlaylistRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.util.toPlaylist
 import com.tachyonmusic.media.util.getItemsOnPageWithPageSize
 import com.tachyonmusic.media.util.toMediaItems
 import com.tachyonmusic.permission.domain.PermissionMapperRepository
+import com.tachyonmusic.permission.domain.model.LoopPermissionEntity
+import com.tachyonmusic.permission.domain.model.SongPermissionEntity
 import com.tachyonmusic.playback_layers.PlaybackRepository
 import kotlinx.coroutines.*
 
@@ -58,10 +58,16 @@ class BrowserTree(
                     val mediaId = MediaId.deserializeIfValid(parentId)
                     if (mediaId != null) {
                         val playback = playbackPermissionRepository.getPlaylists()
-                            .find { it.mediaId == mediaId }?.toPlaylist(
-                                playbackRepository.getSongs(),
-                                playbackRepository.getLoops()
-                            )
+                            .find { it.mediaId == mediaId }?.let {
+                                // TODO: Artwork not included
+                                it.toPlaylist(it.items.map { singlePb ->
+                                    when (singlePb) {
+                                        is SongPermissionEntity -> singlePb.toSong()
+                                        is LoopPermissionEntity -> singlePb.toLoop()
+                                        else -> TODO("Invalid single playback permission entity type ${singlePb::class.java.name}")
+                                    }
+                                })
+                            }
                         if (playback != null)
                             return@withContext constraintItems(
                                 playback.playbacks.toMediaItems(),

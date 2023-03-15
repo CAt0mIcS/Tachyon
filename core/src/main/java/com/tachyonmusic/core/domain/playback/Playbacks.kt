@@ -21,7 +21,6 @@ interface Playback : Parcelable {
 
     val artwork: MutableStateFlow<Artwork?>
     val isArtworkLoading: MutableStateFlow<Boolean>
-    var artworkType: String
 
     val playbackType: PlaybackType
 

@@ -4,13 +4,12 @@ import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.artwork.domain.ArtworkLoader
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.permission.domain.model.SongPermissionEntity
 import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.*
 
 class ArtworkCodexImpl internal constructor(
     private val artworkLoader: ArtworkLoader,
@@ -24,7 +23,7 @@ class ArtworkCodexImpl internal constructor(
     private val codex = mutableMapOf<MediaId, CodexedArtworkData>()
 
     override suspend fun awaitOrLoad(
-        entity: SongPermissionEntity,
+        entity: SongEntity,
         fetchOnline: Boolean
     ): Flow<Resource<ArtworkCodex.ArtworkUpdateData>> {
         val data = synchronized(codex) {
@@ -103,7 +102,7 @@ class ArtworkCodexImpl internal constructor(
     }
 
     private suspend fun internalRequest(
-        entity: SongPermissionEntity,
+        entity: SongEntity,
         fetchOnline: Boolean
     ): Resource<ArtworkCodex.ArtworkUpdateData> {
         val res = artworkLoader.requestLoad(entity, fetchOnline)
@@ -112,7 +111,7 @@ class ArtworkCodexImpl internal constructor(
             codex[entity.mediaId]?.job?.complete()
         }
 
-        return when (res) {
+        val returnRes = when (res) {
             is Resource.Error -> Resource.Error(
                 res,
                 ArtworkCodex.ArtworkUpdateData(entityToUpdate = res.data?.entityToUpdate)
@@ -124,5 +123,6 @@ class ArtworkCodexImpl internal constructor(
                 )
             )
         }
+        return returnRes
     }
 }

@@ -53,7 +53,6 @@ object HomeScreen :
 
         val scope = rememberCoroutineScope()
 
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),

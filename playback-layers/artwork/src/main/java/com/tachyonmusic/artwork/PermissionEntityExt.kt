@@ -40,18 +40,8 @@ fun LoopPermissionEntity.toLoop(
     song
 )
 
-fun PlaylistPermissionEntity.toPlaylist(songs: List<Song>, loops: List<Loop>): Playlist =
-    RemotePlaylistImpl.build(mediaId, items.mapNotNull { singlePb ->
-        singlePb.getFrom(songs, loops)
-    }.toMutableList(), currentItemIndex)
-
-fun SinglePlaybackPermissionEntity.getFrom(songs: List<Song>, loops: List<Loop>) =
-    if (mediaId.isLocalSong)
-        songs.find { it.mediaId == mediaId }
-    else if (mediaId.isRemoteLoop)
-        loops.find { it.mediaId == mediaId }
-    else
-        TODO("Invalid media id for single playback item $mediaId")
+fun PlaylistPermissionEntity.toPlaylist(items: List<SinglePlayback>): Playlist =
+    RemotePlaylistImpl.build(mediaId, items.toMutableList(), currentItemIndex)
 
 
 fun Song.toPermissionEntity(artworkType: String, artworkUrl: String? = null) = SongPermissionEntity(

@@ -7,9 +7,8 @@ abstract class AbstractPlayback : Playback {
         if (this === other) return true
         if (other !is Playback) return false
 
-        if (mediaId != other.mediaId) return false
-
-        return true
+        return mediaId == other.mediaId && artwork.value == other.artwork.value &&
+                isArtworkLoading.value == other.isArtworkLoading.value
     }
 
     override fun toString() = mediaId.toString()

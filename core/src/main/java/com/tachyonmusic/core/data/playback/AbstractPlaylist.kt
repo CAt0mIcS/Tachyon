@@ -40,12 +40,6 @@ abstract class AbstractPlaylist(
     override val artwork = MutableStateFlow(current?.artwork?.value)
     override val isArtworkLoading = MutableStateFlow(false)
 
-    override var artworkType: String
-        get() = current?.artworkType ?: ArtworkType.NO_ARTWORK
-        set(value) {
-            current?.artworkType = value
-        }
-
     override val uri: Uri?
         get() = current?.uri
 

@@ -1,6 +1,7 @@
 package com.tachyonmusic.core.data
 
 import android.content.ContentResolver
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
@@ -8,9 +9,10 @@ import android.net.Uri
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.util.ms
 
-class FileSongMetadataExtractor : SongMetadataExtractor {
+class FileSongMetadataExtractor(
+    private val contentResolver: ContentResolver
+) : SongMetadataExtractor {
     override fun loadMetadata(
-        contentResolver: ContentResolver,
         uri: Uri,
         defaultTitle: String
     ): SongMetadataExtractor.SongMetadata? {
@@ -36,7 +38,7 @@ class FileSongMetadataExtractor : SongMetadataExtractor {
         )
     }
 
-    override fun loadBitmap(contentResolver: ContentResolver, uri: Uri): Bitmap? {
+    override fun loadBitmap(uri: Uri): Bitmap? {
         val metaRetriever = MediaMetadataRetriever()
         try {
             val fd = contentResolver.openFileDescriptor(uri, "r")

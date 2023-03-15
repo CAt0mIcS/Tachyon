@@ -2,7 +2,7 @@ package com.tachyonmusic.artwork.domain
 
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.permission.domain.model.SongPermissionEntity
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.util.Resource
 import kotlinx.coroutines.flow.Flow
 
@@ -10,7 +10,7 @@ interface ArtworkCodex {
 
     data class ArtworkUpdateData(
         val artwork: Artwork? = null,
-        val entityToUpdate: SongPermissionEntity? = null
+        val entityToUpdate: SongEntity? = null
     )
 
     /**
@@ -22,7 +22,7 @@ interface ArtworkCodex {
      * @param fetchOnline controls whether the [ArtworkFetcher] runs if no local artwork is found
      */
     suspend fun awaitOrLoad(
-        entity: SongPermissionEntity,
+        entity: SongEntity,
         fetchOnline: Boolean = true
     ): Flow<Resource<ArtworkUpdateData>>
 

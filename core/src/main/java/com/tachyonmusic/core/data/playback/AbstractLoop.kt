@@ -34,11 +34,6 @@ abstract class AbstractLoop(
     override val uri: Uri
         get() = song.uri
 
-    override var artworkType: String
-        get() = song.artworkType
-        set(value) {
-            song.artworkType = value
-        }
     abstract override val playbackType: PlaybackType.Loop
 
     override val artwork = song.artwork

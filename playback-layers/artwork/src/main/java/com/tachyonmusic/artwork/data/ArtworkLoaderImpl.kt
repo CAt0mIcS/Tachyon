@@ -2,16 +2,16 @@ package com.tachyonmusic.artwork.data
 
 import android.content.Context
 import com.tachyonmusic.artwork.R
+import com.tachyonmusic.artwork.domain.ArtworkLoader
+import com.tachyonmusic.artwork.domain.ArtworkLoader.ArtworkData
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.core.ArtworkType
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.artwork.domain.ArtworkLoader
-import com.tachyonmusic.artwork.domain.ArtworkLoader.ArtworkData
-import com.tachyonmusic.permission.domain.model.SongPermissionEntity
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.flow.collect
@@ -25,7 +25,7 @@ internal class ArtworkLoaderImpl(
     private val metadataExtractor: SongMetadataExtractor
 ) : ArtworkLoader {
     override suspend fun requestLoad(
-        entity: SongPermissionEntity,
+        entity: SongEntity,
         fetchOnline: Boolean
     ): Resource<ArtworkData> {
         when (entity.artworkType) {
@@ -55,7 +55,7 @@ internal class ArtworkLoaderImpl(
                 log.debug("Entity ${entity.title} - ${entity.artist} has ${ArtworkType.EMBEDDED}")
                 val uri = entity.mediaId.uri
                 if (uri != null) {
-                    val embedded = EmbeddedArtwork.load(context.contentResolver, uri, metadataExtractor)
+                    val embedded = EmbeddedArtwork.load(uri, metadataExtractor)
                     return if (embedded != null) {
                         Resource.Success(ArtworkData(EmbeddedArtwork(embedded, uri)))
                     } else {
@@ -115,7 +115,7 @@ internal class ArtworkLoaderImpl(
     }
 
     private suspend fun tryFindArtwork(
-        entity: SongPermissionEntity,
+        entity: SongEntity,
         fetchOnline: Boolean
     ): Resource<Artwork?> {
         var res = tryFindEmbeddedArtwork(entity)
@@ -128,7 +128,7 @@ internal class ArtworkLoaderImpl(
 
 
     private suspend fun tryFindRemoteArtwork(
-        entity: SongPermissionEntity,
+        entity: SongEntity,
     ): Resource<Artwork?> {
         var ret: Resource<Artwork?> =
             Resource.Error(UiText.StringResource(R.string.unknown_error))
@@ -148,11 +148,11 @@ internal class ArtworkLoaderImpl(
         return ret
     }
 
-    private fun tryFindEmbeddedArtwork(entity: SongPermissionEntity): Resource<Artwork?> {
+    private fun tryFindEmbeddedArtwork(entity: SongEntity): Resource<Artwork?> {
         val uri = entity.mediaId.uri
             ?: return Resource.Error(UiText.StringResource(R.string.invalid_uri, "null"))
 
-        val bitmap = EmbeddedArtwork.load(context.contentResolver, uri, metadataExtractor) ?: return Resource.Error(
+        val bitmap = EmbeddedArtwork.load(uri, metadataExtractor) ?: return Resource.Error(
             UiText.StringResource(
                 R.string.invalid_uri,
                 uri.toString()

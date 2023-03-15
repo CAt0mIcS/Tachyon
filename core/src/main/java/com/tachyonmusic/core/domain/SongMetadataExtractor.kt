@@ -1,6 +1,5 @@
 package com.tachyonmusic.core.domain
 
-import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.net.Uri
 import com.tachyonmusic.util.Duration
@@ -12,6 +11,6 @@ interface SongMetadataExtractor {
         val duration: Duration
     )
 
-    fun loadMetadata(contentResolver: ContentResolver, uri: Uri, defaultTitle: String): SongMetadata?
-    fun loadBitmap(contentResolver: ContentResolver, uri: Uri): Bitmap?
+    fun loadMetadata(uri: Uri, defaultTitle: String): SongMetadata?
+    fun loadBitmap(uri: Uri): Bitmap?
 }

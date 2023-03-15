@@ -1,6 +1,5 @@
 package com.tachyonmusic.core.data
 
-import android.content.ContentResolver
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Parcel
@@ -37,11 +36,8 @@ class EmbeddedArtwork(
     }
 
     companion object {
-        fun load(
-            contentResolver: ContentResolver,
-            uri: Uri,
-            metadataExtractor: SongMetadataExtractor = FileSongMetadataExtractor()
-        ) = metadataExtractor.loadBitmap(contentResolver, uri)
+        fun load(uri: Uri, metadataExtractor: SongMetadataExtractor) =
+            metadataExtractor.loadBitmap(uri)
 
         @JvmField
         val CREATOR = object : Parcelable.Creator<EmbeddedArtwork> {
