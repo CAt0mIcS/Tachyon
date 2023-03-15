@@ -4,7 +4,6 @@ import android.app.Service
 import androidx.media3.cast.CastPlayer
 import com.google.android.gms.cast.framework.CastContext
 import com.tachyonmusic.database.domain.repository.*
-import com.tachyonmusic.media.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
@@ -46,11 +45,6 @@ class MediaPlaybackServiceRepositoryModule {
 @Module
 @InstallIn(SingletonComponent::class)
 class MediaPlaybackUseCaseModule {
-
-    @Provides
-    @Singleton
-    fun provideFindPlaybackByMediaIdUseCase(playbackRepository: PlaybackRepository) =
-        FindPlaybackByMediaId(playbackRepository)
 
     @Provides
     @Singleton
