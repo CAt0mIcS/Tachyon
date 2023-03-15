@@ -11,7 +11,7 @@ class UnloadArtworks(
     suspend operator fun invoke() = withContext(Dispatchers.IO) {
         repository.getSongsWithArtworkTypes(ArtworkType.EMBEDDED, ArtworkType.REMOTE)
             .forEach { song ->
-                repository.updateArtwork(song, ArtworkType.UNKNOWN)
+                repository.updateArtwork(song.mediaId, ArtworkType.UNKNOWN)
             }
     }
 }

@@ -44,8 +44,8 @@ class RoomSongRepository(
         }
     }
 
-    override suspend fun updateArtwork(song: SongEntity, artworkType: String, artworkUrl: String?) {
-        dao.updateArtwork(song.id ?: return, artworkType, artworkUrl)
+    override suspend fun updateArtwork(song: MediaId, artworkType: String, artworkUrl: String?) {
+        dao.updateArtwork(song, artworkType, artworkUrl)
     }
 
     override suspend fun getSongsWithArtworkTypes(vararg artworkTypes: String) =

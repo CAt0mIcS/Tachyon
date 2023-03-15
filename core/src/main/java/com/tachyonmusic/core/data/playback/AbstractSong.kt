@@ -15,7 +15,12 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Duration
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.tachyonmusic.util.Resource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 abstract class AbstractSong(
     final override val mediaId: MediaId,
@@ -37,6 +42,9 @@ abstract class AbstractSong(
     override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
         "mediaId" to mediaId.toString()
     )
+
+    // TODO: Remove
+    private var ongoingArtworkJob: Job? = null
 
     override fun toMediaItem() = MediaItem.Builder().apply {
         setMediaId(mediaId.toString())
@@ -66,6 +74,8 @@ abstract class AbstractSong(
     }.build()
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
+        assert(ongoingArtworkJob == null || ongoingArtworkJob!!.isCompleted)
+
         parcel.writeParcelable(uri, flags)
         parcel.writeString(mediaId.source)
         parcel.writeString(title)
@@ -75,5 +85,24 @@ abstract class AbstractSong(
         parcel.writeInt(isArtworkLoading.value.toInt())
         parcel.writeInt(isPlayable.value.toInt())
         parcel.writeString(artworkType)
+    }
+
+
+    override suspend fun loadArtworkAsync(
+        resourceFlow: Flow<Resource<Artwork>>,
+        onCompletion: suspend (MediaId?, Artwork?) -> Unit
+    ): Unit = withContext(Dispatchers.IO) {
+        ongoingArtworkJob = launch {
+            resourceFlow.onEach { res ->
+                when (res) {
+                    is Resource.Loading -> isArtworkLoading.update { true }
+                    else -> {
+                        isArtworkLoading.update { false }
+                        artwork.update { res.data }
+                        onCompletion(mediaId, res.data)
+                    }
+                }
+            }.collect()
+        }
     }
 }

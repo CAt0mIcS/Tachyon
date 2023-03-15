@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.use_case.ObserveSettings
+import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.main.GetSavedData
 import com.tachyonmusic.domain.use_case.main.UnloadArtworks
 import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
@@ -28,6 +29,8 @@ class HomeViewModel @Inject constructor(
     observeSettings: ObserveSettings,
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
+
+    private val playPlayback: PlayPlayback,
 
     private val unloadArtworks: UnloadArtworks
 ) : ViewModel() {
@@ -56,6 +59,9 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onItemClicked(playback: Playback) {
+        viewModelScope.launch {
+            playPlayback(playback)
+        }
     }
 
     fun refreshArtwork() {

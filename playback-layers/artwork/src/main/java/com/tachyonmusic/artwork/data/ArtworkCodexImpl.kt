@@ -16,23 +16,23 @@ class ArtworkCodexImpl internal constructor(
     private val artworkLoader: ArtworkLoader,
     private val log: Logger
 ) : ArtworkCodex {
-    private data class ArtworkData(
+    private data class CodexedArtworkData(
         var artwork: Artwork?,
         val job: CompletableJob = Job()
     )
 
-    private val codex = mutableMapOf<MediaId, ArtworkData>()
+    private val codex = mutableMapOf<MediaId, CodexedArtworkData>()
 
     override suspend fun awaitOrLoad(
         entity: SongPermissionEntity,
         fetchOnline: Boolean
-    ): Flow<Resource<SongPermissionEntity?>> {
+    ): Flow<Resource<ArtworkCodex.ArtworkUpdateData>> {
         val data = synchronized(codex) {
             val data = codex[entity.mediaId]
 
             // Ensure that if the artwork hasn't been loaded for entity the job is started
             if (data == null)
-                codex[entity.mediaId] = ArtworkData(artwork = null)
+                codex[entity.mediaId] = CodexedArtworkData(artwork = null)
             data
         }
 
@@ -48,11 +48,29 @@ class ArtworkCodexImpl internal constructor(
              * Doesn't require [SinglePlaybackEntity] database update since the other thread that
              * started the loading job will update it
              */
-            return flow { emit(Resource.Success(data = null)) }
+            return flow {
+                emit(
+                    Resource.Success(
+                        ArtworkCodex.ArtworkUpdateData(
+                            artwork = codex[entity.mediaId]?.artwork,
+                            entityToUpdate = null
+                        )
+                    )
+                )
+            }
         }
 
         log.debug("Artwork already loaded for ${entity.title} - ${entity.artist}")
-        return flow { emit(Resource.Success(data = null)) }
+        return flow {
+            emit(
+                Resource.Success(
+                    ArtworkCodex.ArtworkUpdateData(
+                        artwork = codex[entity.mediaId]?.artwork,
+                        entityToUpdate = null
+                    )
+                )
+            )
+        }
     }
 
     override suspend fun await(mediaId: MediaId) {
@@ -87,7 +105,7 @@ class ArtworkCodexImpl internal constructor(
     private suspend fun internalRequest(
         entity: SongPermissionEntity,
         fetchOnline: Boolean
-    ): Resource<SongPermissionEntity?> {
+    ): Resource<ArtworkCodex.ArtworkUpdateData> {
         val res = artworkLoader.requestLoad(entity, fetchOnline)
         synchronized(codex) {
             codex[entity.mediaId]?.artwork = res.data?.artwork
@@ -95,8 +113,16 @@ class ArtworkCodexImpl internal constructor(
         }
 
         return when (res) {
-            is Resource.Error -> Resource.Error(res, res.data?.entityToUpdate)
-            else -> Resource.Success(res.data?.entityToUpdate)
+            is Resource.Error -> Resource.Error(
+                res,
+                ArtworkCodex.ArtworkUpdateData(entityToUpdate = res.data?.entityToUpdate)
+            )
+            else -> Resource.Success(
+                ArtworkCodex.ArtworkUpdateData(
+                    res.data?.artwork,
+                    res.data?.entityToUpdate
+                )
+            )
         }
     }
 }

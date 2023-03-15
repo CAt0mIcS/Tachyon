@@ -129,11 +129,7 @@ class MediaPlaybackServiceMediaBrowserController(
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
-            _currentPlayback.update {
-                mediaItem?.mediaMetadata?.playback?.apply {
-                    isPlayable.update { mediaId.uri?.isPlayable(context) ?: false }
-                }
-            }
+            _currentPlayback.update { mediaItem?.mediaMetadata?.playback }
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {

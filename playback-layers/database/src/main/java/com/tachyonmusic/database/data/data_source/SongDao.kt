@@ -42,6 +42,6 @@ interface SongDao {
     @Query("DELETE FROM SongEntity WHERE mediaId=:mediaId")
     suspend fun delete(mediaId: MediaId)
 
-    @Query("UPDATE SongEntity SET artworkType=:artworkType, artworkUrl=:artworkUrl WHERE id=:id")
-    suspend fun updateArtwork(id: Int, artworkType: String?, artworkUrl: String? = null)
+    @Query("UPDATE SongEntity SET artworkType=:artworkType, artworkUrl=:artworkUrl WHERE mediaId=:mediaId")
+    suspend fun updateArtwork(mediaId: MediaId, artworkType: String?, artworkUrl: String? = null)
 }

@@ -7,6 +7,7 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.DeletePlayback
 import com.tachyonmusic.domain.use_case.GetMediaStates
+import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.media.core.SortType
@@ -23,6 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     playbackRepository: PlaybackRepository,
+
+    private val playPlayback: PlayPlayback,
 
     private val addSongToExcludedSongs: AddSongToExcludedSongs,
     private val deletePlayback: DeletePlayback,
@@ -74,6 +77,9 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun onItemClicked(playback: Playback) {
+        viewModelScope.launch {
+            playPlayback(playback, sortParams.value)
+        }
     }
 
     fun excludePlayback(playback: Playback) {

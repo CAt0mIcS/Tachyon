@@ -195,15 +195,21 @@ object AppUseCaseModule {
         playbackRepository: PlaybackRepository
     ) = GetPlaylistForPlayback(settingsRepository, playbackRepository)
 
+    @Provides
+    @Singleton
+    fun providePlayPlaybackUseCase(
+        browser: MediaBrowserController,
+        getPlaylistForPlayback: GetPlaylistForPlayback,
+        logger: Logger
+    ) = PlayPlayback(browser, getPlaylistForPlayback, logger)
 
     @Provides
     @Singleton
     fun providePlayRecentlyPlayedUseCase(
         browser: MediaBrowserController,
         getRecentlyPlayed: GetRecentlyPlayed,
-        getPlaylistForPlayback: GetPlaylistForPlayback,
-        log: Logger
-    ) = PlayRecentlyPlayed(browser, getRecentlyPlayed, getPlaylistForPlayback, log)
+        playPlayback: PlayPlayback
+    ) = PlayRecentlyPlayed(browser, getRecentlyPlayed, playPlayback)
 
     @Provides
     @Singleton

@@ -8,6 +8,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface ArtworkCodex {
 
+    data class ArtworkUpdateData(
+        val artwork: Artwork? = null,
+        val entityToUpdate: SongPermissionEntity? = null
+    )
+
     /**
      * Tries to either wait for artwork to be loaded if [awaitOrLoad] was called for [entity.mediaId]
      * somewhere else OR loads it if [awaitOrLoad] hasn't been called OR returns if the artwork
@@ -19,7 +24,7 @@ interface ArtworkCodex {
     suspend fun awaitOrLoad(
         entity: SongPermissionEntity,
         fetchOnline: Boolean = true
-    ): Flow<Resource<SongPermissionEntity?>>
+    ): Flow<Resource<ArtworkUpdateData>>
 
     /**
      * Waits for artwork to be loaded if [awaitOrLoad] was called for [mediaId] or immediately returns
