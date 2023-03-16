@@ -33,10 +33,9 @@ class AppModule {
     @Singleton
     fun provideArtworkLoader(
         artworkFetcher: ArtworkFetcher,
-        @ApplicationContext context: Context,
         log: Logger,
         metadataExtractor: SongMetadataExtractor
-    ): ArtworkLoader = ArtworkLoaderImpl(artworkFetcher, context, log, metadataExtractor)
+    ): ArtworkLoader = ArtworkLoaderImpl(artworkFetcher, log, metadataExtractor)
 
     @Provides
     @Singleton

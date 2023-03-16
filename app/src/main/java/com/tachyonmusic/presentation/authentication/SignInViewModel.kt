@@ -19,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SignInViewModel @Inject constructor(
     private val signInUser: SignInUser,
-    private val log: Logger = LoggerImpl()
+    private val log: Logger
 ) : ViewModel() {
 
     private val _email = mutableStateOf("spam.2222@web.de")

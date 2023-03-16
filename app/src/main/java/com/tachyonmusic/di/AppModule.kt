@@ -220,10 +220,6 @@ object AppUseCaseModule {
         browser: MediaBrowserController,
         @ApplicationContext context: Context
     ) = GetMediaStates(browser, context)
-
-    @Provides
-    @Singleton
-    fun provideLogger(): Logger = LoggerImpl()
 }
 
 

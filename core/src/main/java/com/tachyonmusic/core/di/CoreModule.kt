@@ -8,6 +8,10 @@ import com.tachyonmusic.core.data.FileSongMetadataExtractor
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.logger.LoggerImpl
+import com.tachyonmusic.logger.data.ConsoleLogger
+import com.tachyonmusic.logger.data.ConsoleUiTextLogger
+import com.tachyonmusic.logger.domain.Logger
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,4 +35,13 @@ class CoreModule {
     @Singleton
     fun provideSongMetadataExtractor(@ApplicationContext context: Context): SongMetadataExtractor =
         FileSongMetadataExtractor(context.contentResolver)
+
+    @Provides
+    @Singleton
+    fun provideLogger(@ApplicationContext context: Context): Logger = LoggerImpl(
+        listOf(
+            ConsoleLogger(),
+            ConsoleUiTextLogger(context)
+        )
+    )
 }
