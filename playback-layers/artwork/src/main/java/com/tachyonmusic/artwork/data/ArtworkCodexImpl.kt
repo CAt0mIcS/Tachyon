@@ -111,18 +111,6 @@ class ArtworkCodexImpl internal constructor(
             codex[entity.mediaId]?.job?.complete()
         }
 
-        val returnRes = when (res) {
-            is Resource.Error -> Resource.Error(
-                res,
-                ArtworkCodex.ArtworkUpdateData(entityToUpdate = res.data?.entityToUpdate)
-            )
-            else -> Resource.Success(
-                ArtworkCodex.ArtworkUpdateData(
-                    res.data?.artwork,
-                    res.data?.entityToUpdate
-                )
-            )
-        }
-        return returnRes
+        return res
     }
 }

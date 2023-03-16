@@ -78,7 +78,7 @@ class LibraryViewModel @Inject constructor(
 
     fun onItemClicked(playback: Playback) {
         viewModelScope.launch {
-            playPlayback(playback, sortParams.value)
+            playPlayback(playback, sortParams = sortParams.value)
         }
     }
 

@@ -48,11 +48,6 @@ class MediaPlaybackUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideConfirmAddedMediaItemsUseCase(playbackRepository: PlaybackRepository) =
-        ConfirmAddedMediaItems(playbackRepository)
-
-    @Provides
-    @Singleton
     fun provideAddNewPlaybackToHistoryUseCase(
         historyRepository: HistoryRepository,
         settingsRepository: SettingsRepository

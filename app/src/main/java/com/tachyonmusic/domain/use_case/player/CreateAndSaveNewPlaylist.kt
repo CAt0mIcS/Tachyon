@@ -11,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class CreateAndSaveNewPlaylist(
-    private val playbackRepository: PlaybackRepository,
     private val playlistRepository: PlaylistRepository
 ) {
     suspend operator fun invoke(name: String?) = withContext(Dispatchers.IO) {
@@ -23,8 +22,7 @@ class CreateAndSaveNewPlaylist(
                 )
             )
 
-        // TODO: Optimize
-        if (playbackRepository.getPlaylists().any { it.name == name })
+        if (playlistRepository.hasPlaylist(MediaId.ofRemotePlaylist(name)))
             return@withContext Resource.Error(
                 UiText.StringResource(
                     R.string.invalid_name,

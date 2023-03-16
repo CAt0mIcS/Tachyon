@@ -23,11 +23,7 @@ import kotlinx.coroutines.withContext
 
 class ArtworkMapperRepositoryImpl(
     private val permissionMapperRepository: PermissionMapperRepository,
-
-    private val songRepository: SongRepository,
-    private val settingsRepository: SettingsRepository,
-    private val artworkCodex: ArtworkCodex,
-    private val isInternetMetered: GetIsInternetConnectionMetered
+    private val artworkCodex: ArtworkCodex
 ) : ArtworkMapperRepository {
 
     private val reloadSongs = MutableStateFlow(false)

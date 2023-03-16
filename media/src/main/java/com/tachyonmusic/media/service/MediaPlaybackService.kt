@@ -1,32 +1,31 @@
 package com.tachyonmusic.media.service
 
-import android.os.Bundle
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
-import androidx.media3.session.*
+import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaSession
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.core.*
+import com.tachyonmusic.media.core.TimingDataUpdatedEvent
+import com.tachyonmusic.media.core.dispatchMediaEvent
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.domain.CustomPlayer
-import com.tachyonmusic.media.domain.use_case.*
+import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.supportedCommands
-import com.tachyonmusic.media.util.toMediaItems
 import com.tachyonmusic.util.future
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -40,9 +39,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     lateinit var browserTree: BrowserTree
-
-    @Inject
-    lateinit var confirmAddedMediaItems: ConfirmAddedMediaItems
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
@@ -141,7 +137,11 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             controller: MediaSession.ControllerInfo,
             mediaItems: MutableList<MediaItem>
         ): ListenableFuture<List<MediaItem>> = future(Dispatchers.IO) {
-            confirmAddedMediaItems(mediaItems)
+            mediaItems.mapNotNull {
+                it.buildUpon()
+                    .setUri(it.mediaMetadata.playback?.uri ?: return@mapNotNull null)
+                    .build()
+            }
         }
     }
 

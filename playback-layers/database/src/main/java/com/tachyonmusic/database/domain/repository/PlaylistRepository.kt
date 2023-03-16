@@ -15,6 +15,8 @@ interface PlaylistRepository {
     suspend fun remove(mediaId: MediaId)
     suspend fun removeIf(pred: (PlaylistEntity) -> Boolean)
 
+    suspend fun hasPlaylist(mediaId: MediaId): Boolean
+
     suspend fun setPlaybacksOfPlaylist(
         playlistMediaId: MediaId,
         playbacks: List<MediaId>

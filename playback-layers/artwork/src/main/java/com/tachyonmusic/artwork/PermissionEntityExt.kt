@@ -35,7 +35,7 @@ fun LoopPermissionEntity.toLoop(
     }
 ): Loop = RemoteLoopImpl(
     mediaId,
-    mediaId.source.replace(PlaybackType.Loop.Remote().toString(), ""),
+    name,
     TimingDataController(timingData, currentTimingDataIndex),
     song
 )

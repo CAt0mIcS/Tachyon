@@ -20,9 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class RoomPlaylistRepository(
-    private val dao: PlaylistDao,
-    private val songRepo: SongRepository,
-    private val loopRepo: LoopRepository
+    private val dao: PlaylistDao
 ) : PlaylistRepository {
     override fun observe() = dao.observe()
 
@@ -56,6 +54,8 @@ class RoomPlaylistRepository(
                 dao.delete(it.mediaId)
         }
     }
+
+    override suspend fun hasPlaylist(mediaId: MediaId) = findByMediaId(mediaId) != null
 
     override suspend fun setPlaybacksOfPlaylist(
         playlistMediaId: MediaId,

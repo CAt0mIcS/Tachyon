@@ -47,12 +47,8 @@ object DatabaseRepositoryModule {
 
     @Provides
     @Singleton
-    fun providePlaylistRepository(
-        database: Database,
-        songRepository: SongRepository,
-        loopRepository: LoopRepository
-    ): PlaylistRepository =
-        RoomPlaylistRepository(database.playlistDao, songRepository, loopRepository)
+    fun providePlaylistRepository(database: Database): PlaylistRepository =
+        RoomPlaylistRepository(database.playlistDao)
 
     @Provides
     @Singleton

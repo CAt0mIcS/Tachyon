@@ -54,15 +54,9 @@ class AppModule {
     @Singleton
     fun provideArtworkMapperRepository(
         permissionMapperRepository: PermissionMapperRepository,
-        songRepository: SongRepository,
-        settingsRepository: SettingsRepository,
-        artworkCodex: ArtworkCodex,
-        isInternetConnectionMetered: GetIsInternetConnectionMetered
+        artworkCodex: ArtworkCodex
     ): ArtworkMapperRepository = ArtworkMapperRepositoryImpl(
         permissionMapperRepository,
-        songRepository,
-        settingsRepository,
-        artworkCodex,
-        isInternetConnectionMetered
+        artworkCodex
     )
 }

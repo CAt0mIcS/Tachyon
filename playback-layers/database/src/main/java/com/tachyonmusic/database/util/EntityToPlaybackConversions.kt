@@ -1,6 +1,5 @@
 package com.tachyonmusic.database.util
 
-import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.data.playback.RemoteLoopImpl
 import com.tachyonmusic.core.data.playback.RemotePlaylistImpl
@@ -16,7 +15,7 @@ fun SongEntity.toSong() = LocalSongImpl(mediaId.uri!!, mediaId, title, artist, d
 fun LoopEntity.toLoop() =
     RemoteLoopImpl(
         mediaId,
-        mediaId.source.replace(PlaybackType.Loop.Remote().toString(), ""),
+        name,
         TimingDataController(timingData, currentTimingDataIndex),
         LocalSongImpl(
             mediaId.underlyingMediaId!!.uri!!,

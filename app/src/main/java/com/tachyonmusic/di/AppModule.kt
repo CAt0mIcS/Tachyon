@@ -135,10 +135,8 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideCreateNewPlaylistUseCase(
-        playbackRepository: PlaybackRepository,
-        playlistRepository: PlaylistRepository
-    ) = CreateAndSaveNewPlaylist(playbackRepository, playlistRepository)
+    fun provideCreateNewPlaylistUseCase(playlistRepository: PlaylistRepository) =
+        CreateAndSaveNewPlaylist(playlistRepository)
 
     @Provides
     @Singleton

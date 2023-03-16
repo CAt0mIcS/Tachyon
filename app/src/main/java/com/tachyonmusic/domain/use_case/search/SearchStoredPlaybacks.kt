@@ -34,7 +34,7 @@ class SearchStoredPlaybacks(
         // TODO: Optimize
         val playbackNames =
             (songRepository.getSongs() + loopRepository.getLoops()).map { it.title } + playlistRepository.getPlaylists()
-                .map { it.mediaId.source.replace(PlaybackType.Playlist.Remote().toString(), "") }
+                .map { it.name }
 
         // TODO: Better string searches?
         for (playbackName in playbackNames) {

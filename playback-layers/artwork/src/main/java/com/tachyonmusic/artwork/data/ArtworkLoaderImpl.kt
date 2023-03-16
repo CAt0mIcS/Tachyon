@@ -1,9 +1,8 @@
 package com.tachyonmusic.artwork.data
 
-import android.content.Context
 import com.tachyonmusic.artwork.R
+import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.artwork.domain.ArtworkLoader
-import com.tachyonmusic.artwork.domain.ArtworkLoader.ArtworkData
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
@@ -18,12 +17,14 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import java.net.URI
 
+private typealias ArtworkData = ArtworkCodex.ArtworkUpdateData
+
 internal class ArtworkLoaderImpl(
     private val artworkFetcher: ArtworkFetcher,
-    private val context: Context,
     private val log: Logger,
     private val metadataExtractor: SongMetadataExtractor
 ) : ArtworkLoader {
+
     override suspend fun requestLoad(
         entity: SongEntity,
         fetchOnline: Boolean
@@ -77,39 +78,36 @@ internal class ArtworkLoaderImpl(
             else -> {
                 log.debug("Entity ${entity.title} - ${entity.artist} has no artwork type, trying to find artwork...")
                 val newArtwork = tryFindArtwork(entity, fetchOnline)
-                val ret: Resource<ArtworkData> =
-                    when (val artwork = newArtwork.data) {
-                        is RemoteArtwork -> {
-                            log.debug("Entity ${entity.title} - ${entity.artist} found ${ArtworkType.REMOTE}")
-                            entity.artworkType = ArtworkType.REMOTE
-                            entity.artworkUrl = artwork.uri.toURL().toString()
-                            Resource.Success(ArtworkData(artwork, entity))
-                        }
-
-                        is EmbeddedArtwork -> {
-                            log.debug("Entity ${entity.title} - ${entity.artist} found ${ArtworkType.EMBEDDED}")
-                            entity.artworkType = ArtworkType.EMBEDDED
-                            entity.artworkUrl = null
-                            Resource.Success(ArtworkData(artwork, entity))
-                        }
-
-                        else -> {
-                            log.debug("Entity ${entity.title} - ${entity.artist} found ${ArtworkType.NO_ARTWORK}, fetchOnline: $fetchOnline")
-
-                            // Only update entity in database if we also searched the web for artwork
-                            if (fetchOnline)
-                                entity.artworkType = ArtworkType.NO_ARTWORK
-                            Resource.Error(
-                                message = UiText.StringResource(
-                                    R.string.no_artwork_found,
-                                    "${entity.title} - ${entity.artist}"
-                                ),
-                                data = ArtworkData(entityToUpdate = if(fetchOnline) entity else null)
-                            )
-                        }
+                return when (val artwork = newArtwork.data) {
+                    is RemoteArtwork -> {
+                        log.debug("Entity ${entity.title} - ${entity.artist} found ${ArtworkType.REMOTE}")
+                        entity.artworkType = ArtworkType.REMOTE
+                        entity.artworkUrl = artwork.uri.toURL().toString()
+                        Resource.Success(ArtworkData(artwork, entity))
                     }
 
-                return ret
+                    is EmbeddedArtwork -> {
+                        log.debug("Entity ${entity.title} - ${entity.artist} found ${ArtworkType.EMBEDDED}")
+                        entity.artworkType = ArtworkType.EMBEDDED
+                        entity.artworkUrl = null
+                        Resource.Success(ArtworkData(artwork, entity))
+                    }
+
+                    else -> {
+                        log.debug("Entity ${entity.title} - ${entity.artist} found ${ArtworkType.NO_ARTWORK}, fetchOnline: $fetchOnline")
+
+                        // Only update entity in database if we also searched the web for artwork
+                        if (fetchOnline)
+                            entity.artworkType = ArtworkType.NO_ARTWORK
+                        Resource.Error(
+                            message = UiText.StringResource(
+                                R.string.no_artwork_found,
+                                "${entity.title} - ${entity.artist}"
+                            ),
+                            data = ArtworkData(entityToUpdate = if (fetchOnline) entity else null)
+                        )
+                    }
+                }
             }
         }
     }

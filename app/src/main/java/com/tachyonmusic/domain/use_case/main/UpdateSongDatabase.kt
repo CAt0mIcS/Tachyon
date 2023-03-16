@@ -90,7 +90,6 @@ class UpdateSongDatabase(
         songRepo.getSongs().forEach { entity ->
             // TODO: Don't store unplayable EmbeddedArtwork in codex so that it will load once it becomes playable
             entitiesToUpdate += async {
-                com.tachyonmusic.util.delay(6000.ms)
                 var entityToUpdate: SongEntity? = null
                 artworkCodex.awaitOrLoad(entity /*TODO: fetchOnline*/).onEach {
                     if (it is Resource.Success && it.data?.entityToUpdate != null) {

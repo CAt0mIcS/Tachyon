@@ -1,6 +1,7 @@
 package com.tachyonmusic.database.domain.model
 
 import androidx.room.Entity
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.util.Duration
@@ -13,4 +14,8 @@ class LoopEntity(
     val songDuration: Duration,
     val timingData: List<TimingData>,
     val currentTimingDataIndex: Int = 0,
-) : SinglePlaybackEntity(mediaId, songTitle, songArtist, songDuration)
+) : SinglePlaybackEntity(mediaId, songTitle, songArtist, songDuration) {
+
+    val name: String
+        get() = mediaId.source.replace(PlaybackType.Loop.Remote().toString(), "")
+}
