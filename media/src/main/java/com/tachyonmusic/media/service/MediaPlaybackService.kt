@@ -12,18 +12,26 @@ import androidx.media3.session.MediaSession
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.tachyonmusic.core.ArtworkType
+import com.tachyonmusic.core.data.RemoteArtwork
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.core.StateUpdateEvent
 import com.tachyonmusic.media.core.TimingDataUpdatedEvent
 import com.tachyonmusic.media.core.dispatchMediaEvent
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.domain.CustomPlayer
+import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
+import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.supportedCommands
 import com.tachyonmusic.util.future
+import com.tachyonmusic.util.ms
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -44,6 +52,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     lateinit var settingsRepository: SettingsRepository
 
     @Inject
+    lateinit var saveRecentlyPlayed: SaveRecentlyPlayed
+
+    @Inject
+    lateinit var addNewPlaybackToHistory: AddNewPlaybackToHistory
+
+    @Inject
     lateinit var log: Logger
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -56,6 +70,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
         runBlocking {
             exoPlayer = buildExoPlayer(!settingsRepository.getSettings().ignoreAudioFocus)
+            currentPlayer = exoPlayer
         }
 
 //        settingsRepository.observe().onEach {
@@ -110,6 +125,17 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             controller: MediaSession.ControllerInfo
         ): MediaSession.ConnectionResult = supportedCommands
 
+        override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
+            val playback = currentPlayer.mediaMetadata.playback
+            log.info("Dispatching StateUpdateEvent with $playback and playWhenReady=${currentPlayer.playWhenReady}")
+            mediaSession.dispatchMediaEvent(
+                StateUpdateEvent(
+                    playback,
+                    currentPlayer.playWhenReady
+                )
+            )
+        }
+
         override fun onGetLibraryRoot(
             session: MediaLibrarySession,
             browser: MediaSession.ControllerInfo,
@@ -141,6 +167,38 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 it.buildUpon()
                     .setUri(it.mediaMetadata.playback?.uri ?: return@mapNotNull null)
                     .build()
+            }
+        }
+    }
+
+    /**************************************************************************
+     ********** [Player.Listener]
+     *************************************************************************/
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+            val newPlayback = mediaItem?.mediaMetadata?.playback
+            ioScope.launch {
+                addNewPlaybackToHistory(newPlayback)
+            }
+        }
+    }
+
+    override fun onIsPlayingChanged(isPlaying: Boolean) {
+        if (!isPlaying) {
+            val playback = currentPlayer.mediaMetadata.playback ?: return
+            val currentPos = currentPlayer.currentPosition.ms
+            ioScope.launch {
+                saveRecentlyPlayed(
+                    RecentlyPlayed(
+                        playback.mediaId,
+                        currentPos,
+                        playback.duration,
+                        ArtworkType.getType(playback),
+                        if (playback.artwork.value is RemoteArtwork)
+                            (playback.artwork.value as RemoteArtwork).uri.toURL()
+                                .toString() else null
+                    )
+                )
             }
         }
     }

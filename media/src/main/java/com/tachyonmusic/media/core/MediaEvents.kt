@@ -3,6 +3,7 @@ package com.tachyonmusic.media.core
 import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.Bundleable
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaSession
@@ -11,6 +12,8 @@ import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.media.util.parcelable
 
 private const val actionPrefix = "com.tachyonmusic."
@@ -130,6 +133,30 @@ data class TimingDataUpdatedEvent(
 }
 
 
+data class StateUpdateEvent(
+    val currentPlayback: SinglePlayback?,
+    val playWhenReady: Boolean
+) : MediaSessionEvent {
+    override val command: SessionCommand
+        get() = Companion.command
+
+    override fun toBundle() = Bundle().apply {
+        putParcelable(MetadataKeys.Playback, currentPlayback)
+        putBoolean(MetadataKeys.IsPlaying, playWhenReady)
+    }
+
+    companion object {
+        fun fromBundle(bundle: Bundle) =
+            StateUpdateEvent(
+                bundle.parcelable(MetadataKeys.Playback),
+                bundle.getBoolean(MetadataKeys.IsPlaying)
+            )
+
+        val command = SessionCommand("${actionPrefix}STATE_UPDATE_COMMAND", Bundle.EMPTY)
+    }
+}
+
+
 internal fun MediaSession.dispatchMediaEvent(event: MediaSessionEvent) {
     broadcastCustomCommand(event.command, event.toBundle())
 }
@@ -145,5 +172,6 @@ internal fun SessionCommand.toMediaBrowserEvent(bundle: Bundle): MediaBrowserEve
 
 fun SessionCommand.toMediaSessionEvent(bundle: Bundle): MediaSessionEvent = when (this) {
     TimingDataUpdatedEvent.command -> TimingDataUpdatedEvent.fromBundle(bundle)
+    StateUpdateEvent.command -> StateUpdateEvent.fromBundle(bundle)
     else -> TODO("Invalid session command $customAction")
 }

@@ -31,8 +31,7 @@ class PlayPlayback(
                         browser.seekTo(playback.mediaId, position)
                     } else {
                         log.info("Playback out of date. Setting a new playlist and preparing the player...")
-                        val playlist =
-                            getPlaylistForPlayback(playback, sortParams) ?: return
+                        val playlist = getPlaylistForPlayback(playback, sortParams) ?: return
                         invoke(playlist)
                     }
                 } else error("Shouldn't happen")

@@ -16,6 +16,7 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.GetPlaylistForPlayback
 import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.media.util.*
@@ -29,9 +30,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 class MediaPlaybackServiceMediaBrowserController(
-    private val context: Context
+    private val getPlaylistForPlayback: GetPlaylistForPlayback
 ) : MediaBrowserController, Player.Listener,
     MediaBrowser.Listener, IListenable<MediaBrowserController.EventListener> by Listenable() {
 
@@ -153,6 +155,19 @@ class MediaPlaybackServiceMediaBrowserController(
                 _currentPlayback.update {
                     it?.copy()?.apply {
                         timingData = event.timingData
+                    }
+                }
+            }
+
+            is StateUpdateEvent -> {
+                println("Received StateUpdateEvent!!!")
+                _currentPlayback.update { event.currentPlayback }
+                _isPlaying.update { event.playWhenReady }
+                _currentPlaylist.update {
+                    // TODO: We're not taking sorting into account here...
+                    // TODO: Use coroutine
+                    runBlocking {
+                        it ?: getPlaylistForPlayback(event.currentPlayback)
                     }
                 }
             }

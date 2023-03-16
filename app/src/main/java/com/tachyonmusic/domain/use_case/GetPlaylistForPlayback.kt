@@ -57,7 +57,7 @@ class GetPlaylistForPlayback(
         return RemotePlaylistImpl.build(
             MediaId.ofRemotePlaylist("com.tachyonmusic.SONGS:Combine:${settings.combineDifferentPlaybackTypes}"),
             items.toMutableList(),
-            items.indexOf(playback)
+            items.indexOfFirst { it.mediaId == playback.mediaId }
         )
     }
 
@@ -75,7 +75,7 @@ class GetPlaylistForPlayback(
         return RemotePlaylistImpl.build(
             MediaId.ofRemotePlaylist("com.tachyonmusic.LOOPS:Combine:${settings.combineDifferentPlaybackTypes}"),
             items.toMutableList(),
-            items.indexOf(playback)
+            items.indexOfFirst { it.mediaId == playback.mediaId }
         )
     }
 }

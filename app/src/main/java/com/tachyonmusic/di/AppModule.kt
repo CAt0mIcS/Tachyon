@@ -234,6 +234,6 @@ object AppRepositoryModule {
 
     @Provides
     @Singleton
-    fun provideMediaBrowserController(@ApplicationContext context: Context): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController(context)
+    fun provideMediaBrowserController(getPlaylistForPlayback: GetPlaylistForPlayback): MediaBrowserController =
+        MediaPlaybackServiceMediaBrowserController(getPlaylistForPlayback)
 }
