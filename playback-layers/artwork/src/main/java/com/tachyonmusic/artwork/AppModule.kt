@@ -10,8 +10,6 @@ import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
 import com.tachyonmusic.artwork.domain.GetIsInternetConnectionMetered
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.database.domain.repository.SettingsRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.permission.domain.PermissionMapperRepository
 import dagger.Module

@@ -1,7 +1,7 @@
 package com.tachyonmusic.media.data
 
-import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.ArtworkType
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.testutils.assertEquals

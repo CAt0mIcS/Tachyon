@@ -14,7 +14,6 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.RemoteArtwork
-import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.database.domain.repository.SettingsRepository

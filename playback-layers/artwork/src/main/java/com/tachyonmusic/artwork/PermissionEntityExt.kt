@@ -1,6 +1,5 @@
 package com.tachyonmusic.artwork
 
-import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.data.playback.RemoteLoopImpl
 import com.tachyonmusic.core.data.playback.RemotePlaylistImpl
@@ -12,7 +11,6 @@ import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.permission.domain.model.LoopPermissionEntity
 import com.tachyonmusic.permission.domain.model.PlaylistPermissionEntity
-import com.tachyonmusic.permission.domain.model.SinglePlaybackPermissionEntity
 import com.tachyonmusic.permission.domain.model.SongPermissionEntity
 import kotlinx.coroutines.flow.update
 

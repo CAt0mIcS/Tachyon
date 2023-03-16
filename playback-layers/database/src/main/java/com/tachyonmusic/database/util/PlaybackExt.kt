@@ -1,8 +1,8 @@
 package com.tachyonmusic.database.util
 
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.playback.*
-import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.database.domain.model.*
 
 fun Playback.toEntity(): PlaybackEntity = when (this) {

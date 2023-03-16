@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.app.R
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
-import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText

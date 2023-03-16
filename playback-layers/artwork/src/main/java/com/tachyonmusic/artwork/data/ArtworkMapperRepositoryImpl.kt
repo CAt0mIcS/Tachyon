@@ -3,12 +3,9 @@ package com.tachyonmusic.artwork.data
 import com.tachyonmusic.artwork.*
 import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
-import com.tachyonmusic.artwork.domain.GetIsInternetConnectionMetered
 import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.database.domain.repository.SettingsRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.permission.domain.PermissionMapperRepository
 import com.tachyonmusic.permission.domain.model.LoopPermissionEntity
 import com.tachyonmusic.permission.domain.model.PlaylistPermissionEntity

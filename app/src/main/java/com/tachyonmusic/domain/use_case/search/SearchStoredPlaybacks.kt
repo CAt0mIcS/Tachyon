@@ -1,7 +1,6 @@
 package com.tachyonmusic.domain.use_case.search
 
 import com.tachyonmusic.app.R
-import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository

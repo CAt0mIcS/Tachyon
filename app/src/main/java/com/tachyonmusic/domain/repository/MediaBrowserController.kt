@@ -5,7 +5,6 @@ import androidx.lifecycle.Lifecycle
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import kotlinx.coroutines.flow.StateFlow

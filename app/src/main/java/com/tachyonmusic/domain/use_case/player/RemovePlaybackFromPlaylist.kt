@@ -25,10 +25,10 @@ class RemovePlaybackFromPlaylist(
                 copy.mediaId,
                 copy.playbacks.map { it.mediaId })
 
-//            runOnUiThread {
-//                if(browser.associatedPlaylistState.value != null)
-//                    browser.updatePlaylistState(copy)
-//            }
+            runOnUiThread {
+                if(browser.currentPlaylist.value != null)
+                    browser.setPlaylist(copy) // TODO: Check if we need to re-prepare, seek to correct item, etc...
+            }
         }
 
     suspend operator fun invoke(toRemove: SinglePlayback?, i: Int) = withContext(Dispatchers.IO) {

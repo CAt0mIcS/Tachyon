@@ -17,9 +17,7 @@ import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
-import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.permission.domain.PermissionMapperRepository
 import com.tachyonmusic.playback_layers.PlaybackRepository
 import dagger.Module
 import dagger.Provides
@@ -122,9 +120,8 @@ object AppUseCaseModule {
     @Singleton
     fun provideSavePlaybackToPlaylistUseCase(
         playlistRepository: PlaylistRepository,
-        playbackRepository: PlaybackRepository,
-        browser: MediaBrowserController
-    ) = SavePlaybackToPlaylist(playlistRepository, playbackRepository, browser)
+        playbackRepository: PlaybackRepository
+    ) = SavePlaybackToPlaylist(playlistRepository, playbackRepository)
 
     @Provides
     @Singleton
@@ -217,10 +214,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetMediaStatesUseCase(
-        browser: MediaBrowserController,
-        @ApplicationContext context: Context
-    ) = GetMediaStates(browser, context)
+    fun provideGetMediaStatesUseCase(browser: MediaBrowserController) = GetMediaStates(browser)
 }
 
 

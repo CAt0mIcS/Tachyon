@@ -2,9 +2,9 @@ package com.tachyonmusic.database.domain.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
 

@@ -2,7 +2,6 @@ package com.tachyonmusic.data.repository
 
 import android.app.Activity
 import android.content.ComponentName
-import android.content.Context
 import android.os.Bundle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -17,11 +16,16 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetPlaylistForPlayback
-import com.tachyonmusic.media.core.*
+import com.tachyonmusic.media.core.StateUpdateEvent
+import com.tachyonmusic.media.core.TimingDataUpdatedEvent
+import com.tachyonmusic.media.core.toMediaSessionEvent
 import com.tachyonmusic.media.service.MediaPlaybackService
-import com.tachyonmusic.media.util.*
-import com.tachyonmusic.permission.isPlayable
-import com.tachyonmusic.util.*
+import com.tachyonmusic.media.util.playback
+import com.tachyonmusic.media.util.toMediaItems
+import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.IListenable
+import com.tachyonmusic.util.Listenable
+import com.tachyonmusic.util.ms
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -160,7 +164,6 @@ class MediaPlaybackServiceMediaBrowserController(
             }
 
             is StateUpdateEvent -> {
-                println("Received StateUpdateEvent!!!")
                 _currentPlayback.update { event.currentPlayback }
                 _isPlaying.update { event.playWhenReady }
                 _currentPlaylist.update {

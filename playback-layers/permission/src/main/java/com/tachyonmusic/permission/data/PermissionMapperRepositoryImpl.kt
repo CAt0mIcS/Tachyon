@@ -1,7 +1,10 @@
 package com.tachyonmusic.permission.data
 
 import android.content.Context
-import com.tachyonmusic.database.domain.model.*
+import com.tachyonmusic.database.domain.model.HistoryEntity
+import com.tachyonmusic.database.domain.model.LoopEntity
+import com.tachyonmusic.database.domain.model.PlaylistEntity
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
@@ -9,7 +12,8 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.permission.checkIfPlayable
 import com.tachyonmusic.permission.domain.PermissionMapperRepository
 import com.tachyonmusic.permission.domain.UriPermissionRepository
-import com.tachyonmusic.permission.domain.model.*
+import com.tachyonmusic.permission.domain.model.LoopPermissionEntity
+import com.tachyonmusic.permission.domain.model.SongPermissionEntity
 import com.tachyonmusic.permission.domain.model.toPermissionEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
