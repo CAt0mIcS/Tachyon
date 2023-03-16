@@ -19,6 +19,7 @@ import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.permission.domain.PermissionMapperRepository
 import com.tachyonmusic.playback_layers.PlaybackRepository
 import dagger.Module
 import dagger.Provides

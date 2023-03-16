@@ -3,6 +3,8 @@ package com.tachyonmusic.domain.use_case.main
 import com.tachyonmusic.app.R
 import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
+import com.tachyonmusic.artwork.toSongEntity
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.model.SettingsEntity
@@ -10,6 +12,7 @@ import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.permission.domain.PermissionMapperRepository
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.removeFirst
@@ -87,7 +90,6 @@ class UpdateSongDatabase(
          *************************************************************************/
         val songs = songRepo.getSongs()
         val jobs = List(songs.size) { i ->
-            // TODO: Don't store unplayable EmbeddedArtwork in codex so that it will load once it becomes playable
             launch {
                 artworkCodex.awaitOrLoad(songs[i] /*TODO: fetchOnline*/).onEach {
                     val entityToUpdate = it.data?.entityToUpdate

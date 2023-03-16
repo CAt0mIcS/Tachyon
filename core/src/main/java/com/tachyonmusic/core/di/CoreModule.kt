@@ -33,8 +33,10 @@ class CoreModule {
 
     @Provides
     @Singleton
-    fun provideSongMetadataExtractor(@ApplicationContext context: Context): SongMetadataExtractor =
-        FileSongMetadataExtractor(context.contentResolver)
+    fun provideSongMetadataExtractor(
+        @ApplicationContext context: Context,
+        logger: Logger
+    ): SongMetadataExtractor = FileSongMetadataExtractor(context.contentResolver, logger)
 
     @Provides
     @Singleton

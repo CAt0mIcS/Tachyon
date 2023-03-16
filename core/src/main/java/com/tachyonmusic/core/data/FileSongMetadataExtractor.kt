@@ -7,10 +7,12 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import com.tachyonmusic.core.domain.SongMetadataExtractor
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.ms
 
 class FileSongMetadataExtractor(
-    private val contentResolver: ContentResolver
+    private val contentResolver: ContentResolver,
+    private val log: Logger
 ) : SongMetadataExtractor {
     override fun loadMetadata(
         uri: Uri,
@@ -22,10 +24,9 @@ class FileSongMetadataExtractor(
             metaRetriever.setDataSource(fd?.fileDescriptor)
             fd?.close()
         } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-            TODO("Implement error handling: $uri, ${e.localizedMessage}")
-        } catch (_: SecurityException) {
-
+            log.error(e.localizedMessage ?: e.stackTraceToString())
+        } catch (e: SecurityException) {
+            log.error(e.localizedMessage ?: e.stackTraceToString())
         }
 
         return SongMetadataExtractor.SongMetadata(
@@ -45,10 +46,11 @@ class FileSongMetadataExtractor(
             metaRetriever.setDataSource(fd?.fileDescriptor)
             fd?.close()
         } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-            TODO("Implement error handling: $uri")
-        } catch (_: SecurityException) {
-
+            log.error(e.localizedMessage ?: e.stackTraceToString())
+            return null
+        } catch (e: SecurityException) {
+            log.error(e.localizedMessage ?: e.stackTraceToString())
+            return null
         }
 
         val art: ByteArray? = metaRetriever.embeddedPicture
