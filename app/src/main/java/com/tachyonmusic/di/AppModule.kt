@@ -211,6 +211,14 @@ object AppUseCaseModule {
     @Provides
     @Singleton
     fun provideGetMediaStatesUseCase(browser: MediaBrowserController) = GetMediaStates(browser)
+
+    @Provides
+    @Singleton
+    fun provideSetRepeatModeUseCase(
+        browser: MediaBrowserController,
+        dataRepository: DataRepository
+    ) = SetRepeatMode(browser, dataRepository)
+
 }
 
 

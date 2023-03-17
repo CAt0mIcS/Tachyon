@@ -2,6 +2,7 @@ package com.tachyonmusic.domain.repository
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
+import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
@@ -30,6 +31,10 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     val canPrepare: Boolean
 
     val nextPlayback: SinglePlayback?
+
+    val repeatMode: StateFlow<RepeatMode>
+
+    fun setRepeatMode(repeatMode: RepeatMode)
 
     suspend fun prepare()
     fun play()

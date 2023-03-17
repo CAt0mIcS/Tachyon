@@ -1,14 +1,13 @@
 package com.tachyonmusic.media.service
 
+import android.os.Bundle
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
-import androidx.media3.session.LibraryResult
-import androidx.media3.session.MediaLibraryService
-import androidx.media3.session.MediaSession
+import androidx.media3.session.*
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -18,19 +17,19 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.core.StateUpdateEvent
-import com.tachyonmusic.media.core.TimingDataUpdatedEvent
-import com.tachyonmusic.media.core.dispatchMediaEvent
+import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.data.MediaNotificationProvider
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
+import com.tachyonmusic.media.util.coreRepeatMode
 import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.supportedCommands
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -168,7 +167,28 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     .build()
             }
         }
+
+        override fun onCustomCommand(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            customCommand: SessionCommand,
+            args: Bundle
+        ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
+            runOnUiThread {
+                when (val event = customCommand.toMediaBrowserEvent(args)) {
+                    is SetRepeatModeEvent -> handleSetRepeatModeEvent(event)
+                    else -> SessionResult(SessionResult.RESULT_SUCCESS)
+                }
+            }
+        }
+
+
+        private fun handleSetRepeatModeEvent(event: SetRepeatModeEvent): SessionResult {
+            currentPlayer.coreRepeatMode = event.repeatMode
+            return SessionResult(SessionResult.RESULT_SUCCESS)
+        }
     }
+
 
     /**************************************************************************
      ********** [Player.Listener]

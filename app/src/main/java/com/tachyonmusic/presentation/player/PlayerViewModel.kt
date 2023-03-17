@@ -32,6 +32,7 @@ class PlayerViewModel @Inject constructor(
 
     observeSettings: ObserveSettings,
     observeSavedData: ObserveSavedData,
+    private val setRepeatMode: SetRepeatMode,
 
     private val getCurrentPlaybackPos: GetCurrentPosition,
     private val seekToPosition: SeekToPosition,
@@ -88,11 +89,8 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SeekIncrements())
 
     val isPlaying = getMediaStates.isPlaying()
-    val repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.All)
-//    val repeatMode =
-//        combine(getMediaStates.repeatMode(), observeSavedData()) { browserRepeatMode, savedData ->
-//            browserRepeatMode ?: savedData.repeatMode
-//        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+    val repeatMode = getMediaStates.repeatMode()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), RepeatMode.All)
 
     private var recentlyPlayedPos: Duration? = null
 
@@ -121,10 +119,16 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun nextRepeatMode() {
-
+        viewModelScope.launch {
+            setRepeatMode(repeatMode.value.next)
+        }
     }
 
-    fun play(playback: SinglePlayback) {}
+    fun play(playback: SinglePlayback) {
+        viewModelScope.launch {
+            playPlayback(playback)
+        }
+    }
 
 
     /**************************************************************************

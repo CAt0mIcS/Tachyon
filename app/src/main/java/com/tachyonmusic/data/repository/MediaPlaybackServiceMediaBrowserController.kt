@@ -11,16 +11,16 @@ import androidx.media3.common.Player
 import androidx.media3.session.*
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetPlaylistForPlayback
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.core.StateUpdateEvent
-import com.tachyonmusic.media.core.TimingDataUpdatedEvent
-import com.tachyonmusic.media.core.toMediaSessionEvent
+import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.service.MediaPlaybackService
+import com.tachyonmusic.media.util.fromMedia
 import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.toMediaItems
 import com.tachyonmusic.util.Duration
@@ -109,6 +109,13 @@ class MediaPlaybackServiceMediaBrowserController(
             return browser?.getMediaItemAt(idx)?.mediaMetadata?.playback
         }
 
+    private val _repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.All)
+    override val repeatMode = _repeatMode.asStateFlow()
+
+    override fun setRepeatMode(repeatMode: RepeatMode) {
+        browser?.dispatchMediaEvent(SetRepeatModeEvent(repeatMode))
+    }
+
     private var prepareJob: CompletableJob? = null
     override suspend fun prepare() {
         assert(currentPlaylist.value != null)
@@ -152,6 +159,24 @@ class MediaPlaybackServiceMediaBrowserController(
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
         _isPlaying.update { playWhenReady }
+    }
+
+    override fun onRepeatModeChanged(repeatMode: Int) {
+        _repeatMode.update {
+            RepeatMode.fromMedia(
+                repeatMode,
+                browser?.shuffleModeEnabled ?: false
+            )
+        }
+    }
+
+    override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+        _repeatMode.update {
+            RepeatMode.fromMedia(
+                browser?.repeatMode ?: Player.REPEAT_MODE_ALL,
+                shuffleModeEnabled
+            )
+        }
     }
 
 

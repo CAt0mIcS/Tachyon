@@ -8,4 +8,6 @@ class GetMediaStates(
     fun currentPlaylist() = browser.currentPlaylist
     fun playback() = browser.currentPlayback
     fun isPlaying() = browser.isPlaying
+
+    fun repeatMode() = browser.repeatMode
 }
