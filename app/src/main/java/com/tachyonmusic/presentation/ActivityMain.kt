@@ -157,7 +157,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                                 .fillMaxSize()
                                 .padding(innerPaddingSheet)
                         ) {
-                            NavigationGraph(navController, sheetState, miniPlayerHeight)
+                            NavigationGraph(navController, sheetState, miniPlayerHeight.value)
                         }
                     }
                 }

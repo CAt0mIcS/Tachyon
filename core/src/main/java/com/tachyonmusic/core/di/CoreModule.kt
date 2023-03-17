@@ -37,13 +37,4 @@ class CoreModule {
         @ApplicationContext context: Context,
         logger: Logger
     ): SongMetadataExtractor = FileSongMetadataExtractor(context.contentResolver, logger)
-
-    @Provides
-    @Singleton
-    fun provideLogger(@ApplicationContext context: Context): Logger = LoggerImpl(
-        listOf(
-            ConsoleLogger(),
-            ConsoleUiTextLogger(context)
-        )
-    )
 }

@@ -17,6 +17,10 @@ import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
+import com.tachyonmusic.logger.LoggerImpl
+import com.tachyonmusic.logger.data.ConsoleLogger
+import com.tachyonmusic.logger.data.ConsoleUiTextLogger
+import com.tachyonmusic.logger.data.ForwardingLogger
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.PlaybackRepository
 import dagger.Module
@@ -228,6 +232,18 @@ object AppRepositoryModule {
 
     @Provides
     @Singleton
-    fun provideMediaBrowserController(getPlaylistForPlayback: GetPlaylistForPlayback): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController(getPlaylistForPlayback)
+    fun provideMediaBrowserController(
+        getPlaylistForPlayback: GetPlaylistForPlayback,
+        logger: Logger
+    ): MediaBrowserController =
+        MediaPlaybackServiceMediaBrowserController(getPlaylistForPlayback, logger)
+
+    @Provides
+    @Singleton
+    fun provideLogger(@ApplicationContext context: Context): Logger = LoggerImpl(
+        setOf(
+            ConsoleLogger(),
+            ConsoleUiTextLogger(context)
+        )
+    )
 }

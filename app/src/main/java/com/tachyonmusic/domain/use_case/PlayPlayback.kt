@@ -32,7 +32,7 @@ class PlayPlayback(
                     } else {
                         log.info("Playback out of date. Setting a new playlist and preparing the player...")
                         val playlist = getPlaylistForPlayback(playback, sortParams) ?: return
-                        invoke(playlist)
+                        invoke(playlist, position, sortParams)
                     }
                 } else error("Shouldn't happen")
             }

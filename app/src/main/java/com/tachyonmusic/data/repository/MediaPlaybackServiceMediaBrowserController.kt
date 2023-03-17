@@ -16,6 +16,7 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetPlaylistForPlayback
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.core.StateUpdateEvent
 import com.tachyonmusic.media.core.TimingDataUpdatedEvent
 import com.tachyonmusic.media.core.toMediaSessionEvent
@@ -37,7 +38,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 class MediaPlaybackServiceMediaBrowserController(
-    private val getPlaylistForPlayback: GetPlaylistForPlayback
+    private val getPlaylistForPlayback: GetPlaylistForPlayback,
+    private val log: Logger
 ) : MediaBrowserController, Player.Listener,
     MediaBrowser.Listener, IListenable<MediaBrowserController.EventListener> by Listenable() {
 
@@ -88,12 +90,16 @@ class MediaPlaybackServiceMediaBrowserController(
     }
 
     override val currentPosition: Duration?
-        get() = browser?.currentPosition?.ms
+        get() = if (browser?.currentTimeline?.isEmpty == true || browser?.isConnected != true)
+            null
+        else browser?.currentPosition?.ms
+
 
     override val canPrepare: Boolean
         get() = browser?.isConnected == true
                 && browser?.playbackState == Player.STATE_IDLE
                 && (browser?.mediaItemCount ?: -1) > 0
+                && currentPlaylist.value != null
 
     override val nextPlayback: SinglePlayback?
         get() {
@@ -164,14 +170,21 @@ class MediaPlaybackServiceMediaBrowserController(
             }
 
             is StateUpdateEvent -> {
+                log.info("Received state update event with ${event.currentPlayback}, playWhenReady=${event.playWhenReady}")
                 _currentPlayback.update { event.currentPlayback }
                 _isPlaying.update { event.playWhenReady }
-                _currentPlaylist.update {
-                    // TODO: We're not taking sorting into account here...
-                    // TODO: Use coroutine
-                    runBlocking {
-                        it ?: getPlaylistForPlayback(event.currentPlayback)
-                    }
+                // TODO: We're not taking sorting into account here...
+                // TODO: Use coroutine
+                runBlocking {
+                    if (event.playWhenReady)
+                        _currentPlaylist.update {
+                            it ?: getPlaylistForPlayback(event.currentPlayback)
+                        }
+                    else
+                        setPlaylist(
+                            currentPlaylist.value ?: getPlaylistForPlayback(event.currentPlayback)
+                            ?: return@runBlocking
+                        )
                 }
             }
         }

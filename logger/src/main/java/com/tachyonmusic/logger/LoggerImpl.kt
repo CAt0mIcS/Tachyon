@@ -5,7 +5,7 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.UiText
 
 class LoggerImpl(
-    private val loggers: List<Logger> = listOf(
+    val loggers: Set<Logger> = setOf(
         ConsoleLogger()
     )
 ) : Logger {

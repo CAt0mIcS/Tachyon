@@ -37,5 +37,6 @@ android {
 }
 
 dependencies {
+    coroutines()
     projectUtil()
 }
