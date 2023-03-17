@@ -14,6 +14,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.logger.domain.Logger
@@ -54,6 +55,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     lateinit var addNewPlaybackToHistory: AddNewPlaybackToHistory
+
+    @Inject
+    lateinit var dataRepository: DataRepository
 
     @Inject
     lateinit var log: Logger
@@ -216,6 +220,27 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         if (playback.artwork.value is RemoteArtwork)
                             (playback.artwork.value as RemoteArtwork).uri.toURL()
                                 .toString() else null
+                    )
+                )
+            }
+        }
+    }
+
+    override fun onPositionDiscontinuity(
+        oldPosition: Player.PositionInfo,
+        newPosition: Player.PositionInfo,
+        reason: Int
+    ) {
+        if (reason == Player.DISCONTINUITY_REASON_SEEK || reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
+            ioScope.launch {
+                val data = dataRepository.getData()
+                dataRepository.update(
+                    recentlyPlayed = RecentlyPlayed(
+                        mediaId = data.recentlyPlayedMediaId ?: return@launch,
+                        position = newPosition.contentPositionMs.ms,
+                        duration = data.recentlyPlayedDuration,
+                        artworkType = data.recentlyPlayedArtworkType,
+                        artworkUrl = data.recentlyPlayedArtworkUrl
                     )
                 )
             }
