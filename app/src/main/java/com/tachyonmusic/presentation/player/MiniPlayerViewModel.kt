@@ -5,12 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.GetMediaStates
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
+import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.main.NormalizeCurrentPosition
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
-import com.tachyonmusic.domain.use_case.player.PlayRecentlyPlayed
 import com.tachyonmusic.playback_layers.PlaybackRepository
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.normalize
+import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,17 +23,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MiniPlayerViewModel @Inject constructor(
+    playbackRepository: PlaybackRepository,
     getMediaStates: GetMediaStates,
-    private val playbackRepository: PlaybackRepository,
     private val normalizeCurrentPosition: NormalizeCurrentPosition,
     private val getRecentlyPlayed: GetRecentlyPlayed,
     private val pauseResumePlayback: PauseResumePlayback,
-    private val playRecentlyPlayed: PlayRecentlyPlayed,
+    private val playPlayback: PlayPlayback
 ) : ViewModel() {
 
-    val playback = getMediaStates.playback().map {
-        val pb = it ?: playbackRepository.getHistory().find { history -> history.isPlayable.value }
-        if (pb?.isPlayable?.value == true) pb else null
+    val playback = playbackRepository.historyFlow.map { history ->
+        history.find { it.isPlayable.value }
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Lazily, null)
 
     val isPlaying = getMediaStates.isPlaying()
@@ -57,7 +57,10 @@ class MiniPlayerViewModel @Inject constructor(
             pauseResumePlayback(PauseResumePlayback.Action.Pause)
         else {
             viewModelScope.launch(Dispatchers.IO) {
-                playRecentlyPlayed(playback.value)
+                val recentlyPlayed = getRecentlyPlayed()
+                runOnUiThreadAsync {
+                    playPlayback(playback.value, recentlyPlayed?.position)
+                }
             }
         }
     }

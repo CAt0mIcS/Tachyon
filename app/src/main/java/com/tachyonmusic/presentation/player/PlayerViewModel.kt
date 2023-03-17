@@ -9,16 +9,14 @@ import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.use_case.GetMediaStates
-import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
-import com.tachyonmusic.domain.use_case.ObserveSavedData
-import com.tachyonmusic.domain.use_case.ObserveSettings
+import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.playback_layers.PlaybackRepository
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.player.data.SeekIncrements
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -37,9 +35,9 @@ class PlayerViewModel @Inject constructor(
 
     private val getCurrentPlaybackPos: GetCurrentPosition,
     private val seekToPosition: SeekToPosition,
-    getRecentlyPlayed: GetRecentlyPlayed,
+    private val getRecentlyPlayed: GetRecentlyPlayed,
     private val pauseResumePlayback: PauseResumePlayback,
-    private val playRecentlyPlayed: PlayRecentlyPlayed,
+    private val playPlayback: PlayPlayback,
 
     private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
     private val removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
@@ -114,7 +112,10 @@ class PlayerViewModel @Inject constructor(
             pauseResumePlayback(PauseResumePlayback.Action.Pause)
         else {
             viewModelScope.launch(Dispatchers.IO) {
-                playRecentlyPlayed(_playback.value)
+                val recentlyPlayed = getRecentlyPlayed()
+                runOnUiThreadAsync {
+                    playPlayback(_playback.value, recentlyPlayed?.position)
+                }
             }
         }
     }
@@ -152,14 +153,15 @@ class PlayerViewModel @Inject constructor(
     /**************************************************************************
      ********** PLAYLIST CONTROLS
      *************************************************************************/
-    val playlists = combine(playbackRepository.playlistFlow, _playback) { playlists, currentPlayback ->
-        if (currentPlayback == null)
-            return@combine emptyList()
+    val playlists =
+        combine(playbackRepository.playlistFlow, _playback) { playlists, currentPlayback ->
+            if (currentPlayback == null)
+                return@combine emptyList()
 
-        playlists.map { playlist ->
-            PlaylistInfo(playlist.name, playlist.hasPlayback(currentPlayback))
-        }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+            playlists.map { playlist ->
+                PlaylistInfo(playlist.name, playlist.hasPlayback(currentPlayback))
+            }
+        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun editPlaylist(i: Int, shouldAdd: Boolean) {
         viewModelScope.launch {

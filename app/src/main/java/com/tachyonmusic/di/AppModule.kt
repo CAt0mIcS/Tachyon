@@ -210,14 +210,6 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun providePlayRecentlyPlayedUseCase(
-        browser: MediaBrowserController,
-        getRecentlyPlayed: GetRecentlyPlayed,
-        playPlayback: PlayPlayback
-    ) = PlayRecentlyPlayed(browser, getRecentlyPlayed, playPlayback)
-
-    @Provides
-    @Singleton
     fun provideGetMediaStatesUseCase(browser: MediaBrowserController) = GetMediaStates(browser)
 }
 

@@ -45,7 +45,7 @@ class PlayPlayback(
                 browser.seekTo(playback.currentPlaylistIndex, position)
             }
 
-            null -> {}
+            null -> return
             else -> TODO("Invalid playback type ${playback::class.java.name}")
         }
         browser.play()

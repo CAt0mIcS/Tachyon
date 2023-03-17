@@ -28,6 +28,7 @@ fun MiniPlayerScreen(
         return
 
     val artwork by playback?.artwork?.collectAsState() ?: return
+    val isArtworkLoading by playback?.isArtworkLoading?.collectAsState() ?: return
     val isPlaying by viewModel.isPlaying.collectAsState()
 
     var currentPositionNormalized by remember { mutableStateOf(0f) }
@@ -54,6 +55,7 @@ fun MiniPlayerScreen(
             MiniPlayer(
                 playback = playback,
                 artwork = artwork ?: PlaceholderArtwork,
+                isArtworkLoading = isArtworkLoading,
                 currentPosition = currentPositionNormalized,
                 isPlaying = isPlaying,
                 onPlayPauseClicked = viewModel::pauseResume,
