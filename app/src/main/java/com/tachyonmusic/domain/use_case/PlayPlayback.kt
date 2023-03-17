@@ -26,13 +26,14 @@ class PlayPlayback(
                 } else if (!browser.canPrepare) {
                     if (playback == browser.currentPlayback.value) {
                         log.info("Current playback is already set and browser can't prepare anymore, unpausing playback...")
+                        browser.seekTo(playback.mediaId, position)
                     } else if (browser.currentPlaylist.value?.hasPlayback(playback) == true) {
                         log.info("New playback already contained in playlist, seeking to new playback...")
                         browser.seekTo(playback.mediaId, position)
                     } else {
                         log.info("Playback out of date. Setting a new playlist and preparing the player...")
                         val playlist = getPlaylistForPlayback(playback, sortParams) ?: return
-                        invoke(playlist, position, sortParams)
+                        return invoke(playlist, position, sortParams)
                     }
                 } else error("Shouldn't happen")
             }

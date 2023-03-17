@@ -44,7 +44,7 @@ object HomeScreen :
     operator fun invoke(
         navController: NavController,
         sheetState: BottomSheetState,
-        miniPlayerHeight: MutableState<Dp>,
+        miniPlayerHeight: Dp,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var searchText by remember { mutableStateOf("") }
@@ -57,7 +57,7 @@ object HomeScreen :
                 .fillMaxSize(),
             contentPadding = PaddingValues(
                 start = Theme.padding.medium,
-                bottom = miniPlayerHeight.value + Theme.padding.medium
+                bottom = miniPlayerHeight + Theme.padding.medium
             )
         ) {
 

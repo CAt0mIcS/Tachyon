@@ -23,8 +23,8 @@ class PlayRecentlyPlayed(
         val recentlyPlayedInfo = getRecentlyPlayed()
 
         runOnUiThread {
-            val prevTime = browser.currentPosition ?: recentlyPlayedInfo?.position
-            playPlayback(playback, prevTime)
+//            val prevTime = browser.currentPosition ?: recentlyPlayedInfo?.position
+            playPlayback(playback, recentlyPlayedInfo?.position)
         }
     }
 }
