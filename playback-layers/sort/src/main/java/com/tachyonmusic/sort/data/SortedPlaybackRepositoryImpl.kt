@@ -9,26 +9,36 @@ import com.tachyonmusic.sort.domain.model.SortingPreferences
 import com.tachyonmusic.sort.domain.model.sortedBy
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 
 class SortedPlaybackRepositoryImpl(
     private val permissionRepository: PermissionMapperRepository
 ) : SortedPlaybackRepository {
+
+    /**
+     * TODO
+     *  Sometimes out of sync: Playlist could still be loaded after UI restart, sortingPreferences will be
+     *  defaulted but the loaded playlist will have different sorting
+     *  When changing sortingPreferences the currently playing playlist should also be updated in the player
+     */
     private val _sortingPreferences = MutableStateFlow(SortingPreferences())
     override val sortingPreferences = _sortingPreferences.asStateFlow()
 
-    override val songFlow = permissionRepository.songFlow.map {
-        transformSongs(it)
-    }
+    override val songFlow =
+        combine(permissionRepository.songFlow, sortingPreferences) { songs, sortPrefs ->
+            transformSongs(songs, sortPrefs)
+        }
 
-    override val loopFlow = permissionRepository.loopFlow.map {
-        transformLoops(it)
-    }
+    override val loopFlow =
+        combine(permissionRepository.loopFlow, sortingPreferences) { loops, sortPrefs ->
+            transformLoops(loops, sortPrefs)
+        }
 
-    override val playlistFlow = permissionRepository.playlistFlow.map {
-        transformPlaylists(it)
-    }
+    override val playlistFlow =
+        combine(permissionRepository.playlistFlow, sortingPreferences) { playlists, sortPrefs ->
+            transformPlaylists(playlists, sortPrefs)
+        }
 
     override val historyFlow = permissionRepository.historyFlow
 
@@ -37,21 +47,30 @@ class SortedPlaybackRepositoryImpl(
         _sortingPreferences.update { sortPrefs }
     }
 
-    override suspend fun getSongs() = transformSongs(permissionRepository.getSongs())
-    override suspend fun getLoops() = transformLoops(permissionRepository.getLoops())
-    override suspend fun getPlaylists() = transformPlaylists(permissionRepository.getPlaylists())
+    override suspend fun getSongs() =
+        transformSongs(permissionRepository.getSongs(), sortingPreferences.value)
+
+    override suspend fun getLoops() =
+        transformLoops(permissionRepository.getLoops(), sortingPreferences.value)
+
+    override suspend fun getPlaylists() =
+        transformPlaylists(permissionRepository.getPlaylists(), sortingPreferences.value)
+
     override suspend fun getHistory() = permissionRepository.getHistory()
 
 
-    private fun transformSongs(songs: List<Song>): List<Song> {
-        return songs.sortedBy(sortingPreferences.value ?: return songs)
+    private fun transformSongs(songs: List<Song>, sortPrefs: SortingPreferences): List<Song> {
+        return songs.sortedBy(sortPrefs)
     }
 
-    private fun transformLoops(loops: List<Loop>): List<Loop> {
-        return loops.sortedBy(sortingPreferences.value ?: return loops)
+    private fun transformLoops(loops: List<Loop>, sortPrefs: SortingPreferences): List<Loop> {
+        return loops.sortedBy(sortPrefs)
     }
 
-    private fun transformPlaylists(playlists: List<Playlist>): List<Playlist> {
-        return playlists.sortedBy(sortingPreferences.value ?: return playlists)
+    private fun transformPlaylists(
+        playlists: List<Playlist>,
+        sortPrefs: SortingPreferences
+    ): List<Playlist> {
+        return playlists.sortedBy(sortPrefs)
     }
 }

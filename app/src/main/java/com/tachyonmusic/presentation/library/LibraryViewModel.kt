@@ -12,7 +12,6 @@ import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.sort.domain.SortedPlaybackRepository
 import com.tachyonmusic.sort.domain.model.SortType
-import com.tachyonmusic.sort.domain.model.SortingPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -56,11 +55,6 @@ class LibraryViewModel @Inject constructor(
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
-
-    init {
-        // TODO: UseCase
-        sortedPlaybackRepository.setSortingPreferences(SortingPreferences())
-    }
 
     fun onFilterSongs() {
         _filterType.value = PlaybackType.Song.Local()
