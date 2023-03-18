@@ -4,7 +4,7 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.playback_layers.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.util.runOnUiThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

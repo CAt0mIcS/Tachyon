@@ -105,6 +105,6 @@ class UpdateSongDatabase(
         }
 
         jobs.joinAll()
-        artworkMapperRepository.triggerSongReload()
+        artworkMapperRepository.triggerPlaybackReload()
     }
 }

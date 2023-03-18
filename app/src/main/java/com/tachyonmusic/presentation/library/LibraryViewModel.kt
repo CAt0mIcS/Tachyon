@@ -6,12 +6,13 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.DeletePlayback
+import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
-import com.tachyonmusic.media.core.SortParameters
-import com.tachyonmusic.media.core.SortType
-import com.tachyonmusic.media.core.sortedBy
-import com.tachyonmusic.playback_layers.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.sort.domain.SortedPlaybackRepository
+import com.tachyonmusic.sort.domain.model.SortType
+import com.tachyonmusic.sort.domain.model.SortingPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -22,7 +23,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
+    getRepositoryStates: GetRepositoryStates,
     playbackRepository: PlaybackRepository,
+    private val sortedPlaybackRepository: SortedPlaybackRepository,
 
     private val playPlayback: PlayPlayback,
 
@@ -30,21 +33,16 @@ class LibraryViewModel @Inject constructor(
     private val deletePlayback: DeletePlayback,
 ) : ViewModel() {
 
-    private val _sortParams = MutableStateFlow(SortParameters())
-    val sortParams = _sortParams.asStateFlow()
+    val sortParams = getRepositoryStates.sortPrefs()
 
-    private var songs = combine(sortParams, playbackRepository.songFlow) { sort, songs ->
-        songs.sortedBy(sort)
-    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
+    private var songs = playbackRepository.songFlow
+        .stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
-    private var loops = combine(sortParams, playbackRepository.loopFlow) { sort, loops ->
-        loops.sortedBy(sort)
-    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
+    private var loops = playbackRepository.loopFlow
+        .stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
-    private var playlists =
-        combine(sortParams, playbackRepository.playlistFlow) { sort, playlists ->
-            playlists.sortedBy(sort)
-        }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
+    private var playlists = playbackRepository.playlistFlow
+        .stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     private var _filterType = MutableStateFlow<PlaybackType>(PlaybackType.Song.Local())
     val filterType = _filterType.asStateFlow()
@@ -59,6 +57,11 @@ class LibraryViewModel @Inject constructor(
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
+    init {
+        // TODO: UseCase
+        sortedPlaybackRepository.setSortingPreferences(SortingPreferences())
+    }
+
     fun onFilterSongs() {
         _filterType.value = PlaybackType.Song.Local()
     }
@@ -72,12 +75,13 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun onSortTypeChanged(type: SortType) {
-        _sortParams.update { it.copy(type = type) }
+        // TODO: UseCase
+        sortedPlaybackRepository.setSortingPreferences(sortParams.value.copy(type = type))
     }
 
     fun onItemClicked(playback: Playback) {
         viewModelScope.launch {
-            playPlayback(playback, sortParams = sortParams.value)
+            playPlayback(playback)
         }
     }
 

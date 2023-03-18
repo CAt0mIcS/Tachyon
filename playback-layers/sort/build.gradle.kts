@@ -36,17 +36,14 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    namespace = "com.tachyonmusic.artwork"
+    namespace = "com.tachyonmusic.sort"
 }
 
 dependencies {
     dagger()
     coroutines()
 
-    projectPlaybackLayerSort()
     projectCore()
-    projectLogger()
-    projectArtworkFetcher()
-    projectUtil()
     projectPlaybackLayerDatabase()
+    projectPlaybackLayerPermission()
 }

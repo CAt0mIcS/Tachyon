@@ -1,6 +1,6 @@
 package com.tachyonmusic.domain.use_case.main
 
-import com.tachyonmusic.playback_layers.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 
 class ObserveHistory(
     private val playbackRepository: PlaybackRepository

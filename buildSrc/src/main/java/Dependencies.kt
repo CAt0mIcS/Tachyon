@@ -237,6 +237,10 @@ fun DependencyHandler.projectPlaybackLayerPermission() {
     implementation(project(":playback-layers:permission"))
 }
 
+fun DependencyHandler.projectPlaybackLayerSort() {
+    implementation(project(":playback-layers:sort"))
+}
+
 fun DependencyHandler.projectPlaybackLayerArtwork() {
     implementation(project(":playback-layers:artwork"))
 }

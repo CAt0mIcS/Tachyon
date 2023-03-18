@@ -1,14 +1,18 @@
 package com.tachyonmusic.di
 
+import android.app.Application
 import android.content.Context
+import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
+import com.tachyonmusic.data.repository.PredefinedPlaylistsRepositoryImpl
 import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
@@ -20,9 +24,9 @@ import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.data.ConsoleUiTextLogger
-import com.tachyonmusic.logger.data.ForwardingLogger
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.playback_layers.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.sort.domain.SortedPlaybackRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -195,10 +199,9 @@ object AppUseCaseModule {
     @Provides
     @Singleton
     fun provideGetPlaylistForPlaybackUseCase(
-        settingsRepository: SettingsRepository,
-        playbackRepository: PlaybackRepository,
+        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
         artworkCodex: ArtworkCodex
-    ) = GetPlaylistForPlayback(settingsRepository, playbackRepository, artworkCodex)
+    ) = GetPlaylistForPlayback(predefinedPlaylistsRepository, artworkCodex)
 
     @Provides
     @Singleton
@@ -210,7 +213,10 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideGetMediaStatesUseCase(browser: MediaBrowserController) = GetMediaStates(browser)
+    fun provideGetRepositoryStatesUseCase(
+        browser: MediaBrowserController,
+        sortedPlaybackRepository: SortedPlaybackRepository
+    ) = GetRepositoryStates(browser, sortedPlaybackRepository)
 
     @Provides
     @Singleton
@@ -246,4 +252,18 @@ object AppRepositoryModule {
             ConsoleUiTextLogger(context)
         )
     )
+
+    @Provides
+    @Singleton
+    fun providePredefinedPlaylistsRepository(
+        playbackRepository: PlaybackRepository,
+        observeSettings: ObserveSettings,
+        app: Application
+    ): PredefinedPlaylistsRepository =
+        PredefinedPlaylistsRepositoryImpl(
+            playbackRepository,
+            observeSettings,
+            (app as TachyonApplication).coroutineScope
+        )
+
 }

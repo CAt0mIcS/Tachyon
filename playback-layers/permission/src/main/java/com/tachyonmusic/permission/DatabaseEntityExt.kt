@@ -1,4 +1,4 @@
-package com.tachyonmusic.artwork
+package com.tachyonmusic.permission
 
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.data.playback.RemoteLoopImpl
@@ -8,19 +8,19 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.database.domain.model.LoopEntity
+import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.SongEntity
-import com.tachyonmusic.permission.domain.model.LoopPermissionEntity
-import com.tachyonmusic.permission.domain.model.PlaylistPermissionEntity
-import com.tachyonmusic.permission.domain.model.SongPermissionEntity
 import kotlinx.coroutines.flow.update
 
-fun SongPermissionEntity.toSong(): Song =
+fun SongEntity.toSong(isPlayable: Boolean): Song =
     LocalSongImpl(mediaId.uri!!, mediaId, title, artist, duration).let {
         it.isPlayable.value = isPlayable
         it
     }
 
-fun LoopPermissionEntity.toLoop(
+fun LoopEntity.toLoop(
+    isPlayable: Boolean,
     song: Song = LocalSongImpl(
         mediaId.uri!!,
         mediaId,
@@ -38,20 +38,6 @@ fun LoopPermissionEntity.toLoop(
     song
 )
 
-fun PlaylistPermissionEntity.toPlaylist(items: List<SinglePlayback>): Playlist =
+fun PlaylistEntity.toPlaylist(items: List<SinglePlayback>): Playlist =
     RemotePlaylistImpl.build(mediaId, items.toMutableList(), currentItemIndex)
 
-
-fun Song.toPermissionEntity(artworkType: String, artworkUrl: String? = null) = SongPermissionEntity(
-    mediaId,
-    title,
-    artist,
-    duration,
-    isPlayable.value,
-    artworkType,
-    artworkUrl
-)
-
-
-fun SongPermissionEntity.toSongEntity() =
-    SongEntity(mediaId, title, artist, duration, artworkType, artworkUrl)

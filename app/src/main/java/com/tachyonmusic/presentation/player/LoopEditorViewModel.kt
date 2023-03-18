@@ -4,7 +4,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
-import com.tachyonmusic.domain.use_case.GetMediaStates
+import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
 import com.tachyonmusic.presentation.util.update
 import com.tachyonmusic.util.Duration
@@ -19,13 +19,13 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoopEditorViewModel @Inject constructor(
-    getMediaStates: GetMediaStates,
+    getRepositoryStates: GetRepositoryStates,
     private val createAndSaveNewLoop: CreateAndSaveNewLoop,
 ) : ViewModel() {
     private val _loopError = MutableStateFlow<UiText?>(null)
     val loopError = _loopError.asStateFlow()
 
-    val duration = getMediaStates.playback().map {
+    val duration = getRepositoryStates.playback().map {
         it?.duration ?: Long.MAX_VALUE.ms
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 

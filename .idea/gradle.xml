@@ -21,6 +21,7 @@
             <option value="$PROJECT_DIR$/playback-layers/artwork" />
             <option value="$PROJECT_DIR$/playback-layers/database" />
             <option value="$PROJECT_DIR$/playback-layers/permission" />
+            <option value="$PROJECT_DIR$/playback-layers/sort" />
             <option value="$PROJECT_DIR$/testutils" />
             <option value="$PROJECT_DIR$/util" />
           </set>

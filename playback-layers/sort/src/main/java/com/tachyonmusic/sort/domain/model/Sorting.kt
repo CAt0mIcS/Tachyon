@@ -1,4 +1,4 @@
-package com.tachyonmusic.media.core
+package com.tachyonmusic.sort.domain.model
 
 import com.tachyonmusic.core.domain.playback.*
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
@@ -22,7 +22,7 @@ enum class SortType {
     }
 }
 
-data class SortParameters(
+data class SortingPreferences(
     val type: SortType = SortType.AlphabeticalTitle,
     val order: SortOrder = SortOrder.Ascending
 )
@@ -35,7 +35,7 @@ fun <T : Playback> Collection<T>.sortedBy(sortType: SortType, sortOrder: SortOrd
     }
 
 @JvmName("sortedByPb")
-fun <T : Playback> Collection<T>.sortedBy(sortParams: SortParameters) =
+fun <T : Playback> Collection<T>.sortedBy(sortParams: SortingPreferences) =
     sortedBy(sortParams.type, sortParams.order)
 
 
@@ -48,7 +48,7 @@ fun <T : SinglePlaybackEntity> Collection<T>.sortedBy(
 }
 
 @JvmName("sortedByE")
-fun <T : SinglePlaybackEntity> Collection<T>.sortedBy(sortParams: SortParameters) =
+fun <T : SinglePlaybackEntity> Collection<T>.sortedBy(sortParams: SortingPreferences) =
     sortedBy(sortParams.type, sortParams.order)
 
 

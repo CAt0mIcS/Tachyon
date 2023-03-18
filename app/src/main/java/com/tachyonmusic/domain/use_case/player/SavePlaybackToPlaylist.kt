@@ -2,7 +2,7 @@ package com.tachyonmusic.domain.use_case.player
 
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
-import com.tachyonmusic.playback_layers.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

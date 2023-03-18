@@ -6,7 +6,10 @@ import androidx.media3.common.Player
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionCommands
-import com.tachyonmusic.media.core.*
+import com.tachyonmusic.media.core.SetRepeatModeEvent
+import com.tachyonmusic.media.core.SetTimingDataEvent
+import com.tachyonmusic.media.core.StateUpdateEvent
+import com.tachyonmusic.media.core.TimingDataUpdatedEvent
 
 internal val supportedCommands = MediaSession.ConnectionResult.accept(
     SessionCommands.Builder().apply {
@@ -20,10 +23,8 @@ internal val supportedCommands = MediaSession.ConnectionResult.accept(
 
         ////////////////////////////////////////////////////////////////////////////////////////
         // CustomCommands
-        add(SetPlaybackEvent.command)
         add(SetTimingDataEvent.command)
         add(SetRepeatModeEvent.command)
-        add(SetSortingParamsEvent.command)
 
         add(TimingDataUpdatedEvent.command)
         add(StateUpdateEvent.command)

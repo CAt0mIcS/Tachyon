@@ -1,5 +1,0 @@
-package com.tachyonmusic.playback_layers
-
-import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
-
-typealias PlaybackRepository = ArtworkMapperRepository

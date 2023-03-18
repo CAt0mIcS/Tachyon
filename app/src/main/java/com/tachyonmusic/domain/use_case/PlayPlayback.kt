@@ -5,7 +5,6 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.util.Duration
 
 class PlayPlayback(
@@ -15,8 +14,7 @@ class PlayPlayback(
 ) {
     suspend operator fun invoke(
         playback: Playback?,
-        position: Duration? = null,
-        sortParams: SortParameters = SortParameters()
+        position: Duration? = null
     ) {
         when (playback) {
             is SinglePlayback -> {
@@ -32,8 +30,8 @@ class PlayPlayback(
                         browser.seekTo(playback.mediaId, position)
                     } else {
                         log.info("Playback out of date. Setting a new playlist and preparing the player...")
-                        val playlist = getPlaylistForPlayback(playback, sortParams) ?: return
-                        return invoke(playlist, position, sortParams)
+                        val playlist = getPlaylistForPlayback(playback) ?: return
+                        return invoke(playlist, position)
                     }
                 } else error("Shouldn't happen")
             }

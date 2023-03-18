@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.tachyonmusic.app.R
-import com.tachyonmusic.media.core.SortOrder
-import com.tachyonmusic.media.core.SortType
+import com.tachyonmusic.sort.domain.model.SortOrder
+import com.tachyonmusic.sort.domain.model.SortType
 
 
 @SuppressLint("ComposableNaming")

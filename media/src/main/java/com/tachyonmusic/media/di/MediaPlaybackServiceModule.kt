@@ -10,7 +10,7 @@ import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.*
 import com.tachyonmusic.permission.domain.PermissionMapperRepository
-import com.tachyonmusic.playback_layers.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -97,6 +97,7 @@ dependencies {
     projectPlaybackLayers()
     projectPlaybackLayerDatabase()
     projectPlaybackLayerPermission()
+    projectPlaybackLayerSort()
     projectPlaybackLayerArtwork()
     projectUtil()
     projectLogger()

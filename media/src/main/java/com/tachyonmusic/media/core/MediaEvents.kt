@@ -8,7 +8,6 @@ import androidx.media3.session.SessionCommand
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.media.util.parcelable
 
@@ -23,28 +22,6 @@ sealed interface MediaEvent : Bundleable {
  * Events sent to the MediaPlaybackService by the MediaBrowserController
  */
 sealed interface MediaBrowserEvent : MediaEvent
-
-/**
- * Events sent to the MediaBrowserController by the MediaPlaybackService
- */
-sealed interface MediaSessionEvent : MediaEvent
-
-
-data class SetPlaybackEvent(
-    val playback: Playback?
-) : MediaBrowserEvent {
-    override val command: SessionCommand
-        get() = Companion.command
-
-    override fun toBundle() = Bundle().apply {
-        putParcelable(MetadataKeys.Playback, playback)
-    }
-
-    companion object {
-        fun fromBundle(bundle: Bundle) = SetPlaybackEvent(bundle.parcelable(MetadataKeys.Playback))
-        val command = SessionCommand("${actionPrefix}SET_PLAYBACK", Bundle.EMPTY)
-    }
-}
 
 data class SetTimingDataEvent(
     val timingData: TimingDataController
@@ -82,33 +59,15 @@ data class SetRepeatModeEvent(
     }
 }
 
-data class SetSortingParamsEvent(
-    val sortParameters: SortParameters
-) : MediaBrowserEvent {
-    override val command: SessionCommand
-        get() = Companion.command
-
-    override fun toBundle() = Bundle().apply {
-        putInt(MetadataKeys.SortType, sortParameters.type.ordinal)
-        putInt(MetadataKeys.SortOrder, sortParameters.order.ordinal)
-    }
-
-    companion object {
-        fun fromBundle(bundle: Bundle) = SetSortingParamsEvent(
-            SortParameters(
-                SortType.fromInt(bundle.getInt(MetadataKeys.SortType)),
-                SortOrder.fromInt(bundle.getInt(MetadataKeys.SortOrder))
-            )
-        )
-
-        val command = SessionCommand("${actionPrefix}SET_SORTING_PARAMS", Bundle.EMPTY)
-    }
-}
-
 fun MediaBrowser.dispatchMediaEvent(event: MediaBrowserEvent) {
     sendCustomCommand(event.command, event.toBundle())
 }
 
+
+/**
+ * Events sent to the MediaBrowserController by the MediaPlaybackService
+ */
+sealed interface MediaSessionEvent : MediaEvent
 
 data class TimingDataUpdatedEvent(
     val timingData: TimingDataController?
@@ -127,7 +86,6 @@ data class TimingDataUpdatedEvent(
         val command = SessionCommand("${actionPrefix}TIMING_DATA_UPDATED", Bundle.EMPTY)
     }
 }
-
 
 data class StateUpdateEvent(
     val currentPlayback: SinglePlayback?,
@@ -159,10 +117,8 @@ internal fun MediaSession.dispatchMediaEvent(event: MediaSessionEvent) {
 
 
 internal fun SessionCommand.toMediaBrowserEvent(bundle: Bundle): MediaBrowserEvent = when (this) {
-    SetPlaybackEvent.command -> SetPlaybackEvent.fromBundle(bundle)
     SetTimingDataEvent.command -> SetTimingDataEvent.fromBundle(bundle)
     SetRepeatModeEvent.command -> SetRepeatModeEvent.fromBundle(bundle)
-    SetSortingParamsEvent.command -> SetSortingParamsEvent.fromBundle(bundle)
     else -> TODO("Invalid session command $customAction")
 }
 

@@ -10,7 +10,7 @@ import com.tachyonmusic.domain.use_case.main.UnloadArtworks
 import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.main.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.player.SetRepeatMode
-import com.tachyonmusic.playback_layers.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted

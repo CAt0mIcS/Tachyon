@@ -11,7 +11,7 @@ import com.tachyonmusic.artwork.domain.GetIsInternetConnectionMetered
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.permission.domain.PermissionMapperRepository
+import com.tachyonmusic.sort.domain.SortedPlaybackRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,7 +21,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class AppModule {
+object AppModule {
 
     @Provides
     @Singleton
@@ -50,10 +50,10 @@ class AppModule {
     @Provides
     @Singleton
     fun provideArtworkMapperRepository(
-        permissionMapperRepository: PermissionMapperRepository,
+        sortedPlaybackRepository: SortedPlaybackRepository,
         artworkCodex: ArtworkCodex
     ): ArtworkMapperRepository = ArtworkMapperRepositoryImpl(
-        permissionMapperRepository,
+        sortedPlaybackRepository,
         artworkCodex
     )
 }

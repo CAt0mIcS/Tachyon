@@ -3,13 +3,13 @@ package com.tachyonmusic.presentation.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.use_case.GetMediaStates
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
+import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.ObserveSavedData
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.main.NormalizeCurrentPosition
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
-import com.tachyonmusic.playback_layers.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.normalize
 import com.tachyonmusic.util.runOnUiThreadAsync
@@ -23,7 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MiniPlayerViewModel @Inject constructor(
     playbackRepository: PlaybackRepository,
-    private val getMediaStates: GetMediaStates,
+    private val getRepositoryStates: GetRepositoryStates,
     private val normalizeCurrentPosition: NormalizeCurrentPosition,
     observeSavedData: ObserveSavedData,
     private val pauseResumePlayback: PauseResumePlayback,
@@ -35,7 +35,7 @@ class MiniPlayerViewModel @Inject constructor(
         history.find { it.isPlayable.value }
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Lazily, null)
 
-    val isPlaying = getMediaStates.isPlaying()
+    val isPlaying = getRepositoryStates.isPlaying()
 
     var audioUpdateInterval: Duration = SettingsEntity().audioUpdateInterval
         private set
@@ -51,7 +51,7 @@ class MiniPlayerViewModel @Inject constructor(
 
     // TODO: Jumps around when isPlaying state switches
     fun getCurrentPositionNormalized(): Float =
-        if (getMediaStates.isPlaying().value) normalizeCurrentPosition() ?: 0f
+        if (getRepositoryStates.isPlaying().value) normalizeCurrentPosition() ?: 0f
         else recentlyPlayedPosition
 
     fun pauseResume() {

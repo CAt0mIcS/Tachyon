@@ -9,9 +9,12 @@ import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.use_case.*
+import com.tachyonmusic.domain.use_case.GetRepositoryStates
+import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
+import com.tachyonmusic.domain.use_case.ObserveSettings
+import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.player.*
-import com.tachyonmusic.playback_layers.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.player.data.SeekIncrements
 import com.tachyonmusic.util.Duration
@@ -27,28 +30,28 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    getMediaStates: GetMediaStates,
+    getRepositoryStates: GetRepositoryStates,
     playbackRepository: PlaybackRepository,
 
     observeSettings: ObserveSettings,
-    observeSavedData: ObserveSavedData,
-    private val setRepeatMode: SetRepeatMode,
 
+    private val setRepeatMode: SetRepeatMode,
     private val getCurrentPlaybackPos: GetCurrentPosition,
+
     private val seekToPosition: SeekToPosition,
     private val getRecentlyPlayed: GetRecentlyPlayed,
     private val pauseResumePlayback: PauseResumePlayback,
     private val playPlayback: PlayPlayback,
-
     private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
+
     private val removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
-    private val createAndSaveNewPlaylist: CreateAndSaveNewPlaylist,
+    private val createAndSaveNewPlaylist: CreateAndSaveNewPlaylist
 ) : ViewModel() {
 
     /**************************************************************************
      ********** CURRENT PLAYBACK
      *************************************************************************/
-    private val _playback = getMediaStates.playback().map {
+    private val _playback = getRepositoryStates.playback().map {
         it ?: playbackRepository.getHistory().firstOrNull()
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
@@ -88,8 +91,8 @@ class PlayerViewModel @Inject constructor(
         SeekIncrements(it.seekForwardIncrement, it.seekBackIncrement)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SeekIncrements())
 
-    val isPlaying = getMediaStates.isPlaying()
-    val repeatMode = getMediaStates.repeatMode()
+    val isPlaying = getRepositoryStates.isPlaying()
+    val repeatMode = getRepositoryStates.repeatMode()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), RepeatMode.All)
 
     private var recentlyPlayedPos: Duration? = null
@@ -134,14 +137,14 @@ class PlayerViewModel @Inject constructor(
     /**************************************************************************
      ********** NEXT PLAYBACK ITEMS / PLAYLIST ITEMS
      *************************************************************************/
-    private val associatedPlaylist = getMediaStates.currentPlaylist()
+    private val associatedPlaylist = getRepositoryStates.currentPlaylist()
 
     val playbackType = combine(_playback, associatedPlaylist) { playback, playlist ->
         PlaybackType.build(playlist ?: playback)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlaybackType.Song.Local())
 
     val subPlaybackItems = combine(
-        getMediaStates.playback(),
+        getRepositoryStates.playback(),
         associatedPlaylist,
         repeatMode
     ) { playback, playlist, repeatMode ->

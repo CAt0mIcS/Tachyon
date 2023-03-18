@@ -13,7 +13,7 @@ interface ArtworkMapperRepository {
 
     val historyFlow: Flow<List<SinglePlayback>>
 
-    fun triggerSongReload()
+    fun triggerPlaybackReload()
 
     suspend fun getSongs(): List<Song>
     suspend fun getLoops(): List<Loop>

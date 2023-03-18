@@ -6,7 +6,7 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.LoopRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
-import com.tachyonmusic.playback_layers.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

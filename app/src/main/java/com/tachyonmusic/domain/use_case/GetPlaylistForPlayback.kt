@@ -7,55 +7,40 @@ import com.tachyonmusic.core.domain.playback.Loop
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.database.domain.repository.SettingsRepository
-import com.tachyonmusic.media.core.SortParameters
-import com.tachyonmusic.media.core.sortedBy
-import com.tachyonmusic.playback_layers.PlaybackRepository
+import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 /**
  * OPTIMIZE: Only load artwork and isPlayable state if required
- * OPTIMIZE: Only rebuild entire playlist if some part of the items changes. E.g. if a loop is added.
- *  And not every time [invoke] is called
  */
 class GetPlaylistForPlayback(
-    private val settingsRepository: SettingsRepository,
-    private val playbackRepository: PlaybackRepository,
+    private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
     private val artworkCodex: ArtworkCodex
 ) {
 
-    suspend operator fun invoke(
-        playback: SinglePlayback?,
-        sortParams: SortParameters = SortParameters()
-    ) = withContext(Dispatchers.IO) {
+    suspend operator fun invoke(playback: SinglePlayback?) = withContext(Dispatchers.IO) {
         if (playback == null)
             return@withContext null
 
         when (playback) {
-            is Song -> getSongPlaylist(playback, sortParams)
-            is Loop -> getLoopPlaylist(playback, sortParams)
+            is Song -> getSongPlaylist(playback)
+            is Loop -> getLoopPlaylist(playback)
             else -> null
         }
     }
 
 
     private suspend fun getSongPlaylist(
-        playback: SinglePlayback,
-        sortParams: SortParameters
+        playback: SinglePlayback
     ): Playlist {
-        val settings = settingsRepository.getSettings()
-        val items = (if (settings.combineDifferentPlaybackTypes)
-            playbackRepository.getSongs() + playbackRepository.getLoops()
-        else
-            playbackRepository.getSongs()).sortedBy(sortParams)
-
+        val items = predefinedPlaylistsRepository.songPlaylist
         items.forEach {
             artworkCodex.await(it.mediaId.underlyingMediaId ?: it.mediaId)
         }
 
         return RemotePlaylistImpl.build(
-            MediaId.ofRemotePlaylist("com.tachyonmusic.SONGS:Combine:${settings.combineDifferentPlaybackTypes}"),
+            MediaId.ofRemotePlaylist("com.tachyonmusic.PREDEFINED_SONGS_PLAYLIST"),
             items.toMutableList(),
             items.indexOfFirst { it.mediaId == playback.mediaId }
         )
@@ -63,17 +48,15 @@ class GetPlaylistForPlayback(
 
 
     private suspend fun getLoopPlaylist(
-        playback: SinglePlayback,
-        sortParams: SortParameters
+        playback: SinglePlayback
     ): Playlist {
-        val settings = settingsRepository.getSettings()
-        val items = (if (settings.combineDifferentPlaybackTypes)
-            playbackRepository.getLoops() + playbackRepository.getSongs()
-        else
-            playbackRepository.getLoops()).sortedBy(sortParams)
+        val items = predefinedPlaylistsRepository.loopPlaylist
+        items.forEach {
+            artworkCodex.await(it.mediaId.underlyingMediaId ?: it.mediaId)
+        }
 
         return RemotePlaylistImpl.build(
-            MediaId.ofRemotePlaylist("com.tachyonmusic.LOOPS:Combine:${settings.combineDifferentPlaybackTypes}"),
+            MediaId.ofRemotePlaylist("com.tachyonmusic.PREDEFINED_LOOPS_PLAYLIST"),
             items.toMutableList(),
             items.indexOfFirst { it.mediaId == playback.mediaId }
         )
