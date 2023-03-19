@@ -24,5 +24,5 @@ object ArtworkType {
     }
 
     fun getType(playback: SinglePlayback, log: Logger = LoggerImpl()) =
-        getType(playback.artwork.value, log)
+        getType(playback.artwork, log)
 }

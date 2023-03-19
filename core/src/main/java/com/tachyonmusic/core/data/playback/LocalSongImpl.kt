@@ -25,9 +25,10 @@ class LocalSongImpl(
     override val playbackType = PlaybackType.Song.Local()
 
     override fun copy(): Song = LocalSongImpl(uri, mediaId, title, artist, duration).let {
-        it.artwork.value = artwork.value
-        it.isArtworkLoading.value = isArtworkLoading.value
-        it.isPlayable.value = isPlayable.value
+        it.artwork = artwork
+        it.isArtworkLoading = isArtworkLoading
+        it.isPlayable = isPlayable
+        it.timingData = timingData
         it
     }
 
@@ -38,9 +39,9 @@ class LocalSongImpl(
         parcel.readString()!!,
         parcel.readLong().ms
     ) {
-        artwork.value = parcel.readParcelable(Artwork::class.java.classLoader)
-        isArtworkLoading.value = parcel.readInt().toBoolean()
-        isPlayable.value = parcel.readInt().toBoolean()
+        artwork = parcel.readParcelable(Artwork::class.java.classLoader)
+        isArtworkLoading = parcel.readInt().toBoolean()
+        isPlayable = parcel.readInt().toBoolean()
     }
 
     companion object {

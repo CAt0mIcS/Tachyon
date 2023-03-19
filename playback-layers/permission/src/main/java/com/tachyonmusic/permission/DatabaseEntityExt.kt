@@ -11,11 +11,10 @@ import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.SongEntity
-import kotlinx.coroutines.flow.update
 
 fun SongEntity.toSong(isPlayable: Boolean): Song =
     LocalSongImpl(mediaId.uri!!, mediaId, title, artist, duration).let {
-        it.isPlayable.value = isPlayable
+        it.isPlayable = isPlayable
         it
     }
 
@@ -28,12 +27,11 @@ fun LoopEntity.toLoop(
         artist,
         duration
     ).let {
-        it.isPlayable.update { isPlayable }
+        it.isPlayable = isPlayable
         it
     }
 ): Loop = RemoteLoopImpl(
     mediaId,
-    name,
     TimingDataController(timingData, currentTimingDataIndex),
     song
 )

@@ -21,6 +21,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.core.domain.Artwork
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
@@ -147,10 +149,23 @@ object LibraryScreen :
                     } else false
                 }
 
-                val artwork by playback.artwork.collectAsState()
-                val isLoading by playback.isArtworkLoading.collectAsState()
-                val isPlayable =
-                    if (playback is SinglePlayback) playback.isPlayable.collectAsState().value else true
+                // TODO: Shouldn't be checked in UI
+                val artwork: Artwork?
+                val isLoading: Boolean
+                val isPlayable: Boolean
+                when (playback) {
+                    is SinglePlayback -> {
+                        artwork = playback.artwork
+                        isLoading = playback.isArtworkLoading
+                        isPlayable = playback.isPlayable
+                    }
+                    is Playlist -> {
+                        artwork = playback.playbacks.firstOrNull()?.artwork
+                        isLoading = playback.playbacks.firstOrNull()?.isArtworkLoading ?: false
+                        isPlayable = true
+                    }
+                    else -> error("Invalid playback type ${playback::class.java.name}")
+                }
 
                 SwipeDelete(
                     dismissState,

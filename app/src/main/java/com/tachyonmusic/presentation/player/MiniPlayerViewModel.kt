@@ -32,7 +32,7 @@ class MiniPlayerViewModel @Inject constructor(
 ) : ViewModel() {
 
     val playback = playbackRepository.historyFlow.map { history ->
-        history.find { it.isPlayable.value }
+        history.find { it.isPlayable }?.copy()
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Lazily, null)
 
     val isPlaying = getRepositoryStates.isPlaying()

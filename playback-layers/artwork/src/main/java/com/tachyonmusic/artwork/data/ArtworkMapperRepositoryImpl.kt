@@ -27,9 +27,10 @@ class ArtworkMapperRepositoryImpl(
             transformSongs(songs)
         }
 
-    override val loopFlow = combine(sortedPlaybackRepository.loopFlow, reloadPlaybacks) { loops, _ ->
-        transformLoops(loops)
-    }
+    override val loopFlow =
+        combine(sortedPlaybackRepository.loopFlow, reloadPlaybacks) { loops, _ ->
+            transformLoops(loops)
+        }
 
     override val playlistFlow =
         combine(sortedPlaybackRepository.playlistFlow, reloadPlaybacks) { playlists, _ ->
@@ -102,9 +103,9 @@ class ArtworkMapperRepositoryImpl(
 
     private fun Song.applyArtwork() {
         if (artworkCodex.isLoaded(mediaId)) {
-            artwork.update { artworkCodex[mediaId] }
-            isArtworkLoading.update { false }
+            artwork = artworkCodex[mediaId]
+            isArtworkLoading = false
         } else
-            isArtworkLoading.update { true }
+            isArtworkLoading = true
     }
 }

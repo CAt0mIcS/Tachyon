@@ -216,10 +216,6 @@ private fun LazyListScope.playbacksView(
 ) {
     items(playbacks) { playback ->
 
-        val artwork by playback.artwork.collectAsState()
-        val isArtworkLoading by playback.isArtworkLoading.collectAsState()
-        val isPlayable by playback.isPlayable.collectAsState()
-
         VerticalPlaybackView(
             modifier = Modifier
                 .padding(
@@ -227,13 +223,13 @@ private fun LazyListScope.playbacksView(
                     end = Theme.padding.extraSmall / 2f
                 )
                 .clickable {
-                    if (isPlayable)
+                    if (playback.isPlayable)
                         onClick(playback)
                 }
-                .isEnabled(isPlayable),
+                .isEnabled(playback.isPlayable),
             playback = playback,
-            artwork = artwork ?: PlaceholderArtwork,
-            isArtworkLoading = isArtworkLoading
+            artwork = playback.artwork ?: PlaceholderArtwork,
+            isArtworkLoading = playback.isArtworkLoading
         )
     }
 }

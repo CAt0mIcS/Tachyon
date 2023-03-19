@@ -217,8 +217,8 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         currentPos,
                         playback.duration,
                         ArtworkType.getType(playback),
-                        if (playback.artwork.value is RemoteArtwork)
-                            (playback.artwork.value as RemoteArtwork).uri.toURL()
+                        if (playback.artwork is RemoteArtwork)
+                            (playback.artwork as RemoteArtwork).uri.toURL()
                                 .toString() else null
                     )
                 )

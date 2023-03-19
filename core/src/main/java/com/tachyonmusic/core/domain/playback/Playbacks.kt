@@ -8,7 +8,6 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.util.Duration
-import kotlinx.coroutines.flow.MutableStateFlow
 
 interface Playback : Parcelable {
     val title: String?
@@ -19,21 +18,14 @@ interface Playback : Parcelable {
 
     val uri: Uri?
 
-    val artwork: MutableStateFlow<Artwork?>
-    val isArtworkLoading: MutableStateFlow<Boolean>
-
     val playbackType: PlaybackType
 
     fun toMediaItem(): MediaItem
 
-    fun toHashMap(): HashMap<String, Any?>
     fun copy(): Playback
 
     override fun equals(other: Any?): Boolean
     override fun toString(): String
-
-    val hasArtwork: Boolean
-        get() = artwork.value != null || isArtworkLoading.value
 
     /**
      * @return Either the underlying song in the loop or the first song in the playlist
@@ -62,11 +54,17 @@ interface SinglePlayback : Playback {
     override val artist: String
     override val duration: Duration
 
+    val hasArtwork: Boolean
+        get() = artwork != null || isArtworkLoading
+
+    var artwork: Artwork?
+    var isArtworkLoading: Boolean
+
     /**
      * Specifies if the current playback is playable. Could not be playable due to uri permissions
      * being removed from the path where the playback is saved
      */
-    val isPlayable: MutableStateFlow<Boolean>
+    var isPlayable: Boolean
 
     var timingData: TimingDataController?
 

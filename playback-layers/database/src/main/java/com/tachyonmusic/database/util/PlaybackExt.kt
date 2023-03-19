@@ -26,8 +26,8 @@ fun Song.toEntity(): SongEntity {
         artist,
         duration,
         artworkType,
-        if (artwork.value is RemoteArtwork)
-            (artwork.value as RemoteArtwork).uri.toURL().toString()
+        if (artwork is RemoteArtwork)
+            (artwork as RemoteArtwork).uri.toURL().toString()
         else null
     )
 }

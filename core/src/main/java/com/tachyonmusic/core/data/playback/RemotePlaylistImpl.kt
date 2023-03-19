@@ -10,15 +10,18 @@ import com.tachyonmusic.util.copy
 
 class RemotePlaylistImpl(
     mediaId: MediaId,
-    name: String,
     playbacks: MutableList<SinglePlayback>,
     currentPlaylistIndex: Int = 0
-) : AbstractPlaylist(mediaId, name, playbacks, currentPlaylistIndex) {
+) : AbstractPlaylist(mediaId, playbacks, currentPlaylistIndex) {
 
     override val playbackType = PlaybackType.Playlist.Remote()
 
+    override val name: String
+        get() = mediaId.source.replace(playbackType.toString(), "")
+
     override fun copy(): Playlist =
-        RemotePlaylistImpl(mediaId, name, _playbacks.copy(), currentPlaylistIndex)
+        RemotePlaylistImpl(mediaId, _playbacks.copy(), currentPlaylistIndex)
+
 
     companion object {
         @JvmField
@@ -32,7 +35,6 @@ class RemotePlaylistImpl(
 
                 return RemotePlaylistImpl(
                     MediaId.ofRemotePlaylist(name),
-                    name,
                     playbacks,
                     currentPlaylistIndex
                 )
@@ -48,7 +50,6 @@ class RemotePlaylistImpl(
         ): Playlist =
             RemotePlaylistImpl(
                 mediaId,
-                mediaId.source.replace(PlaybackType.Playlist.Remote().toString(), ""),
                 playbacks,
                 currentPlaylistIndex
             )

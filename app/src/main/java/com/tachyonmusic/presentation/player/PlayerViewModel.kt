@@ -9,8 +9,8 @@ import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
+import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.player.*
@@ -52,7 +52,7 @@ class PlayerViewModel @Inject constructor(
      ********** CURRENT PLAYBACK
      *************************************************************************/
     private val _playback = getRepositoryStates.playback().map {
-        it ?: playbackRepository.getHistory().firstOrNull()
+        (it ?: playbackRepository.getHistory().firstOrNull())?.copy()
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val playback = _playback.map {
@@ -60,7 +60,7 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(
         viewModelScope + Dispatchers.IO,
         SharingStarted.Lazily,
-        LocalSongImpl(Uri.EMPTY, MediaId(""), "", "", 0.ms)
+        LocalSongImpl(Uri.EMPTY, MediaId.EMPTY, "", "", 0.ms)
     )
 
     val shouldShowPlayer = _playback.map {

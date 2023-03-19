@@ -15,7 +15,6 @@ fun SongEntity.toSong() = LocalSongImpl(mediaId.uri!!, mediaId, title, artist, d
 fun LoopEntity.toLoop() =
     RemoteLoopImpl(
         mediaId,
-        name,
         TimingDataController(timingData, currentTimingDataIndex),
         LocalSongImpl(
             mediaId.underlyingMediaId!!.uri!!,

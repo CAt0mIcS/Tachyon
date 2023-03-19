@@ -34,14 +34,23 @@ class LibraryViewModel @Inject constructor(
 
     val sortParams = getRepositoryStates.sortPrefs()
 
-    private var songs = playbackRepository.songFlow
-        .stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
+    private var songs = playbackRepository.songFlow.map { songs ->
+        songs.map {
+            it.copy()
+        }
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
-    private var loops = playbackRepository.loopFlow
-        .stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
+    private var loops = playbackRepository.loopFlow.map { loops ->
+        loops.map {
+            it.copy()
+        }
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
-    private var playlists = playbackRepository.playlistFlow
-        .stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
+    private var playlists = playbackRepository.playlistFlow.map { playlists ->
+        playlists.map {
+            it.copy()
+        }
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     private var _filterType = MutableStateFlow<PlaybackType>(PlaybackType.Song.Local())
     val filterType = _filterType.asStateFlow()
