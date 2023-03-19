@@ -21,12 +21,14 @@ fun LoopEditor(
     modifier: Modifier = Modifier,
     viewModel: LoopEditorViewModel = hiltViewModel()
 ) {
-    val timingData = viewModel.timingData
+    val timingData by viewModel.timingData.collectAsState()
+    if (timingData == null)
+        return
 
     Column(modifier = modifier.padding(start = Theme.padding.extraSmall)) {
         IconButton(
             modifier = modifier.padding(Theme.padding.small),
-            onClick = { viewModel.addNewTimingData(timingData.size) }
+            onClick = { viewModel.addNewTimingData(timingData!!.size) }
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_add_circle),
@@ -36,7 +38,7 @@ fun LoopEditor(
 
         IconButton(
             modifier = Modifier.padding(Theme.padding.small),
-            onClick = { viewModel.removeTimingData(timingData.size - 1) }) {
+            onClick = { viewModel.removeTimingData(timingData!!.size - 1) }) {
             Icon(
                 painterResource(R.drawable.ic_rewind),
                 contentDescription = "Remove loop time point"
@@ -44,20 +46,20 @@ fun LoopEditor(
         }
 
         val duration by viewModel.duration.collectAsState()
-        val currentIndex by viewModel.currentIndex.collectAsState()
+        val seekTimingData = viewModel.seekTimingData
 
-        for (i in timingData.indices) {
+        for (i in seekTimingData.indices) {
 
             RangeSlider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = timingData[i].startTime.inWholeMilliseconds.toFloat()..timingData[i].endTime.inWholeMilliseconds.toFloat(),
+                value = seekTimingData[i].startTime.inWholeMilliseconds.toFloat()..seekTimingData[i].endTime.inWholeMilliseconds.toFloat(),
                 onValueChange = {
                     viewModel.updateTimingData(i, it.start.ms, it.endInclusive.ms)
                 },
                 onValueChangeFinished = viewModel::setNewTimingData,
                 valueRange = 0f..duration.inWholeMilliseconds.toFloat(),
                 colors = SliderDefaults.colors(
-                    thumbColor = if (i == currentIndex) Theme.colors.orange else Theme.colors.contrastLow,
+                    thumbColor = if (i == timingData!!.currentIndex) Theme.colors.orange else Theme.colors.contrastLow,
                     activeTrackColor = Theme.colors.orange,
                     inactiveTrackColor = Theme.colors.partialOrange1
                 )

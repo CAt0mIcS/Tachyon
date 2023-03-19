@@ -10,6 +10,7 @@ import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.model.LoopEntity
 import com.tachyonmusic.database.domain.model.PlaylistEntity
+import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 
 fun SongEntity.toSong(isPlayable: Boolean): Song =
@@ -21,8 +22,8 @@ fun SongEntity.toSong(isPlayable: Boolean): Song =
 fun LoopEntity.toLoop(
     isPlayable: Boolean,
     song: Song = LocalSongImpl(
-        mediaId.uri!!,
-        mediaId,
+        mediaId.underlyingMediaId!!.uri!!,
+        mediaId.underlyingMediaId!!,
         title,
         artist,
         duration
@@ -35,6 +36,12 @@ fun LoopEntity.toLoop(
     TimingDataController(timingData, currentTimingDataIndex),
     song
 )
+
+fun SinglePlaybackEntity.toPlayback(isPlayable: Boolean): SinglePlayback = when (this) {
+    is SongEntity -> toSong(isPlayable)
+    is LoopEntity -> toLoop(isPlayable)
+    else -> TODO("Invalid SinglePlayback type ${this::class.java.name}")
+}
 
 fun PlaylistEntity.toPlaylist(items: List<SinglePlayback>): Playlist =
     RemotePlaylistImpl.build(mediaId, items.toMutableList(), currentItemIndex)

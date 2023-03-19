@@ -28,6 +28,7 @@ import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.media.util.coreRepeatMode
 import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.supportedCommands
+import com.tachyonmusic.media.util.updateTimingDataOfCurrentPlayback
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -181,6 +182,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             runOnUiThread {
                 when (val event = customCommand.toMediaBrowserEvent(args)) {
                     is SetRepeatModeEvent -> handleSetRepeatModeEvent(event)
+                    is SetTimingDataEvent -> handleSetTimingDataEvent(event)
                     else -> SessionResult(SessionResult.RESULT_SUCCESS)
                 }
             }
@@ -191,6 +193,11 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             currentPlayer.coreRepeatMode = event.repeatMode
             return SessionResult(SessionResult.RESULT_SUCCESS)
         }
+
+        private fun handleSetTimingDataEvent(event: SetTimingDataEvent): SessionResult {
+            currentPlayer.updateTimingDataOfCurrentPlayback(event.timingData)
+            return SessionResult(SessionResult.RESULT_SUCCESS)
+        }
     }
 
 
@@ -198,7 +205,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
      ********** [Player.Listener]
      *************************************************************************/
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || currentPlayer.mediaItemCount == 1) {
             val newPlayback = mediaItem?.mediaMetadata?.playback
             ioScope.launch {
                 addNewPlaybackToHistory(newPlayback)

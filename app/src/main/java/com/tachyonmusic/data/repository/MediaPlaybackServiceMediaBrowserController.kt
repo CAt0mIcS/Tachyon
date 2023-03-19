@@ -13,6 +13,7 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -94,6 +95,12 @@ class MediaPlaybackServiceMediaBrowserController(
             null
         else browser?.currentPosition?.ms
 
+    override var currentPlaybackTimingData: TimingDataController?
+        get() = currentPlayback.value?.timingData
+        set(value) {
+            if (value != null)
+                browser?.dispatchMediaEvent(SetTimingDataEvent(value))
+        }
 
     override val canPrepare: Boolean
         get() = browser?.isConnected == true
@@ -147,7 +154,7 @@ class MediaPlaybackServiceMediaBrowserController(
 
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
+        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || currentPlaylist.value?.playbacks?.size == 1)
             _currentPlayback.update { mediaItem?.mediaMetadata?.playback }
     }
 
@@ -187,6 +194,7 @@ class MediaPlaybackServiceMediaBrowserController(
     ): ListenableFuture<SessionResult> {
         when (val event = command.toMediaSessionEvent(args)) {
             is TimingDataUpdatedEvent -> {
+                log.info("Received timing data updated event with ${event.timingData} for playback: ${currentPlayback.value}")
                 _currentPlayback.update {
                     it?.copy()?.apply {
                         timingData = event.timingData

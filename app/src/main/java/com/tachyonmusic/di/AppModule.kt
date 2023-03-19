@@ -225,6 +225,10 @@ object AppUseCaseModule {
         dataRepository: DataRepository
     ) = SetRepeatMode(browser, dataRepository)
 
+    @Provides
+    @Singleton
+    fun provideSetTimingDataUseCase(browser: MediaBrowserController) = SetTimingData(browser)
+
 }
 
 

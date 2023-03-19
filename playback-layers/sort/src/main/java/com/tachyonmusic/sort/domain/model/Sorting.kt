@@ -2,7 +2,7 @@ package com.tachyonmusic.sort.domain.model
 
 import com.tachyonmusic.core.domain.playback.*
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
-import com.tachyonmusic.database.util.toPlayback
+import com.tachyonmusic.permission.toPlayback
 
 enum class SortOrder {
     Ascending, Descending;
@@ -44,7 +44,7 @@ fun <T : SinglePlaybackEntity> Collection<T>.sortedBy(
     sortType: SortType,
     sortOrder: SortOrder
 ): List<T> = sortWithOrder(sortOrder) {
-    it.toPlayback().getComparedString(sortType)
+    it.toPlayback(false).getComparedString(sortType)
 }
 
 @JvmName("sortedByE")

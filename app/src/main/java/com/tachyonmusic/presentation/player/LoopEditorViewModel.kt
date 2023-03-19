@@ -4,13 +4,13 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.isNullOrEmpty
 import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
+import com.tachyonmusic.domain.use_case.player.SetTimingData
 import com.tachyonmusic.presentation.util.update
-import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.UiText
-import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -20,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoopEditorViewModel @Inject constructor(
     getRepositoryStates: GetRepositoryStates,
+    private val setTimingData: SetTimingData,
     private val createAndSaveNewLoop: CreateAndSaveNewLoop,
 ) : ViewModel() {
     private val _loopError = MutableStateFlow<UiText?>(null)
@@ -29,57 +30,59 @@ class LoopEditorViewModel @Inject constructor(
         it?.duration ?: Long.MAX_VALUE.ms
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
-    private val _timingData = mutableStateListOf<TimingData>()
-    val timingData: List<TimingData> = _timingData
+    val seekTimingData = mutableStateListOf<TimingData>()
+    val timingData = getRepositoryStates.playback().map { playback ->
+        println("NEWTD: Setting index of $playback to: ${playback?.timingData?.currentIndex}")
+
+        val newTimingData = if (playback == null)
+            null
+        else if (playback.timingData.isNullOrEmpty())
+            TimingDataController(listOf(TimingData(0.ms, playback.duration)))
+        else
+            playback.timingData
+
+        seekTimingData.update { newTimingData?.timingData ?: emptyList() }
+
+        newTimingData
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     // TODO: When adding new timing data while playing loop index sometimes won't be updated anymore
-    private val _currentIndex = MutableStateFlow(0)
-    val currentIndex = _currentIndex.asStateFlow()
 
-    init {
-//        combine(getMediaStates.timingData(), duration) { timingData, duration ->
-//            val newTimingData = if (timingData.isNullOrEmpty())
-//                listOf(TimingData(0.ms, duration))
-//            else
-//                timingData.timingData
-//
-//            _timingData.update { newTimingData }
-//            _currentIndex.update { timingData?.currentIndex ?: 0 }
-//        }.launchIn(viewModelScope)
-    }
-
-    fun updateTimingData(i: Int, start: Duration, end: Duration) {
-        _timingData.update {
-            it[i].startTime = start
-            it[i].endTime = end
+    fun updateTimingData(i: Int, startTime: Duration, endTime: Duration) {
+        seekTimingData.update {
+            it[i].startTime = startTime
+            it[i].endTime = endTime
             it
         }
     }
 
     fun setNewTimingData() {
-//        setBrowserTimingData(TimingDataController(timingData.toList(), currentIndex.value))
+        setTimingData(
+            TimingDataController(
+                seekTimingData.copy(),
+                timingData.value?.currentIndex ?: return
+            )
+        )
     }
 
     fun addNewTimingData(i: Int) {
-//        setBrowserTimingData(
-//            TimingDataController(
-//                _timingData.apply {
-//                    add(i, TimingData(0.ms, duration.value))
-//                }.toList(),
-//                currentIndex.value
-//            )
-//        )
+        setTimingData(
+            timingData.value?.copy(
+                timingData = timingData.value?.timingData?.toMutableList()?.apply {
+                    add(i, TimingData(0.ms, duration.value))
+                } ?: return
+            )
+        )
     }
 
     fun removeTimingData(i: Int) {
-//        setBrowserTimingData(
-//            TimingDataController(
-//                _timingData.apply {
-//                    removeAt(i)
-//                }.toList(),
-//                currentIndex.value
-//            )
-//        )
+        setTimingData(
+            timingData.value?.copy(
+                timingData = timingData.value?.timingData?.toMutableList()?.apply {
+                    removeAt(i)
+                } ?: return
+            )
+        )
     }
 
     fun saveNewLoop(name: String) {
