@@ -37,9 +37,9 @@ class LoopEditorViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
     val timingData = mutableStateListOf<TimingData>()
-    var currentIndex by mutableStateOf<Int?>(null)
+    var currentIndex by mutableStateOf<Int>(0)
         private set
-    
+
     init {
         getRepositoryStates.playback().onEach {
             val newTimingData = if (it == null)
@@ -50,7 +50,7 @@ class LoopEditorViewModel @Inject constructor(
                 it.timingData
 
             timingData.update { newTimingData?.timingData ?: emptyList() }
-            currentIndex = newTimingData?.currentIndex
+            currentIndex = newTimingData?.currentIndex ?: 0
         }.launchIn(viewModelScope)
     }
 
@@ -63,12 +63,7 @@ class LoopEditorViewModel @Inject constructor(
     }
 
     fun setNewTimingData() {
-        setTimingData(
-            TimingDataController(
-                timingData,
-                currentIndex ?: return
-            )
-        )
+        setTimingData(TimingDataController(timingData.toMutableList(), currentIndex))
     }
 
     fun addNewTimingData(i: Int) {
@@ -77,7 +72,7 @@ class LoopEditorViewModel @Inject constructor(
                 timingData.toMutableList().apply {
                     add(i, TimingData(0.ms, duration.value))
                 },
-                currentIndex ?: 0
+                currentIndex
             )
         )
     }
@@ -88,7 +83,7 @@ class LoopEditorViewModel @Inject constructor(
                 timingData.toMutableList().apply {
                     removeAt(i)
                 },
-                currentIndex ?: 0
+                currentIndex
             )
         )
     }

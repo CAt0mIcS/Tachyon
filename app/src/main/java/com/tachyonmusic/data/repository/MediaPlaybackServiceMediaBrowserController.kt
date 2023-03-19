@@ -9,7 +9,6 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.*
-import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
@@ -24,11 +23,9 @@ import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.media.util.fromMedia
 import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.toMediaItems
-import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.IListenable
-import com.tachyonmusic.util.Listenable
-import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.*
 import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,7 +33,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class MediaPlaybackServiceMediaBrowserController(
     private val getPlaylistForPlayback: GetPlaylistForPlayback,
@@ -204,7 +200,7 @@ class MediaPlaybackServiceMediaBrowserController(
         controller: MediaController,
         command: SessionCommand,
         args: Bundle
-    ): ListenableFuture<SessionResult> {
+    ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
         when (val event = command.toMediaSessionEvent(args)) {
             is TimingDataUpdatedEvent -> {
                 log.info("Received timing data updated event with ${event.timingData} for playback: ${currentPlayback.value}")
@@ -219,23 +215,21 @@ class MediaPlaybackServiceMediaBrowserController(
                 log.info("Received state update event with ${event.currentPlayback}, playWhenReady=${event.playWhenReady}")
                 _currentPlayback.update { event.currentPlayback }
                 _isPlaying.update { event.playWhenReady }
-                // TODO: We're not taking sorting into account here...
-                // TODO: Use coroutine
-                runBlocking {
-                    if (event.playWhenReady)
-                        _currentPlaylist.update {
-                            it ?: getPlaylistForPlayback(event.currentPlayback)
-                        }
-                    else
-                        setPlaylist(
-                            currentPlaylist.value ?: getPlaylistForPlayback(event.currentPlayback)
-                            ?: return@runBlocking
-                        )
-                }
+
+                if (event.playWhenReady)
+                    _currentPlaylist.update {
+                        it ?: getPlaylistForPlayback(event.currentPlayback)
+                    }
+                else
+                    setPlaylist(
+                        currentPlaylist.value ?: getPlaylistForPlayback(event.currentPlayback)
+                        ?: return@future SessionResult(SessionResult.RESULT_SUCCESS)
+                    )
+
             }
         }
 
-        return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+        SessionResult(SessionResult.RESULT_SUCCESS)
     }
 }
 

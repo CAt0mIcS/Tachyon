@@ -22,8 +22,6 @@ fun LoopEditor(
     viewModel: LoopEditorViewModel = hiltViewModel()
 ) {
     val timingData = viewModel.timingData
-    if (timingData.isEmpty())
-        return
 
     Column(modifier = modifier.padding(start = Theme.padding.extraSmall)) {
         IconButton(
