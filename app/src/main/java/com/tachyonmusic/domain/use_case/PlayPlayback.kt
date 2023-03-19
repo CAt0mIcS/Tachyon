@@ -5,11 +5,13 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.util.Duration
 
 class PlayPlayback(
     private val browser: MediaBrowserController,
     private val getPlaylistForPlayback: GetPlaylistForPlayback,
+    private val addNewPlaybackToHistory: AddNewPlaybackToHistory,
     private val log: Logger
 ) {
     suspend operator fun invoke(
@@ -34,13 +36,18 @@ class PlayPlayback(
                         return invoke(playlist, position)
                     }
                 } else error("Shouldn't happen")
+
+                addNewPlaybackToHistory(playback)
             }
 
             is Playlist -> {
                 log.info("Setting playlist to ${playback.mediaId}")
+                browser.stop()
                 browser.setPlaylist(playback)
                 browser.prepare()
                 browser.seekTo(playback.currentPlaylistIndex, position)
+
+                addNewPlaybackToHistory(playback.current)
             }
 
             null -> return

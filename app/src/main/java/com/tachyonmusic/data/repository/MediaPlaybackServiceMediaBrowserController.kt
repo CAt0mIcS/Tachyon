@@ -140,6 +140,11 @@ class MediaPlaybackServiceMediaBrowserController(
         browser?.pause()
     }
 
+    override fun stop() {
+        browser?.stop()
+        browser?.clearMediaItems()
+    }
+
     override fun seekTo(pos: Duration?) {
         browser?.seekTo(pos?.inWholeMilliseconds ?: C.TIME_UNSET)
     }
@@ -150,11 +155,19 @@ class MediaPlaybackServiceMediaBrowserController(
 
     override fun seekTo(index: Int, pos: Duration?) {
         browser?.seekTo(index, pos?.inWholeMilliseconds ?: C.TIME_UNSET)
+
+        /**
+         * If we seek to the first item in the playlist [onMediaItemTransition] will only be called
+         * with [Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED] and [currentPlayback] won't be updated
+         */
+        if (index == 0) {
+            _currentPlayback.update { browser?.getMediaItemAt(0)?.mediaMetadata?.playback }
+        }
     }
 
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || currentPlaylist.value?.playbacks?.size == 1)
+        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
             _currentPlayback.update { mediaItem?.mediaMetadata?.playback }
     }
 
@@ -197,7 +210,7 @@ class MediaPlaybackServiceMediaBrowserController(
                 log.info("Received timing data updated event with ${event.timingData} for playback: ${currentPlayback.value}")
                 _currentPlayback.update {
                     it?.copy()?.apply {
-                        timingData = event.timingData?.copy()
+                        timingData = event.timingData
                     }
                 }
             }

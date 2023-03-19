@@ -25,6 +25,7 @@ import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.sort.domain.SortedPlaybackRepository
 import dagger.Module
@@ -208,8 +209,9 @@ object AppUseCaseModule {
     fun providePlayPlaybackUseCase(
         browser: MediaBrowserController,
         getPlaylistForPlayback: GetPlaylistForPlayback,
+        addNewPlaybackToHistory: AddNewPlaybackToHistory,
         logger: Logger
-    ) = PlayPlayback(browser, getPlaylistForPlayback, logger)
+    ) = PlayPlayback(browser, getPlaylistForPlayback, addNewPlaybackToHistory, logger)
 
     @Provides
     @Singleton

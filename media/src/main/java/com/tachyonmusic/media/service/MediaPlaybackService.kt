@@ -183,7 +183,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 when (val event = customCommand.toMediaBrowserEvent(args)) {
                     is SetRepeatModeEvent -> handleSetRepeatModeEvent(event)
                     is SetTimingDataEvent -> handleSetTimingDataEvent(event)
-                    else -> SessionResult(SessionResult.RESULT_SUCCESS)
                 }
             }
         }
@@ -205,17 +204,17 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
      ********** [Player.Listener]
      *************************************************************************/
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED || currentPlayer.mediaItemCount == 1) {
-            val newPlayback = mediaItem?.mediaMetadata?.playback
+        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
+            val playback = mediaItem?.mediaMetadata?.playback ?: return
             ioScope.launch {
-                addNewPlaybackToHistory(newPlayback)
+                addNewPlaybackToHistory(playback)
             }
         }
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (!isPlaying) {
-            val playback = currentPlayer.mediaMetadata.playback ?: return
+            val playback = currentPlayer.currentMediaItem?.mediaMetadata?.playback ?: return
             val currentPos = currentPlayer.currentPosition.ms
             ioScope.launch {
                 saveRecentlyPlayed(

@@ -42,6 +42,7 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     suspend fun prepare()
     fun play()
     fun pause()
+    fun stop()
 
     /**
      * Seeks to [pos] in the current media item

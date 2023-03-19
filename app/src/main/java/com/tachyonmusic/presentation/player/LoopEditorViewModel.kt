@@ -13,7 +13,10 @@ import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
 import com.tachyonmusic.domain.use_case.player.SetTimingData
 import com.tachyonmusic.presentation.util.update
-import com.tachyonmusic.util.*
+import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -62,7 +65,7 @@ class LoopEditorViewModel @Inject constructor(
     fun setNewTimingData() {
         setTimingData(
             TimingDataController(
-                timingData.copy(),
+                timingData,
                 currentIndex ?: return
             )
         )
