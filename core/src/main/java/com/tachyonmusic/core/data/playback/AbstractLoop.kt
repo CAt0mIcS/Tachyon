@@ -88,7 +88,6 @@ abstract class AbstractLoop(
     override fun describeContents() = 0
 
     override fun equals(other: Any?) =
-        other is AbstractLoop && mediaId == other.mediaId && artwork == other.artwork &&
-                isArtworkLoading == other.isArtworkLoading && isPlayable == other.isPlayable &&
+        other is AbstractLoop && mediaId == other.mediaId &&
                 song == other.song && timingData == other.timingData
 }

@@ -197,7 +197,7 @@ class MediaPlaybackServiceMediaBrowserController(
                 log.info("Received timing data updated event with ${event.timingData} for playback: ${currentPlayback.value}")
                 _currentPlayback.update {
                     it?.copy()?.apply {
-                        timingData = event.timingData
+                        timingData = event.timingData?.copy()
                     }
                 }
             }

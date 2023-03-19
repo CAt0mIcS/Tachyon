@@ -28,7 +28,7 @@ class LocalSongImpl(
         it.artwork = artwork
         it.isArtworkLoading = isArtworkLoading
         it.isPlayable = isPlayable
-        it.timingData = timingData
+        it.timingData = timingData?.copy()
         it
     }
 

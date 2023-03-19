@@ -1,6 +1,9 @@
 package com.tachyonmusic.presentation.player
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
@@ -30,26 +33,26 @@ class LoopEditorViewModel @Inject constructor(
         it?.duration ?: Long.MAX_VALUE.ms
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
-    val seekTimingData = mutableStateListOf<TimingData>()
-    val timingData = getRepositoryStates.playback().map { playback ->
-        println("NEWTD: Setting index of $playback to: ${playback?.timingData?.currentIndex}")
+    val timingData = mutableStateListOf<TimingData>()
+    var currentIndex by mutableStateOf<Int?>(null)
+        private set
+    
+    init {
+        getRepositoryStates.playback().onEach {
+            val newTimingData = if (it == null)
+                null
+            else if (it.timingData.isNullOrEmpty())
+                TimingDataController(listOf(TimingData(0.ms, it.duration)))
+            else
+                it.timingData
 
-        val newTimingData = if (playback == null)
-            null
-        else if (playback.timingData.isNullOrEmpty())
-            TimingDataController(listOf(TimingData(0.ms, playback.duration)))
-        else
-            playback.timingData
-
-        seekTimingData.update { newTimingData?.timingData ?: emptyList() }
-
-        newTimingData
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
-
-    // TODO: When adding new timing data while playing loop index sometimes won't be updated anymore
+            timingData.update { newTimingData?.timingData ?: emptyList() }
+            currentIndex = newTimingData?.currentIndex
+        }.launchIn(viewModelScope)
+    }
 
     fun updateTimingData(i: Int, startTime: Duration, endTime: Duration) {
-        seekTimingData.update {
+        timingData.update {
             it[i].startTime = startTime
             it[i].endTime = endTime
             it
@@ -59,28 +62,30 @@ class LoopEditorViewModel @Inject constructor(
     fun setNewTimingData() {
         setTimingData(
             TimingDataController(
-                seekTimingData.copy(),
-                timingData.value?.currentIndex ?: return
+                timingData.copy(),
+                currentIndex ?: return
             )
         )
     }
 
     fun addNewTimingData(i: Int) {
         setTimingData(
-            timingData.value?.copy(
-                timingData = timingData.value?.timingData?.toMutableList()?.apply {
+            TimingDataController(
+                timingData.toMutableList().apply {
                     add(i, TimingData(0.ms, duration.value))
-                } ?: return
+                },
+                currentIndex ?: 0
             )
         )
     }
 
     fun removeTimingData(i: Int) {
         setTimingData(
-            timingData.value?.copy(
-                timingData = timingData.value?.timingData?.toMutableList()?.apply {
+            TimingDataController(
+                timingData.toMutableList().apply {
                     removeAt(i)
-                } ?: return
+                },
+                currentIndex ?: 0
             )
         )
     }
