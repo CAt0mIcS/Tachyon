@@ -195,6 +195,10 @@ class MediaPlaybackServiceMediaBrowserController(
         }
     }
 
+    override fun onDisconnected(controller: MediaController) {
+        _currentPlayback.update { null }
+        _currentPlaylist.update { null }
+    }
 
     override fun onCustomCommand(
         controller: MediaController,
@@ -220,12 +224,6 @@ class MediaPlaybackServiceMediaBrowserController(
                     _currentPlaylist.update {
                         it ?: getPlaylistForPlayback(event.currentPlayback)
                     }
-                else
-                    setPlaylist(
-                        currentPlaylist.value ?: getPlaylistForPlayback(event.currentPlayback)
-                        ?: return@future SessionResult(SessionResult.RESULT_SUCCESS)
-                    )
-
             }
         }
 
