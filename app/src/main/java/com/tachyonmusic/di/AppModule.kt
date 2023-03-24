@@ -231,6 +231,14 @@ object AppUseCaseModule {
     @Singleton
     fun provideSetTimingDataUseCase(browser: MediaBrowserController) = SetTimingData(browser)
 
+    @Provides
+    @Singleton
+    fun provideGetPlaybackChildrenUseCase(
+        browser: MediaBrowserController,
+        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
+        logger: Logger
+    ) = GetPlaybackChildren(browser, predefinedPlaylistsRepository, logger)
+
 }
 
 

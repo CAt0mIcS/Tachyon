@@ -106,8 +106,8 @@ class MediaPlaybackServiceMediaBrowserController(
 
     override val nextPlayback: SinglePlayback?
         get() {
-            val idx = browser?.currentMediaItemIndex
-            if (idx == null || idx > browser!!.mediaItemCount || idx < 0)
+            val idx = browser?.nextMediaItemIndex
+            if (idx == null || idx >= browser!!.mediaItemCount || idx < 0)
                 return null
             return browser?.getMediaItemAt(idx)?.mediaMetadata?.playback
         }

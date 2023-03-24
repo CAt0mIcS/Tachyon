@@ -9,10 +9,7 @@ import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
-import com.tachyonmusic.domain.use_case.GetRepositoryStates
-import com.tachyonmusic.domain.use_case.ObserveSettings
-import com.tachyonmusic.domain.use_case.PlayPlayback
+import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
@@ -35,15 +32,16 @@ class PlayerViewModel @Inject constructor(
 
     observeSettings: ObserveSettings,
 
-    private val setRepeatMode: SetRepeatMode,
     private val getCurrentPlaybackPos: GetCurrentPosition,
-
     private val seekToPosition: SeekToPosition,
     private val getRecentlyPlayed: GetRecentlyPlayed,
+    private val setRepeatMode: SetRepeatMode,
     private val pauseResumePlayback: PauseResumePlayback,
     private val playPlayback: PlayPlayback,
-    private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
 
+    private val getPlaybackChildren: GetPlaybackChildren,
+
+    private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
     private val removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
     private val createAndSaveNewPlaylist: CreateAndSaveNewPlaylist
 ) : ViewModel() {
@@ -137,24 +135,26 @@ class PlayerViewModel @Inject constructor(
     /**************************************************************************
      ********** NEXT PLAYBACK ITEMS / PLAYLIST ITEMS
      *************************************************************************/
-    private val associatedPlaylist = getRepositoryStates.currentPlaylist()
+    private val currentPlaylist = getRepositoryStates.currentPlaylist()
 
-    val playbackType = combine(_playback, associatedPlaylist) { playback, playlist ->
-        PlaybackType.build(playlist ?: playback)
+    val playbackType = combine(_playback, currentPlaylist) { playback, playlist ->
+        if (playlist?.isPredefined == true)
+            PlaybackType.build(playback)
+        else
+            PlaybackType.build(playlist)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlaybackType.Song.Local())
 
     val subPlaybackItems = combine(
-        getRepositoryStates.playback(),
-        associatedPlaylist,
-        repeatMode
-    ) { playback, playlist, repeatMode ->
-//        getPlaybackChildren(
-//            playlist ?: playback ?: playbackRepository.getHistory().firstOrNull(),
-//            repeatMode,
-//            SortParameters()
-//        )
-        emptyList<SinglePlayback>()
-    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
+        _playback,
+        currentPlaylist,
+        repeatMode,
+        playbackType
+    ) { playback, playlist, repeatMode, playbackType ->
+        getPlaybackChildren(
+            if (playbackType is PlaybackType.Playlist) playlist else playback,
+            repeatMode
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
     /**************************************************************************

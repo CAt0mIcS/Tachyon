@@ -11,6 +11,8 @@ sealed class RepeatMode(val id: Int) {
 
         @DrawableRes
         override val icon = R.drawable.ic_repeat
+
+        override fun toString() = "RepeatMode.One"
     }
 
     object All : RepeatMode(1) {
@@ -18,6 +20,8 @@ sealed class RepeatMode(val id: Int) {
 
         @DrawableRes
         override val icon = R.drawable.ic_repeat_all
+
+        override fun toString() = "RepeatMode.All"
     }
 
     object Shuffle : RepeatMode(2) {
@@ -25,6 +29,8 @@ sealed class RepeatMode(val id: Int) {
 
         @DrawableRes
         override val icon = R.drawable.ic_shuffle
+
+        override fun toString() = "RepeatMode.Shuffle"
     }
 
     companion object {

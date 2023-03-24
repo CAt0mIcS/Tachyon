@@ -40,7 +40,7 @@ class GetPlaylistForPlayback(
         }
 
         return RemotePlaylistImpl.build(
-            MediaId.ofRemotePlaylist("com.tachyonmusic.PREDEFINED_SONGS_PLAYLIST"),
+            predefinedSongPlaylistMediaId,
             items.toMutableList(),
             items.indexOfFirst { it.mediaId == playback.mediaId }
         )
@@ -56,9 +56,18 @@ class GetPlaylistForPlayback(
         }
 
         return RemotePlaylistImpl.build(
-            MediaId.ofRemotePlaylist("com.tachyonmusic.PREDEFINED_LOOPS_PLAYLIST"),
+            predefinedLoopPlaylistMediaId,
             items.toMutableList(),
             items.indexOfFirst { it.mediaId == playback.mediaId }
         )
     }
 }
+
+private val predefinedLoopPlaylistMediaId =
+    MediaId.ofRemotePlaylist("com.tachyonmusic.PREDEFINED_LOOPS_PLAYLIST")
+
+private val predefinedSongPlaylistMediaId =
+    MediaId.ofRemotePlaylist("com.tachyonmusic.PREDEFINED_SONGS_PLAYLIST")
+
+val Playlist.isPredefined: Boolean
+    get() = mediaId == predefinedSongPlaylistMediaId || mediaId == predefinedLoopPlaylistMediaId
