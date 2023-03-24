@@ -8,6 +8,7 @@ import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.use_case.DeletePlayback
 import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.PlayPlayback
+import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.sort.domain.SortedPlaybackRepository
@@ -84,7 +85,7 @@ class LibraryViewModel @Inject constructor(
 
     fun onItemClicked(playback: Playback) {
         viewModelScope.launch {
-            playPlayback(playback)
+            playPlayback(playback, playbackLocation = PlaybackLocation.PREDEFINED_PLAYLIST)
         }
     }
 

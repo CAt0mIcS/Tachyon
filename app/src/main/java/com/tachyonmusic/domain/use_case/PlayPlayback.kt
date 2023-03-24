@@ -8,6 +8,11 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.util.Duration
 
+enum class PlaybackLocation {
+    PREDEFINED_PLAYLIST,
+    CUSTOM_PLAYLIST
+}
+
 class PlayPlayback(
     private val browser: MediaBrowserController,
     private val getPlaylistForPlayback: GetPlaylistForPlayback,
@@ -16,7 +21,8 @@ class PlayPlayback(
 ) {
     suspend operator fun invoke(
         playback: Playback?,
-        position: Duration? = null
+        position: Duration? = null,
+        playbackLocation: PlaybackLocation? = null
     ) {
         when (playback) {
             is SinglePlayback -> {
@@ -26,18 +32,30 @@ class PlayPlayback(
                 } else if (!browser.canPrepare) {
                     if (browser.currentPlaylist.value == null) {
                         log.info("Browser doesn't have any playlist. Setting a new playlist and preparing the player...")
-                        val playlist = getPlaylistForPlayback(playback) ?: return
-                        return invoke(playlist, position)
+                        invokeOnNewPlaylist(playback, position)
                     } else if (playback == browser.currentPlayback.value) {
-                        log.info("Current playback is already set and browser can't prepare anymore, unpausing playback...")
-                        browser.seekTo(playback.mediaId, position)
+
+                        if (!playbackLocationMatches(playbackLocation)) {
+                            log.info("Current playback would match, but client requested playback location $playbackLocation, reloading playlist...")
+                            invokeOnNewPlaylist(playback, position)
+                        } else {
+                            log.info("Current playback is already set and browser can't prepare anymore, unpausing playback...")
+                            browser.seekTo(playback.mediaId, position)
+                        }
+
                     } else if (browser.currentPlaylist.value?.hasPlayback(playback) == true) {
-                        log.info("New playback already contained in playlist, seeking to new playback...")
-                        browser.seekTo(playback.mediaId, position)
+
+                        if (!playbackLocationMatches(playbackLocation)) {
+                            log.info("Current playback would be in current playlist, but client requested playback location $playbackLocation, reloading playlist...")
+                            invokeOnNewPlaylist(playback, position)
+                        } else {
+                            log.info("New playback already contained in playlist, seeking to new playback...")
+                            browser.seekTo(playback.mediaId, position)
+                        }
+
                     } else {
                         log.info("Playlist out of date. Setting a new playlist and preparing the player...")
-                        val playlist = getPlaylistForPlayback(playback) ?: return
-                        return invoke(playlist, position)
+                        invokeOnNewPlaylist(playback, position)
                     }
                 } else error("Shouldn't happen 2")
 
@@ -59,4 +77,14 @@ class PlayPlayback(
         }
         browser.play()
     }
+
+    private suspend fun invokeOnNewPlaylist(playback: SinglePlayback, position: Duration?) {
+        val playlist = getPlaylistForPlayback(playback) ?: return
+        invoke(playlist, position)
+    }
+
+    private fun playbackLocationMatches(playbackLocation: PlaybackLocation?) =
+        playbackLocation == null ||
+                playbackLocation == PlaybackLocation.PREDEFINED_PLAYLIST && browser.currentPlaylist.value?.isPredefined == true ||
+                playbackLocation == PlaybackLocation.CUSTOM_PLAYLIST && browser.currentPlaylist.value?.isPredefined != true
 }

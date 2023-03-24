@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.PlayPlayback
+import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.domain.use_case.main.GetSavedData
 import com.tachyonmusic.domain.use_case.main.UnloadArtworks
 import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
@@ -65,7 +66,7 @@ class HomeViewModel @Inject constructor(
 
     fun onItemClicked(playback: Playback) {
         viewModelScope.launch {
-            playPlayback(playback)
+            playPlayback(playback, playbackLocation = PlaybackLocation.PREDEFINED_PLAYLIST)
         }
     }
 
