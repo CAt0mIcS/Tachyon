@@ -4,6 +4,7 @@ import android.os.Looper
 import androidx.media3.cast.CastPlayer
 import androidx.media3.common.C
 import androidx.media3.common.ForwardingPlayer
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.Clock
 import androidx.media3.exoplayer.ExoPlayer
@@ -50,6 +51,11 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
         return wrappedPlayer.isCommandAvailable(command) || (command == COMMAND_SEEK_TO_NEXT && !isPlayingAd && mediaItemCount > 1) ||
                 (command == COMMAND_SEEK_TO_PREVIOUS && !isPlayingAd && mediaItemCount > 1)
     }
+
+    override val mediaItems: List<MediaItem>
+        get() = List(mediaItemCount) {
+            getMediaItemAt(it)
+        }
 
     fun createMessage(target: PlayerMessage.Target) =
         when (wrappedPlayer) {

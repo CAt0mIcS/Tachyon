@@ -1,6 +1,6 @@
 package com.tachyonmusic.domain.use_case.main
 
-import com.tachyonmusic.database.domain.ArtworkType
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.database.domain.repository.SongRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -11,7 +11,7 @@ class UnloadArtworks(
     suspend operator fun invoke() = withContext(Dispatchers.IO) {
         repository.getSongsWithArtworkTypes(ArtworkType.EMBEDDED, ArtworkType.REMOTE)
             .forEach { song ->
-                repository.updateArtwork(song, ArtworkType.UNKNOWN)
+                repository.updateArtwork(song.mediaId, ArtworkType.UNKNOWN)
             }
     }
 }

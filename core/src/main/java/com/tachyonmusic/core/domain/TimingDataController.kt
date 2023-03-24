@@ -78,7 +78,8 @@ data class TimingDataController(
 
     override fun describeContents() = 0
 
-    override fun toString() = timingData.joinToString(separator = ";") { it.toString() }
+    override fun toString() =
+        currentIndex.toString() + "--" + timingData.joinToString(separator = ";") { it.toString() }
 
     companion object CREATOR : Parcelable.Creator<TimingDataController> {
         override fun createFromParcel(parcel: Parcel): TimingDataController {

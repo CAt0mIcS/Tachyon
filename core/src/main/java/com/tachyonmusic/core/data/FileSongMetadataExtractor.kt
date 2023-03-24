@@ -6,11 +6,14 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import com.tachyonmusic.core.domain.SongMetadataExtractor
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.ms
 
-class FileSongMetadataExtractor : SongMetadataExtractor {
+class FileSongMetadataExtractor(
+    private val contentResolver: ContentResolver,
+    private val log: Logger
+) : SongMetadataExtractor {
     override fun loadMetadata(
-        contentResolver: ContentResolver,
         uri: Uri,
         defaultTitle: String
     ): SongMetadataExtractor.SongMetadata? {
@@ -20,10 +23,9 @@ class FileSongMetadataExtractor : SongMetadataExtractor {
             metaRetriever.setDataSource(fd?.fileDescriptor)
             fd?.close()
         } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-            TODO("Implement error handling: $uri, ${e.localizedMessage}")
-        } catch (_: SecurityException) {
-
+            log.error(e.localizedMessage ?: e.stackTraceToString())
+        } catch (e: SecurityException) {
+            log.error(e.localizedMessage ?: e.stackTraceToString())
         }
 
         return SongMetadataExtractor.SongMetadata(
@@ -36,17 +38,18 @@ class FileSongMetadataExtractor : SongMetadataExtractor {
         )
     }
 
-    override fun loadBitmap(contentResolver: ContentResolver, uri: Uri): Bitmap? {
+    override fun loadBitmap(uri: Uri): Bitmap? {
         val metaRetriever = MediaMetadataRetriever()
         try {
             val fd = contentResolver.openFileDescriptor(uri, "r")
             metaRetriever.setDataSource(fd?.fileDescriptor)
             fd?.close()
         } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-            TODO("Implement error handling: $uri")
-        } catch (_: SecurityException) {
-
+            log.error(e.localizedMessage ?: e.stackTraceToString())
+            return null
+        } catch (e: SecurityException) {
+            log.error(e.localizedMessage ?: e.stackTraceToString())
+            return null
         }
 
         val art: ByteArray? = metaRetriever.embeddedPicture

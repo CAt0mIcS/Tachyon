@@ -2,9 +2,7 @@ package com.tachyonmusic.domain.use_case
 
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Binder
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.presentation.util.hasUriPermission
 import kotlinx.coroutines.Dispatchers

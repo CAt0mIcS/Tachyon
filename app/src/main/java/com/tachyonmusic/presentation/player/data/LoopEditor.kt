@@ -44,7 +44,6 @@ fun LoopEditor(
         }
 
         val duration by viewModel.duration.collectAsState()
-        val currentIndex by viewModel.currentIndex.collectAsState()
 
         for (i in timingData.indices) {
 
@@ -57,7 +56,7 @@ fun LoopEditor(
                 onValueChangeFinished = viewModel::setNewTimingData,
                 valueRange = 0f..duration.inWholeMilliseconds.toFloat(),
                 colors = SliderDefaults.colors(
-                    thumbColor = if (i == currentIndex) Theme.colors.orange else Theme.colors.contrastLow,
+                    thumbColor = if (i == viewModel.currentIndex) Theme.colors.orange else Theme.colors.contrastLow,
                     activeTrackColor = Theme.colors.orange,
                     inactiveTrackColor = Theme.colors.partialOrange1
                 )

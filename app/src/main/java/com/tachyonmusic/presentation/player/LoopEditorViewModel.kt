@@ -1,16 +1,22 @@
 package com.tachyonmusic.presentation.player
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.isNullOrEmpty
-import com.tachyonmusic.domain.use_case.GetMediaStates
+import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
-import com.tachyonmusic.domain.use_case.player.SetNewTimingData
+import com.tachyonmusic.domain.use_case.player.SetTimingData
 import com.tachyonmusic.presentation.util.update
-import com.tachyonmusic.util.*
+import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -19,66 +25,65 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoopEditorViewModel @Inject constructor(
-    getMediaStates: GetMediaStates,
-    private val setBrowserTimingData: SetNewTimingData,
+    getRepositoryStates: GetRepositoryStates,
+    private val setTimingData: SetTimingData,
     private val createAndSaveNewLoop: CreateAndSaveNewLoop,
 ) : ViewModel() {
     private val _loopError = MutableStateFlow<UiText?>(null)
     val loopError = _loopError.asStateFlow()
 
-    val duration = getMediaStates.playback().map {
+    val duration = getRepositoryStates.playback().map {
         it?.duration ?: Long.MAX_VALUE.ms
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
-    private val _timingData = mutableStateListOf<TimingData>()
-    val timingData: List<TimingData> = _timingData
-
-    // TODO: When adding new timing data while playing loop index sometimes won't be updated anymore
-    private val _currentIndex = MutableStateFlow(0)
-    val currentIndex = _currentIndex.asStateFlow()
+    val timingData = mutableStateListOf<TimingData>()
+    var currentIndex by mutableStateOf<Int>(0)
+        private set
 
     init {
-        combine(getMediaStates.timingData(), duration) { timingData, duration ->
-            val newTimingData = if (timingData.isNullOrEmpty())
-                listOf(TimingData(0.ms, duration))
+        getRepositoryStates.playback().onEach {
+            val newTimingData = if (it == null)
+                null
+            else if (it.timingData.isNullOrEmpty())
+                TimingDataController(listOf(TimingData(0.ms, it.duration)))
             else
-                timingData.timingData
+                it.timingData
 
-            _timingData.update { newTimingData }
-            _currentIndex.update { timingData?.currentIndex ?: 0 }
+            timingData.update { newTimingData?.timingData ?: emptyList() }
+            currentIndex = newTimingData?.currentIndex ?: 0
         }.launchIn(viewModelScope)
     }
 
-    fun updateTimingData(i: Int, start: Duration, end: Duration) {
-        _timingData.update {
-            it[i].startTime = start
-            it[i].endTime = end
+    fun updateTimingData(i: Int, startTime: Duration, endTime: Duration) {
+        timingData.update {
+            it[i].startTime = startTime
+            it[i].endTime = endTime
             it
         }
     }
 
     fun setNewTimingData() {
-        setBrowserTimingData(TimingDataController(timingData.toList(), currentIndex.value))
+        setTimingData(TimingDataController(timingData.toMutableList(), currentIndex))
     }
 
     fun addNewTimingData(i: Int) {
-        setBrowserTimingData(
+        setTimingData(
             TimingDataController(
-                _timingData.apply {
+                timingData.toMutableList().apply {
                     add(i, TimingData(0.ms, duration.value))
-                }.toList(),
-                currentIndex.value
+                },
+                currentIndex
             )
         )
     }
 
     fun removeTimingData(i: Int) {
-        setBrowserTimingData(
+        setTimingData(
             TimingDataController(
-                _timingData.apply {
+                timingData.toMutableList().apply {
                     removeAt(i)
-                }.toList(),
-                currentIndex.value
+                },
+                currentIndex
             )
         )
     }

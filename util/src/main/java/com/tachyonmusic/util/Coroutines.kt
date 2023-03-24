@@ -27,6 +27,7 @@ fun <T> future(
 /**
  * Dispatches [block] to UI thread while suspending current coroutine until [block] finishes
  */
+@OptIn(ExperimentalContracts::class)
 suspend fun <T> runOnUiThread(block: suspend CoroutineScope.() -> T): T {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)

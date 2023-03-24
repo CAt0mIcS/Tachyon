@@ -1,30 +1,33 @@
 package com.tachyonmusic.di
 
+import android.app.Application
 import android.content.Context
+import com.tachyonmusic.TachyonApplication
+import com.tachyonmusic.artwork.domain.ArtworkCodex
+import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
-import com.tachyonmusic.data.repository.UriPermissionRepositoryImpl
+import com.tachyonmusic.data.repository.PredefinedPlaylistsRepositoryImpl
 import com.tachyonmusic.database.domain.repository.*
-import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.UriPermissionRepository
+import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
-import com.tachyonmusic.domain.use_case.library.SetSortParameters
 import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.logger.LoggerImpl
+import com.tachyonmusic.logger.data.ConsoleLogger
+import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.domain.ArtworkCodex
-import com.tachyonmusic.media.domain.use_case.GetIsInternetConnectionMetered
-import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
+import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.sort.domain.SortedPlaybackRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -46,35 +49,19 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideItemClickedUseCase(browser: MediaBrowserController) = PlayPlayback(browser)
-
-    @Provides
-    @Singleton
-    fun provideObserveSongsUseCase(
-        songRepository: SongRepository,
-        @ApplicationContext context: Context
-    ) = ObserveSongs(songRepository, context)
-
-    @Provides
-    @Singleton
-    fun provideGetSongsUseCase(
-        songRepository: SongRepository,
-        @ApplicationContext context: Context
-    ) = GetSongs(songRepository, context)
-
-    @Provides
-    @Singleton
     fun provideUpdateSongDatabaseUseCase(
         songRepository: SongRepository,
         fileRepository: FileRepository,
         metadataExtractor: SongMetadataExtractor,
-        @ApplicationContext context: Context,
+        artworkCodex: ArtworkCodex,
+        artworkMapperRepository: ArtworkMapperRepository,
         logger: Logger
     ) = UpdateSongDatabase(
         songRepository,
         fileRepository,
         metadataExtractor,
-        context,
+        artworkCodex,
+        artworkMapperRepository,
         logger
     )
 
@@ -104,25 +91,6 @@ object AppUseCaseModule {
     @Singleton
     fun provideGetSavedDataUseCase(dataRepository: DataRepository) = GetSavedData(dataRepository)
 
-
-    @Provides
-    @Singleton
-    fun provideGetOrLoadArtworkUseCase(
-        songRepository: SongRepository,
-        settingsRepository: SettingsRepository,
-        artworkCodex: ArtworkCodex,
-        findPlaybackByMediaId: FindPlaybackByMediaId,
-        isNetworkConnectionMetered: GetIsInternetConnectionMetered,
-        @ApplicationContext context: Context
-    ) = GetOrLoadArtwork(
-        songRepository,
-        settingsRepository,
-        artworkCodex,
-        findPlaybackByMediaId,
-        isNetworkConnectionMetered,
-        context
-    )
-
     @Provides
     @Singleton
     fun provideUnloadArtworksUseCase(
@@ -136,32 +104,10 @@ object AppUseCaseModule {
         @ApplicationContext context: Context
     ) = SetMusicDirectories(settingsRepository, context)
 
-
     @Provides
     @Singleton
-    fun provideObserveLoopsUseCase(
-        loopRepository: LoopRepository,
-        @ApplicationContext context: Context
-    ) = ObserveLoops(loopRepository, context)
-
-    @Provides
-    @Singleton
-    fun provideObservePlaylistsUseCase(playlistRepository: PlaylistRepository) =
-        ObservePlaylists(playlistRepository)
-
-    @Provides
-    @Singleton
-    fun provideGetHistoryUseCase(
-        historyRepository: HistoryRepository,
-        @ApplicationContext context: Context
-    ) = GetHistory(historyRepository, context)
-
-    @Provides
-    @Singleton
-    fun provideObserveHistoryUseCase(
-        historyRepository: HistoryRepository,
-        @ApplicationContext context: Context
-    ) = ObserveHistory(historyRepository, context)
+    fun provideObserveHistoryUseCase(playbackRepository: PlaybackRepository) =
+        ObserveHistory(playbackRepository)
 
     @Provides
     @Singleton
@@ -183,15 +129,16 @@ object AppUseCaseModule {
     @Singleton
     fun provideSavePlaybackToPlaylistUseCase(
         playlistRepository: PlaylistRepository,
-        browser: MediaBrowserController
-    ) = SavePlaybackToPlaylist(playlistRepository, browser)
+        playbackRepository: PlaybackRepository
+    ) = SavePlaybackToPlaylist(playlistRepository, playbackRepository)
 
     @Provides
     @Singleton
     fun provideRemovePlaybackFromPlaylistUseCase(
+        playbackRepository: PlaybackRepository,
         playlistRepository: PlaylistRepository,
         browser: MediaBrowserController
-    ) = RemovePlaybackFromPlaylist(playlistRepository, browser)
+    ) = RemovePlaybackFromPlaylist(playbackRepository, playlistRepository, browser)
 
     @Provides
     @Singleton
@@ -219,18 +166,8 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideSetCurrentPlaybackUseCase(browser: MediaBrowserController) =
-        SetCurrentPlayback(browser)
-
-    @Provides
-    @Singleton
     fun provideGetRecentlyPlayedPositionUseCase(dataRepository: DataRepository) =
         GetRecentlyPlayed(dataRepository)
-
-    @Provides
-    @Singleton
-    fun provideSetSortParametersStateUseCase(browser: MediaBrowserController) =
-        SetSortParameters(browser)
 
     @Provides
     @Singleton
@@ -239,12 +176,14 @@ object AppUseCaseModule {
         songRepository: SongRepository,
         historyRepository: HistoryRepository,
         loopRepository: LoopRepository,
+        playbackRepository: PlaybackRepository,
         playlistRepository: PlaylistRepository
     ) = AddSongToExcludedSongs(
         settingsRepository,
         songRepository,
         historyRepository,
         loopRepository,
+        playbackRepository,
         playlistRepository
     )
 
@@ -253,27 +192,33 @@ object AppUseCaseModule {
     fun provideDeletePlaybackUseCase(
         loopRepository: LoopRepository,
         playlistRepository: PlaylistRepository,
+        playbackRepository: PlaybackRepository,
         historyRepository: HistoryRepository
-    ) = DeletePlayback(loopRepository, playlistRepository, historyRepository)
+    ) = DeletePlayback(loopRepository, playlistRepository, playbackRepository, historyRepository)
 
 
     @Provides
     @Singleton
-    fun providePlayRecentlyPlayedUseCase(
+    fun provideGetPlaylistForPlaybackUseCase(
+        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
+        artworkCodex: ArtworkCodex
+    ) = GetPlaylistForPlayback(predefinedPlaylistsRepository, artworkCodex)
+
+    @Provides
+    @Singleton
+    fun providePlayPlaybackUseCase(
         browser: MediaBrowserController,
-        getRecentlyPlayed: GetRecentlyPlayed
-    ) = PlayRecentlyPlayed(browser, getRecentlyPlayed)
+        getPlaylistForPlayback: GetPlaylistForPlayback,
+        addNewPlaybackToHistory: AddNewPlaybackToHistory,
+        logger: Logger
+    ) = PlayPlayback(browser, getPlaylistForPlayback, addNewPlaybackToHistory, logger)
 
     @Provides
     @Singleton
-    fun provideGetMediaStatesUseCase(
+    fun provideGetRepositoryStatesUseCase(
         browser: MediaBrowserController,
-        @ApplicationContext context: Context
-    ) = GetMediaStates(browser, context)
-
-    @Provides
-    @Singleton
-    fun provideSetNewTimingDataUseCase(browser: MediaBrowserController) = SetNewTimingData(browser)
+        sortedPlaybackRepository: SortedPlaybackRepository
+    ) = GetRepositoryStates(browser, sortedPlaybackRepository)
 
     @Provides
     @Singleton
@@ -284,20 +229,15 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideLogger(): Logger = LoggerImpl()
+    fun provideSetTimingDataUseCase(browser: MediaBrowserController) = SetTimingData(browser)
 
     @Provides
     @Singleton
     fun provideGetPlaybackChildrenUseCase(
         browser: MediaBrowserController,
-        getPlaylistForPlayback: GetPlaylistForPlayback,
-        @ApplicationContext context: Context
-    ) = GetPlaybackChildren(browser, getPlaylistForPlayback, context)
-
-    @Provides
-    @Singleton
-    fun provideObserveUriPermissionsUseCase(repository: UriPermissionRepository) =
-        OnUriPermissionsChanged(repository)
+        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
+        logger: Logger
+    ) = GetPlaybackChildren(browser, predefinedPlaylistsRepository, logger)
 
 }
 
@@ -312,10 +252,32 @@ object AppRepositoryModule {
 
     @Provides
     @Singleton
-    fun provideMediaBrowserController(): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController()
+    fun provideMediaBrowserController(
+        getPlaylistForPlayback: GetPlaylistForPlayback,
+        logger: Logger
+    ): MediaBrowserController =
+        MediaPlaybackServiceMediaBrowserController(getPlaylistForPlayback, logger)
 
     @Provides
     @Singleton
-    fun provideUriPermissionRepository(): UriPermissionRepository = UriPermissionRepositoryImpl()
+    fun provideLogger(@ApplicationContext context: Context): Logger = LoggerImpl(
+        setOf(
+            ConsoleLogger(),
+            ConsoleUiTextLogger(context)
+        )
+    )
+
+    @Provides
+    @Singleton
+    fun providePredefinedPlaylistsRepository(
+        playbackRepository: PlaybackRepository,
+        observeSettings: ObserveSettings,
+        app: Application
+    ): PredefinedPlaylistsRepository =
+        PredefinedPlaylistsRepositoryImpl(
+            playbackRepository,
+            observeSettings,
+            (app as TachyonApplication).coroutineScope
+        )
+
 }

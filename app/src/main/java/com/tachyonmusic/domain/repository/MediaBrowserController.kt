@@ -2,15 +2,11 @@ package com.tachyonmusic.domain.repository
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
-import androidx.media3.common.MediaItem
-import androidx.media3.session.LibraryResult
-import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.RepeatMode
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.media.core.SortParameters
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import kotlinx.coroutines.flow.StateFlow
@@ -26,68 +22,44 @@ interface MediaBrowserController : DefaultLifecycleObserver,
         lifecycle.addObserver(this)
     }
 
-    var playback: SinglePlayback?
-    var playWhenReady: Boolean
+    val currentPlaylist: StateFlow<Playlist?>
+    val currentPlayback: StateFlow<SinglePlayback?>
+    val isPlaying: StateFlow<Boolean>
 
-    val playbackState: StateFlow<SinglePlayback?>
-    val associatedPlaylistState: StateFlow<Playlist?>
-    val playWhenReadyState: StateFlow<Boolean>
-    val sortParamsState: StateFlow<SortParameters>
 
-    var sortParams: SortParameters
+    fun setPlaylist(playlist: Playlist)
 
-    val isProcessingSeek: Boolean
-
-    /**
-     * Start playing specified playlist
-     */
-    fun playPlaylist(playlist: Playlist?)
-    fun updatePlaylistState(playlist: Playlist?)
-
-    var repeatMode: RepeatMode?
-    val repeatModeState: StateFlow<RepeatMode?>
-    val nextMediaItemIndex: Int
-
-    suspend fun getChildren(
-        parentId: String,
-        page: Int = 0,
-        pageSize: Int = Int.MAX_VALUE
-    ): LibraryResult<ImmutableList<MediaItem>>
-
-    suspend fun getPlaybacksNative(
-        parentId: String,
-        page: Int = 0,
-        pageSize: Int = Int.MAX_VALUE
-    ): List<Playback>
-
-    fun getMediaItemAt(i: Int): MediaItem?
-
-    val isPlaying: Boolean
-
-    val title: String?
-    val artist: String?
-    val name: String?
-    val duration: Duration?
-    var timingData: TimingDataController?
     val currentPosition: Duration?
+    var currentPlaybackTimingData: TimingDataController?
+    val canPrepare: Boolean
 
-    val timingDataState: StateFlow<TimingDataController?>
+    val nextPlayback: SinglePlayback?
 
-    fun prepare()
-    fun stop()
+    val repeatMode: StateFlow<RepeatMode>
+
+    fun setRepeatMode(repeatMode: RepeatMode)
+
+    suspend fun prepare()
     fun play()
     fun pause()
-    fun seekTo(pos: Duration?)
-    fun seekForward()
-    fun seekBack()
+    fun stop()
 
     /**
-     * Find [playback] in current [associatedPlaylistState] and start it
+     * Seeks to [pos] in the current media item
      */
-    fun seekTo(playback: SinglePlayback, pos: Duration? = null)
+    fun seekTo(pos: Duration?)
+
+    /**
+     * Seeks to the playback with the [mediaId] in [currentPlaylist]
+     */
+    fun seekTo(mediaId: MediaId, pos: Duration? = null)
+
+    /**
+     * Seeks to the [index] in the [currentPlaylist]
+     */
+    fun seekTo(index: Int, pos: Duration? = null)
 
     interface EventListener {
         fun onConnected() {}
     }
-
 }

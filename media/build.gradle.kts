@@ -56,7 +56,10 @@ dependencies {
     implementation("androidx.documentfile:documentfile:1.0.1")
 
     projectCore()
-    projectDatabase()
+    projectPlaybackLayerDatabase()
+    projectPlaybackLayers()
+    projectPlaybackLayerPermission()
+    projectPlaybackLayerArtwork()
     projectUtil()
     projectLogger()
     projectArtworkFetcher()

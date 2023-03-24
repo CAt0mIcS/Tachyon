@@ -8,18 +8,15 @@ import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.util.Duration
-import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class AbstractPlaylist(
     final override val mediaId: MediaId,
-    final override val name: String,
     protected val _playbacks: MutableList<SinglePlayback>,
     currentPlaylistIndex: Int = 0
-) : Playlist, AbstractPlayback() {
+) : Playlist {
 
     final override val playbacks: List<SinglePlayback>
         get() = _playbacks
@@ -33,17 +30,8 @@ abstract class AbstractPlaylist(
     override val duration: Duration?
         get() = current?.duration
 
-    /**
-     * Updated when the next/previous item is played (TODO)
-     */
-    override val artwork = MutableStateFlow(current?.artwork?.value)
-    override val isArtworkLoading = MutableStateFlow(false)
-
     override val uri: Uri?
         get() = current?.uri
-
-    override val timingData: TimingDataController?
-        get() = current?.timingData
 
     abstract override val playbackType: PlaybackType.Playlist
 
@@ -77,12 +65,6 @@ abstract class AbstractPlaylist(
         _playbacks.remove(playback)
     }
 
-    override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
-        "mediaId" to mediaId.source,
-        "currPlIdx" to currentPlaylistIndex,
-        "playbacks" to playbacks.map { it.toHashMap() }
-    )
-
     operator fun get(i: Int): SinglePlayback = playbacks[i]
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -91,9 +73,11 @@ abstract class AbstractPlaylist(
         parcel.writeInt(currentPlaylistIndex)
     }
 
-    override fun equals(other: Any?): Boolean {
-        if (other !is AbstractPlaylist) return false
-        return mediaId == other.mediaId && playbacks == other.playbacks &&
+    override fun toString() = mediaId.toString()
+
+    override fun describeContents() = 0
+
+    override fun equals(other: Any?) =
+        other is AbstractPlaylist && mediaId == other.mediaId && playbacks == other.playbacks &&
                 currentPlaylistIndex == other.currentPlaylistIndex
-    }
 }

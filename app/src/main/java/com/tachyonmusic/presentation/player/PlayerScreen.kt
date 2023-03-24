@@ -3,7 +3,6 @@ package com.tachyonmusic.presentation.player
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -99,13 +98,10 @@ fun PlayerScreen(
                 .aspectRatio(1f)
                 .shadow(Theme.shadow.small, shape = Theme.shapes.large)
 
-            val artwork by playback.artwork.collectAsState()
-            val isLoading by playback.isArtworkLoading.collectAsState()
-
-            if (isLoading)
+            if (playback.isArtworkLoading)
                 CircularProgressIndicator(modifier = artworkModifier)
             else
-                artwork?.Image(modifier = artworkModifier, contentDescription = null)
+                playback.artwork?.Image(modifier = artworkModifier, contentDescription = null)
                     ?: PlaceholderArtwork(modifier = artworkModifier, contentDescription = null)
         }
 
@@ -291,16 +287,11 @@ fun PlayerScreen(
                     onClick = viewModel::nextRepeatMode
                 ) {
                     val repeatMode by viewModel.repeatMode.collectAsState()
-
-                    // TODO
-                    if (repeatMode == null)
-                        CircularProgressIndicator(Modifier.scale(iconScale))
-                    else
-                        Icon(
-                            painterResource(repeatMode!!.icon),
-                            contentDescription = null,
-                            modifier = Modifier.scale(iconScale)
-                        )
+                    Icon(
+                        painterResource(repeatMode.icon),
+                        contentDescription = null,
+                        modifier = Modifier.scale(iconScale)
+                    )
                 }
 
                 IconButton(
@@ -350,16 +341,12 @@ fun PlayerScreen(
 
             items(subPlaybackItems, key = { it.mediaId.toString() }) { playback ->
 
-                val artwork by playback.artwork.collectAsState()
-                val isArtworkLoading by playback.isArtworkLoading.collectAsState()
-                val isPlayable by playback.isPlayable.collectAsState()
-
                 val content = @Composable {
                     HorizontalPlaybackView(
                         playback,
-                        artwork ?: PlaceholderArtwork,
-                        isArtworkLoading,
-                        onClick = { if (isPlayable) viewModel.play(playback) }
+                        playback.artwork ?: PlaceholderArtwork,
+                        playback.isArtworkLoading,
+                        onClick = { if (playback.isPlayable) viewModel.play(playback) }
                     )
                 }
 
@@ -370,7 +357,7 @@ fun PlayerScreen(
                         end = Theme.padding.medium,
                         bottom = Theme.padding.extraSmall
                     )
-                    .isEnabled(isPlayable)
+                    .isEnabled(playback.isPlayable)
 
 
                 if (playbackType is PlaybackType.Playlist) {

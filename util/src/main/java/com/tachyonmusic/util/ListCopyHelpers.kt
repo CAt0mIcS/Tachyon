@@ -6,6 +6,6 @@ fun <T> List<T>.copy() = List(size) {
 }
 
 @JvmName("copyMutableList")
-fun <T> MutableList<T>.copy() = List(size) {
+fun <T> MutableList<T>.copy() = MutableList(size) {
     this[it]
-}.toMutableList()
+}

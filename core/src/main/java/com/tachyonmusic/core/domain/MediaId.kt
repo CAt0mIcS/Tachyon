@@ -7,7 +7,10 @@ import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import com.tachyonmusic.core.data.constants.PlaybackType
 
-class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
+data class MediaId(
+    val source: String,
+    val underlyingMediaId: MediaId? = null
+) {
 
     companion object {
         fun deserialize(value: String): MediaId {

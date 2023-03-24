@@ -5,19 +5,16 @@ import androidx.media3.common.MediaMetadata
 import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.database.domain.repository.LoopRepository
-import com.tachyonmusic.database.domain.repository.PlaylistRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.util.toPlaylist
 import com.tachyonmusic.media.util.getItemsOnPageWithPageSize
 import com.tachyonmusic.media.util.toMediaItems
+import com.tachyonmusic.permission.domain.PermissionMapperRepository
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import kotlinx.coroutines.*
 
 
 class BrowserTree(
-    private val songRepository: SongRepository,
-    private val loopRepository: LoopRepository,
-    private val playlistRepository: PlaylistRepository
+    private val playbackRepository: PlaybackRepository,
+    private val playbackPermissionRepository: PermissionMapperRepository
 ) {
     companion object {
         /**
@@ -55,8 +52,8 @@ class BrowserTree(
                      */
                     val mediaId = MediaId.deserializeIfValid(parentId)
                     if (mediaId != null) {
-                        val playback = playlistRepository.findByMediaId(mediaId)
-                            ?.toPlaylist(songRepository, loopRepository)
+                        val playback = playbackPermissionRepository.getPlaylists()
+                            .find { it.mediaId == mediaId } // TODO: Artwork not included
                         if (playback != null)
                             return@withContext constraintItems(
                                 playback.playbacks.toMediaItems(),
@@ -80,9 +77,9 @@ class BrowserTree(
 
 
     // TODO: Nullable?
-    private suspend fun getSongs() = songRepository.getSongs().map { it.toMediaItem() }
-    private suspend fun getLoops() = loopRepository.getLoops().map { it.toMediaItem() }
-    private suspend fun getPlaylists() = playlistRepository.getPlaylists().map { it.toMediaItem() }
+    private suspend fun getSongs() = playbackRepository.getSongs().map { it.toMediaItem() }
+    private suspend fun getLoops() = playbackRepository.getLoops().map { it.toMediaItem() }
+    private suspend fun getPlaylists() = playbackRepository.getPlaylists().map { it.toMediaItem() }
 
     private fun constraintItems(
         playbacks: List<MediaItem>,

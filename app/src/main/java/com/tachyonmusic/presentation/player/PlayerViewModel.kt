@@ -3,20 +3,20 @@ package com.tachyonmusic.presentation.player
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.player.*
-import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.media.util.setArtworkFromResource
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.player.data.SeekIncrements
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -27,47 +27,38 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    getMediaStates: GetMediaStates,
-    getHistory: GetHistory,
+    getRepositoryStates: GetRepositoryStates,
+    playbackRepository: PlaybackRepository,
 
     observeSettings: ObserveSettings,
-    observeSavedData: ObserveSavedData,
 
     private val getCurrentPlaybackPos: GetCurrentPosition,
     private val seekToPosition: SeekToPosition,
-    getRecentlyPlayed: GetRecentlyPlayed,
-    private val pauseResumePlayback: PauseResumePlayback,
-    private val playRecentlyPlayed: PlayRecentlyPlayed,
+    private val getRecentlyPlayed: GetRecentlyPlayed,
     private val setRepeatMode: SetRepeatMode,
+    private val pauseResumePlayback: PauseResumePlayback,
     private val playPlayback: PlayPlayback,
 
     private val getPlaybackChildren: GetPlaybackChildren,
 
     private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
     private val removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
-    private val createAndSaveNewPlaylist: CreateAndSaveNewPlaylist,
-    observePlaylists: ObservePlaylists,
-
-    private val getOrLoadArtwork: GetOrLoadArtwork
+    private val createAndSaveNewPlaylist: CreateAndSaveNewPlaylist
 ) : ViewModel() {
 
     /**************************************************************************
      ********** CURRENT PLAYBACK
      *************************************************************************/
-    private val _playback = getMediaStates.playback().map {
-        it ?: getHistory().firstOrNull()
+    private val _playback = getRepositoryStates.playback().map {
+        (it ?: playbackRepository.getHistory().firstOrNull())?.copy()
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val playback = _playback.map {
         it!!
-    }.onEach { playback ->
-        getOrLoadArtwork(playback.underlyingSong).onEach { res ->
-            playback.setArtworkFromResource(res)
-        }.collect()
     }.stateIn(
         viewModelScope + Dispatchers.IO,
         SharingStarted.Lazily,
-        LocalSongImpl(Uri.EMPTY, MediaId(""), "", "", 0.ms)
+        LocalSongImpl(Uri.EMPTY, MediaId.EMPTY, "", "", 0.ms)
     )
 
     val shouldShowPlayer = _playback.map {
@@ -98,11 +89,9 @@ class PlayerViewModel @Inject constructor(
         SeekIncrements(it.seekForwardIncrement, it.seekBackIncrement)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SeekIncrements())
 
-    val isPlaying = getMediaStates.playWhenReady()
-    val repeatMode =
-        combine(getMediaStates.repeatMode(), observeSavedData()) { browserRepeatMode, savedData ->
-            browserRepeatMode ?: savedData.repeatMode
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+    val isPlaying = getRepositoryStates.isPlaying()
+    val repeatMode = getRepositoryStates.repeatMode()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), RepeatMode.All)
 
     private var recentlyPlayedPos: Duration? = null
 
@@ -122,55 +111,64 @@ class PlayerViewModel @Inject constructor(
             pauseResumePlayback(PauseResumePlayback.Action.Pause)
         else {
             viewModelScope.launch(Dispatchers.IO) {
-                playRecentlyPlayed(_playback.value)
+                val recentlyPlayed = getRecentlyPlayed()
+                runOnUiThreadAsync {
+                    playPlayback(_playback.value, recentlyPlayed?.position)
+                }
             }
         }
     }
 
     fun nextRepeatMode() {
         viewModelScope.launch {
-            setRepeatMode(repeatMode.value?.next)
+            setRepeatMode(repeatMode.value.next)
         }
     }
 
-    fun play(playback: SinglePlayback) =
-        playPlayback(playback, playInPlaylist = playbackType.value is PlaybackType.Playlist)
+    fun play(playback: SinglePlayback) {
+        viewModelScope.launch {
+            playPlayback(playback)
+        }
+    }
 
 
     /**************************************************************************
      ********** NEXT PLAYBACK ITEMS / PLAYLIST ITEMS
      *************************************************************************/
-    private val associatedPlaylist = getMediaStates.associatedPlaylist()
+    private val currentPlaylist = getRepositoryStates.currentPlaylist()
 
-    val playbackType = combine(_playback, associatedPlaylist) { playback, playlist ->
-        PlaybackType.build(playlist ?: playback)
+    val playbackType = combine(_playback, currentPlaylist) { playback, playlist ->
+        if (playlist?.isPredefined == true)
+            PlaybackType.build(playback)
+        else
+            PlaybackType.build(playlist)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlaybackType.Song.Local())
 
     val subPlaybackItems = combine(
-        getMediaStates.playback(),
-        associatedPlaylist,
+        _playback,
+        currentPlaylist,
         repeatMode,
-        getMediaStates.sortParameters()
-    ) { playback, playlist, repeatMode, sortParams ->
+        playbackType
+    ) { playback, playlist, repeatMode, playbackType ->
         getPlaybackChildren(
-            playlist ?: playback ?: getHistory().firstOrNull(),
-            repeatMode,
-            sortParams
+            if (playbackType is PlaybackType.Playlist) playlist else playback,
+            repeatMode
         )
-    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
     /**************************************************************************
      ********** PLAYLIST CONTROLS
      *************************************************************************/
-    val playlists = combine(observePlaylists(), _playback) { playlists, currentPlayback ->
-        if (currentPlayback == null)
-            return@combine emptyList()
+    val playlists =
+        combine(playbackRepository.playlistFlow, _playback) { playlists, currentPlayback ->
+            if (currentPlayback == null)
+                return@combine emptyList()
 
-        playlists.map { playlist ->
-            PlaylistInfo(playlist.name, playlist.hasPlayback(currentPlayback))
-        }
-    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+            playlists.map { playlist ->
+                PlaylistInfo(playlist.name, playlist.hasPlayback(currentPlayback))
+            }
+        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     fun editPlaylist(i: Int, shouldAdd: Boolean) {
         viewModelScope.launch {
@@ -188,9 +186,9 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun removeFromCurrentPlaylist(toRemove: SinglePlayback) {
-        viewModelScope.launch {
-            removePlaybackFromPlaylist(toRemove, associatedPlaylist.value)
-            playPlayback(associatedPlaylist.value)
-        }
+//        viewModelScope.launch {
+//            removePlaybackFromPlaylist(toRemove, associatedPlaylist.value)
+//            playPlayback(associatedPlaylist.value)
+//        }
     }
 }

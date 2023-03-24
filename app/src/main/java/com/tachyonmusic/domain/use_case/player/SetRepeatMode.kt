@@ -16,7 +16,7 @@ class SetRepeatMode(
             return
 
         runOnUiThread {
-            browser.repeatMode = repeatMode
+            browser.setRepeatMode(repeatMode)
 
             withContext(Dispatchers.IO) {
                 dataRepository.update(repeatMode = repeatMode)

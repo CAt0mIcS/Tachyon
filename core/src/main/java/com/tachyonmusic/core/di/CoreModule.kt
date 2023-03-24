@@ -1,5 +1,6 @@
 package com.tachyonmusic.core.di
 
+import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.ToNumberPolicy
@@ -7,9 +8,14 @@ import com.tachyonmusic.core.data.FileSongMetadataExtractor
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.logger.LoggerImpl
+import com.tachyonmusic.logger.data.ConsoleLogger
+import com.tachyonmusic.logger.data.ConsoleUiTextLogger
+import com.tachyonmusic.logger.domain.Logger
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -27,5 +33,8 @@ class CoreModule {
 
     @Provides
     @Singleton
-    fun provideSongMetadataExtractor(): SongMetadataExtractor = FileSongMetadataExtractor()
+    fun provideSongMetadataExtractor(
+        @ApplicationContext context: Context,
+        logger: Logger
+    ): SongMetadataExtractor = FileSongMetadataExtractor(context.contentResolver, logger)
 }

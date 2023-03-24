@@ -14,27 +14,23 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Duration
-import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class AbstractSong(
     final override val mediaId: MediaId,
     final override val title: String,
     final override val artist: String,
     final override val duration: Duration,
-) : Song, AbstractPlayback() {
+) : Song {
 
-    final override var timingData = TimingDataController(emptyList())
+    final override var timingData: TimingDataController? = TimingDataController(emptyList())
 
     abstract override val playbackType: PlaybackType.Song
 
-    override val isPlayable = MutableStateFlow(false)
+    override var isPlayable: Boolean = false
 
-    override val artwork = MutableStateFlow<Artwork?>(null)
-    override val isArtworkLoading = MutableStateFlow(false)
+    override var artwork: Artwork? = null
+    override var isArtworkLoading = false
 
-    override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
-        "mediaId" to mediaId.toString()
-    )
 
     override fun toMediaItem() = MediaItem.Builder().apply {
         setMediaId(mediaId.toString())
@@ -44,10 +40,10 @@ abstract class AbstractSong(
 
     private fun toMediaMetadata() = MediaMetadata.Builder().apply {
         setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
-        setIsPlayable(isPlayable.value)
+        setIsPlayable(isPlayable)
 
         // EmbeddedArtwork automatically handled by media3
-        when (val artworkVal = artwork.value) {
+        when (val artworkVal = artwork) {
             null -> {}
             is RemoteArtwork -> setArtworkUri(Uri.parse(artworkVal.uri.toURL().toString()))
         }
@@ -69,8 +65,18 @@ abstract class AbstractSong(
         parcel.writeString(title)
         parcel.writeString(artist)
         parcel.writeLong(duration.inWholeMilliseconds)
-        parcel.writeParcelable(artwork.value, flags)
-        parcel.writeInt(isArtworkLoading.value.toInt())
-        parcel.writeInt(isPlayable.value.toInt())
+        parcel.writeParcelable(artwork, flags)
+        parcel.writeInt(isArtworkLoading.toInt())
+        parcel.writeInt(isPlayable.toInt())
     }
+
+    override fun toString() = mediaId.toString()
+
+    override fun describeContents() = 0
+
+    override fun equals(other: Any?) =
+        other is AbstractSong && mediaId == other.mediaId && title == other.title &&
+                artist == other.artist && duration == other.duration &&
+                timingData == other.timingData && isPlayable == other.isPlayable &&
+                artwork == other.artwork && isArtworkLoading == other.isArtworkLoading
 }

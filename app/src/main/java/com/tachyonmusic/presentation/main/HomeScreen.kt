@@ -16,7 +16,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -45,7 +44,7 @@ object HomeScreen :
     operator fun invoke(
         navController: NavController,
         sheetState: BottomSheetState,
-        miniPlayerHeight: MutableState<Dp>,
+        miniPlayerHeight: Dp,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var searchText by remember { mutableStateOf("") }
@@ -53,13 +52,12 @@ object HomeScreen :
 
         val scope = rememberCoroutineScope()
 
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
             contentPadding = PaddingValues(
                 start = Theme.padding.medium,
-                bottom = miniPlayerHeight.value + Theme.padding.medium
+                bottom = miniPlayerHeight + Theme.padding.medium
             )
         ) {
 
@@ -218,10 +216,6 @@ private fun LazyListScope.playbacksView(
 ) {
     items(playbacks) { playback ->
 
-        val artwork by playback.artwork.collectAsState()
-        val isArtworkLoading by playback.isArtworkLoading.collectAsState()
-        val isPlayable by playback.isPlayable.collectAsState()
-
         VerticalPlaybackView(
             modifier = Modifier
                 .padding(
@@ -229,13 +223,13 @@ private fun LazyListScope.playbacksView(
                     end = Theme.padding.extraSmall / 2f
                 )
                 .clickable {
-                    if (isPlayable)
+                    if (playback.isPlayable)
                         onClick(playback)
                 }
-                .isEnabled(isPlayable),
+                .isEnabled(playback.isPlayable),
             playback = playback,
-            artwork = artwork ?: PlaceholderArtwork,
-            isArtworkLoading = isArtworkLoading
+            artwork = playback.artwork ?: PlaceholderArtwork,
+            isArtworkLoading = playback.isArtworkLoading
         )
     }
 }

@@ -19,10 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.UriPermissionRepository
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.permission.domain.UriPermissionRepository
 import com.tachyonmusic.presentation.core_components.UriPermissionDialog
 import com.tachyonmusic.presentation.player.PlayerLayout
 import com.tachyonmusic.presentation.theme.ComposeSettings
@@ -157,7 +157,7 @@ class ActivityMain : ComponentActivity(), MediaBrowserController.EventListener {
                                 .fillMaxSize()
                                 .padding(innerPaddingSheet)
                         ) {
-                            NavigationGraph(navController, sheetState, miniPlayerHeight)
+                            NavigationGraph(navController, sheetState, miniPlayerHeight.value)
                         }
                     }
                 }

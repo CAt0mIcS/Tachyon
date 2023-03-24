@@ -21,8 +21,7 @@ class CreateAndSaveNewPlaylist(
                 )
             )
 
-        // TODO: Optimize
-        if (playlistRepository.getPlaylists().any { it.name == name })
+        if (playlistRepository.hasPlaylist(MediaId.ofRemotePlaylist(name)))
             return@withContext Resource.Error(
                 UiText.StringResource(
                     R.string.invalid_name,

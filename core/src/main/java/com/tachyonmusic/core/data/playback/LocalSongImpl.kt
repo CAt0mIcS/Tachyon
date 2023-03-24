@@ -7,6 +7,7 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.ext.toBoolean
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
 
@@ -23,6 +24,14 @@ class LocalSongImpl(
 
     override val playbackType = PlaybackType.Song.Local()
 
+    override fun copy(): Song = LocalSongImpl(uri, mediaId, title, artist, duration).let {
+        it.artwork = artwork
+        it.isArtworkLoading = isArtworkLoading
+        it.isPlayable = isPlayable
+        it.timingData = timingData?.copy()
+        it
+    }
+
     constructor(parcel: Parcel) : this(
         parcel.readParcelable<Uri>(Uri::class.java.classLoader)!!,
         MediaId(parcel.readString()!!),
@@ -30,9 +39,9 @@ class LocalSongImpl(
         parcel.readString()!!,
         parcel.readLong().ms
     ) {
-        artwork.value = parcel.readParcelable(Artwork::class.java.classLoader)
-        isArtworkLoading.value = parcel.readInt().toBoolean()
-        isPlayable.value = parcel.readInt().toBoolean()
+        artwork = parcel.readParcelable(Artwork::class.java.classLoader)
+        isArtworkLoading = parcel.readInt().toBoolean()
+        isPlayable = parcel.readInt().toBoolean()
     }
 
     companion object {

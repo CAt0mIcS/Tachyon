@@ -225,8 +225,24 @@ fun DependencyHandler.projectUtil() {
     implementation(project(":util"))
 }
 
-fun DependencyHandler.projectDatabase() {
-    implementation(project(":database"))
+fun DependencyHandler.projectPlaybackLayers() {
+    implementation(project(":playback-layers"))
+}
+
+fun DependencyHandler.projectPlaybackLayerDatabase() {
+    implementation(project(":playback-layers:database"))
+}
+
+fun DependencyHandler.projectPlaybackLayerPermission() {
+    implementation(project(":playback-layers:permission"))
+}
+
+fun DependencyHandler.projectPlaybackLayerSort() {
+    implementation(project(":playback-layers:sort"))
+}
+
+fun DependencyHandler.projectPlaybackLayerArtwork() {
+    implementation(project(":playback-layers:artwork"))
 }
 
 

@@ -1,81 +1,56 @@
 package com.tachyonmusic.domain.use_case.player
 
-import android.content.Context
 import com.tachyonmusic.core.RepeatMode
-import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.core.domain.playback.*
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.media.core.SortParameters
-import com.tachyonmusic.media.domain.use_case.GetPlaylistForPlayback
-import com.tachyonmusic.media.util.playback
-import com.tachyonmusic.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.withContext
+import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
+import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.util.cycle
 
-/**
- * For songs and loops:
- * * Finds the next playback in all the songs/loops depending on the repeat mode
- *
- * For playlists:
- * * Returns all items in the playlist as children
- */
 class GetPlaybackChildren(
     private val browser: MediaBrowserController,
-    private val getPlaylistForPlayback: GetPlaylistForPlayback,
-    private val context: Context
+    private val predefinedPlaylists: PredefinedPlaylistsRepository,
+    private val log: Logger
 ) {
-    suspend operator fun invoke(
-        playback: Playback?,
-        repeatMode: RepeatMode?,
-        sortParams: SortParameters
-    ) = withContext(Dispatchers.IO) {
-        if (playback == null || repeatMode == null)
-            return@withContext emptyList()
+    operator fun invoke(playback: Playback?, repeatMode: RepeatMode): List<SinglePlayback> {
+        log.debug("Getting children for $playback with $repeatMode")
 
-        if (playback !is SinglePlayback)
-            return@withContext (playback as Playlist).playbacks.setPlayableState(context)
+        if (playback == null)
+            return emptyList()
 
-        when (repeatMode) {
-            RepeatMode.All -> nextItem() ?: resolveNextItem(playback, sortParams) ?: emptyList()
-            RepeatMode.One -> listOf(playback)
-            RepeatMode.Shuffle -> nextItem() ?: emptyList()
+        return when (playback) {
+            is SinglePlayback -> {
+                when (repeatMode) {
+                    is RepeatMode.One -> listOf(playback)
+                    is RepeatMode.All -> getPlaylistAll(playback)
+                    is RepeatMode.Shuffle -> getPlaylistShuffle()
+                }
+            }
+
+            is Playlist -> playback.playbacks
+            else -> emptyList()
         }
     }
 
+    private fun getPlaylistAll(playback: SinglePlayback) =
+        when (playback) {
+            is Song -> {
+                val idx = predefinedPlaylists.songPlaylist.indexOf(playback)
+                if(idx == -1)
+                    emptyList()
+                else
+                    listOfNotNull(predefinedPlaylists.songPlaylist.cycle(idx + 1))
+            }
+            is Loop -> {
+                val idx = predefinedPlaylists.loopPlaylist.indexOf(playback)
+                if(idx == -1)
+                    emptyList()
+                else
+                    listOfNotNull(predefinedPlaylists.loopPlaylist.cycle(idx + 1))
+            }
+            else -> emptyList()
+        }
 
-    /**
-     * Uses the playlist which will be used by the player once started
-     */
-    private suspend fun resolveNextItem(
-        playback: SinglePlayback,
-        sortParams: SortParameters
-    ): List<SinglePlayback>? {
-        val playlistRes = getPlaylistForPlayback(playback, sortParams)
-
-        if (playlistRes is Resource.Error || playlistRes.data == null)
-            return null
-
-        val playlist = playlistRes.data!!.playbackItems
-
-        val pbIdx = playlist.indexOfFirst { it.mediaId == playback.mediaId }
-        if (pbIdx == -1)
-            return null
-        if (pbIdx + 1 >= playlist.size)
-            return listOf(playlist[0]).setPlayableState(context)
-
-        return listOf(playlist[pbIdx + 1]).setPlayableState(context)
-    }
-
-
-    /**
-     * Uses the index of the next playing media item. Only works if playback is already started
-     */
-    private suspend fun nextItem() = runOnUiThread {
-        val next = browser.getMediaItemAt(browser.nextMediaItemIndex)?.mediaMetadata?.playback
-            ?: return@runOnUiThread null
-
-        listOf(next).setPlayableState(context)
-    }
+    private fun getPlaylistShuffle() =
+        if (browser.nextPlayback != null) listOf(browser.nextPlayback!!) else emptyList()
 }

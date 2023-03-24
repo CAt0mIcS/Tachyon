@@ -3,16 +3,16 @@ package com.tachyonmusic.presentation.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.use_case.GetHistory
-import com.tachyonmusic.domain.use_case.GetMediaStates
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
+import com.tachyonmusic.domain.use_case.GetRepositoryStates
+import com.tachyonmusic.domain.use_case.ObserveSavedData
+import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.main.NormalizeCurrentPosition
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
-import com.tachyonmusic.domain.use_case.player.PlayRecentlyPlayed
-import com.tachyonmusic.media.domain.use_case.GetOrLoadArtwork
-import com.tachyonmusic.media.util.setArtworkFromResource
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.normalize
+import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -22,28 +22,20 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MiniPlayerViewModel @Inject constructor(
-    getMediaStates: GetMediaStates,
-    private val getHistory: GetHistory,
+    playbackRepository: PlaybackRepository,
+    private val getRepositoryStates: GetRepositoryStates,
     private val normalizeCurrentPosition: NormalizeCurrentPosition,
-    private val getOrLoadArtwork: GetOrLoadArtwork,
-    private val getRecentlyPlayed: GetRecentlyPlayed,
+    observeSavedData: ObserveSavedData,
     private val pauseResumePlayback: PauseResumePlayback,
-    private val playRecentlyPlayed: PlayRecentlyPlayed,
+    private val getRecentlyPlayed: GetRecentlyPlayed,
+    private val playPlayback: PlayPlayback
 ) : ViewModel() {
 
-    val playback = getMediaStates.playback().map {
-        val pb = it ?: getHistory().find { history -> history.isPlayable.value }
-        if (pb?.isPlayable?.value == true) pb else null
-    }.onEach { singlePb ->
-        if (singlePb == null)
-            return@onEach
-
-        getOrLoadArtwork(singlePb.underlyingSong).onEach { res ->
-            singlePb.setArtworkFromResource(res)
-        }.collect()
+    val playback = playbackRepository.historyFlow.map { history ->
+        history.find { it.isPlayable }?.copy()
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Lazily, null)
 
-    val isPlaying = getMediaStates.playWhenReady()
+    val isPlaying = getRepositoryStates.isPlaying()
 
     var audioUpdateInterval: Duration = SettingsEntity().audioUpdateInterval
         private set
@@ -51,21 +43,26 @@ class MiniPlayerViewModel @Inject constructor(
     private var recentlyPlayedPosition = 0f
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            val recentlyPlayed = getRecentlyPlayed()
+        observeSavedData().onEach {
             recentlyPlayedPosition =
-                recentlyPlayed?.position?.normalize(recentlyPlayed.duration) ?: 0f
-        }
+                it.currentPositionInRecentlyPlayedPlayback.normalize(it.recentlyPlayedDuration)
+        }.launchIn(viewModelScope + Dispatchers.IO)
     }
 
-    fun getCurrentPositionNormalized() = normalizeCurrentPosition() ?: recentlyPlayedPosition
+    // TODO: Jumps around when isPlaying state switches
+    fun getCurrentPositionNormalized(): Float =
+        if (getRepositoryStates.isPlaying().value) normalizeCurrentPosition() ?: 0f
+        else recentlyPlayedPosition
 
     fun pauseResume() {
         if (isPlaying.value)
             pauseResumePlayback(PauseResumePlayback.Action.Pause)
         else {
             viewModelScope.launch(Dispatchers.IO) {
-                playRecentlyPlayed(playback.value)
+                val recentlyPlayed = getRecentlyPlayed()
+                runOnUiThreadAsync {
+                    playPlayback(playback.value, recentlyPlayed?.position)
+                }
             }
         }
     }
