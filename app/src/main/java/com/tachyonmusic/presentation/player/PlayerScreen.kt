@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.github.krottv.compose.sliders.DefaultThumb
 import com.github.krottv.compose.sliders.DefaultTrack
 import com.github.krottv.compose.sliders.SliderValueHorizontal
@@ -27,6 +28,7 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
+import com.tachyonmusic.presentation.equalizer.EqualizerScreen
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
@@ -45,6 +47,7 @@ import com.tachyonmusic.util.toReadableString
 fun PlayerScreen(
     sheetState: BottomSheetState,
     miniPlayerHeight: Dp,
+    navController: NavController,
     viewModel: PlayerViewModel = hiltViewModel()
 ) {
     val shouldShowPlayer by viewModel.shouldShowPlayer.collectAsState()
@@ -296,7 +299,7 @@ fun PlayerScreen(
 
                 IconButton(
                     modifier = Modifier.scale(buttonScale),
-                    onClick = { /*TODO: Equalizer*/ }
+                    onClick = { navController.navigate(EqualizerScreen.route) }
                 ) {
                     Icon(
                         painterResource(R.drawable.ic_equalizer),

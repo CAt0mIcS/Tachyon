@@ -2,6 +2,7 @@ package com.tachyonmusic.domain.repository
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
+import androidx.media3.common.PlaybackParameters
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
@@ -32,6 +33,8 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     val currentPosition: Duration?
     var currentPlaybackTimingData: TimingDataController?
     val canPrepare: Boolean
+
+    var playbackParameters: PlaybackParameters
 
     val nextPlayback: SinglePlayback?
 

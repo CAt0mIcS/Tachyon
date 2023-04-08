@@ -9,7 +9,7 @@ object Version {
     const val APP_NAME = "Dev $APP"
 
     const val COMPOSE = "1.4.0-alpha04"
-    const val MEDIA3 = "1.0.0-beta02"
+    const val MEDIA3 = "1.0.0"
     const val ROOM = "2.4.3"
     const val PAGING = "3.1.1"
     const val MOCKK = "1.13.3"

@@ -73,12 +73,12 @@ fun MainScreen(
                         modifier = Modifier
                             .fillMaxSize(),
                     ) {
-                        if (!requiresMusicPathSelection)
-                            PlayerLayout(
-                                sheetState,
-                                onMiniPlayerHeight = { miniPlayerHeight.value = it },
-                                miniPlayerHeight = miniPlayerHeight.value
-                            )
+                        PlayerLayout(
+                            navController,
+                            sheetState,
+                            onMiniPlayerHeight = { miniPlayerHeight.value = it },
+                            miniPlayerHeight = miniPlayerHeight.value
+                        )
                     }
                 },
                 sheetPeekHeight = miniPlayerHeight.value,

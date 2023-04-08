@@ -7,6 +7,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.session.*
 import com.google.common.util.concurrent.ListenableFuture
@@ -103,6 +104,12 @@ class MediaPlaybackServiceMediaBrowserController(
                 && browser?.playbackState == Player.STATE_IDLE
                 && (browser?.mediaItemCount ?: -1) > 0
                 && currentPlaylist.value != null
+
+    override var playbackParameters: PlaybackParameters
+        get() = browser?.playbackParameters ?: PlaybackParameters.DEFAULT
+        set(value) {
+            browser?.playbackParameters = value
+        }
 
     override val nextPlayback: SinglePlayback?
         get() {

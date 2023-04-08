@@ -2,10 +2,7 @@ package com.tachyonmusic.media.data
 
 import android.os.Looper
 import androidx.media3.cast.CastPlayer
-import androidx.media3.common.C
-import androidx.media3.common.ForwardingPlayer
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
+import androidx.media3.common.*
 import androidx.media3.common.util.Clock
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
@@ -56,6 +53,11 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
         get() = List(mediaItemCount) {
             getMediaItemAt(it)
         }
+
+    override val audioSessionId: Int
+        get() = if (wrappedPlayer is ExoPlayer) (wrappedPlayer as ExoPlayer).audioSessionId else TODO(
+            "AudioSessionId not valid on another player yet"
+        )
 
     fun createMessage(target: PlayerMessage.Target) =
         when (wrappedPlayer) {
@@ -160,6 +162,13 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
 
         currentMediaItem?.mediaMetadata?.timingData = newTimingData
         invokeEvent { it.onTimingDataUpdated(newTimingData) }
+    }
+
+    override fun setAuxEffectInfo(info: AuxEffectInfo) {
+        if (wrappedPlayer is ExoPlayer)
+            (wrappedPlayer as ExoPlayer).setAuxEffectInfo(info)
+        else
+            TODO("Cannot set aux effect info in another player yet")
     }
 
     private fun postLoopMessage(startTime: Duration, endTime: Duration) {
