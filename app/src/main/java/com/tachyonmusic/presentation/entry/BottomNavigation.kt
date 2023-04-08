@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation
+package com.tachyonmusic.presentation.entry
 
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.BottomSheetState
@@ -15,8 +15,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.tachyonmusic.presentation.home.HomeScreen
 import com.tachyonmusic.presentation.library.LibraryScreen
-import com.tachyonmusic.presentation.main.HomeScreen
 import com.tachyonmusic.presentation.profile.ProfileScreen
 import com.tachyonmusic.presentation.theme.NoRippleTheme
 import com.tachyonmusic.presentation.theme.Theme

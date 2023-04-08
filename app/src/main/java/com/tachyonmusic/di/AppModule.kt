@@ -16,8 +16,8 @@ import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
+import com.tachyonmusic.domain.use_case.home.*
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
-import com.tachyonmusic.domain.use_case.main.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
@@ -26,6 +26,7 @@ import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
+import com.tachyonmusic.permission.domain.UriPermissionRepository
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.sort.domain.SortedPlaybackRepository
 import dagger.Module
@@ -96,13 +97,6 @@ object AppUseCaseModule {
     fun provideUnloadArtworksUseCase(
         songRepository: SongRepository
     ) = UnloadArtworks(songRepository)
-
-    @Provides
-    @Singleton
-    fun provideSetMusicDirectoriesUseCase(
-        settingsRepository: SettingsRepository,
-        @ApplicationContext context: Context
-    ) = SetMusicDirectories(settingsRepository, context)
 
     @Provides
     @Singleton
@@ -238,6 +232,13 @@ object AppUseCaseModule {
         predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
         logger: Logger
     ) = GetPlaybackChildren(browser, predefinedPlaylistsRepository, logger)
+
+    @Provides
+    @Singleton
+    fun provideRegisterNewUriPermissionUseCase(
+        uriPermissionRepository: UriPermissionRepository,
+        settingsRepository: SettingsRepository
+    ) = RegisterNewUriPermission(uriPermissionRepository, settingsRepository)
 
 }
 

@@ -16,7 +16,7 @@
         android:supportsRtl="true">
 
         <activity
-            android:name="com.tachyonmusic.presentation.ActivityMain"
+            android:name="com.tachyonmusic.presentation.entry.ActivityMain"
             android:exported="true">
 
             <intent-filter>

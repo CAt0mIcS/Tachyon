@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.ObserveSettings
-import com.tachyonmusic.domain.use_case.SetMusicDirectories
+import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.util.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +19,7 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     observeSettings: ObserveSettings,
     private val writeSettings: WriteSettings,
-    private val setMusicDirectories: SetMusicDirectories
+    private val registerNewUriPermission: RegisterNewUriPermission
 ) : ViewModel() {
 
     val settings = observeSettings().stateIn(
@@ -89,10 +89,9 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-
     fun onUriPermissionResult(uri: Uri?) {
         viewModelScope.launch {
-            setMusicDirectories(settings.value.musicDirectories + uri)
+            registerNewUriPermission(uri)
         }
     }
 }

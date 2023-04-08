@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation
+package com.tachyonmusic.presentation.entry
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.BottomSheetState
@@ -10,8 +10,8 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.tachyonmusic.presentation.authentication.RegisterScreen
 import com.tachyonmusic.presentation.authentication.SignInScreen
+import com.tachyonmusic.presentation.home.HomeScreen
 import com.tachyonmusic.presentation.library.LibraryScreen
-import com.tachyonmusic.presentation.main.HomeScreen
 import com.tachyonmusic.presentation.profile.ProfileScreen
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)

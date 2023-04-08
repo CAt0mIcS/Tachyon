@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation.main
+package com.tachyonmusic.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,10 +6,10 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
-import com.tachyonmusic.domain.use_case.main.GetSavedData
-import com.tachyonmusic.domain.use_case.main.UnloadArtworks
-import com.tachyonmusic.domain.use_case.main.UpdateSettingsDatabase
-import com.tachyonmusic.domain.use_case.main.UpdateSongDatabase
+import com.tachyonmusic.domain.use_case.home.GetSavedData
+import com.tachyonmusic.domain.use_case.home.UnloadArtworks
+import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
+import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.player.SetRepeatMode
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import dagger.hilt.android.lifecycle.HiltViewModel

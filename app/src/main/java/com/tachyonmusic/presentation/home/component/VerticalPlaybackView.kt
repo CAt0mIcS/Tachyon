@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation.main.component
+package com.tachyonmusic.presentation.home.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background

@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain.use_case.main
+package com.tachyonmusic.domain.use_case.home
 
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.data.data_source.Database

@@ -39,5 +39,6 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun provideUriPermissionRepository(): UriPermissionRepository = UriPermissionRepositoryImpl()
+    fun provideUriPermissionRepository(@ApplicationContext context: Context): UriPermissionRepository =
+        UriPermissionRepositoryImpl(context)
 }

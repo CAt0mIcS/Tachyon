@@ -77,9 +77,9 @@ class RoomSettingsRepository(
             dao.setShouldMillisecondsBeShown(shouldMillisecondsBeShown)
 
         if (excludedSongFiles != null)
-            dao.setExcludedSongFiles(excludedSongFiles)
+            dao.setExcludedSongFiles(excludedSongFiles.toSet().toList())
 
         if (musicDirectories != null)
-            dao.setMusicDirectories(musicDirectories)
+            dao.setMusicDirectories(musicDirectories.toSet().toList())
     }
 }

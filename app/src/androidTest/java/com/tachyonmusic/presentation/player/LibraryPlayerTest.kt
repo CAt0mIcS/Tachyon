@@ -9,7 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.unit.dp
-import com.tachyonmusic.presentation.ActivityMain
+import com.tachyonmusic.presentation.entry.ActivityMain
 import com.tachyonmusic.presentation.library.LibraryScreen
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme

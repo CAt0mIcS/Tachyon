@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation.main
+package com.tachyonmusic.presentation.home
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,7 +30,7 @@ import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.BottomNavigationItem
-import com.tachyonmusic.presentation.main.component.VerticalPlaybackView
+import com.tachyonmusic.presentation.home.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.isEnabled
 import kotlinx.coroutines.launch

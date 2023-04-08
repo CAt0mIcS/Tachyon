@@ -12,7 +12,7 @@ import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.use_case.main.UpdateSongDatabase
+import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.testutils.tryInject
 import com.tachyonmusic.util.File
 import com.tachyonmusic.util.Resource

@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain.use_case.main
+package com.tachyonmusic.domain.use_case.home
 
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.util.normalize

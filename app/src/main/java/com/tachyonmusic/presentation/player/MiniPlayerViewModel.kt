@@ -7,7 +7,7 @@ import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.ObserveSavedData
 import com.tachyonmusic.domain.use_case.PlayPlayback
-import com.tachyonmusic.domain.use_case.main.NormalizeCurrentPosition
+import com.tachyonmusic.domain.use_case.home.NormalizeCurrentPosition
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.util.Duration
