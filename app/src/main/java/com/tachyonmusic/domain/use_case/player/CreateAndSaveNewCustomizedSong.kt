@@ -32,7 +32,7 @@ class CreateAndSaveNewCustomizedSong(
         if (isInvalid)
             return@withContext Resource.Error(
                 UiText.StringResource(
-                    R.string.cannot_create_customizedSong,
+                    R.string.cannot_create_customized_song,
                     name,
                     playback.toString(),
                     playback?.timingData.toString()

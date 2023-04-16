@@ -12,7 +12,7 @@ import javax.inject.Inject
 data class EqualizerState(
     val minBandLevel: Int,
     val maxBandLevel: Int,
-    val bands: List<Int>
+    val bands: List<Int>?
 )
 
 @HiltViewModel
@@ -51,9 +51,23 @@ class EqualizerViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun setBandLevel(band: Int, level: Int) {
-        audioEffectController.equalizerEnabled = true
+    fun setBass(bass: Int?) {
+        if (audioEffectController.bassEnabled) {
+            audioEffectController.bass = bass
+            _bassBoost.update { audioEffectController.bass }
+        } else
+            _bassBoost.update { null }
+    }
 
+    fun setVirtualizerStrength(strength: Int?) {
+        if (audioEffectController.virtualizerEnabled) {
+            audioEffectController.virtualizerStrength = strength
+            _virtualizerStrength.update { audioEffectController.virtualizerStrength }
+        } else
+            _virtualizerStrength.update { null }
+    }
+
+    fun setBandLevel(band: Int, level: Int) {
         if (audioEffectController.equalizerEnabled) {
             audioEffectController.setBandLevel(band, level)
 
@@ -85,12 +99,37 @@ class EqualizerViewModel @Inject constructor(
     }
 
     fun setReverb(reverbConfig: ReverbConfig) {
-        audioEffectController.reverbEnabled = true
-
         if (audioEffectController.reverbEnabled) {
             audioEffectController.reverb = reverbConfig
             _reverb.update { reverbConfig }
+        } else
+            _reverb.update { null }
+    }
+
+    fun setBassBoostEnabled(enabled: Boolean) {
+        audioEffectController.bassEnabled = enabled
+        _bassBoost.update { audioEffectController.bass }
+    }
+
+    fun setVirtualizerEnabled(enabled: Boolean) {
+        audioEffectController.virtualizerEnabled = enabled
+        _virtualizerStrength.update { audioEffectController.virtualizerStrength }
+    }
+
+    fun setEqualizerEnabled(enabled: Boolean) {
+        audioEffectController.equalizerEnabled = enabled
+        _equalizer.update {
+            EqualizerState(
+                audioEffectController.minBandLevel,
+                audioEffectController.maxBandLevel,
+                audioEffectController.bands
+            )
         }
+    }
+
+    fun setReverbEnabled(enabled: Boolean) {
+        audioEffectController.reverbEnabled = enabled
+        _reverb.update { audioEffectController.reverb }
     }
 }
 

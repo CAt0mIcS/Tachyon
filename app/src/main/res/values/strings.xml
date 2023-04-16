@@ -26,7 +26,7 @@
 
     <string name="invalid_search_query">Invalid search query %1$s</string>
     <string name="invalid_name">Invalid name \"%1$s\" specified</string>
-    <string name="cannot_create_customizedSong">Cannot create invalid customizedSong, Name: \"%1$s\"; Playback: \"%2$s\"; TimingData: \"%3$s\"</string>
+    <string name="cannot_create_customized_song">Cannot create invalid custom song, Name: \"%1$s\"; Playback: \"%2$s\"; TimingData: \"%3$s\"</string>
     <string name="song_not_found">Unable to find song \"%1$s\"</string>
 
     <string name="playback_not_in_playlist">Trying to play playback \"%1$s\" but it doesn\'t exist in playlist \"%2$s\"</string>

@@ -2,7 +2,6 @@ package com.tachyonmusic.media.domain
 
 import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
-import com.tachyonmusic.util.IListenable
 
 interface AudioEffectController {
     var controller: PlaybackController?
@@ -21,7 +20,7 @@ interface AudioEffectController {
     val numBands: Int
     val minBandLevel: Int
     val maxBandLevel: Int
-    val bands: List<Int>
+    val bands: List<Int>?
 
     var reverb: ReverbConfig?
 

@@ -105,8 +105,8 @@ class AndroidAudioEffectController : AudioEffectController {
     override val maxBandLevel: Int
         get() = if (!equalizerEnabled) 0 else equalizer?.bandLevelRange?.last()?.toInt() ?: 0
 
-    override val bands: List<Int>
-        get() = List(numBands) {
+    override val bands: List<Int>?
+        get() = if (!equalizerEnabled) null else List(numBands) {
             getBandLevel(it)
         }
 

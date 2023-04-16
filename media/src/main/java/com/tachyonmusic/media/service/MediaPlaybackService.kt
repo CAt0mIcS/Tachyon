@@ -254,6 +254,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     volume = 1f
                 )
                 audioEffectController.reverb = null
+                audioEffectController.equalizerEnabled = false
             }
         }
 
