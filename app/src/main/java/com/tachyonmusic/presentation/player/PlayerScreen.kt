@@ -32,7 +32,7 @@ import com.tachyonmusic.presentation.equalizer.EqualizerScreen
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
-import com.tachyonmusic.presentation.player.data.CustomizedSongEditor
+import com.tachyonmusic.presentation.player.data.TimingDataEditor
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.currentFraction
 import com.tachyonmusic.presentation.util.displaySubtitle
@@ -323,7 +323,7 @@ fun PlayerScreen(
 
         if (isEditingCustomizedSong) {
             item {
-                CustomizedSongEditor(modifier = Modifier.fillMaxWidth())
+                TimingDataEditor(modifier = Modifier.fillMaxWidth())
             }
         }
 

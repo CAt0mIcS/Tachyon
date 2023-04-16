@@ -6,6 +6,5 @@ import com.tachyonmusic.core.domain.MediaId
 
 @Entity
 open class PlaybackEntity(
-    var mediaId: MediaId,
-    @PrimaryKey var id: Int? = null
+    @PrimaryKey var mediaId: MediaId,
 )

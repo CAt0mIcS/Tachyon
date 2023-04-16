@@ -13,13 +13,21 @@ import java.lang.reflect.Type
 
 object Converters {
     @TypeConverter
-    fun fromStringToStringList(value: String?): List<String> {
+    fun fromStringToStringList(value: String?): List<String>? {
         val listType: Type = object : TypeToken<List<String?>?>() {}.type
-        return Gson().fromJson(value, listType)
+        return if (value == null) null else Gson().fromJson(value, listType)
     }
 
     @TypeConverter
-    fun fromStringListToString(list: List<String>?): String = Gson().toJson(list)
+    fun fromStringListToString(list: List<String>?): String? =
+        if (list == null) null else Gson().toJson(list)
+
+
+    @TypeConverter
+    fun fromIntListToStringList(ints: List<Int>?) = ints?.map { it.toString() }
+
+    @TypeConverter
+    fun fromStringListToIntList(strings: List<String>?) = strings?.map { it.toInt() }
 
 
     @TypeConverter

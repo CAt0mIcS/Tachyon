@@ -5,8 +5,10 @@ import androidx.media3.cast.CastPlayer
 import com.google.android.gms.cast.framework.CastContext
 import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.data.AndroidAudioEffectController
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
+import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.*
 import com.tachyonmusic.permission.domain.PermissionMapperRepository
@@ -62,4 +64,12 @@ class MediaPlaybackUseCaseModule {
     @Singleton
     fun provideGetSettingsUseCase(settingsRepository: SettingsRepository) =
         GetSettings(settingsRepository)
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+class MediaPlaybackRepositoryModule {
+    @Provides
+    @Singleton
+    fun provideAudioEffectController(): AudioEffectController = AndroidAudioEffectController()
 }

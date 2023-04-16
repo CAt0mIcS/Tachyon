@@ -12,8 +12,10 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.ArtworkType
+import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.database.domain.repository.SettingsRepository
@@ -22,6 +24,7 @@ import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.data.MediaNotificationProvider
+import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
@@ -66,6 +69,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     lateinit var dataRepository: DataRepository
 
     @Inject
+    lateinit var audioEffectController: AudioEffectController
+
+    @Inject
     lateinit var log: Logger
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -81,6 +87,17 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             exoPlayer = buildExoPlayer(!settingsRepository.getSettings().ignoreAudioFocus)
             currentPlayer = exoPlayer
         }
+
+        audioEffectController.controller = object : AudioEffectController.PlaybackController {
+            override fun onNewPlaybackParameters(params: PlaybackParameters) {
+                currentPlayer.playbackParameters = androidx.media3.common.PlaybackParameters(
+                    params.speed,
+                    params.pitch
+                )
+                currentPlayer.volume = params.volume
+            }
+        }
+        audioEffectController.updateAudioSessionId(currentPlayer.audioSessionId)
 
 //        settingsRepository.observe().onEach {
 //            switchPlayer(exoPlayer, buildExoPlayer(!it.ignoreAudioFocus))
@@ -120,6 +137,8 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     override fun onDestroy() {
         super.onDestroy()
         ioScope.coroutineContext.cancelChildren()
+
+        audioEffectController.release()
 
         exoPlayer.release()
         castPlayer.release()
@@ -211,8 +230,34 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
      ********** [Player.Listener]
      *************************************************************************/
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        val playback = mediaItem?.mediaMetadata?.playback ?: return
+
+        // TODO: Update equalizer
+        when (playback) {
+            is CustomizedSong -> {
+                audioEffectController.bass = playback.bassBoost
+                audioEffectController.virtualizerStrength = playback.virtualizerStrength
+                audioEffectController.playbackParams =
+                    playback.playbackParameters ?: PlaybackParameters(
+                        speed = 1f,
+                        pitch = 1f,
+                        volume = 1f
+                    )
+                audioEffectController.reverb = playback.reverb
+            }
+            else -> {
+                audioEffectController.bass = null
+                audioEffectController.virtualizerStrength = null
+                audioEffectController.playbackParams = PlaybackParameters(
+                    speed = 1f,
+                    pitch = 1f,
+                    volume = 1f
+                )
+                audioEffectController.reverb = null
+            }
+        }
+
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
-            val playback = mediaItem?.mediaMetadata?.playback ?: return
             ioScope.launch {
                 addNewPlaybackToHistory(playback)
             }

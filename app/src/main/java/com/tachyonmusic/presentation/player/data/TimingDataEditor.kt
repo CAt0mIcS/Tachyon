@@ -11,15 +11,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
-import com.tachyonmusic.presentation.player.CustomizedSongEditorViewModel
+import com.tachyonmusic.presentation.player.TimingDataEditorViewModel
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.util.ms
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun CustomizedSongEditor(
+fun TimingDataEditor(
     modifier: Modifier = Modifier,
-    viewModel: CustomizedSongEditorViewModel = hiltViewModel()
+    viewModel: TimingDataEditorViewModel = hiltViewModel()
 ) {
     val timingData = viewModel.timingData
 

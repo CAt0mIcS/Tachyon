@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class CustomizedSongEditorViewModel @Inject constructor(
+class TimingDataEditorViewModel @Inject constructor(
     getRepositoryStates: GetRepositoryStates,
     private val setTimingData: SetTimingData,
     private val createAndSaveNewCustomizedSong: CreateAndSaveNewCustomizedSong,

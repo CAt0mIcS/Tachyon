@@ -1,8 +1,8 @@
 package com.tachyonmusic.permission
 
-import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.data.playback.LocalCustomizedSongImpl
 import com.tachyonmusic.core.data.playback.LocalPlaylistImpl
+import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Playlist
@@ -33,9 +33,16 @@ fun CustomizedSongEntity.toCustomizedSong(
     }
 ): CustomizedSong = LocalCustomizedSongImpl(
     mediaId,
-    TimingDataController(timingData, currentTimingDataIndex),
     song
-)
+).let {
+    it.timingData = timingData?.let { TimingDataController(it, currentTimingDataIndex) }
+    it.bassBoost = bassBoost
+    it.virtualizerStrength = virtualizerStrength
+    it.equalizerBandLevels = equalizerBandLevels
+    it.playbackParameters = playbackParameters
+    it.reverb = reverb
+    it
+}
 
 fun SinglePlaybackEntity.toPlayback(isPlayable: Boolean): SinglePlayback = when (this) {
     is SongEntity -> toSong(isPlayable)

@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import com.tachyonmusic.core.PlaybackParameters
+import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
@@ -17,9 +19,9 @@ import com.tachyonmusic.util.Duration
 
 abstract class AbstractCustomizedSong(
     final override val mediaId: MediaId,
-    final override var timingData: TimingDataController?,
     final override val song: Song
 ) : CustomizedSong {
+
 
     override val title: String
         get() = song.title
@@ -51,6 +53,13 @@ abstract class AbstractCustomizedSong(
             song.isPlayable = value
         }
 
+    override var timingData: TimingDataController? = null
+    override var bassBoost: Int? = null
+    override var virtualizerStrength: Int? = null
+    override var equalizerBandLevels: List<Int>? = null
+    override var playbackParameters: PlaybackParameters? = null
+    override var reverb: ReverbConfig? = null
+
     override fun toMediaItem() = MediaItem.Builder().apply {
         setMediaId(mediaId.toString())
         setUri(uri)
@@ -79,8 +88,13 @@ abstract class AbstractCustomizedSong(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
-        parcel.writeParcelable(timingData, flags)
         parcel.writeParcelable(song, flags)
+        parcel.writeParcelable(timingData, flags)
+        parcel.writeInt(bassBoost ?: 0)
+        parcel.writeInt(virtualizerStrength ?: 0)
+        parcel.writeList(equalizerBandLevels)
+        parcel.writeParcelable(playbackParameters, flags)
+        parcel.writeParcelable(reverb, flags)
     }
 
     override fun toString() = mediaId.toString()
