@@ -111,6 +111,9 @@ class MediaPlaybackServiceMediaBrowserController(
             browser?.playbackParameters = value
         }
 
+    override var audioSessionId: Int? = null
+        private set
+
     override val nextPlayback: SinglePlayback?
         get() {
             val idx = browser?.nextMediaItemIndex
@@ -232,9 +235,21 @@ class MediaPlaybackServiceMediaBrowserController(
                         it ?: getPlaylistForPlayback(event.currentPlayback)
                     }
             }
+
+            is AudioSessionIdChangedEvent -> {
+                log.info("Received new audio session id ${event.audioSessionId}")
+                onAudioSessionIdChanged(event.audioSessionId)
+            }
+
         }
 
         SessionResult(SessionResult.RESULT_SUCCESS)
+    }
+
+    // TODO: Not working, currently using custom command
+    override fun onAudioSessionIdChanged(audioSessionId: Int) {
+        this.audioSessionId = audioSessionId
+        invokeEvent { it.onAudioSessionIdChanged(audioSessionId) }
     }
 }
 

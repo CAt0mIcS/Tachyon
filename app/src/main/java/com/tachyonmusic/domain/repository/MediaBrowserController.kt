@@ -35,6 +35,7 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     val canPrepare: Boolean
 
     var playbackParameters: PlaybackParameters
+    val audioSessionId: Int?
 
     val nextPlayback: SinglePlayback?
 
@@ -64,5 +65,6 @@ interface MediaBrowserController : DefaultLifecycleObserver,
 
     interface EventListener {
         fun onConnected() {}
+        fun onAudioSessionIdChanged(audioSessionId: Int) {}
     }
 }

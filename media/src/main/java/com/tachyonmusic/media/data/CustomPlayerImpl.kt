@@ -54,10 +54,16 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
             getMediaItemAt(it)
         }
 
-    override val audioSessionId: Int
+    override var audioSessionId: Int
         get() = if (wrappedPlayer is ExoPlayer) (wrappedPlayer as ExoPlayer).audioSessionId else TODO(
-            "AudioSessionId not valid on another player yet"
+            "audioSessionId not valid on another player yet"
         )
+        set(value) {
+            if (wrappedPlayer is ExoPlayer) (wrappedPlayer as ExoPlayer).audioSessionId =
+                value else TODO(
+                "audioSessionId not valid on another player yet"
+            )
+        }
 
     fun createMessage(target: PlayerMessage.Target) =
         when (wrappedPlayer) {

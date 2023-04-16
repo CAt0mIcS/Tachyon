@@ -110,6 +110,27 @@ data class StateUpdateEvent(
     }
 }
 
+data class AudioSessionIdChangedEvent(
+    val audioSessionId: Int
+) : MediaSessionEvent {
+    override val command: SessionCommand
+        get() = Companion.command
+
+    override fun toBundle() = Bundle().apply {
+        putInt("AudioSessionId", audioSessionId)
+    }
+
+    companion object {
+        fun fromBundle(bundle: Bundle) =
+            AudioSessionIdChangedEvent(
+                bundle.getInt("AudioSessionId"),
+            )
+
+        val command =
+            SessionCommand("${actionPrefix}AUDIO_SESSION_ID_CHANGED_COMMAND", Bundle.EMPTY)
+    }
+}
+
 
 internal fun MediaSession.dispatchMediaEvent(event: MediaSessionEvent) {
     broadcastCustomCommand(event.command, event.toBundle())
@@ -125,5 +146,6 @@ internal fun SessionCommand.toMediaBrowserEvent(bundle: Bundle): MediaBrowserEve
 fun SessionCommand.toMediaSessionEvent(bundle: Bundle): MediaSessionEvent = when (this) {
     TimingDataUpdatedEvent.command -> TimingDataUpdatedEvent.fromBundle(bundle)
     StateUpdateEvent.command -> StateUpdateEvent.fromBundle(bundle)
+    AudioSessionIdChangedEvent.command -> AudioSessionIdChangedEvent.fromBundle(bundle)
     else -> TODO("Invalid session command $customAction")
 }

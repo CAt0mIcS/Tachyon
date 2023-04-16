@@ -9,7 +9,7 @@ import com.tachyonmusic.core.domain.TimingDataController
 
 interface CustomPlayer : Player {
     val mediaItems: List<MediaItem>
-    val audioSessionId: Int
+    var audioSessionId: Int
 
     fun updateTimingData(newTimingData: TimingDataController)
 

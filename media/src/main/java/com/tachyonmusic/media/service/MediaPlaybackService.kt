@@ -73,8 +73,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     private lateinit var mediaSession: MediaLibrarySession
 
     // use CustomPlayer.setAuxEffectInfo(reverb.id, 1f) (currently in isPlayingChanged)
-    // TODO: Customize and apply reverb
-//    private lateinit var reverb: PresetReverb
 
     override fun onCreate() {
         super.onCreate()
@@ -95,13 +93,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
         mediaSession =
             MediaLibrarySession.Builder(this, exoPlayer, MediaLibrarySessionCallback()).build()
-
-//        reverb = PresetReverb(Int.MAX_VALUE, currentPlayer.audioSessionId).apply {
-//            preset = PresetReverb.PRESET_LARGEHALL
-//            enabled = true
-//        }
-
-//        currentPlayer.playbackParameters = PlaybackParameters(.75f, .75f)
     }
 
     /**
@@ -132,7 +123,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
         exoPlayer.release()
         castPlayer.release()
-//        reverb.release()
         mediaSession.release()
         // TODO: Make [mediaSession] nullable and set to null?
     }
@@ -152,6 +142,8 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     currentPlayer.playWhenReady
                 )
             )
+
+            mediaSession.dispatchMediaEvent(AudioSessionIdChangedEvent(currentPlayer.audioSessionId))
         }
 
         override fun onGetLibraryRoot(
@@ -228,10 +220,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
-        // TODO: Effect not applied?
-//        if(isPlaying)
-//            currentPlayer.setAuxEffectInfo(AuxEffectInfo(reverb.id, 1f))
-
         if (!isPlaying) {
             val playback = currentPlayer.currentMediaItem?.mediaMetadata?.playback ?: return
             val currentPos = currentPlayer.currentPosition.ms

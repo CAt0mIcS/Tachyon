@@ -1,15 +1,13 @@
 package com.tachyonmusic.util
 
 interface IListenable<T> {
-    val listeners: MutableSet<T>
-
     fun registerEventListener(listener: T)
     fun unregisterEventListener(listener: T)
     fun invokeEvent(e: (T) -> Unit)
 }
 
 class Listenable<T> : IListenable<T> {
-    override val listeners = mutableSetOf<T>()
+    private val listeners = mutableSetOf<T>()
 
     override fun registerEventListener(listener: T) {
         listeners += listener

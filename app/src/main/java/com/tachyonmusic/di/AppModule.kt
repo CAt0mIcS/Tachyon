@@ -6,10 +6,12 @@ import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
 import com.tachyonmusic.core.domain.SongMetadataExtractor
+import com.tachyonmusic.data.repository.AndroidAudioEffectController
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.data.repository.PredefinedPlaylistsRepositoryImpl
 import com.tachyonmusic.database.domain.repository.*
+import com.tachyonmusic.domain.repository.AudioEffectController
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
@@ -267,6 +269,11 @@ object AppRepositoryModule {
             ConsoleUiTextLogger(context)
         )
     )
+
+    @Provides
+    @Singleton
+    fun provideAudioEffectController(mediaBrowserController: MediaBrowserController): AudioEffectController =
+        AndroidAudioEffectController(mediaBrowserController)
 
     @Provides
     @Singleton
