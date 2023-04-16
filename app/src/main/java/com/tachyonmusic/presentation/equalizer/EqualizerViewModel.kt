@@ -9,14 +9,26 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 data class EqualizerState(
-    val bass: Int = 0,
-    val virtualizerStrength: Int = 0,
-    val speed: Float = 1f,
-    val pitch: Float = 1f,
-    val numBands: Int = 0,
-    val minBandLevel: Int = 0,
-    val maxBandLevel: Int = 0,
-    val enabled: Boolean = true,
+    val bass: Int,
+    val virtualizerStrength: Int,
+    val speed: Float,
+    val pitch: Float,
+    val numBands: Int,
+    val minBandLevel: Int,
+    val maxBandLevel: Int,
+)
+
+data class ReverbState(
+    val roomLevel: Int,
+    val roomHFLevel: Int,
+    val decayTime: Int,
+    val decayHFRatio: Int,
+    val reflectionsLevel: Int,
+    val reflectionsDelay: Int,
+    val reverbLevel: Int,
+    val reverbDelay: Int,
+    val diffusion: Int,
+    val density: Int,
 )
 
 @HiltViewModel
@@ -40,6 +52,25 @@ class EqualizerViewModel @Inject constructor(
     private val _bandLevels = MutableStateFlow(listOf<Int>())
     val bandLevels = _bandLevels.asStateFlow()
 
+    private val _reverb = MutableStateFlow(
+        ReverbState(
+            audioEffectController.roomLevel,
+            audioEffectController.roomHFLevel,
+            audioEffectController.decayTime,
+            audioEffectController.decayHFRatio,
+            audioEffectController.reflectionsLevel,
+            audioEffectController.reflectionsDelay,
+            audioEffectController.reverbLevel,
+            audioEffectController.reverbDelay,
+            audioEffectController.diffusion,
+            audioEffectController.density
+        )
+    )
+    val reverb = _reverb.asStateFlow()
+
+    private val _enabled = MutableStateFlow(true)
+    val enabled = _enabled.asStateFlow()
+
     init {
         _bandLevels.update {
             List(audioEffectController.numBands) {
@@ -49,7 +80,7 @@ class EqualizerViewModel @Inject constructor(
     }
 
     fun setBass(bass: Int) {
-        if(!equalizerState.value.enabled)
+        if (!enabled.value)
             return
 
         audioEffectController.bassEnabled = bass != 0
@@ -61,7 +92,7 @@ class EqualizerViewModel @Inject constructor(
     }
 
     fun setVirtualizerStrength(strength: Int) {
-        if(!equalizerState.value.enabled)
+        if (!enabled.value)
             return
 
         audioEffectController.virtualizerEnabled = strength != 0
@@ -83,7 +114,7 @@ class EqualizerViewModel @Inject constructor(
     }
 
     fun setBandLevel(band: Int, level: Int) {
-        if(!equalizerState.value.enabled)
+        if (!enabled.value)
             return
 
         audioEffectController.equalizerEnabled = true
@@ -100,11 +131,35 @@ class EqualizerViewModel @Inject constructor(
         }
     }
 
+    fun setReverb(reverbState: ReverbState) {
+        if (!enabled.value)
+            return
+
+        audioEffectController.reverbEnabled = true
+
+        if (audioEffectController.reverbEnabled) {
+            audioEffectController.roomLevel = reverbState.roomLevel
+            audioEffectController.roomHFLevel = reverbState.roomHFLevel
+            audioEffectController.decayTime = reverbState.decayTime
+            audioEffectController.decayHFRatio = reverbState.decayHFRatio
+            audioEffectController.reflectionsLevel = reverbState.reflectionsLevel
+            audioEffectController.reflectionsDelay = reverbState.reflectionsDelay
+            audioEffectController.reverbLevel = reverbState.reverbLevel
+            audioEffectController.reverbDelay = reverbState.reverbDelay
+            audioEffectController.diffusion = reverbState.diffusion
+            audioEffectController.density = reverbState.density
+
+            _reverb.update { reverbState }
+        }
+    }
+
     fun switchEnabled() {
-        _equalizerState.update { it.copy(enabled = !it.enabled) }
-        audioEffectController.bassEnabled = equalizerState.value.enabled
-        audioEffectController.virtualizerEnabled = equalizerState.value.enabled
-        audioEffectController.equalizerEnabled = equalizerState.value.enabled
+        _enabled.update { !it }
+        audioEffectController.bassEnabled = enabled.value && audioEffectController.bass != 0
+        audioEffectController.virtualizerEnabled =
+            enabled.value && audioEffectController.virtualizerStrength != 0
+        audioEffectController.equalizerEnabled = enabled.value
+        audioEffectController.reverbEnabled = enabled.value
     }
 }
 
