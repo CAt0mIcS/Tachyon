@@ -82,6 +82,15 @@ object EqualizerScreen : NavigationItem("equalizer") {
                         viewModel.setPitch(num)
                 })
 
+            Text(text = "Volume")
+            Slider(
+                modifier = Modifier.systemGestureExclusion(),
+                value = equalizer.volume,
+                onValueChange = viewModel::setVolume,
+                valueRange = 0f..10f,
+                colors = sliderColors
+            )
+
             val bandLevels by viewModel.bandLevels.collectAsState()
             for (bandNumber in 0 until equalizer.numBands) {
                 val level = bandLevels[bandNumber]

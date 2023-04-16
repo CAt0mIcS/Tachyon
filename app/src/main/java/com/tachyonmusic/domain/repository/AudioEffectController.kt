@@ -8,9 +8,11 @@ interface AudioEffectController : MediaBrowserController.EventListener {
     var virtualizerEnabled: Boolean
     var equalizerEnabled: Boolean
     var reverbEnabled: Boolean
+    var volumeEnhancerEnabled: Boolean
 
     var speed: Float
     var pitch: Float
+    var volume: Float
 
     val numBands: Int
     val minBandLevel: Int

@@ -35,6 +35,7 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     val canPrepare: Boolean
 
     var playbackParameters: PlaybackParameters
+    var volume: Float
     val audioSessionId: Int?
 
     val nextPlayback: SinglePlayback?

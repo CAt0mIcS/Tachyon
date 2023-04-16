@@ -13,6 +13,7 @@ data class EqualizerState(
     val virtualizerStrength: Int,
     val speed: Float,
     val pitch: Float,
+    val volume: Float,
     val numBands: Int,
     val minBandLevel: Int,
     val maxBandLevel: Int,
@@ -41,6 +42,7 @@ class EqualizerViewModel @Inject constructor(
             audioEffectController.virtualizerStrength,
             audioEffectController.speed,
             audioEffectController.pitch,
+            audioEffectController.volume,
             audioEffectController.numBands,
             audioEffectController.minBandLevel,
             audioEffectController.maxBandLevel
@@ -111,6 +113,18 @@ class EqualizerViewModel @Inject constructor(
     fun setPitch(pitch: Float) {
         audioEffectController.pitch = pitch
         _equalizerState.update { it.copy(pitch = pitch) }
+    }
+
+    fun setVolume(volume: Float) {
+        if (!enabled.value)
+            return
+
+        audioEffectController.volumeEnhancerEnabled = true
+
+        if (audioEffectController.volumeEnhancerEnabled) {
+            audioEffectController.volume = if (volume <= 1f) volume else volume * 150
+            _equalizerState.update { it.copy(volume = volume) }
+        }
     }
 
     fun setBandLevel(band: Int, level: Int) {

@@ -111,6 +111,12 @@ class MediaPlaybackServiceMediaBrowserController(
             browser?.playbackParameters = value
         }
 
+    override var volume: Float
+        get() = browser?.volume ?: 1f
+        set(value) {
+            browser?.volume = value
+        }
+
     override var audioSessionId: Int? = null
         private set
 

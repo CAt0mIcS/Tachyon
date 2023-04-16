@@ -1,9 +1,6 @@
 package com.tachyonmusic.data.repository
 
-import android.media.audiofx.BassBoost
-import android.media.audiofx.EnvironmentalReverb
-import android.media.audiofx.Equalizer
-import android.media.audiofx.Virtualizer
+import android.media.audiofx.*
 import androidx.media3.common.PlaybackParameters
 import com.tachyonmusic.domain.repository.AudioEffectController
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -15,6 +12,7 @@ class AndroidAudioEffectController(
     private var virtualizer: Virtualizer? = null
     private var bassBoost: BassBoost? = null
     private var reverb: EnvironmentalReverb? = null
+    private var volumeEnhancer: LoudnessEnhancer? = null
 
     /**************************************************************************
      ********** Bass
@@ -64,8 +62,14 @@ class AndroidAudioEffectController(
             reverb?.enabled = value
         }
 
+    override var volumeEnhancerEnabled: Boolean
+        get() = volumeEnhancer?.enabled == true && volumeEnhancer?.hasControl() == true
+        set(value) {
+            volumeEnhancer?.enabled = value
+        }
+
     /**************************************************************************
-     ********** Speed/Pitch
+     ********** Speed/Pitch/Volume
      *************************************************************************/
 
     override var speed: Float
@@ -78,6 +82,18 @@ class AndroidAudioEffectController(
         get() = mediaBrowser.playbackParameters.pitch
         set(value) {
             mediaBrowser.playbackParameters = PlaybackParameters(speed, value)
+        }
+
+    override var volume: Float
+        get() = mediaBrowser.volume
+        set(value) {
+            if (value > 1f) {
+                mediaBrowser.volume = 1f
+                volumeEnhancer?.setTargetGain((value - 1).toInt())
+            } else {
+                mediaBrowser.volume = value
+                volumeEnhancer?.setTargetGain(0)
+            }
         }
 
     /**************************************************************************
@@ -183,5 +199,6 @@ class AndroidAudioEffectController(
         virtualizer = Virtualizer(Int.MAX_VALUE, audioSessionId)
         bassBoost = BassBoost(Int.MAX_VALUE, audioSessionId)
         reverb = EnvironmentalReverb(Int.MAX_VALUE, audioSessionId)
+        volumeEnhancer = LoudnessEnhancer(audioSessionId)
     }
 }
