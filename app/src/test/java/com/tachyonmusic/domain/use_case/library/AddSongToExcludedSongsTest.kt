@@ -16,7 +16,7 @@ internal class AddSongToExcludedSongsTest {
     val settingsRepo = mockk<SettingsRepository>()
     val songRepo = mockk<SongRepository>()
     val historyRepo = mockk<HistoryRepository>()
-    val loopRepo = mockk<LoopRepository>()
+    val customizedSongRepo = mockk<CustomizedSongRepository>()
     val playlistRepo = mockk<PlaylistRepository>()
 
     val song = mockk<Song>().apply {
@@ -24,7 +24,7 @@ internal class AddSongToExcludedSongsTest {
     }
 
     val exclude =
-        AddSongToExcludedSongs(settingsRepo, songRepo, historyRepo, loopRepo, playlistRepo)
+        AddSongToExcludedSongs(settingsRepo, songRepo, historyRepo, customizedSongRepo, playlistRepo)
 
     val playlists = List(10) { i ->
         mockk<Playlist>().apply {
@@ -45,7 +45,7 @@ internal class AddSongToExcludedSongsTest {
         coEvery { settingsRepo.addExcludedFilesRange(any()) } returns Unit
         coEvery { songRepo.remove(song.mediaId) } returns Unit
         coEvery { historyRepo.removeHierarchical(song.mediaId) } returns Unit
-        coEvery { loopRepo.removeIf(any()) } returns Unit
+        coEvery { customizedSongRepo.removeIf(any()) } returns Unit
         coEvery { playlistRepo.getPlaylists() } returns playlists
         coEvery { playlistRepo.setPlaybacksOfPlaylist(MediaId.EMPTY, emptyList()) } returns Unit
     }
@@ -58,7 +58,7 @@ internal class AddSongToExcludedSongsTest {
         coVerify { settingsRepo.addExcludedFilesRange(any()) }
         coVerify { songRepo.remove(song.mediaId) }
         coVerify { historyRepo.removeHierarchical(song.mediaId) }
-        coVerify { loopRepo.removeIf(any()) }
+        coVerify { customizedSongRepo.removeIf(any()) }
 
         playlists.forEach { playlist ->
             verify {

@@ -1,8 +1,8 @@
 package com.tachyonmusic.core.domain.playback
 
-interface Loop : SinglePlayback {
+interface CustomizedSong : SinglePlayback {
     val name: String
     val song: Song
 
-    override fun copy(): Loop
+    override fun copy(): CustomizedSong
 }

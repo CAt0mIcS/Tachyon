@@ -7,14 +7,14 @@ import com.tachyonmusic.database.domain.model.*
 
 fun Playback.toEntity(): PlaybackEntity = when (this) {
     is Song -> toEntity()
-    is Loop -> toEntity()
+    is CustomizedSong -> toEntity()
     is Playlist -> toEntity()
     else -> TODO("Invalid playback type ${this::class.java.name}")
 }
 
 fun SinglePlayback.toEntity(): SinglePlaybackEntity = when (this) {
     is Song -> toEntity()
-    is Loop -> toEntity()
+    is CustomizedSong -> toEntity()
     else -> TODO("Invalid SinglePlayback type ${this::class.java.name}")
 }
 
@@ -32,8 +32,8 @@ fun Song.toEntity(): SongEntity {
     )
 }
 
-fun Loop.toEntity(): LoopEntity {
-    return LoopEntity(
+fun CustomizedSong.toEntity(): CustomizedSongEntity {
+    return CustomizedSongEntity(
         mediaId,
         title,
         artist,

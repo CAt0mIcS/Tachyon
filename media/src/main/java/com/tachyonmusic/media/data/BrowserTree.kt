@@ -26,7 +26,7 @@ class BrowserTree(
 
         const val PLAYLIST_ROOT = ROOT + "Playlist/"
 
-        const val LOOP_ROOT = ROOT + "Loop/"
+        const val LOOP_ROOT = ROOT + "CustomizedSong/"
     }
 
     val root: MediaItem
@@ -41,9 +41,9 @@ class BrowserTree(
     suspend fun get(parentId: String, page: Int, pageSize: Int): ImmutableList<MediaItem>? =
         withContext(Dispatchers.IO) {
             when (parentId) {
-                ROOT -> constraintItems(getSongs() + getLoops() + getPlaylists(), page, pageSize)
+                ROOT -> constraintItems(getSongs() + getCustomizedSongs() + getPlaylists(), page, pageSize)
                 SONG_ROOT -> constraintItems(getSongs(), page, pageSize)
-                LOOP_ROOT -> constraintItems(getLoops(), page, pageSize)
+                LOOP_ROOT -> constraintItems(getCustomizedSongs(), page, pageSize)
                 PLAYLIST_ROOT -> constraintItems(getPlaylists(), page, pageSize)
                 else -> {
                     /**
@@ -78,7 +78,7 @@ class BrowserTree(
 
     // TODO: Nullable?
     private suspend fun getSongs() = playbackRepository.getSongs().map { it.toMediaItem() }
-    private suspend fun getLoops() = playbackRepository.getLoops().map { it.toMediaItem() }
+    private suspend fun getCustomizedSongs() = playbackRepository.getCustomizedSongs().map { it.toMediaItem() }
     private suspend fun getPlaylists() = playbackRepository.getPlaylists().map { it.toMediaItem() }
 
     private fun constraintItems(

@@ -68,7 +68,7 @@ object ProfileScreen :
                 )
             }
 
-            Setting(text = "Combine songs and loops in playlist") {
+            Setting(text = "Combine songs and customizedSongs in playlist") {
                 Switch(
                     checked = settings.combineDifferentPlaybackTypes,
                     onCheckedChange = viewModel::combineDifferentPlaybackTypesChanged

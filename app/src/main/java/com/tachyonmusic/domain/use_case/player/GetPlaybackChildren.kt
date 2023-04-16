@@ -41,12 +41,12 @@ class GetPlaybackChildren(
                 else
                     listOfNotNull(predefinedPlaylists.songPlaylist.cycle(idx + 1))
             }
-            is Loop -> {
-                val idx = predefinedPlaylists.loopPlaylist.indexOf(playback)
+            is CustomizedSong -> {
+                val idx = predefinedPlaylists.customizedSongPlaylist.indexOf(playback)
                 if(idx == -1)
                     emptyList()
                 else
-                    listOfNotNull(predefinedPlaylists.loopPlaylist.cycle(idx + 1))
+                    listOfNotNull(predefinedPlaylists.customizedSongPlaylist.cycle(idx + 1))
             }
             else -> emptyList()
         }

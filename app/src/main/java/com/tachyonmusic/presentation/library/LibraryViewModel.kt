@@ -41,8 +41,8 @@ class LibraryViewModel @Inject constructor(
         }
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
-    private var loops = playbackRepository.loopFlow.map { loops ->
-        loops.map {
+    private var customizedSongs = playbackRepository.customizedSongFlow.map { customizedSongs ->
+        customizedSongs.map {
             it.copy()
         }
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
@@ -57,10 +57,10 @@ class LibraryViewModel @Inject constructor(
     val filterType = _filterType.asStateFlow()
 
     val items =
-        combine(songs, loops, playlists, filterType) { songs, loops, playlists, filterType ->
+        combine(songs, customizedSongs, playlists, filterType) { songs, customizedSongs, playlists, filterType ->
             when (filterType) {
                 is PlaybackType.Song -> songs
-                is PlaybackType.Loop -> loops
+                is PlaybackType.CustomizedSong -> customizedSongs
                 is PlaybackType.Playlist -> playlists
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
@@ -70,12 +70,12 @@ class LibraryViewModel @Inject constructor(
         _filterType.value = PlaybackType.Song.Local()
     }
 
-    fun onFilterLoops() {
-        _filterType.value = PlaybackType.Loop.Remote()
+    fun onFilterCustomizedSongs() {
+        _filterType.value = PlaybackType.CustomizedSong.Local()
     }
 
     fun onFilterPlaylists() {
-        _filterType.value = PlaybackType.Playlist.Remote()
+        _filterType.value = PlaybackType.Playlist.Local()
     }
 
     fun onSortTypeChanged(type: SortType) {

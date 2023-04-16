@@ -9,7 +9,7 @@ import com.tachyonmusic.database.domain.model.*
     entities = [
         SettingsEntity::class,
         SongEntity::class,
-        LoopEntity::class,
+        CustomizedSongEntity::class,
         PlaylistEntity::class,
         PlaybackEntity::class,
         HistoryEntity::class,
@@ -22,7 +22,7 @@ import com.tachyonmusic.database.domain.model.*
 abstract class RoomDatabase : androidx.room.RoomDatabase(), Database {
     abstract override val settingsDao: SettingsDao
     abstract override val songDao: SongDao
-    abstract override val loopDao: LoopDao
+    abstract override val customizedSongDao: CustomizedSongDao
     abstract override val playlistDao: PlaylistDao
     abstract override val historyDao: HistoryDao
     abstract override val dataDao: DataDao

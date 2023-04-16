@@ -11,7 +11,7 @@ import com.tachyonmusic.util.ms
 import java.security.InvalidParameterException
 
 /**
- * Class which holds one start and end time of a loop
+ * Class which holds one start and end time of a customizedSong
  * TODO: How much performance do we get out of providing our own serializer
  */
 data class TimingData(

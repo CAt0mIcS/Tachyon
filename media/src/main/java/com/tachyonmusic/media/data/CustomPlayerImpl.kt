@@ -23,7 +23,7 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
     CustomPlayer,
     Player.Listener,
     IListenable<CustomPlayer.Listener> by Listenable() {
-    private var loopMessage: PlayerMessage? = null
+    private var customizedSongMessage: PlayerMessage? = null
 
     private val castPlayerMessageSender = CastPlayerMessageSender()
 
@@ -158,7 +158,7 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
         }
 
         newTimingData.advanceToCurrentPosition(currentPosition.ms)
-        postLoopMessage(
+        postCustomizedSongMessage(
             newTimingData.next.startTime,
             newTimingData.current.endTime
         )
@@ -177,11 +177,11 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
             TODO("Cannot set aux effect info in another player yet")
     }
 
-    private fun postLoopMessage(startTime: Duration, endTime: Duration) {
+    private fun postCustomizedSongMessage(startTime: Duration, endTime: Duration) {
         // Cancel any previous messages
-        loopMessage?.cancel()
+        customizedSongMessage?.cancel()
 
-        loopMessage = createMessage { _, payload ->
+        customizedSongMessage = createMessage { _, payload ->
             seekWithoutCallback(payload as Long)
             val timingData = currentMediaItem?.mediaMetadata?.timingData
             if (timingData != null) {
@@ -193,7 +193,7 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
 
                 timingData.advanceToNext()
                 invokeEvent { it.onTimingDataUpdated(timingData) }
-                postLoopMessage(timingData.next.startTime, timingData.current.endTime)
+                postCustomizedSongMessage(timingData.next.startTime, timingData.current.endTime)
                 log.debug(
                     "The next timing data will be loaded at ${timingData.current.endTime} and will seek to ${timingData.next.startTime}"
                 )

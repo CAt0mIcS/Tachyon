@@ -6,7 +6,7 @@ import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.util.Duration
 
 @Entity
-class LoopEntity(
+class CustomizedSongEntity(
     mediaId: MediaId,
     val songTitle: String,
     val songArtist: String,

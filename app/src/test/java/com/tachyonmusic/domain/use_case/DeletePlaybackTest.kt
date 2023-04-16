@@ -1,11 +1,11 @@
 package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.repository.HistoryRepository
-import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,13 +17,13 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class DeletePlaybackTest {
 
-    val loopRepo = mockk<LoopRepository>()
+    val customizedSongRepo = mockk<CustomizedSongRepository>()
     val playlistRepo = mockk<PlaylistRepository>()
     val historyRepo = mockk<HistoryRepository>()
 
-    val deletePlayback = DeletePlayback(loopRepo, playlistRepo, historyRepo)
-    val loopMediaId = MediaId.ofRemoteLoop("Loop", MediaId("Song"))
-    val playlistMediaId = MediaId.ofRemotePlaylist("Playlist")
+    val deletePlayback = DeletePlayback(customizedSongRepo, playlistRepo, historyRepo)
+    val customizedSongMediaId = MediaId.ofLocalCustomizedSong("CustomizedSong", MediaId("Song"))
+    val playlistMediaId = MediaId.ofLocalPlaylist("Playlist")
 
     val playlists = List(10) { i ->
         mockk<Playlist>().apply {
@@ -33,8 +33,8 @@ internal class DeletePlaybackTest {
                 every { playbacks } returns emptyList()
             }
             every { playbacks } returns if (i % 2 == 0) listOf(
-                mockk<Loop>().apply {
-                    every { mediaId } returns loopMediaId
+                mockk<CustomizedSong>().apply {
+                    every { mediaId } returns customizedSongMediaId
                 },
                 mockk<Song>().apply {
                     every { mediaId } returns MediaId("Song")
@@ -51,17 +51,17 @@ internal class DeletePlaybackTest {
         coEvery { playlistRepo.remove(any()) } returns Unit
 
         coEvery { historyRepo.removeHierarchical(any()) } returns Unit
-        coEvery { loopRepo.remove(any()) } returns Unit
+        coEvery { customizedSongRepo.remove(any()) } returns Unit
     }
 
     @Test
-    fun `loop is deleted from any playlists containing it and from history`() =
+    fun `customizedSong is deleted from any playlists containing it and from history`() =
         runTest {
-            deletePlayback(mockk<Loop>().apply {
-                every { mediaId } returns loopMediaId
+            deletePlayback(mockk<CustomizedSong>().apply {
+                every { mediaId } returns customizedSongMediaId
             })
 
-            coVerify { loopRepo.remove(loopMediaId) }
+            coVerify { customizedSongRepo.remove(customizedSongMediaId) }
 
             playlists.forEach { playlist ->
                 verify {
@@ -71,6 +71,6 @@ internal class DeletePlaybackTest {
             }
 
             coVerify { playlistRepo.setPlaybacksOfPlaylist(playlistMediaId, emptyList()) }
-            coVerify { historyRepo.removeHierarchical(loopMediaId) }
+            coVerify { historyRepo.removeHierarchical(customizedSongMediaId) }
         }
 }

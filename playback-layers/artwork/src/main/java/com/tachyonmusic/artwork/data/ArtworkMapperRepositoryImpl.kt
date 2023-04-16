@@ -3,7 +3,7 @@ package com.tachyonmusic.artwork.data
 import com.tachyonmusic.artwork.*
 import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
-import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
@@ -27,9 +27,9 @@ class ArtworkMapperRepositoryImpl(
             transformSongs(songs)
         }
 
-    override val loopFlow =
-        combine(sortedPlaybackRepository.loopFlow, reloadPlaybacks) { loops, _ ->
-            transformLoops(loops)
+    override val customizedSongFlow =
+        combine(sortedPlaybackRepository.customizedSongFlow, reloadPlaybacks) { customizedSongs, _ ->
+            transformCustomizedSongs(customizedSongs)
         }
 
     override val playlistFlow =
@@ -46,8 +46,8 @@ class ArtworkMapperRepositoryImpl(
         transformSongs(sortedPlaybackRepository.getSongs())
     }
 
-    override suspend fun getLoops() = withContext(Dispatchers.IO) {
-        transformLoops(sortedPlaybackRepository.getLoops())
+    override suspend fun getCustomizedSongs() = withContext(Dispatchers.IO) {
+        transformCustomizedSongs(sortedPlaybackRepository.getCustomizedSongs())
     }
 
     override suspend fun getPlaylists() = withContext(Dispatchers.IO) {
@@ -69,13 +69,13 @@ class ArtworkMapperRepositoryImpl(
             song.applyArtwork()
         }
 
-    private fun transformLoops(loops: List<Loop>) =
-        loops.onEach { loop ->
-            loop.applyArtwork()
+    private fun transformCustomizedSongs(customizedSongs: List<CustomizedSong>) =
+        customizedSongs.onEach { customizedSong ->
+            customizedSong.applyArtwork()
         }
 
     /**
-     * OPTIMIZE: Is it faster to always get [songs] and [loops] or is it faster
+     * OPTIMIZE: Is it faster to always get [songs] and [customizedSongs] or is it faster
      *  to just load the artwork twice. Same goes for [transformHistory]
      */
     private fun transformPlaylists(
@@ -96,7 +96,7 @@ class ArtworkMapperRepositoryImpl(
     private fun SinglePlayback.applyArtwork() {
         when (this) {
             is Song -> applyArtwork()
-            is Loop -> song.applyArtwork()
+            is CustomizedSong -> song.applyArtwork()
             else -> error("Invalid single playback type ${this::class.java.name}")
         }
     }

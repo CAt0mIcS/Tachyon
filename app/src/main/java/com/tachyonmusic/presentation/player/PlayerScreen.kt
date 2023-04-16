@@ -32,7 +32,7 @@ import com.tachyonmusic.presentation.equalizer.EqualizerScreen
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
-import com.tachyonmusic.presentation.player.data.LoopEditor
+import com.tachyonmusic.presentation.player.data.CustomizedSongEditor
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.currentFraction
 import com.tachyonmusic.presentation.util.displaySubtitle
@@ -82,7 +82,7 @@ fun PlayerScreen(
         )
     }
 
-    var isEditingLoop by remember { mutableStateOf(false) }
+    var isEditingCustomizedSong by remember { mutableStateOf(false) }
 
     val subPlaybackItems by viewModel.subPlaybackItems.collectAsState()
     val playbackType by viewModel.playbackType.collectAsState()
@@ -310,10 +310,10 @@ fun PlayerScreen(
 
                 IconButton(
                     modifier = Modifier.scale(buttonScale),
-                    onClick = { isEditingLoop = !isEditingLoop }
+                    onClick = { isEditingCustomizedSong = !isEditingCustomizedSong }
                 ) {
                     Icon(
-                        painterResource(R.drawable.ic_loop),
+                        painterResource(R.drawable.ic_customized_song),
                         contentDescription = null,
                         modifier = Modifier.scale(iconScale)
                     )
@@ -321,9 +321,9 @@ fun PlayerScreen(
             }
         }
 
-        if (isEditingLoop) {
+        if (isEditingCustomizedSong) {
             item {
-                LoopEditor(modifier = Modifier.fillMaxWidth())
+                CustomizedSongEditor(modifier = Modifier.fillMaxWidth())
             }
         }
 

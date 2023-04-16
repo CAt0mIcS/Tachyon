@@ -1,6 +1,6 @@
 package com.tachyonmusic.sort.domain
 
-import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
@@ -12,7 +12,7 @@ interface SortedPlaybackRepository {
     val sortingPreferences: StateFlow<SortingPreferences>
 
     val songFlow: Flow<List<Song>>
-    val loopFlow: Flow<List<Loop>>
+    val customizedSongFlow: Flow<List<CustomizedSong>>
     val playlistFlow: Flow<List<Playlist>>
 
     val historyFlow: Flow<List<SinglePlayback>>
@@ -20,7 +20,7 @@ interface SortedPlaybackRepository {
     fun setSortingPreferences(sortPrefs: SortingPreferences)
 
     suspend fun getSongs(): List<Song>
-    suspend fun getLoops(): List<Loop>
+    suspend fun getCustomizedSongs(): List<CustomizedSong>
     suspend fun getPlaylists(): List<Playlist>
 
     suspend fun getHistory(): List<SinglePlayback>

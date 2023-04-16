@@ -80,8 +80,8 @@ object LibraryScreen :
                         viewModel.onFilterSongs()
                     }
 
-                    FilterItem(R.string.loops, playbackType is PlaybackType.Loop) {
-                        viewModel.onFilterLoops()
+                    FilterItem(R.string.customized_songs, playbackType is PlaybackType.CustomizedSong) {
+                        viewModel.onFilterCustomizedSongs()
                     }
 
                     FilterItem(R.string.playlists, playbackType is PlaybackType.Playlist) {

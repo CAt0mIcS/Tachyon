@@ -8,39 +8,39 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.util.copy
 
-class RemotePlaylistImpl(
+class LocalPlaylistImpl(
     mediaId: MediaId,
     playbacks: MutableList<SinglePlayback>,
     currentPlaylistIndex: Int = 0
 ) : AbstractPlaylist(mediaId, playbacks, currentPlaylistIndex) {
 
-    override val playbackType = PlaybackType.Playlist.Remote()
+    override val playbackType = PlaybackType.Playlist.Local()
 
     override val name: String
         get() = mediaId.source.replace(playbackType.toString(), "")
 
     override fun copy(): Playlist =
-        RemotePlaylistImpl(mediaId, _playbacks.copy(), currentPlaylistIndex)
+        LocalPlaylistImpl(mediaId, _playbacks.copy(), currentPlaylistIndex)
 
 
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<RemotePlaylistImpl> {
-            override fun createFromParcel(parcel: Parcel): RemotePlaylistImpl {
+        val CREATOR = object : Parcelable.Creator<LocalPlaylistImpl> {
+            override fun createFromParcel(parcel: Parcel): LocalPlaylistImpl {
                 val name = parcel.readString()!!
                 val playbacks = parcel.readParcelableArray(SinglePlayback::class.java.classLoader)!!
                     .map { it as SinglePlayback }.toMutableList()
 
                 val currentPlaylistIndex = parcel.readInt()
 
-                return RemotePlaylistImpl(
-                    MediaId.ofRemotePlaylist(name),
+                return LocalPlaylistImpl(
+                    MediaId.ofLocalPlaylist(name),
                     playbacks,
                     currentPlaylistIndex
                 )
             }
 
-            override fun newArray(size: Int): Array<RemotePlaylistImpl?> = arrayOfNulls(size)
+            override fun newArray(size: Int): Array<LocalPlaylistImpl?> = arrayOfNulls(size)
         }
 
         fun build(
@@ -48,7 +48,7 @@ class RemotePlaylistImpl(
             playbacks: MutableList<SinglePlayback>,
             currentPlaylistIndex: Int
         ): Playlist =
-            RemotePlaylistImpl(
+            LocalPlaylistImpl(
                 mediaId,
                 playbacks,
                 currentPlaylistIndex

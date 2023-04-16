@@ -17,21 +17,21 @@ class PredefinedPlaylistsRepositoryImpl(
 ) : PredefinedPlaylistsRepository {
     override var songPlaylist: List<SinglePlayback> = emptyList()
         private set
-    override var loopPlaylist: List<SinglePlayback> = emptyList()
+    override var customizedSongPlaylist: List<SinglePlayback> = emptyList()
         private set
 
     init {
         combine(
             playbackRepository.songFlow,
-            playbackRepository.loopFlow,
+            playbackRepository.customizedSongFlow,
             observeSettings()
-        ) { songs, loops, settings ->
+        ) { songs, customizedSongs, settings ->
             if (settings.combineDifferentPlaybackTypes) {
-                songPlaylist = songs + loops
-                loopPlaylist = loops + songs
+                songPlaylist = songs + customizedSongs
+                customizedSongPlaylist = customizedSongs + songs
             } else {
                 songPlaylist = songs
-                loopPlaylist = loops
+                customizedSongPlaylist = customizedSongs
             }
         }.launchIn(externalScope + Dispatchers.IO)
     }

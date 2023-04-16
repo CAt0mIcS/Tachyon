@@ -109,17 +109,17 @@ object AppUseCaseModule {
     @Singleton
     fun provideSearchStoredPlaybacksUseCase(
         songRepository: SongRepository,
-        loopRepository: LoopRepository,
+        customizedSongRepository: CustomizedSongRepository,
         playlistRepository: PlaylistRepository
-    ) = SearchStoredPlaybacks(songRepository, loopRepository, playlistRepository)
+    ) = SearchStoredPlaybacks(songRepository, customizedSongRepository, playlistRepository)
 
     @Provides
     @Singleton
-    fun provideCreateNewLoopUseCase(
+    fun provideCreateNewCustomizedSongUseCase(
         songRepository: SongRepository,
-        loopRepository: LoopRepository,
+        customizedSongRepository: CustomizedSongRepository,
         browser: MediaBrowserController
-    ) = CreateAndSaveNewLoop(songRepository, loopRepository, browser)
+    ) = CreateAndSaveNewCustomizedSong(songRepository, customizedSongRepository, browser)
 
     @Provides
     @Singleton
@@ -171,14 +171,14 @@ object AppUseCaseModule {
         settingsRepository: SettingsRepository,
         songRepository: SongRepository,
         historyRepository: HistoryRepository,
-        loopRepository: LoopRepository,
+        customizedSongRepository: CustomizedSongRepository,
         playbackRepository: PlaybackRepository,
         playlistRepository: PlaylistRepository
     ) = AddSongToExcludedSongs(
         settingsRepository,
         songRepository,
         historyRepository,
-        loopRepository,
+        customizedSongRepository,
         playbackRepository,
         playlistRepository
     )
@@ -186,11 +186,11 @@ object AppUseCaseModule {
     @Provides
     @Singleton
     fun provideDeletePlaybackUseCase(
-        loopRepository: LoopRepository,
+        customizedSongRepository: CustomizedSongRepository,
         playlistRepository: PlaylistRepository,
         playbackRepository: PlaybackRepository,
         historyRepository: HistoryRepository
-    ) = DeletePlayback(loopRepository, playlistRepository, playbackRepository, historyRepository)
+    ) = DeletePlayback(customizedSongRepository, playlistRepository, playbackRepository, historyRepository)
 
 
     @Provides

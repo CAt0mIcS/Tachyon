@@ -2,7 +2,7 @@ package com.tachyonmusic.media.util
 
 import android.net.Uri
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.core.data.playback.AbstractLoop
+import com.tachyonmusic.core.data.playback.AbstractCustomizedSong
 import com.tachyonmusic.core.data.playback.AbstractPlaylist
 import com.tachyonmusic.core.data.playback.AbstractSong
 import com.tachyonmusic.core.domain.MediaId
@@ -26,12 +26,12 @@ internal class TestSong(
         get() = mediaId.uri!!
 }
 
-internal class TestLoop(mediaId: MediaId, name: String, song: Song) :
-    AbstractLoop(mediaId, name, TimingDataController(), song) {
-    override val playbackType = PlaybackType.Loop.Remote()
+internal class TestCustomizedSong(mediaId: MediaId, name: String, song: Song) :
+    AbstractCustomizedSong(mediaId, name, TimingDataController(), song) {
+    override val playbackType = PlaybackType.CustomizedSong.Local()
 }
 
 internal class TestPlaylist(mediaId: MediaId, name: String, playbacks: List<SinglePlayback>) :
     AbstractPlaylist(mediaId, name, playbacks.toMutableList()) {
-    override val playbackType = PlaybackType.Playlist.Remote()
+    override val playbackType = PlaybackType.Playlist.Local()
 }

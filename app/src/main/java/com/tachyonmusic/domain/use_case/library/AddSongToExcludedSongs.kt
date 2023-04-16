@@ -10,7 +10,7 @@ class AddSongToExcludedSongs(
     private val settingsRepository: SettingsRepository,
     private val songRepository: SongRepository,
     private val historyRepository: HistoryRepository,
-    private val loopRepository: LoopRepository,
+    private val customizedSongRepository: CustomizedSongRepository,
     private val playbackRepository: PlaybackRepository,
     private val playlistRepository: PlaylistRepository
 ) {
@@ -18,7 +18,7 @@ class AddSongToExcludedSongs(
         settingsRepository.addExcludedFilesRange(listOf(song.uri))
         songRepository.remove(song.mediaId)
         historyRepository.removeHierarchical(song.mediaId)
-        loopRepository.removeIf {
+        customizedSongRepository.removeIf {
             it.mediaId.underlyingMediaId == song.mediaId
         }
 
