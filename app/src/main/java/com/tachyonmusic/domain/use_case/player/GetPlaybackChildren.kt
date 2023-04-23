@@ -6,6 +6,7 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.cycle
+import com.tachyonmusic.util.indexOf
 
 class GetPlaybackChildren(
     private val browser: MediaBrowserController,
@@ -32,24 +33,23 @@ class GetPlaybackChildren(
         }
     }
 
-    private fun getPlaylistAll(playback: SinglePlayback) =
-        when (playback) {
+    private fun getPlaylistAll(playback: SinglePlayback): List<SinglePlayback> {
+        return when (playback) {
             is Song -> {
-                val idx = predefinedPlaylists.songPlaylist.indexOf(playback)
-                if(idx == -1)
-                    emptyList()
-                else
-                    listOfNotNull(predefinedPlaylists.songPlaylist.cycle(idx + 1))
+                val idx =
+                    predefinedPlaylists.songPlaylist.indexOf { playback.mediaId == it.mediaId }
+                        ?: return emptyList()
+                listOfNotNull(predefinedPlaylists.songPlaylist.cycle(idx + 1))
             }
             is CustomizedSong -> {
-                val idx = predefinedPlaylists.customizedSongPlaylist.indexOf(playback)
-                if(idx == -1)
-                    emptyList()
-                else
-                    listOfNotNull(predefinedPlaylists.customizedSongPlaylist.cycle(idx + 1))
+                val idx =
+                    predefinedPlaylists.customizedSongPlaylist.indexOf { playback.mediaId == it.mediaId }
+                        ?: return emptyList()
+                listOfNotNull(predefinedPlaylists.customizedSongPlaylist.cycle(idx + 1))
             }
             else -> emptyList()
         }
+    }
 
     private fun getPlaylistShuffle() =
         if (browser.nextPlayback != null) listOf(browser.nextPlayback!!) else emptyList()
