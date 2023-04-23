@@ -3,6 +3,7 @@ package com.tachyonmusic.core.domain.playback
 import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.isNullOrEmpty
+import com.tachyonmusic.core.domain.model.EqualizerBand
 
 interface CustomizedSong : SinglePlayback {
     val name: String
@@ -15,7 +16,7 @@ interface CustomizedSong : SinglePlayback {
     val virtualizerEnabled: Boolean
         get() = virtualizerStrength != null && virtualizerStrength != 0
     val equalizerEnabled: Boolean
-        get() = !equalizerBandLevels.isNullOrEmpty()
+        get() = !equalizerBands.isNullOrEmpty()
     val playbackParametersEnabled: Boolean
         get() = playbackParameters != null
     val reverbEnabled: Boolean
@@ -23,7 +24,7 @@ interface CustomizedSong : SinglePlayback {
 
     var bassBoost: Int?
     var virtualizerStrength: Int?
-    var equalizerBandLevels: List<Int>?
+    var equalizerBands: List<EqualizerBand>?
     var playbackParameters: PlaybackParameters?
     var reverb: ReverbConfig?
 

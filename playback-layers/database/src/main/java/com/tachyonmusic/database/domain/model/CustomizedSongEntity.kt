@@ -6,6 +6,7 @@ import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.util.Duration
 
 @Entity
@@ -19,7 +20,7 @@ class CustomizedSongEntity(
 
     val bassBoost: Int? = null,
     val virtualizerStrength: Int? = null,
-    val equalizerBandLevels: List<Int>? = null,
+    val equalizerBands: List<EqualizerBand>? = null,
 
     @Embedded
     val playbackParameters: PlaybackParameters? = null,

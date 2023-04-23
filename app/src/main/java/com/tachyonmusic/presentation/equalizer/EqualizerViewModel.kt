@@ -3,16 +3,19 @@ package com.tachyonmusic.presentation.equalizer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.ReverbConfig
+import com.tachyonmusic.core.domain.model.EqualizerBand
+import com.tachyonmusic.core.domain.model.SoundLevel
 import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.media.domain.AudioEffectController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
+
 data class EqualizerState(
-    val minBandLevel: Int,
-    val maxBandLevel: Int,
-    val bands: List<Int>?
+    val minBandLevel: SoundLevel,
+    val maxBandLevel: SoundLevel,
+    val bands: List<EqualizerBand>?
 )
 
 @HiltViewModel
@@ -67,7 +70,7 @@ class EqualizerViewModel @Inject constructor(
             _virtualizerStrength.update { null }
     }
 
-    fun setBandLevel(band: Int, level: Int) {
+    fun setBandLevel(band: Int, level: SoundLevel) {
         if (audioEffectController.equalizerEnabled) {
             audioEffectController.setBandLevel(band, level)
 

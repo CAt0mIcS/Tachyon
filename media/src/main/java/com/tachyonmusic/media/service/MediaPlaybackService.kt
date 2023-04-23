@@ -235,15 +235,42 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         // TODO: Update equalizer
         when (playback) {
             is CustomizedSong -> {
-                audioEffectController.bass = playback.bassBoost
-                audioEffectController.virtualizerStrength = playback.virtualizerStrength
+                if (playback.bassBoostEnabled) {
+                    audioEffectController.bassEnabled = true
+                    audioEffectController.bass = playback.bassBoost
+                }
+
+                if (playback.virtualizerEnabled) {
+                    audioEffectController.virtualizerEnabled = true
+                    audioEffectController.virtualizerStrength = playback.virtualizerStrength
+                }
+
                 audioEffectController.playbackParams =
                     playback.playbackParameters ?: PlaybackParameters(
                         speed = 1f,
                         pitch = 1f,
                         volume = 1f
                     )
-                audioEffectController.reverb = playback.reverb
+
+                if (playback.equalizerEnabled) {
+                    audioEffectController.equalizerEnabled = true
+
+                    playback.equalizerBands?.forEach { equalizerBand ->
+                        // TODO: Do we need all this information to differentiate different bands?
+                        audioEffectController.getBandIndex(
+                            equalizerBand.lowerBandFrequency,
+                            equalizerBand.upperBandFrequency,
+                            equalizerBand.centerFrequency
+                        )?.let { band ->
+                            audioEffectController.setBandLevel(band, equalizerBand.level)
+                        }
+                    }
+                }
+
+                if (playback.reverbEnabled) {
+                    audioEffectController.reverbEnabled = true
+                    audioEffectController.reverb = playback.reverb
+                }
             }
             else -> {
                 audioEffectController.bass = null

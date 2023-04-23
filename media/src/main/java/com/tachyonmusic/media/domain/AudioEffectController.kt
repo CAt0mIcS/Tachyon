@@ -2,6 +2,9 @@ package com.tachyonmusic.media.domain
 
 import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
+import com.tachyonmusic.core.domain.model.EqualizerBand
+import com.tachyonmusic.core.domain.model.SoundFrequency
+import com.tachyonmusic.core.domain.model.SoundLevel
 
 interface AudioEffectController {
     var controller: PlaybackController?
@@ -18,14 +21,19 @@ interface AudioEffectController {
     var playbackParams: PlaybackParameters
 
     val numBands: Int
-    val minBandLevel: Int
-    val maxBandLevel: Int
-    val bands: List<Int>?
+    val maxBandLevel: SoundLevel
+    val minBandLevel: SoundLevel
+    val bands: List<EqualizerBand>?
 
     var reverb: ReverbConfig?
 
-    fun setBandLevel(band: Int, level: Int)
-    fun getBandLevel(band: Int): Int
+    fun setBandLevel(band: Int, level: SoundLevel)
+    fun getBandLevel(band: Int): SoundLevel
+    fun getBandIndex(
+        lowerBandFrequency: SoundFrequency,
+        upperBandFrequency: SoundFrequency,
+        centerFrequency: SoundFrequency
+    ): Int?
 
     fun updateAudioSessionId(audioSessionId: Int)
     fun release()

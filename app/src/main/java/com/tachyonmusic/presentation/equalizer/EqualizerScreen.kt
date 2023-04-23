@@ -7,9 +7,11 @@ import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.tachyonmusic.core.domain.model.mDb
 import com.tachyonmusic.presentation.NavigationItem
 import com.tachyonmusic.presentation.theme.Theme
 
@@ -59,8 +61,8 @@ object EqualizerScreen : NavigationItem("equalizer") {
                 activeTrackColor = Theme.colors.orange,
                 inactiveTrackColor = Theme.colors.partialOrange1
             )
-            
-            if(bass != null) {
+
+            if (bass != null) {
                 Text(text = "Bass")
                 Slider(
                     modifier = Modifier.systemGestureExclusion(),
@@ -70,8 +72,8 @@ object EqualizerScreen : NavigationItem("equalizer") {
                     colors = sliderColors
                 )
             }
-            
-            if(virtualizer != null) {
+
+            if (virtualizer != null) {
                 Text(text = "Virtualizer Strength")
                 Slider(
                     modifier = Modifier.systemGestureExclusion(),
@@ -81,7 +83,7 @@ object EqualizerScreen : NavigationItem("equalizer") {
                     colors = sliderColors
                 )
             }
-            
+
 
             Text(text = "Speed")
             var speedText by remember { mutableStateOf(playbackParams.speed.toString()) }
@@ -113,27 +115,43 @@ object EqualizerScreen : NavigationItem("equalizer") {
                 valueRange = 0f..10f,
                 colors = sliderColors
             )
-            
-            if(equalizer.bands != null) {
+
+            if (equalizer.bands != null) {
                 for (bandNumber in equalizer.bands!!.indices) {
-                    val level = equalizer.bands!![bandNumber]
-                    Slider(
-                        modifier = Modifier.systemGestureExclusion(),
-                        value = level.toFloat(),
-                        onValueChange = {
-                            viewModel.setBandLevel(bandNumber, it.toInt())
-                        },
-                        valueRange = equalizer.minBandLevel.toFloat()..equalizer.maxBandLevel.toFloat(),
-                        colors = sliderColors
-                    )
+                    val band = equalizer.bands!![bandNumber]
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("${band.lowerBandFrequency.inWholeHz} Hz")
+
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("${band.centerFrequency.inWholeHz} Hz")
+                            Slider(
+                                modifier = Modifier.systemGestureExclusion(),
+                                value = band.level.inmDb.toFloat(),
+                                onValueChange = {
+                                    viewModel.setBandLevel(bandNumber, it.toInt().mDb)
+                                },
+                                valueRange = equalizer.minBandLevel.inmDb.toFloat()..equalizer.maxBandLevel.inmDb.toFloat(),
+                                colors = sliderColors
+                            )
+                        }
+
+                        Text("${band.upperBandFrequency.inWholeHz} Hz")
+                    }
                 }
             }
-            
+
 
             /**************************************************************************
              ********** Reverb
              *************************************************************************/
-            if(reverb != null) {
+            if (reverb != null) {
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text("roomLevel")

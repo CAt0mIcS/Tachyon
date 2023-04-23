@@ -7,6 +7,7 @@ import com.google.gson.Gson
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
+import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
 import java.lang.reflect.Type
@@ -24,10 +25,11 @@ object Converters {
 
 
     @TypeConverter
-    fun fromIntListToStringList(ints: List<Int>?) = ints?.map { it.toString() }
+    fun fromEqualizerBandListToStringList(ints: List<EqualizerBand>?) = ints?.map { it.toString() }
 
     @TypeConverter
-    fun fromStringListToIntList(strings: List<String>?) = strings?.map { it.toInt() }
+    fun fromStringListToEqualizerBandList(strings: List<String>?) =
+        strings?.map { EqualizerBand.fromString(it) }
 
 
     @TypeConverter

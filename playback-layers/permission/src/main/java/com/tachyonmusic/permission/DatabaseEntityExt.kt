@@ -38,7 +38,7 @@ fun CustomizedSongEntity.toCustomizedSong(
     it.timingData = timingData?.let { TimingDataController(it, currentTimingDataIndex) }
     it.bassBoost = bassBoost
     it.virtualizerStrength = virtualizerStrength
-    it.equalizerBandLevels = equalizerBandLevels
+    it.equalizerBands = equalizerBands
     it.playbackParameters = playbackParameters
     it.reverb = reverb
     it

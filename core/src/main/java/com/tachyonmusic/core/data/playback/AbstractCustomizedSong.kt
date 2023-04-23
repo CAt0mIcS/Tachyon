@@ -13,6 +13,7 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Duration
@@ -56,7 +57,7 @@ abstract class AbstractCustomizedSong(
     override var timingData: TimingDataController? = null
     override var bassBoost: Int? = null
     override var virtualizerStrength: Int? = null
-    override var equalizerBandLevels: List<Int>? = null
+    override var equalizerBands: List<EqualizerBand>? = null
     override var playbackParameters: PlaybackParameters? = null
     override var reverb: ReverbConfig? = null
 
@@ -92,7 +93,7 @@ abstract class AbstractCustomizedSong(
         parcel.writeParcelable(timingData, flags)
         parcel.writeInt(bassBoost ?: 0)
         parcel.writeInt(virtualizerStrength ?: 0)
-        parcel.writeList(equalizerBandLevels)
+        parcel.writeList(equalizerBands?.map { it.toString() })
         parcel.writeParcelable(playbackParameters, flags)
         parcel.writeParcelable(reverb, flags)
     }

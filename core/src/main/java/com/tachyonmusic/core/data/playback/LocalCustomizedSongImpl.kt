@@ -7,6 +7,7 @@ import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Song
 
@@ -21,7 +22,7 @@ class LocalCustomizedSongImpl(
         LocalCustomizedSongImpl(mediaId, song.copy()).let {
             it.bassBoost = bassBoost
             it.virtualizerStrength = virtualizerStrength
-            it.equalizerBandLevels = equalizerBandLevels
+            it.equalizerBands = equalizerBands
             it.playbackParameters = playbackParameters
             it.reverb = reverb
             it
@@ -51,9 +52,9 @@ class LocalCustomizedSongImpl(
                     val virtualizerStrength = parcel.readInt()
                     bassBoost = if (virtualizerStrength == 0) null else virtualizerStrength
 
-                    val equalizerBandLevels = mutableListOf<Int>()
-                    parcel.readList(equalizerBandLevels, Int::class.java.classLoader)
-                    this.equalizerBandLevels = equalizerBandLevels
+                    val equalizerBands = mutableListOf<String>()
+                    parcel.readList(equalizerBands, String::class.java.classLoader)
+                    this.equalizerBands = equalizerBands.map { EqualizerBand.fromString(it) }
 
                     playbackParameters =
                         parcel.readParcelable(PlaybackParameters::class.java.classLoader)

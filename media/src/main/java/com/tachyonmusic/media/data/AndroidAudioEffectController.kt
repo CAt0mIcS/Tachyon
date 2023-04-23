@@ -3,6 +3,7 @@ package com.tachyonmusic.media.data
 import android.media.audiofx.*
 import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
+import com.tachyonmusic.core.domain.model.*
 import com.tachyonmusic.media.domain.AudioEffectController
 
 class AndroidAudioEffectController : AudioEffectController {
@@ -99,15 +100,26 @@ class AndroidAudioEffectController : AudioEffectController {
     override val numBands: Int
         get() = if (!equalizerEnabled) 0 else equalizer?.numberOfBands?.toInt() ?: 0
 
-    override val minBandLevel: Int
-        get() = if (!equalizerEnabled) 0 else equalizer?.bandLevelRange?.first()?.toInt() ?: 0
+    override val minBandLevel: SoundLevel
+        get() = if (!equalizerEnabled) 0.mDb else equalizer?.bandLevelRange?.first()?.mDb ?: 0.mDb
 
-    override val maxBandLevel: Int
-        get() = if (!equalizerEnabled) 0 else equalizer?.bandLevelRange?.last()?.toInt() ?: 0
+    override val maxBandLevel: SoundLevel
+        get() = if (!equalizerEnabled) 0.mDb else equalizer?.bandLevelRange?.last()?.mDb ?: 0.mDb
 
-    override val bands: List<Int>?
-        get() = if (!equalizerEnabled) null else List(numBands) {
-            getBandLevel(it)
+    override val bands: List<EqualizerBand>?
+        get() {
+            if (!equalizerEnabled)
+                return null
+            else
+                return List(numBands) {
+                    val range = equalizer?.getBandFreqRange(it.toShort()) ?: return null
+                    EqualizerBand(
+                        level = getBandLevel(it),
+                        lowerBandFrequency = range.first().mHz,
+                        upperBandFrequency = range.last().mHz,
+                        centerFrequency = equalizer?.getCenterFreq(it.toShort())?.mHz ?: return null
+                    )
+                }
         }
 
     /**************************************************************************
@@ -145,14 +157,28 @@ class AndroidAudioEffectController : AudioEffectController {
         }
 
 
-    override fun setBandLevel(band: Int, level: Int) {
-        assert(band in minBandLevel..maxBandLevel) { "Band $band is invalid (range: $minBandLevel..$maxBandLevel)" }
-        equalizer?.setBandLevel(band.toShort(), level.toShort())
+    override fun setBandLevel(band: Int, level: SoundLevel) {
+        assert(level in minBandLevel..maxBandLevel) { "BandLevel $level is invalid (range: $minBandLevel..$maxBandLevel)" }
+        assert(band in 0..numBands) { "Band $band is invalid (max: ${numBands - 1})" }
+        equalizer?.setBandLevel(band.toShort(), level.inmDb.toShort())
     }
 
-    override fun getBandLevel(band: Int): Int {
-        assert(band in 0..numBands) { "Band $band is invalid (range: $minBandLevel..$maxBandLevel)" }
-        return equalizer?.getBandLevel(band.toShort())?.toInt() ?: 0
+    override fun getBandLevel(band: Int): SoundLevel {
+        assert(band in 0..numBands) { "Band $band is invalid (max: ${numBands - 1})" }
+        return equalizer?.getBandLevel(band.toShort())?.mDb ?: 0.mDb
+    }
+
+    override fun getBandIndex(
+        lowerBandFrequency: SoundFrequency,
+        upperBandFrequency: SoundFrequency,
+        centerFrequency: SoundFrequency
+    ): Int? {
+        val idx = bands?.indexOfFirst { it ->
+            it.lowerBandFrequency == lowerBandFrequency && it.upperBandFrequency == upperBandFrequency && it.centerFrequency == centerFrequency
+        }
+        if (idx == null || idx == -1)
+            return null
+        return idx
     }
 
     // TODO: DynamicProcessing, HapticGenerator
