@@ -37,7 +37,7 @@ class TimingDataEditorViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
     val timingData = mutableStateListOf<TimingData>()
-    var currentIndex by mutableStateOf<Int>(0)
+    var currentIndex by mutableStateOf(0)
         private set
 
     init {

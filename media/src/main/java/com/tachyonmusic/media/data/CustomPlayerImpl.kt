@@ -152,8 +152,8 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
     }
 
     override fun updateTimingData(newTimingData: TimingDataController) {
-        if (newTimingData.size == 0) {
-            currentMediaItem?.mediaMetadata?.timingData = newTimingData
+        if(newTimingData.size == 0 || newTimingData.size == 1 && newTimingData.coversDuration(0.ms, duration.ms)) {
+            currentMediaItem?.mediaMetadata?.timingData = null
             return
         }
 

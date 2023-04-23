@@ -40,23 +40,31 @@ object Converters {
 
 
     @TypeConverter
-    fun fromStringToMediaIdList(value: String?): List<MediaId> {
+    fun fromStringToMediaIdList(value: String?): List<MediaId>? {
+        if (value == null)
+            return null
+
         val listType: Type = object : TypeToken<List<MediaId?>?>() {}.type
         return Gson().fromJson(value, listType)
     }
 
     @TypeConverter
-    fun fromMediaIdListToString(list: List<MediaId>?): String = Gson().toJson(list)
+    fun fromMediaIdListToString(list: List<MediaId>?): String? =
+        if (list == null) null else Gson().toJson(list)
 
 
     @TypeConverter
-    fun fromStringToTimingDataList(value: String?): List<TimingData> {
+    fun fromStringToTimingDataList(value: String?): List<TimingData>? {
+        if (value == null)
+            return null
+
         val listType: Type = object : TypeToken<List<TimingData?>?>() {}.type
         return Gson().fromJson(value, listType)
     }
 
     @TypeConverter
-    fun fromTimingDataListToString(list: List<TimingData>?): String = Gson().toJson(list)
+    fun fromTimingDataListToString(list: List<TimingData>?): String? =
+        if (list == null) null else Gson().toJson(list)
 
 
     @TypeConverter

@@ -104,5 +104,7 @@ abstract class AbstractCustomizedSong(
 
     override fun equals(other: Any?) =
         other is AbstractCustomizedSong && mediaId == other.mediaId &&
-                song == other.song && timingData == other.timingData
+                song == other.song && timingData == other.timingData && bassBoost == other.bassBoost &&
+                virtualizerStrength == other.virtualizerStrength && playbackParameters == other.playbackParameters &&
+                equalizerBands == other.equalizerBands && reverb == other.reverb
 }

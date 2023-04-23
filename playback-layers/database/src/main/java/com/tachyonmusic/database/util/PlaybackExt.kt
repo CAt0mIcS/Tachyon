@@ -38,8 +38,9 @@ fun CustomizedSong.toEntity(): CustomizedSongEntity {
         title,
         artist,
         duration,
-        timingData?.timingData ?: emptyList(),
+        timingData?.timingData,
         timingData?.currentIndex ?: 0,
+        bassBoost, virtualizerStrength, equalizerBands, playbackParameters, reverb
     )
 }
 
