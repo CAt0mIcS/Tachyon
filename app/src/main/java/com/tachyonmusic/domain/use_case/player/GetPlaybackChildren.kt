@@ -37,15 +37,15 @@ class GetPlaybackChildren(
         return when (playback) {
             is Song -> {
                 val idx =
-                    predefinedPlaylists.songPlaylist.indexOf { playback.mediaId == it.mediaId }
+                    predefinedPlaylists.songPlaylist.value.indexOf { playback.mediaId == it.mediaId }
                         ?: return emptyList()
-                listOfNotNull(predefinedPlaylists.songPlaylist.cycle(idx + 1))
+                listOfNotNull(predefinedPlaylists.songPlaylist.value.cycle(idx + 1))
             }
             is CustomizedSong -> {
                 val idx =
-                    predefinedPlaylists.customizedSongPlaylist.indexOf { playback.mediaId == it.mediaId }
+                    predefinedPlaylists.customizedSongPlaylist.value.indexOf { playback.mediaId == it.mediaId }
                         ?: return emptyList()
-                listOfNotNull(predefinedPlaylists.customizedSongPlaylist.cycle(idx + 1))
+                listOfNotNull(predefinedPlaylists.customizedSongPlaylist.value.cycle(idx + 1))
             }
             else -> emptyList()
         }

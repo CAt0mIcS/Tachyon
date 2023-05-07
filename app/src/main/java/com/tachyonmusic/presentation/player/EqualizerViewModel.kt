@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation.equalizer
+package com.tachyonmusic.presentation.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

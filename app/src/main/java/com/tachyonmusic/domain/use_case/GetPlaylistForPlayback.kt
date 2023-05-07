@@ -35,7 +35,7 @@ class GetPlaylistForPlayback(
     private suspend fun getSongPlaylist(
         playback: SinglePlayback
     ): Playlist {
-        val items = predefinedPlaylistsRepository.songPlaylist
+        val items = predefinedPlaylistsRepository.songPlaylist.value
         items.forEach {
             artworkCodex.await(it.mediaId.underlyingMediaId ?: it.mediaId)
         }
@@ -51,7 +51,7 @@ class GetPlaylistForPlayback(
     private suspend fun getCustomizedSongPlaylist(
         playback: SinglePlayback
     ): Playlist {
-        val items = predefinedPlaylistsRepository.customizedSongPlaylist
+        val items = predefinedPlaylistsRepository.customizedSongPlaylist.value
         items.forEach {
             artworkCodex.await(it.mediaId.underlyingMediaId ?: it.mediaId)
         }

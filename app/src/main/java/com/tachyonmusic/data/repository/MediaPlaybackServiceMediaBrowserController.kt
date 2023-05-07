@@ -17,6 +17,7 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
 import com.tachyonmusic.domain.use_case.GetPlaylistForPlayback
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.core.*
@@ -24,19 +25,19 @@ import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.media.util.fromMedia
 import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.toMediaItems
+import com.tachyonmusic.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.*
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 
 class MediaPlaybackServiceMediaBrowserController(
     private val getPlaylistForPlayback: GetPlaylistForPlayback,
+    private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
     private val log: Logger
 ) : MediaBrowserController, Player.Listener,
     MediaBrowser.Listener, IListenable<MediaBrowserController.EventListener> by Listenable() {
@@ -65,6 +66,29 @@ class MediaPlaybackServiceMediaBrowserController(
                 it.onConnected()
             }
         }
+
+        /**
+         * Make sure that if the predefined playlists change the playlist in the player gets
+         * updated, too. For example when changing the combine songs and customized songs in playlist
+         * setting
+         */
+        predefinedPlaylistsRepository.songPlaylist.onEach {
+            if (!canPrepare && currentPlaylist.value?.mediaId == predefinedSongPlaylistMediaId) {
+                log.info("Updating player with new predefined song playlist during playback")
+                val prevPosition = currentPosition
+                setPlaylist(getPlaylistForPlayback(currentPlayback.value) ?: return@onEach)
+                seekTo(prevPosition)
+            }
+        }.launchIn(owner.lifecycleScope)
+
+        predefinedPlaylistsRepository.customizedSongPlaylist.onEach {
+            if (!canPrepare && currentPlaylist.value?.mediaId == predefinedCustomizedSongPlaylistMediaId) {
+                log.info("Updating player with new predefined customized song playlist during playback")
+                val prevPosition = currentPosition
+                setPlaylist(getPlaylistForPlayback(currentPlayback.value) ?: return@onEach)
+                seekTo(prevPosition)
+            }
+        }.launchIn(owner.lifecycleScope)
     }
 
     override fun onDestroy(owner: LifecycleOwner) {

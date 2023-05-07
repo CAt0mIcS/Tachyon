@@ -6,12 +6,10 @@ import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.media.data.AndroidAudioEffectController
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.data.repository.PredefinedPlaylistsRepositoryImpl
 import com.tachyonmusic.database.domain.repository.*
-import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
@@ -27,6 +25,7 @@ import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.permission.domain.UriPermissionRepository
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
@@ -273,9 +272,14 @@ object AppRepositoryModule {
     @Singleton
     fun provideMediaBrowserController(
         getPlaylistForPlayback: GetPlaylistForPlayback,
+        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
         logger: Logger
     ): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController(getPlaylistForPlayback, logger)
+        MediaPlaybackServiceMediaBrowserController(
+            getPlaylistForPlayback,
+            predefinedPlaylistsRepository,
+            logger
+        )
 
     @Provides
     @Singleton

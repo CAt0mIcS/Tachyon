@@ -28,7 +28,7 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
-import com.tachyonmusic.presentation.equalizer.EqualizerScreen
+import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
@@ -82,7 +82,8 @@ fun PlayerScreen(
         )
     }
 
-    var isEditingCustomizedSong by remember { mutableStateOf(false) }
+    var isEditingTimingData by remember { mutableStateOf(false) }
+    var isEditingEqualizer by remember { mutableStateOf(false) }
 
     val subPlaybackItems by viewModel.subPlaybackItems.collectAsState()
     val playbackType by viewModel.playbackType.collectAsState()
@@ -299,7 +300,7 @@ fun PlayerScreen(
 
                 IconButton(
                     modifier = Modifier.scale(buttonScale),
-                    onClick = { navController.navigate(EqualizerScreen.route) }
+                    onClick = { isEditingEqualizer = !isEditingEqualizer }
                 ) {
                     Icon(
                         painterResource(R.drawable.ic_equalizer),
@@ -310,7 +311,7 @@ fun PlayerScreen(
 
                 IconButton(
                     modifier = Modifier.scale(buttonScale),
-                    onClick = { isEditingCustomizedSong = !isEditingCustomizedSong }
+                    onClick = { isEditingTimingData = !isEditingTimingData }
                 ) {
                     Icon(
                         painterResource(R.drawable.ic_customized_song),
@@ -321,9 +322,15 @@ fun PlayerScreen(
             }
         }
 
-        if (isEditingCustomizedSong) {
+        if (isEditingTimingData) {
             item {
                 TimingDataEditor(modifier = Modifier.fillMaxWidth())
+            }
+        }
+
+        if(isEditingEqualizer) {
+            item {
+                EqualizerEditor(modifier = Modifier.fillMaxWidth())
             }
         }
 

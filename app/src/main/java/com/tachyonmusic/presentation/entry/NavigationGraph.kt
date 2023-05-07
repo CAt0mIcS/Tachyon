@@ -10,7 +10,6 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 import com.tachyonmusic.presentation.authentication.RegisterScreen
 import com.tachyonmusic.presentation.authentication.SignInScreen
-import com.tachyonmusic.presentation.equalizer.EqualizerScreen
 import com.tachyonmusic.presentation.home.HomeScreen
 import com.tachyonmusic.presentation.library.LibraryScreen
 import com.tachyonmusic.presentation.profile.ProfileScreen
@@ -37,9 +36,6 @@ fun NavigationGraph(
         }
         composable(RegisterScreen.route) {
             RegisterScreen(navController)
-        }
-        composable(EqualizerScreen.route) {
-            EqualizerScreen()
         }
     }
 }
