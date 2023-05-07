@@ -4,6 +4,7 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.isPredefined
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.util.Duration
@@ -57,7 +58,7 @@ class PlayPlayback(
                         log.info("Playlist out of date. Setting a new playlist and preparing the player...")
                         invokeOnNewPlaylist(playback, position)
                     }
-                } else error("Shouldn't happen 2")
+                } else error("Shouldn't happen")
 
                 addNewPlaybackToHistory(playback)
             }

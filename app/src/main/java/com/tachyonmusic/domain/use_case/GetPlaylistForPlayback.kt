@@ -2,12 +2,13 @@ package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.core.data.playback.LocalPlaylistImpl
-import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
+import com.tachyonmusic.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.predefinedSongPlaylistMediaId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -62,12 +63,3 @@ class GetPlaylistForPlayback(
         )
     }
 }
-
-private val predefinedCustomizedSongPlaylistMediaId =
-    MediaId.ofLocalPlaylist("com.tachyonmusic.PREDEFINED_LOOPS_PLAYLIST")
-
-private val predefinedSongPlaylistMediaId =
-    MediaId.ofLocalPlaylist("com.tachyonmusic.PREDEFINED_SONGS_PLAYLIST")
-
-val Playlist.isPredefined: Boolean
-    get() = mediaId == predefinedSongPlaylistMediaId || mediaId == predefinedCustomizedSongPlaylistMediaId
