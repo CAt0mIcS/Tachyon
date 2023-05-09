@@ -76,8 +76,9 @@ class MediaPlaybackServiceMediaBrowserController(
             if (!canPrepare && currentPlaylist.value?.mediaId == predefinedSongPlaylistMediaId) {
                 log.info("Updating player with new predefined song playlist during playback")
                 val prevPosition = currentPosition
-                setPlaylist(getPlaylistForPlayback(currentPlayback.value) ?: return@onEach)
-                seekTo(prevPosition)
+                val prevPb = currentPlayback.value ?: return@onEach
+                setPlaylist(getPlaylistForPlayback(prevPb) ?: return@onEach)
+                seekTo(prevPb.mediaId, prevPosition)
             }
         }.launchIn(owner.lifecycleScope)
 
@@ -85,8 +86,9 @@ class MediaPlaybackServiceMediaBrowserController(
             if (!canPrepare && currentPlaylist.value?.mediaId == predefinedCustomizedSongPlaylistMediaId) {
                 log.info("Updating player with new predefined customized song playlist during playback")
                 val prevPosition = currentPosition
-                setPlaylist(getPlaylistForPlayback(currentPlayback.value) ?: return@onEach)
-                seekTo(prevPosition)
+                val prevPb = currentPlayback.value ?: return@onEach
+                setPlaylist(getPlaylistForPlayback(prevPb) ?: return@onEach)
+                seekTo(prevPb.mediaId, prevPosition)
             }
         }.launchIn(owner.lifecycleScope)
     }
