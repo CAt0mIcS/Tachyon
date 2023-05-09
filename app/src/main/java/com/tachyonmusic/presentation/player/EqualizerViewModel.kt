@@ -15,7 +15,8 @@ import javax.inject.Inject
 data class EqualizerState(
     val minBandLevel: SoundLevel,
     val maxBandLevel: SoundLevel,
-    val bands: List<EqualizerBand>?
+    val bands: List<EqualizerBand>?,
+    val presets: List<String>
 )
 
 @HiltViewModel
@@ -33,7 +34,8 @@ class EqualizerViewModel @Inject constructor(
         EqualizerState(
             audioEffectController.minBandLevel,
             audioEffectController.maxBandLevel,
-            audioEffectController.bands
+            audioEffectController.bands,
+            audioEffectController.presets
         )
     )
     val equalizer = _equalizer.asStateFlow()
@@ -73,6 +75,14 @@ class EqualizerViewModel @Inject constructor(
     fun setBandLevel(band: Int, level: SoundLevel) {
         if (audioEffectController.equalizerEnabled) {
             audioEffectController.setBandLevel(band, level)
+
+            _equalizer.update { it.copy(bands = audioEffectController.bands) }
+        }
+    }
+
+    fun setEqualizerPreset(preset: String) {
+        if(audioEffectController.equalizerEnabled) {
+            audioEffectController.setPreset(preset)
 
             _equalizer.update { it.copy(bands = audioEffectController.bands) }
         }
@@ -125,7 +135,8 @@ class EqualizerViewModel @Inject constructor(
             EqualizerState(
                 audioEffectController.minBandLevel,
                 audioEffectController.maxBandLevel,
-                audioEffectController.bands
+                audioEffectController.bands,
+                audioEffectController.presets
             )
         }
     }

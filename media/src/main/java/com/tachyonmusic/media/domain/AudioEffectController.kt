@@ -24,10 +24,12 @@ interface AudioEffectController {
     val maxBandLevel: SoundLevel
     val minBandLevel: SoundLevel
     val bands: List<EqualizerBand>?
+    val presets: List<String>
 
     var reverb: ReverbConfig?
 
     fun setBandLevel(band: Int, level: SoundLevel)
+    fun setPreset(preset: String)
     fun getBandLevel(band: Int): SoundLevel
     fun getBandIndex(
         lowerBandFrequency: SoundFrequency,

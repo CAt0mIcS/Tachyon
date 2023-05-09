@@ -10,7 +10,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.core.domain.model.mDb
-import com.tachyonmusic.presentation.NavigationItem
 import com.tachyonmusic.presentation.player.EqualizerViewModel
 import com.tachyonmusic.presentation.theme.Theme
 
@@ -112,6 +111,29 @@ fun EqualizerEditor(
         )
 
         if (equalizer.bands != null) {
+
+            if (equalizer.presets.isNotEmpty()) {
+                var isSelectingEqualizerPreset by remember { mutableStateOf(false) }
+
+                Button(onClick = { isSelectingEqualizerPreset = !isSelectingEqualizerPreset }) {
+                    Text("Equalizer Preset")
+                }
+
+                DropdownMenu(
+                    expanded = isSelectingEqualizerPreset,
+                    onDismissRequest = { isSelectingEqualizerPreset = false }
+                ) {
+                    for (preset in equalizer.presets) {
+                        DropdownMenuItem(onClick = {
+                            isSelectingEqualizerPreset = false
+                            viewModel.setEqualizerPreset(preset)
+                        }) {
+                            Text(preset)
+                        }
+                    }
+                }
+            }
+
             for (bandNumber in equalizer.bands!!.indices) {
                 val band = equalizer.bands!![bandNumber]
                 Row(

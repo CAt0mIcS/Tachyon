@@ -122,6 +122,11 @@ class AndroidAudioEffectController : AudioEffectController {
                 }
         }
 
+    override val presets: List<String>
+        get() = List(equalizer?.numberOfPresets?.toInt() ?: 0) {
+            equalizer?.getPresetName(it.toShort())
+        }.filterNotNull()
+
     /**************************************************************************
      ********** Reverb | TODO: Choose appropriate default values for null case
      *************************************************************************/
@@ -161,6 +166,11 @@ class AndroidAudioEffectController : AudioEffectController {
         assert(level in minBandLevel..maxBandLevel) { "BandLevel $level is invalid (range: $minBandLevel..$maxBandLevel)" }
         assert(band in 0..numBands) { "Band $band is invalid (max: ${numBands - 1})" }
         equalizer?.setBandLevel(band.toShort(), level.inmDb.toShort())
+    }
+
+    override fun setPreset(preset: String) {
+        assert(preset in presets) { "Preset $preset not found in available presets" }
+        equalizer?.usePreset(presets.indexOf(preset).toShort())
     }
 
     override fun getBandLevel(band: Int): SoundLevel {
