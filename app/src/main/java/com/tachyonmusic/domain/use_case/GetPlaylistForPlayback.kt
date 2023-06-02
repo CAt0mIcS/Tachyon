@@ -1,13 +1,14 @@
 package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.artwork.domain.ArtworkCodex
-import com.tachyonmusic.core.data.playback.RemotePlaylistImpl
-import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.data.playback.LocalPlaylistImpl
+import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
+import com.tachyonmusic.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.predefinedSongPlaylistMediaId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -25,7 +26,7 @@ class GetPlaylistForPlayback(
 
         when (playback) {
             is Song -> getSongPlaylist(playback)
-            is Loop -> getLoopPlaylist(playback)
+            is CustomizedSong -> getCustomizedSongPlaylist(playback)
             else -> null
         }
     }
@@ -34,12 +35,12 @@ class GetPlaylistForPlayback(
     private suspend fun getSongPlaylist(
         playback: SinglePlayback
     ): Playlist {
-        val items = predefinedPlaylistsRepository.songPlaylist
+        val items = predefinedPlaylistsRepository.songPlaylist.value
         items.forEach {
             artworkCodex.await(it.mediaId.underlyingMediaId ?: it.mediaId)
         }
 
-        return RemotePlaylistImpl.build(
+        return LocalPlaylistImpl.build(
             predefinedSongPlaylistMediaId,
             items.toMutableList(),
             items.indexOfFirst { it.mediaId == playback.mediaId }
@@ -47,27 +48,18 @@ class GetPlaylistForPlayback(
     }
 
 
-    private suspend fun getLoopPlaylist(
+    private suspend fun getCustomizedSongPlaylist(
         playback: SinglePlayback
     ): Playlist {
-        val items = predefinedPlaylistsRepository.loopPlaylist
+        val items = predefinedPlaylistsRepository.customizedSongPlaylist.value
         items.forEach {
             artworkCodex.await(it.mediaId.underlyingMediaId ?: it.mediaId)
         }
 
-        return RemotePlaylistImpl.build(
-            predefinedLoopPlaylistMediaId,
+        return LocalPlaylistImpl.build(
+            predefinedCustomizedSongPlaylistMediaId,
             items.toMutableList(),
             items.indexOfFirst { it.mediaId == playback.mediaId }
         )
     }
 }
-
-private val predefinedLoopPlaylistMediaId =
-    MediaId.ofRemotePlaylist("com.tachyonmusic.PREDEFINED_LOOPS_PLAYLIST")
-
-private val predefinedSongPlaylistMediaId =
-    MediaId.ofRemotePlaylist("com.tachyonmusic.PREDEFINED_SONGS_PLAYLIST")
-
-val Playlist.isPredefined: Boolean
-    get() = mediaId == predefinedSongPlaylistMediaId || mediaId == predefinedLoopPlaylistMediaId

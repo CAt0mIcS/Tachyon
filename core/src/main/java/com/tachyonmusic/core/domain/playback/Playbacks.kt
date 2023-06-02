@@ -28,18 +28,18 @@ interface Playback : Parcelable {
     override fun toString(): String
 
     /**
-     * @return Either the underlying song in the loop or the first song in the playlist
+     * @return Either the underlying song in the customizedSong or the first song in the playlist
      */
     val underlyingSong: Song?
         get() = when (this) {
             is Song -> this
-            is Loop -> song
+            is CustomizedSong -> song
             is Playlist -> playbacks.firstOrNull()?.underlyingSong
             else -> TODO("Invalid Playback ${this.javaClass.name}")
         }
 
     /**
-     * @return Either a song, loop or the first item in the playlist (could be song or loop)
+     * @return Either a song, customizedSong or the first item in the playlist (could be song or customizedSong)
      */
     val underlyingSinglePlayback: SinglePlayback?
         get() = when (this) {
@@ -71,7 +71,7 @@ interface SinglePlayback : Playback {
     override val underlyingSong: Song
     get() = when(this) {
         is Song -> this
-        is Loop -> song
+        is CustomizedSong -> song
         else -> TODO("Invalid SinglePlayback ${this.javaClass.name}")
     }
 

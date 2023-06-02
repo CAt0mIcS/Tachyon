@@ -4,6 +4,7 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.isPredefined
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.util.Duration
@@ -26,45 +27,45 @@ class PlayPlayback(
     ) {
         when (playback) {
             is SinglePlayback -> {
-                if (browser.canPrepare) {
-                    browser.prepare()
-                    browser.seekTo(playback.mediaId, position)
-                } else if (!browser.canPrepare) {
-                    if (browser.currentPlaylist.value == null) {
-                        log.info("Browser doesn't have any playlist. Setting a new playlist and preparing the player...")
-                        invokeOnNewPlaylist(playback, position)
-                    } else if (playback == browser.currentPlayback.value) {
+                invokeOnNewPlaylist(playback, position)
+//                if (browser.canPrepare) {
+//                    browser.prepare()
+//                    browser.seekTo(playback.mediaId, position)
+//                } else if (!browser.canPrepare) {
+//                    if (browser.currentPlaylist.value == null) {
+//                        log.info("Browser doesn't have any playlist. Setting a new playlist and preparing the player...")
+//                        invokeOnNewPlaylist(playback, position)
+//                    } else if (playback == browser.currentPlayback.value) {
+//
+//                        if (!playbackLocationMatches(playbackLocation)) {
+//                            log.info("Current playback would match, but client requested playback location $playbackLocation, reloading playlist...")
+//                            invokeOnNewPlaylist(playback, position)
+//                        } else {
+//                            log.info("Current playback is already set and browser can't prepare anymore, unpausing playback...")
+//                            browser.seekTo(playback.mediaId, position)
+//                        }
+//
+//                    } else if (browser.currentPlaylist.value?.hasPlayback(playback) == true) {
+//
+//                        if (!playbackLocationMatches(playbackLocation)) {
+//                            log.info("Current playback would be in current playlist, but client requested playback location $playbackLocation, reloading playlist...")
+//                            invokeOnNewPlaylist(playback, position)
+//                        } else {
+//                            log.info("New playback already contained in playlist, seeking to new playback...")
+//                            browser.seekTo(playback.mediaId, position)
+//                        }
+//
+//                    } else {
+//                        log.info("Playlist out of date. Setting a new playlist and preparing the player...")
+//                        invokeOnNewPlaylist(playback, position)
+//                    }
+//                } else error("Shouldn't happen")
 
-                        if (!playbackLocationMatches(playbackLocation)) {
-                            log.info("Current playback would match, but client requested playback location $playbackLocation, reloading playlist...")
-                            invokeOnNewPlaylist(playback, position)
-                        } else {
-                            log.info("Current playback is already set and browser can't prepare anymore, unpausing playback...")
-                            browser.seekTo(playback.mediaId, position)
-                        }
-
-                    } else if (browser.currentPlaylist.value?.hasPlayback(playback) == true) {
-
-                        if (!playbackLocationMatches(playbackLocation)) {
-                            log.info("Current playback would be in current playlist, but client requested playback location $playbackLocation, reloading playlist...")
-                            invokeOnNewPlaylist(playback, position)
-                        } else {
-                            log.info("New playback already contained in playlist, seeking to new playback...")
-                            browser.seekTo(playback.mediaId, position)
-                        }
-
-                    } else {
-                        log.info("Playlist out of date. Setting a new playlist and preparing the player...")
-                        invokeOnNewPlaylist(playback, position)
-                    }
-                } else error("Shouldn't happen 2")
-
-                addNewPlaybackToHistory(playback)
+//                addNewPlaybackToHistory(playback)
             }
 
             is Playlist -> {
                 log.info("Setting playlist to ${playback.mediaId}")
-                browser.stop()
                 browser.setPlaylist(playback)
                 browser.prepare()
                 browser.seekTo(playback.currentPlaylistIndex, position)

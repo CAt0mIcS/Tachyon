@@ -37,7 +37,7 @@ internal class RoomPlaylistRepositoryTest {
         runBlocking {
             repository.addAll(List(playlistSize) {
                 PlaylistEntity(
-                    MediaId.ofRemotePlaylist(it.toString()),
+                    MediaId.ofLocalPlaylist(it.toString()),
                     listOf()
                 )
             })
@@ -47,12 +47,12 @@ internal class RoomPlaylistRepositoryTest {
     @Test
     fun hasPlaylistReturnsCorrectResult() = runTest {
         for (i in 0 until playlistSize) {
-            assert(repository.findByMediaId(MediaId.ofRemotePlaylist(i.toString())) != null)
-            assertEquals(repository.hasPlaylist(MediaId.ofRemotePlaylist(i.toString())), true)
+            assert(repository.findByMediaId(MediaId.ofLocalPlaylist(i.toString())) != null)
+            assertEquals(repository.hasPlaylist(MediaId.ofLocalPlaylist(i.toString())), true)
         }
 
         assertEquals(repository.hasPlaylist(MediaId.EMPTY), false)
         assertEquals(repository.hasPlaylist(MediaId("jfklsda jifeljfids")), false)
-        assertEquals(repository.hasPlaylist(MediaId.ofRemotePlaylist("324")), false)
+        assertEquals(repository.hasPlaylist(MediaId.ofLocalPlaylist("324")), false)
     }
 }

@@ -5,21 +5,24 @@ import android.os.Bundle
 import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import com.tachyonmusic.core.PlaybackParameters
+import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.model.EqualizerBand
+import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Duration
 
-abstract class AbstractLoop(
+abstract class AbstractCustomizedSong(
     final override val mediaId: MediaId,
-    final override var timingData: TimingDataController?,
     final override val song: Song
-) : Loop {
+) : CustomizedSong {
+
 
     override val title: String
         get() = song.title
@@ -31,7 +34,7 @@ abstract class AbstractLoop(
     override val uri: Uri
         get() = song.uri
 
-    abstract override val playbackType: PlaybackType.Loop
+    abstract override val playbackType: PlaybackType.CustomizedSong
 
     override var artwork: Artwork?
         get() = song.artwork
@@ -50,6 +53,13 @@ abstract class AbstractLoop(
         set(value) {
             song.isPlayable = value
         }
+
+    override var timingData: TimingDataController? = null
+    override var bassBoost: Int? = null
+    override var virtualizerStrength: Int? = null
+    override var equalizerBands: List<EqualizerBand>? = null
+    override var playbackParameters: PlaybackParameters? = null
+    override var reverb: ReverbConfig? = null
 
     override fun toMediaItem() = MediaItem.Builder().apply {
         setMediaId(mediaId.toString())
@@ -73,14 +83,19 @@ abstract class AbstractLoop(
             putLong(MetadataKeys.Duration, duration.inWholeMilliseconds)
             putParcelable(MetadataKeys.TimingData, timingData)
             putString(MetadataKeys.Name, name)
-            putParcelable(MetadataKeys.Playback, this@AbstractLoop)
+            putParcelable(MetadataKeys.Playback, this@AbstractCustomizedSong)
         })
     }.build()
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
-        parcel.writeParcelable(timingData, flags)
         parcel.writeParcelable(song, flags)
+        parcel.writeParcelable(timingData, flags)
+        parcel.writeInt(bassBoost ?: 0)
+        parcel.writeInt(virtualizerStrength ?: 0)
+        parcel.writeList(equalizerBands?.map { it.toString() })
+        parcel.writeParcelable(playbackParameters, flags)
+        parcel.writeParcelable(reverb, flags)
     }
 
     override fun toString() = mediaId.toString()
@@ -88,6 +103,8 @@ abstract class AbstractLoop(
     override fun describeContents() = 0
 
     override fun equals(other: Any?) =
-        other is AbstractLoop && mediaId == other.mediaId &&
-                song == other.song && timingData == other.timingData
+        other is AbstractCustomizedSong && mediaId == other.mediaId &&
+                song == other.song && timingData == other.timingData && bassBoost == other.bassBoost &&
+                virtualizerStrength == other.virtualizerStrength && playbackParameters == other.playbackParameters &&
+                equalizerBands == other.equalizerBands && reverb == other.reverb
 }

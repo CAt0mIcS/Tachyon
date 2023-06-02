@@ -10,6 +10,8 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -61,9 +63,10 @@ fun MainScreen(
         val miniPlayerHeight = remember { mutableStateOf(0.dp) }
         val navController = rememberAnimatedNavController()
 
-        Scaffold(bottomBar = {
-            BottomNavigation(navController, sheetState)
-        }) { innerPaddingScaffold ->
+        Scaffold(
+            modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
+            bottomBar = { BottomNavigation(navController, sheetState) }
+        ) { innerPaddingScaffold ->
 
             BottomSheetScaffold(
                 modifier = Modifier.padding(innerPaddingScaffold),
@@ -73,12 +76,12 @@ fun MainScreen(
                         modifier = Modifier
                             .fillMaxSize(),
                     ) {
-                        if (!requiresMusicPathSelection)
-                            PlayerLayout(
-                                sheetState,
-                                onMiniPlayerHeight = { miniPlayerHeight.value = it },
-                                miniPlayerHeight = miniPlayerHeight.value
-                            )
+                        PlayerLayout(
+                            navController,
+                            sheetState,
+                            onMiniPlayerHeight = { miniPlayerHeight.value = it },
+                            miniPlayerHeight = miniPlayerHeight.value
+                        )
                     }
                 },
                 sheetPeekHeight = miniPlayerHeight.value,

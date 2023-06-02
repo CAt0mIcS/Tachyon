@@ -1,3 +1,3 @@
-package com.tachyonmusic.core
+package com.tachyonmusic.presentation
 
 abstract class NavigationItem(val route: String)

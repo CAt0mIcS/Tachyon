@@ -41,9 +41,9 @@ object DatabaseRepositoryModule {
 
     @Provides
     @Singleton
-    fun provideLoopRepository(
+    fun provideCustomizedSongRepository(
         database: Database,
-    ): LoopRepository = RoomLoopRepository(database.loopDao)
+    ): CustomizedSongRepository = RoomCustomizedSongRepository(database.customizedSongDao)
 
     @Provides
     @Singleton

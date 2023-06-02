@@ -11,15 +11,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
-import com.tachyonmusic.presentation.player.LoopEditorViewModel
+import com.tachyonmusic.presentation.player.TimingDataEditorViewModel
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.util.ms
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun LoopEditor(
+fun TimingDataEditor(
     modifier: Modifier = Modifier,
-    viewModel: LoopEditorViewModel = hiltViewModel()
+    viewModel: TimingDataEditorViewModel = hiltViewModel()
 ) {
     val timingData = viewModel.timingData
 
@@ -30,7 +30,7 @@ fun LoopEditor(
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_add_circle),
-                contentDescription = "Add new loop time point"
+                contentDescription = "Add new customizedSong time point"
             )
         }
 
@@ -39,7 +39,7 @@ fun LoopEditor(
             onClick = { viewModel.removeTimingData(timingData.size - 1) }) {
             Icon(
                 painterResource(R.drawable.ic_rewind),
-                contentDescription = "Remove loop time point"
+                contentDescription = "Remove customizedSong time point"
             )
         }
 
@@ -66,7 +66,7 @@ fun LoopEditor(
         }
 
         var openAlertDialog by remember { mutableStateOf(false) }
-        var loopName by remember { mutableStateOf("") }
+        var customizedSongName by remember { mutableStateOf("") }
 
         Button(onClick = {
             openAlertDialog = true
@@ -76,17 +76,17 @@ fun LoopEditor(
 
         if (openAlertDialog) {
             // TODO: Show error
-            val error by viewModel.loopError.collectAsState()
+            val error by viewModel.customizedSongError.collectAsState()
 
             AlertDialog(
                 onDismissRequest = { openAlertDialog = false },
                 text = {
-                    TextField(value = loopName, onValueChange = { loopName = it })
+                    TextField(value = customizedSongName, onValueChange = { customizedSongName = it })
                 },
                 buttons = {
                     Button(
                         onClick = {
-                            viewModel.saveNewLoop(loopName)
+                            viewModel.saveNewCustomizedSong(customizedSongName)
                             if (error == null)
                                 openAlertDialog = false
                         }

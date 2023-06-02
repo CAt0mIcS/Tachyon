@@ -5,6 +5,7 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.Dp
+import androidx.navigation.NavController
 import com.tachyonmusic.presentation.player.component.MiniPlayer
 import com.tachyonmusic.presentation.util.isAtBottom
 import com.tachyonmusic.presentation.util.isAtTop
@@ -14,6 +15,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PlayerLayout(
+    navController: NavController,
     sheetState: BottomSheetState,
     onMiniPlayerHeight: (Dp) -> Unit,
     miniPlayerHeight: Dp
@@ -42,6 +44,6 @@ fun PlayerLayout(
             }
         }
 
-        PlayerScreen(sheetState, miniPlayerHeight)
+        PlayerScreen(sheetState, miniPlayerHeight, navController)
     }
 }

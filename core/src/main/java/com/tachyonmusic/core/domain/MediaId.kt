@@ -31,11 +31,11 @@ data class MediaId(
         fun ofLocalSong(uri: Uri) =
             MediaId(PlaybackType.Song.Local().toString() + uri.toString())
 
-        fun ofRemoteLoop(name: String, songMediaId: MediaId) =
-            MediaId(PlaybackType.Loop.Remote().toString() + name, songMediaId)
+        fun ofLocalCustomizedSong(name: String, songMediaId: MediaId) =
+            MediaId(PlaybackType.CustomizedSong.Local().toString() + name, songMediaId)
 
-        fun ofRemotePlaylist(name: String) =
-            MediaId(PlaybackType.Playlist.Remote().toString() + name)
+        fun ofLocalPlaylist(name: String) =
+            MediaId(PlaybackType.Playlist.Local().toString() + name)
 
         val EMPTY = MediaId("")
     }
@@ -43,18 +43,18 @@ data class MediaId(
     val playbackType: PlaybackType
         get() =
             if (isLocalSong) PlaybackType.Song.Local()
-            else if (isRemoteLoop) PlaybackType.Loop.Remote()
-            else if (isRemotePlaylist) PlaybackType.Playlist.Remote()
+            else if (isLocalCustomizedSong) PlaybackType.CustomizedSong.Local()
+            else if (isLocalPlaylist) PlaybackType.Playlist.Local()
             else TODO("Invalid media id ${toString()}")
 
     val isLocalSong: Boolean
         get() = source.contains(PlaybackType.Song.Local().toString())
 
-    val isRemoteLoop: Boolean
-        get() = source.contains(PlaybackType.Loop.Remote().toString()) && underlyingMediaId != null
+    val isLocalCustomizedSong: Boolean
+        get() = source.contains(PlaybackType.CustomizedSong.Local().toString()) && underlyingMediaId != null
 
-    val isRemotePlaylist: Boolean
-        get() = source.contains(PlaybackType.Playlist.Remote().toString())
+    val isLocalPlaylist: Boolean
+        get() = source.contains(PlaybackType.Playlist.Local().toString())
 
     val uri: Uri?
         get() {

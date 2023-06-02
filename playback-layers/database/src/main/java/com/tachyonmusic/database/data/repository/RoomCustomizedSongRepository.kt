@@ -3,32 +3,32 @@ package com.tachyonmusic.database.data.repository
 import android.database.sqlite.SQLiteException
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.R
-import com.tachyonmusic.database.data.data_source.LoopDao
-import com.tachyonmusic.database.domain.model.LoopEntity
-import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.data.data_source.CustomizedSongDao
+import com.tachyonmusic.database.domain.model.CustomizedSongEntity
+import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 
-class RoomLoopRepository(
-    private val dao: LoopDao
-) : LoopRepository {
+class RoomCustomizedSongRepository(
+    private val dao: CustomizedSongDao
+) : CustomizedSongRepository {
     override fun observe() = dao.observe()
 
-    override suspend fun getLoops(): List<LoopEntity> = dao.getLoops()
+    override suspend fun getCustomizedSongs(): List<CustomizedSongEntity> = dao.getCustomizedSongs()
 
-    override suspend fun add(loop: LoopEntity): Resource<Unit> {
+    override suspend fun add(customizedSong: CustomizedSongEntity): Resource<Unit> {
         return try {
-            dao.add(loop)
+            dao.add(customizedSong)
             Resource.Success()
         } catch (e: SQLiteException) {
             Resource.Error(UiText.build(e.localizedMessage ?: R.string.database_insert_conflict))
         }
     }
 
-    override suspend fun addAll(loops: List<LoopEntity>): Resource<Unit> {
+    override suspend fun addAll(customizedSongs: List<CustomizedSongEntity>): Resource<Unit> {
         return try {
-            dao.addAll(loops)
+            dao.addAll(customizedSongs)
             Resource.Success()
         } catch (e: SQLiteException) {
             Resource.Error(UiText.build(e.localizedMessage ?: R.string.database_insert_conflict))
@@ -40,8 +40,8 @@ class RoomLoopRepository(
     }
 
     // TODO: Bad performance? Should be changed to have less db queries
-    override suspend fun removeIf(pred: (LoopEntity) -> Boolean) {
-        getLoops().forEach {
+    override suspend fun removeIf(pred: (CustomizedSongEntity) -> Boolean) {
+        getCustomizedSongs().forEach {
             if (pred(it))
                 dao.delete(it.mediaId)
         }
@@ -51,7 +51,7 @@ class RoomLoopRepository(
         songTitle: String,
         songArtist: String,
         songDuration: Duration
-    ): LoopEntity? = dao.findBySong(songTitle, songArtist, songDuration)
+    ): CustomizedSongEntity? = dao.findBySong(songTitle, songArtist, songDuration)
 
-    override suspend fun findByMediaId(mediaId: MediaId): LoopEntity? = dao.findByMediaId(mediaId)
+    override suspend fun findByMediaId(mediaId: MediaId): CustomizedSongEntity? = dao.findByMediaId(mediaId)
 }

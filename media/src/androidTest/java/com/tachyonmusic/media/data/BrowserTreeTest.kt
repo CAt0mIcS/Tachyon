@@ -1,9 +1,9 @@
 package com.tachyonmusic.media.data
 
-import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.media.util.getLoops
+import com.tachyonmusic.media.util.getCustomizedSongs
 import com.tachyonmusic.media.util.getPlaylists
 import com.tachyonmusic.media.util.getSongs
 import io.mockk.coEvery
@@ -17,23 +17,23 @@ import org.junit.Test
 internal class BrowserTreeTest {
 
     private val songRepository: SongRepository = mockk()
-    private val loopRepository: LoopRepository = mockk()
+    private val customizedSongRepository: CustomizedSongRepository = mockk()
     private val playlistRepository: PlaylistRepository = mockk()
     private lateinit var browserTree: BrowserTree
 
     @Before
     fun setUp() {
         coEvery { songRepository.getSongs() } returns getSongs()
-        coEvery { loopRepository.getLoops() } returns getLoops()
+        coEvery { customizedSongRepository.getCustomizedSongs() } returns getCustomizedSongs()
         coEvery { playlistRepository.getPlaylists() } returns getPlaylists()
 
-        browserTree = BrowserTree(songRepository, loopRepository, playlistRepository)
+        browserTree = BrowserTree(songRepository, customizedSongRepository, playlistRepository)
     }
 
     @Test
     fun getting_browser_tree_root_returns_all_playbacks() = runTest {
         val expectedItems =
-            (songRepository.getSongs() + loopRepository.getLoops() + playlistRepository.getPlaylists()).map { it.toMediaItem() }
+            (songRepository.getSongs() + customizedSongRepository.getCustomizedSongs() + playlistRepository.getPlaylists()).map { it.toMediaItem() }
         val items = browserTree.get(BrowserTree.ROOT, 0, expectedItems.size)
         assert(items?.containsAll(expectedItems) ?: false)
     }
@@ -46,8 +46,8 @@ internal class BrowserTreeTest {
     }
 
     @Test
-    fun getting_browser_tree_loops_returns_all_loops() = runTest {
-        val expectedItems = loopRepository.getLoops().map { it.toMediaItem() }
+    fun getting_browser_tree_customizedSongs_returns_all_customizedSongs() = runTest {
+        val expectedItems = customizedSongRepository.getCustomizedSongs().map { it.toMediaItem() }
         val items = browserTree.get(BrowserTree.LOOP_ROOT, 0, expectedItems.size)
         assert(items?.containsAll(expectedItems) ?: false)
     }

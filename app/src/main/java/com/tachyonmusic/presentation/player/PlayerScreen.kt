@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.github.krottv.compose.sliders.DefaultThumb
 import com.github.krottv.compose.sliders.DefaultTrack
 import com.github.krottv.compose.sliders.SliderValueHorizontal
@@ -27,10 +28,11 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
+import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
-import com.tachyonmusic.presentation.player.data.LoopEditor
+import com.tachyonmusic.presentation.player.data.TimingDataEditor
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.currentFraction
 import com.tachyonmusic.presentation.util.displaySubtitle
@@ -45,6 +47,7 @@ import com.tachyonmusic.util.toReadableString
 fun PlayerScreen(
     sheetState: BottomSheetState,
     miniPlayerHeight: Dp,
+    navController: NavController,
     viewModel: PlayerViewModel = hiltViewModel()
 ) {
     val shouldShowPlayer by viewModel.shouldShowPlayer.collectAsState()
@@ -79,7 +82,8 @@ fun PlayerScreen(
         )
     }
 
-    var isEditingLoop by remember { mutableStateOf(false) }
+    var isEditingTimingData by remember { mutableStateOf(false) }
+    var isEditingEqualizer by remember { mutableStateOf(false) }
 
     val subPlaybackItems by viewModel.subPlaybackItems.collectAsState()
     val playbackType by viewModel.playbackType.collectAsState()
@@ -296,7 +300,7 @@ fun PlayerScreen(
 
                 IconButton(
                     modifier = Modifier.scale(buttonScale),
-                    onClick = { /*TODO: Equalizer*/ }
+                    onClick = { isEditingEqualizer = !isEditingEqualizer }
                 ) {
                     Icon(
                         painterResource(R.drawable.ic_equalizer),
@@ -307,10 +311,10 @@ fun PlayerScreen(
 
                 IconButton(
                     modifier = Modifier.scale(buttonScale),
-                    onClick = { isEditingLoop = !isEditingLoop }
+                    onClick = { isEditingTimingData = !isEditingTimingData }
                 ) {
                     Icon(
-                        painterResource(R.drawable.ic_loop),
+                        painterResource(R.drawable.ic_customized_song),
                         contentDescription = null,
                         modifier = Modifier.scale(iconScale)
                     )
@@ -318,9 +322,15 @@ fun PlayerScreen(
             }
         }
 
-        if (isEditingLoop) {
+        if (isEditingTimingData) {
             item {
-                LoopEditor(modifier = Modifier.fillMaxWidth())
+                TimingDataEditor(modifier = Modifier.fillMaxWidth())
+            }
+        }
+
+        if(isEditingEqualizer) {
+            item {
+                EqualizerEditor(modifier = Modifier.fillMaxWidth())
             }
         }
 

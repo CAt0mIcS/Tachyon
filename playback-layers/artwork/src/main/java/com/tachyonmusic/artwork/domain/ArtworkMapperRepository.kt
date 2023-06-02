@@ -1,6 +1,6 @@
 package com.tachyonmusic.artwork.domain
 
-import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.core.domain.playback.Song
@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface ArtworkMapperRepository {
     val songFlow: Flow<List<Song>>
-    val loopFlow: Flow<List<Loop>>
+    val customizedSongFlow: Flow<List<CustomizedSong>>
     val playlistFlow: Flow<List<Playlist>>
 
     val historyFlow: Flow<List<SinglePlayback>>
@@ -16,7 +16,7 @@ interface ArtworkMapperRepository {
     fun triggerPlaybackReload()
 
     suspend fun getSongs(): List<Song>
-    suspend fun getLoops(): List<Loop>
+    suspend fun getCustomizedSongs(): List<CustomizedSong>
     suspend fun getPlaylists(): List<Playlist>
 
     suspend fun getHistory(): List<SinglePlayback>

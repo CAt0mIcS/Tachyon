@@ -1,10 +1,7 @@
 package com.tachyonmusic.media.service
 
 import android.os.Bundle
-import androidx.media3.common.AudioAttributes
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
+import androidx.media3.common.*
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.session.*
@@ -12,8 +9,10 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.ArtworkType
+import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.database.domain.repository.SettingsRepository
@@ -22,6 +21,7 @@ import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.data.MediaNotificationProvider
+import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
@@ -35,6 +35,11 @@ import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
+
+/**
+ * DOCUMENTATION
+ * https://developer.android.com/guide/topics/media/media3
+ */
 
 @AndroidEntryPoint
 class MediaPlaybackService : MediaLibraryService(), Player.Listener {
@@ -61,12 +66,16 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     lateinit var dataRepository: DataRepository
 
     @Inject
+    lateinit var audioEffectController: AudioEffectController
+
+    @Inject
     lateinit var log: Logger
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var mediaSession: MediaLibrarySession
 
+    // use CustomPlayer.setAuxEffectInfo(reverb.id, 1f) (currently in isPlayingChanged)
 
     override fun onCreate() {
         super.onCreate()
@@ -75,6 +84,29 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             exoPlayer = buildExoPlayer(!settingsRepository.getSettings().ignoreAudioFocus)
             currentPlayer = exoPlayer
         }
+
+        audioEffectController.controller = object : AudioEffectController.PlaybackController {
+            override fun onNewPlaybackParameters(params: PlaybackParameters) {
+                currentPlayer.playbackParameters = PlaybackParameters(
+                    params.speed,
+                    params.pitch
+                )
+                currentPlayer.volume = params.volume
+            }
+
+            override fun onReverbToggled(enabled: Boolean, effectId: Int) {
+                if (enabled)
+                    currentPlayer.setAuxEffectInfo(AuxEffectInfo(effectId, 1F))
+                else
+                    currentPlayer.setAuxEffectInfo(
+                        AuxEffectInfo(
+                            AuxEffectInfo.NO_AUX_EFFECT_ID,
+                            0F
+                        )
+                    )
+            }
+        }
+        audioEffectController.updateAudioSessionId(currentPlayer.audioSessionId)
 
 //        settingsRepository.observe().onEach {
 //            switchPlayer(exoPlayer, buildExoPlayer(!it.ignoreAudioFocus))
@@ -115,12 +147,13 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         super.onDestroy()
         ioScope.coroutineContext.cancelChildren()
 
+        audioEffectController.release()
+
         exoPlayer.release()
         castPlayer.release()
         mediaSession.release()
         // TODO: Make [mediaSession] nullable and set to null?
     }
-
 
     private inner class MediaLibrarySessionCallback : MediaLibrarySession.Callback {
         override fun onConnect(
@@ -137,6 +170,8 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     currentPlayer.playWhenReady
                 )
             )
+
+            mediaSession.dispatchMediaEvent(AudioSessionIdChangedEvent(currentPlayer.audioSessionId))
         }
 
         override fun onGetLibraryRoot(
@@ -204,8 +239,62 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
      ********** [Player.Listener]
      *************************************************************************/
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        val playback = mediaItem?.mediaMetadata?.playback ?: return
+
+        // TODO: Update equalizer
+        when (playback) {
+            is CustomizedSong -> {
+                if (playback.bassBoostEnabled) {
+                    audioEffectController.bassEnabled = true
+                    audioEffectController.bass = playback.bassBoost
+                }
+
+                if (playback.virtualizerEnabled) {
+                    audioEffectController.virtualizerEnabled = true
+                    audioEffectController.virtualizerStrength = playback.virtualizerStrength
+                }
+
+                audioEffectController.playbackParams =
+                    playback.playbackParameters ?: PlaybackParameters(
+                        speed = 1f,
+                        pitch = 1f,
+                        volume = 1f
+                    )
+
+                if (playback.equalizerEnabled) {
+                    audioEffectController.equalizerEnabled = true
+
+                    playback.equalizerBands?.forEach { equalizerBand ->
+                        // TODO: Do we need all this information to differentiate different bands?
+                        audioEffectController.getBandIndex(
+                            equalizerBand.lowerBandFrequency,
+                            equalizerBand.upperBandFrequency,
+                            equalizerBand.centerFrequency
+                        )?.let { band ->
+                            audioEffectController.setBandLevel(band, equalizerBand.level)
+                        }
+                    }
+                }
+
+                if (playback.reverbEnabled) {
+                    audioEffectController.reverbEnabled = true
+                    audioEffectController.reverb = playback.reverb
+                }
+            }
+            else -> {
+                audioEffectController.bass = null
+                audioEffectController.virtualizerStrength = null
+                audioEffectController.playbackParams = PlaybackParameters(
+                    speed = 1f,
+                    pitch = 1f,
+                    volume = 1f
+                )
+                audioEffectController.reverb = null
+                audioEffectController.equalizerEnabled = false
+            }
+        }
+
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
-            val playback = mediaItem?.mediaMetadata?.playback ?: return
             ioScope.launch {
                 addNewPlaybackToHistory(playback)
             }

@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
@@ -75,15 +76,16 @@ object LibraryScreen :
                             bottom = Theme.padding.extraSmall
                         ), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-
                     FilterItem(R.string.songs, playbackType is PlaybackType.Song) {
                         viewModel.onFilterSongs()
                     }
 
-                    FilterItem(R.string.loops, playbackType is PlaybackType.Loop) {
-                        viewModel.onFilterLoops()
+                    Spacer(modifier = Modifier.width(8.dp))
+                    FilterItem(R.string.customized_songs, playbackType is PlaybackType.CustomizedSong) {
+                        viewModel.onFilterCustomizedSongs()
                     }
 
+                    Spacer(modifier = Modifier.width(8.dp))
                     FilterItem(R.string.playlists, playbackType is PlaybackType.Playlist) {
                         viewModel.onFilterPlaylists()
                     }

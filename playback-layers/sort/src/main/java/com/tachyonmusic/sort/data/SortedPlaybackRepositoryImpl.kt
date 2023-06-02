@@ -1,6 +1,6 @@
 package com.tachyonmusic.sort.data
 
-import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.permission.domain.PermissionMapperRepository
@@ -30,9 +30,9 @@ class SortedPlaybackRepositoryImpl(
             transformSongs(songs, sortPrefs)
         }
 
-    override val loopFlow =
-        combine(permissionRepository.loopFlow, sortingPreferences) { loops, sortPrefs ->
-            transformLoops(loops, sortPrefs)
+    override val customizedSongFlow =
+        combine(permissionRepository.customizedSongFlow, sortingPreferences) { customizedSongs, sortPrefs ->
+            transformCustomizedSongs(customizedSongs, sortPrefs)
         }
 
     override val playlistFlow =
@@ -50,8 +50,8 @@ class SortedPlaybackRepositoryImpl(
     override suspend fun getSongs() =
         transformSongs(permissionRepository.getSongs(), sortingPreferences.value)
 
-    override suspend fun getLoops() =
-        transformLoops(permissionRepository.getLoops(), sortingPreferences.value)
+    override suspend fun getCustomizedSongs() =
+        transformCustomizedSongs(permissionRepository.getCustomizedSongs(), sortingPreferences.value)
 
     override suspend fun getPlaylists() =
         transformPlaylists(permissionRepository.getPlaylists(), sortingPreferences.value)
@@ -63,8 +63,8 @@ class SortedPlaybackRepositoryImpl(
         return songs.sortedBy(sortPrefs)
     }
 
-    private fun transformLoops(loops: List<Loop>, sortPrefs: SortingPreferences): List<Loop> {
-        return loops.sortedBy(sortPrefs)
+    private fun transformCustomizedSongs(customizedSongs: List<CustomizedSong>, sortPrefs: SortingPreferences): List<CustomizedSong> {
+        return customizedSongs.sortedBy(sortPrefs)
     }
 
     private fun transformPlaylists(

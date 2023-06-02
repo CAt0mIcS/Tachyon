@@ -18,6 +18,9 @@ data class TimingDataController(
         get() = currentTimingData()
 
 
+    fun coversDuration(start: Duration, end: Duration) =
+        timingData.find { it.startTime == start && it.endTime == end } != null
+
     fun advanceToCurrentPosition(position: Duration) {
         currentIndex = getIndexOfCurrentPosition(position)
     }

@@ -6,6 +6,7 @@ import com.tachyonmusic.database.domain.model.DataEntity
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class RoomDataRepository(
     private val dao: DataDao
@@ -17,7 +18,9 @@ class RoomDataRepository(
         return data
     }
 
-    override fun observe(): Flow<DataEntity> = dao.observe()
+    override fun observe(): Flow<DataEntity> = dao.observe().map {
+        it ?: DataEntity()
+    }
 
     override suspend fun update(
         recentlyPlayed: RecentlyPlayed?,

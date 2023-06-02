@@ -69,7 +69,7 @@ private fun Playback.getComparedString(type: SortType) = when (this) {
         }
     }
 
-    is Loop -> {
+    is CustomizedSong -> {
         when (type) {
             SortType.AlphabeticalTitle -> name + title + artist
             SortType.AlphabeticalArtist -> artist + name + title

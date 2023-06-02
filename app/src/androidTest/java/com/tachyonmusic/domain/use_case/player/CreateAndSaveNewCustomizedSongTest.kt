@@ -1,13 +1,13 @@
 package com.tachyonmusic.domain.use_case.player
 
 import com.tachyonmusic.core.data.playback.LocalSongImpl
-import com.tachyonmusic.core.data.playback.RemoteLoopImpl
+import com.tachyonmusic.core.data.playback.LocalCustomizedSongImpl
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.database.domain.model.LoopEntity
-import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.model.CustomizedSongEntity
+import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
@@ -32,7 +32,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
-internal class CreateAndSaveNewLoopTest {
+internal class CreateAndSaveNewCustomizedSongTest {
     @get:Rule
     val hiltRule = HiltAndroidRule(this)
 
@@ -40,7 +40,7 @@ internal class CreateAndSaveNewLoopTest {
     lateinit var songRepository: SongRepository
 
     @Inject
-    lateinit var loopRepository: LoopRepository
+    lateinit var customizedSongRepository: CustomizedSongRepository
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
@@ -51,9 +51,9 @@ internal class CreateAndSaveNewLoopTest {
     private lateinit var updateSongDatabase: UpdateSongDatabase
 
     private lateinit var browser: MediaBrowserController
-    val name = "TestLoop"
+    val name = "TestCustomizedSong"
 
-    private lateinit var createAndSaveNewLoop: CreateAndSaveNewLoop
+    private lateinit var createAndSaveNewCustomizedSong: CreateAndSaveNewCustomizedSong
 
     @Before
     fun setUp() {
@@ -87,9 +87,9 @@ internal class CreateAndSaveNewLoopTest {
             updateSongDatabase()
         }
 
-        createAndSaveNewLoop = CreateAndSaveNewLoop(
+        createAndSaveNewCustomizedSong = CreateAndSaveNewCustomizedSong(
             songRepository,
-            loopRepository,
+            customizedSongRepository,
             browser
         )
 
@@ -97,7 +97,7 @@ internal class CreateAndSaveNewLoopTest {
 
     @Test
     fun nullPlaybackReturnsError() = runTest {
-        assert(createAndSaveNewLoop(name) is Resource.Error)
+        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
     }
 
     @Test
@@ -109,16 +109,16 @@ internal class CreateAndSaveNewLoopTest {
             10000.ms
         )
 
-        assert(createAndSaveNewLoop(name) is Resource.Error)
+        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
 
         every { browser.timingData } returns TimingDataController()
-        assert(createAndSaveNewLoop(name) is Resource.Error)
+        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
 
         every { browser.duration } returns 10000.ms
         every { browser.timingData } returns TimingDataController(
             listOf(TimingData(0.ms, 10000.ms))
         )
-        assert(createAndSaveNewLoop(name) is Resource.Error)
+        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
 
         every { browser.duration } returns 10000.ms
         every { browser.timingData } returns TimingDataController(
@@ -127,7 +127,7 @@ internal class CreateAndSaveNewLoopTest {
                 TimingData(0.ms, 10000.ms)
             )
         )
-        assert(createAndSaveNewLoop(name) is Resource.Error)
+        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
     }
 
     @Test
@@ -142,7 +142,7 @@ internal class CreateAndSaveNewLoopTest {
                     TimingData(32.ms, 5634.ms)
                 )
             )
-            assert(createAndSaveNewLoop(name) is Resource.Success)
+            assert(createAndSaveNewCustomizedSong(name) is Resource.Success)
         }
 
     @Test
@@ -153,11 +153,11 @@ internal class CreateAndSaveNewLoopTest {
             "Artist",
             10000.ms
         )
-        assert(createAndSaveNewLoop(name) is Resource.Error)
+        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
     }
 
     @Test
-    fun correctSongReturnsCorrectLoop() = runTest {
+    fun correctSongReturnsCorrectCustomizedSong() = runTest {
         every { browser.playback } returns getSong()
         every { browser.timingData } returns TimingDataController(
             listOf(
@@ -166,13 +166,13 @@ internal class CreateAndSaveNewLoopTest {
             )
         )
 
-        val loopRes = createAndSaveNewLoop(name)
-        checkLoopResource(loopRes)
+        val customizedSongRes = createAndSaveNewCustomizedSong(name)
+        checkCustomizedSongResource(customizedSongRes)
     }
 
     @Test
-    fun correctLoopReturnsCorrectLoop() = runTest {
-        every { browser.playback } returns getLoop()
+    fun correctCustomizedSongReturnsCorrectCustomizedSong() = runTest {
+        every { browser.playback } returns getCustomizedSong()
         every { browser.timingData } returns TimingDataController(
             listOf(
                 TimingData(0.ms, 323.ms),
@@ -180,24 +180,24 @@ internal class CreateAndSaveNewLoopTest {
             )
         )
 
-        val loopRes = createAndSaveNewLoop(name)
-        checkLoopResource(loopRes)
-        val loop = loopRes.data!!
-        assert(loop.mediaId == MediaId.ofRemoteLoop(name, getSong().mediaId))
+        val customizedSongRes = createAndSaveNewCustomizedSong(name)
+        checkCustomizedSongResource(customizedSongRes)
+        val customizedSong = customizedSongRes.data!!
+        assert(customizedSong.mediaId == MediaId.ofLocalCustomizedSong(name, getSong().mediaId))
     }
 
 
-    private fun checkLoopResource(loopRes: Resource<LoopEntity>) {
-        assert(loopRes is Resource.Success)
-        assert(loopRes.data != null)
+    private fun checkCustomizedSongResource(customizedSongRes: Resource<CustomizedSongEntity>) {
+        assert(customizedSongRes is Resource.Success)
+        assert(customizedSongRes.data != null)
 
-        val loop = loopRes.data!!
+        val customizedSong = customizedSongRes.data!!
 
-        assert(loop.songTitle == "Title")
-        assert(loop.songArtist == "Artist")
-        assert(loop.songDuration == 10000.ms)
-        assert(loop.timingData == browser.timingData?.timingData)
-        assert(loop.currentTimingDataIndex == browser.timingData?.currentIndex)
+        assert(customizedSong.songTitle == "Title")
+        assert(customizedSong.songArtist == "Artist")
+        assert(customizedSong.songDuration == 10000.ms)
+        assert(customizedSong.timingData == browser.timingData?.timingData)
+        assert(customizedSong.currentTimingDataIndex == browser.timingData?.currentIndex)
         // TODO: Check if artwork is correct
     }
 
@@ -210,10 +210,10 @@ internal class CreateAndSaveNewLoopTest {
         ), "Title", "Artist", 10000.ms
     )
 
-    private fun getLoop(): RemoteLoopImpl {
+    private fun getCustomizedSong(): LocalCustomizedSongImpl {
         val song = getSong()
-        return RemoteLoopImpl(
-            MediaId.ofRemoteLoop(name + "2", song.mediaId),
+        return LocalCustomizedSongImpl(
+            MediaId.ofLocalCustomizedSong(name + "2", song.mediaId),
             name + "2",
             TimingDataController(listOf(TimingData(323.ms, 3233.ms))),
             song

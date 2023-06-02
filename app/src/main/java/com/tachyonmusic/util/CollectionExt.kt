@@ -16,6 +16,14 @@ fun <E> Collection<E>.indexOfOrNull(element: E): Int? {
     return if (i == -1) null else i
 }
 
+fun <E> List<E>.indexOf(pred: (E) -> Boolean): Int? {
+    for (i in indices) {
+        if (pred(this[i]))
+            return i
+    }
+    return null
+}
+
 /**
  * Wraps the index around until it gets the element.
  * So for [idx] = 3 and [List.size] = 2 it will get the element at index 1 (3 - 2)

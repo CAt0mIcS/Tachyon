@@ -2,7 +2,7 @@ package com.tachyonmusic.permission
 
 import android.content.Context
 import com.tachyonmusic.database.domain.repository.HistoryRepository
-import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.permission.data.PermissionMapperRepositoryImpl
@@ -24,14 +24,14 @@ class AppModule {
     fun providePermissionMapperRepository(
         uriPermissionRepository: UriPermissionRepository,
         songRepository: SongRepository,
-        loopRepository: LoopRepository,
+        customizedSongRepository: CustomizedSongRepository,
         playlistRepository: PlaylistRepository,
         historyRepository: HistoryRepository,
         @ApplicationContext context: Context
     ): PermissionMapperRepository = PermissionMapperRepositoryImpl(
         uriPermissionRepository,
         songRepository,
-        loopRepository,
+        customizedSongRepository,
         playlistRepository,
         historyRepository,
         context

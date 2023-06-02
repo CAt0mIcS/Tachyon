@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.app.R
-import com.tachyonmusic.core.NavigationItem
+import com.tachyonmusic.presentation.NavigationItem
 
 object RegisterScreen : NavigationItem("register") {
     @Composable

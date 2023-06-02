@@ -21,7 +21,7 @@ class CreateAndSaveNewPlaylist(
                 )
             )
 
-        if (playlistRepository.hasPlaylist(MediaId.ofRemotePlaylist(name)))
+        if (playlistRepository.hasPlaylist(MediaId.ofLocalPlaylist(name)))
             return@withContext Resource.Error(
                 UiText.StringResource(
                     R.string.invalid_name,
@@ -31,7 +31,7 @@ class CreateAndSaveNewPlaylist(
 
         playlistRepository.add(
             PlaylistEntity(
-                MediaId.ofRemotePlaylist(name),
+                MediaId.ofLocalPlaylist(name),
                 emptyList()
             )
         )

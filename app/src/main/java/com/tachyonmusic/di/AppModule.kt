@@ -25,6 +25,7 @@ import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.permission.domain.UriPermissionRepository
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
@@ -107,17 +108,23 @@ object AppUseCaseModule {
     @Singleton
     fun provideSearchStoredPlaybacksUseCase(
         songRepository: SongRepository,
-        loopRepository: LoopRepository,
+        customizedSongRepository: CustomizedSongRepository,
         playlistRepository: PlaylistRepository
-    ) = SearchStoredPlaybacks(songRepository, loopRepository, playlistRepository)
+    ) = SearchStoredPlaybacks(songRepository, customizedSongRepository, playlistRepository)
 
     @Provides
     @Singleton
-    fun provideCreateNewLoopUseCase(
+    fun provideCreateNewCustomizedSongUseCase(
         songRepository: SongRepository,
-        loopRepository: LoopRepository,
-        browser: MediaBrowserController
-    ) = CreateAndSaveNewLoop(songRepository, loopRepository, browser)
+        customizedSongRepository: CustomizedSongRepository,
+        browser: MediaBrowserController,
+        audioEffectController: AudioEffectController
+    ) = CreateAndSaveNewCustomizedSong(
+        songRepository,
+        customizedSongRepository,
+        browser,
+        audioEffectController
+    )
 
     @Provides
     @Singleton
@@ -169,14 +176,14 @@ object AppUseCaseModule {
         settingsRepository: SettingsRepository,
         songRepository: SongRepository,
         historyRepository: HistoryRepository,
-        loopRepository: LoopRepository,
+        customizedSongRepository: CustomizedSongRepository,
         playbackRepository: PlaybackRepository,
         playlistRepository: PlaylistRepository
     ) = AddSongToExcludedSongs(
         settingsRepository,
         songRepository,
         historyRepository,
-        loopRepository,
+        customizedSongRepository,
         playbackRepository,
         playlistRepository
     )
@@ -184,11 +191,16 @@ object AppUseCaseModule {
     @Provides
     @Singleton
     fun provideDeletePlaybackUseCase(
-        loopRepository: LoopRepository,
+        customizedSongRepository: CustomizedSongRepository,
         playlistRepository: PlaylistRepository,
         playbackRepository: PlaybackRepository,
         historyRepository: HistoryRepository
-    ) = DeletePlayback(loopRepository, playlistRepository, playbackRepository, historyRepository)
+    ) = DeletePlayback(
+        customizedSongRepository,
+        playlistRepository,
+        playbackRepository,
+        historyRepository
+    )
 
 
     @Provides
@@ -205,7 +217,12 @@ object AppUseCaseModule {
         getPlaylistForPlayback: GetPlaylistForPlayback,
         addNewPlaybackToHistory: AddNewPlaybackToHistory,
         logger: Logger
-    ) = PlayPlayback(browser, getPlaylistForPlayback, addNewPlaybackToHistory, logger)
+    ) = PlayPlayback(
+        browser,
+        getPlaylistForPlayback,
+        addNewPlaybackToHistory,
+        logger
+    )
 
     @Provides
     @Singleton
@@ -255,9 +272,14 @@ object AppRepositoryModule {
     @Singleton
     fun provideMediaBrowserController(
         getPlaylistForPlayback: GetPlaylistForPlayback,
+        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
         logger: Logger
     ): MediaBrowserController =
-        MediaPlaybackServiceMediaBrowserController(getPlaylistForPlayback, logger)
+        MediaPlaybackServiceMediaBrowserController(
+            getPlaylistForPlayback,
+            predefinedPlaylistsRepository,
+            logger
+        )
 
     @Provides
     @Singleton

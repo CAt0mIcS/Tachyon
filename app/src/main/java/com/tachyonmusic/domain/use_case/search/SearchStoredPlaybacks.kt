@@ -1,7 +1,7 @@
 package com.tachyonmusic.domain.use_case.search
 
 import com.tachyonmusic.app.R
-import com.tachyonmusic.database.domain.repository.LoopRepository
+import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.util.Resource
@@ -14,7 +14,7 @@ import java.util.*
  */
 class SearchStoredPlaybacks(
     private val songRepository: SongRepository,
-    private val loopRepository: LoopRepository,
+    private val customizedSongRepository: CustomizedSongRepository,
     private val playlistRepository: PlaylistRepository
 ) {
     operator fun invoke(query: String?) = flow {
@@ -32,7 +32,7 @@ class SearchStoredPlaybacks(
 
         // TODO: Optimize
         val playbackNames =
-            (songRepository.getSongs() + loopRepository.getLoops()).map { it.title } + playlistRepository.getPlaylists()
+            (songRepository.getSongs() + customizedSongRepository.getCustomizedSongs()).map { it.title } + playlistRepository.getPlaylists()
                 .map { it.name }
 
         // TODO: Better string searches?

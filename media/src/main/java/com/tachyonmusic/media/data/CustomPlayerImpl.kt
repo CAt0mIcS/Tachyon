@@ -2,10 +2,7 @@ package com.tachyonmusic.media.data
 
 import android.os.Looper
 import androidx.media3.cast.CastPlayer
-import androidx.media3.common.C
-import androidx.media3.common.ForwardingPlayer
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
+import androidx.media3.common.*
 import androidx.media3.common.util.Clock
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
@@ -26,7 +23,7 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
     CustomPlayer,
     Player.Listener,
     IListenable<CustomPlayer.Listener> by Listenable() {
-    private var loopMessage: PlayerMessage? = null
+    private var customizedSongMessage: PlayerMessage? = null
 
     private val castPlayerMessageSender = CastPlayerMessageSender()
 
@@ -55,6 +52,17 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
     override val mediaItems: List<MediaItem>
         get() = List(mediaItemCount) {
             getMediaItemAt(it)
+        }
+
+    override var audioSessionId: Int
+        get() = if (wrappedPlayer is ExoPlayer) (wrappedPlayer as ExoPlayer).audioSessionId else TODO(
+            "audioSessionId not valid on another player yet"
+        )
+        set(value) {
+            if (wrappedPlayer is ExoPlayer) (wrappedPlayer as ExoPlayer).audioSessionId =
+                value else TODO(
+                "audioSessionId not valid on another player yet"
+            )
         }
 
     fun createMessage(target: PlayerMessage.Target) =
@@ -144,13 +152,13 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
     }
 
     override fun updateTimingData(newTimingData: TimingDataController) {
-        if (newTimingData.size == 0) {
-            currentMediaItem?.mediaMetadata?.timingData = newTimingData
+        if(newTimingData.size == 0 || newTimingData.size == 1 && newTimingData.coversDuration(0.ms, duration.ms)) {
+            currentMediaItem?.mediaMetadata?.timingData = null
             return
         }
 
         newTimingData.advanceToCurrentPosition(currentPosition.ms)
-        postLoopMessage(
+        postCustomizedSongMessage(
             newTimingData.next.startTime,
             newTimingData.current.endTime
         )
@@ -162,11 +170,18 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
         invokeEvent { it.onTimingDataUpdated(newTimingData) }
     }
 
-    private fun postLoopMessage(startTime: Duration, endTime: Duration) {
-        // Cancel any previous messages
-        loopMessage?.cancel()
+    override fun setAuxEffectInfo(info: AuxEffectInfo) {
+        if (wrappedPlayer is ExoPlayer)
+            (wrappedPlayer as ExoPlayer).setAuxEffectInfo(info)
+        else
+            TODO("Cannot set aux effect info in another player yet")
+    }
 
-        loopMessage = createMessage { _, payload ->
+    private fun postCustomizedSongMessage(startTime: Duration, endTime: Duration) {
+        // Cancel any previous messages
+        customizedSongMessage?.cancel()
+
+        customizedSongMessage = createMessage { _, payload ->
             seekWithoutCallback(payload as Long)
             val timingData = currentMediaItem?.mediaMetadata?.timingData
             if (timingData != null) {
@@ -178,7 +193,7 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
 
                 timingData.advanceToNext()
                 invokeEvent { it.onTimingDataUpdated(timingData) }
-                postLoopMessage(timingData.next.startTime, timingData.current.endTime)
+                postCustomizedSongMessage(timingData.next.startTime, timingData.current.endTime)
                 log.debug(
                     "The next timing data will be loaded at ${timingData.current.endTime} and will seek to ${timingData.next.startTime}"
                 )

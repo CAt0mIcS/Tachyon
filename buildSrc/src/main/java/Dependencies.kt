@@ -94,6 +94,10 @@ object Dependency {
         const val EXOPLAYER = "androidx.media3:media3-exoplayer:${Version.MEDIA3}"
         const val MEDIA_SESSION = "androidx.media3:media3-session:${Version.MEDIA3}"
         const val CAST = "androidx.media3:media3-cast:${Version.MEDIA3}"
+        const val EXTRACTOR = "androidx.media3:media3-extractor:${Version.MEDIA3}"
+        const val TRANSFORMER = "androidx.media3:media3-transformer:${Version.MEDIA3}"
+        const val COMMON = "androidx.media3:media3-common:${Version.MEDIA3}"
+        const val EFFECT = "androidx.media3:media3-effect:${Version.MEDIA3}"
     }
 
     object Room {
@@ -285,6 +289,10 @@ fun DependencyHandler.media3() {
     implementation(Dependency.Media3.EXOPLAYER)
     implementation(Dependency.Media3.MEDIA_SESSION)
     implementation(Dependency.Media3.CAST)
+    implementation(Dependency.Media3.EXTRACTOR)
+    implementation(Dependency.Media3.TRANSFORMER)
+    implementation(Dependency.Media3.COMMON)
+    implementation(Dependency.Media3.EFFECT)
 }
 
 fun DependencyHandler.implementation(depName: String) {

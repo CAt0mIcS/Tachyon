@@ -12,5 +12,5 @@ class PlaylistEntity(
 ) : PlaybackEntity(mediaId) {
 
     val name: String
-        get() = mediaId.source.replace(PlaybackType.Playlist.Remote().toString(), "")
+        get() = mediaId.source.replace(PlaybackType.Playlist.Local().toString(), "")
 }

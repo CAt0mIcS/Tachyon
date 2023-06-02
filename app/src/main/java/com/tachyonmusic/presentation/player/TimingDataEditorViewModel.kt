@@ -10,7 +10,7 @@ import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.isNullOrEmpty
 import com.tachyonmusic.domain.use_case.GetRepositoryStates
-import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewLoop
+import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewCustomizedSong
 import com.tachyonmusic.domain.use_case.player.SetTimingData
 import com.tachyonmusic.presentation.util.update
 import com.tachyonmusic.util.Duration
@@ -24,20 +24,20 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class LoopEditorViewModel @Inject constructor(
+class TimingDataEditorViewModel @Inject constructor(
     getRepositoryStates: GetRepositoryStates,
     private val setTimingData: SetTimingData,
-    private val createAndSaveNewLoop: CreateAndSaveNewLoop,
+    private val createAndSaveNewCustomizedSong: CreateAndSaveNewCustomizedSong,
 ) : ViewModel() {
-    private val _loopError = MutableStateFlow<UiText?>(null)
-    val loopError = _loopError.asStateFlow()
+    private val _customizedSongError = MutableStateFlow<UiText?>(null)
+    val customizedSongError = _customizedSongError.asStateFlow()
 
     val duration = getRepositoryStates.playback().map {
         it?.duration ?: Long.MAX_VALUE.ms
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
     val timingData = mutableStateListOf<TimingData>()
-    var currentIndex by mutableStateOf<Int>(0)
+    var currentIndex by mutableStateOf(0)
         private set
 
     init {
@@ -88,13 +88,13 @@ class LoopEditorViewModel @Inject constructor(
         )
     }
 
-    fun saveNewLoop(name: String) {
+    fun saveNewCustomizedSong(name: String) {
         viewModelScope.launch {
-            val res = createAndSaveNewLoop(name)
+            val res = createAndSaveNewCustomizedSong(name)
             if (res is Resource.Success)
-                _loopError.value = null
+                _customizedSongError.value = null
             else
-                _loopError.value = res.message
+                _customizedSongError.value = res.message
         }
     }
 }

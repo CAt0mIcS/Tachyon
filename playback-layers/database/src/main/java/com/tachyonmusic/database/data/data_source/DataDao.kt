@@ -22,7 +22,7 @@ interface DataDao {
     suspend fun setData(data: DataEntity)
 
     @Query("SELECT * FROM DataEntity ORDER BY ROWID ASC LIMIT 1")
-    fun observe(): Flow<DataEntity>
+    fun observe(): Flow<DataEntity?>
 
     @Query(
         "UPDATE DataEntity SET " +
