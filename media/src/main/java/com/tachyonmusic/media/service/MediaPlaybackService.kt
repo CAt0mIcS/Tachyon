@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.data.RemoteArtwork
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.database.domain.repository.DataRepository
@@ -47,8 +48,10 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     private lateinit var exoPlayer: CustomPlayer
     private lateinit var currentPlayer: CustomPlayer
 
-    @Inject
-    lateinit var castPlayer: CustomPlayer
+    // TODO: Can't inject nullable
+//    @Inject
+//    @Nullable
+    var castPlayer: CustomPlayer? = null
 
     @Inject
     lateinit var browserTree: BrowserTree
@@ -115,7 +118,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         setMediaNotificationProvider(MediaNotificationProvider(this))
 
         exoPlayer.addListener(this)
-        castPlayer.addListener(this)
+        castPlayer?.addListener(this)
 
         mediaSession =
             MediaLibrarySession.Builder(this, exoPlayer, MediaLibrarySessionCallback()).build()
@@ -150,7 +153,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         audioEffectController.release()
 
         exoPlayer.release()
-        castPlayer.release()
+        castPlayer?.release()
         mediaSession.release()
         // TODO: Make [mediaSession] nullable and set to null?
     }
@@ -178,8 +181,34 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             session: MediaLibrarySession,
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?
-        ): ListenableFuture<LibraryResult<MediaItem>> =
-            Futures.immediateFuture(LibraryResult.ofItem(browserTree.root, null))
+        ): ListenableFuture<LibraryResult<MediaItem>> {
+            val maximumRootChildLimit = params?.extras?.getInt(
+                MediaConstants.EXTRAS_KEY_ROOT_CHILDREN_LIMIT, 4
+            ) ?: 4
+            browserTree.maximumRootChildLimit = maximumRootChildLimit
+
+            /**
+             * Define app globals how media is displayed in Android Auto
+             */
+//            val extras = LibraryParams.Builder().apply {
+//                setExtras(Bundle().apply {
+//                    putInt(
+//                        MediaConstants.EXTRAS_KEY_CONTENT_STYLE_BROWSABLE,
+//                        MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM
+//                    )
+//                    putInt(
+//                        MediaConstants.EXTRAS_KEY_CONTENT_STYLE_PLAYABLE,
+//                        MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_LIST_ITEM
+//                    )
+//                })
+//
+//                setOffline(true)
+//                setSuggested(true)
+//                setRecent(false)
+//            }.build()
+
+            return Futures.immediateFuture(LibraryResult.ofItem(browserTree.root, null))
+        }
 
         override fun onGetChildren(
             session: MediaLibrarySession,
@@ -222,6 +251,41 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             }
         }
 
+        override fun onSetMediaItems(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            mediaItems: MutableList<MediaItem>,
+            startIndex: Int,
+            startPositionMs: Long
+        ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+            currentPlayer.stop()
+            currentPlayer.setMediaItems(mediaItems.map {
+                it.buildUpon().setUri(MediaId.deserialize(it.mediaId).uri).build()
+            })
+            currentPlayer.prepare()
+
+            return Futures.immediateFuture(
+                MediaSession.MediaItemsWithStartPosition(
+                    mediaItems, startIndex, startPositionMs
+                )
+            )
+        }
+
+//        override fun onPlayerCommandRequest(
+//            session: MediaSession,
+//            controller: MediaSession.ControllerInfo,
+//            playerCommand: Int
+//        ): Int {
+//            when(playerCommand) {
+//                Player.COMMAND_SET_MEDIA_ITEM -> onPrepare()
+//            }
+//
+//            return SessionResult.RESULT_SUCCESS
+//        }
+
+        private fun onPrepare() {
+
+        }
 
         private fun handleSetRepeatModeEvent(event: SetRepeatModeEvent): SessionResult {
             currentPlayer.coreRepeatMode = event.repeatMode

@@ -49,7 +49,7 @@ abstract class AbstractPlaylist(
     }.build()
 
     private fun toMediaMetadata() = MediaMetadata.Builder().apply {
-        setFolderType(MediaMetadata.FOLDER_TYPE_MIXED)
+        setFolderType(MediaMetadata.FOLDER_TYPE_TITLES)
         setIsPlayable(true)
         setExtras(Bundle().apply {
             putString(MetadataKeys.Name, name)
