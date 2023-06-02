@@ -1,10 +1,7 @@
 package com.tachyonmusic.media.service
 
 import android.os.Bundle
-import androidx.media3.common.AudioAttributes
-import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
+import androidx.media3.common.*
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.session.*
@@ -90,11 +87,23 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
         audioEffectController.controller = object : AudioEffectController.PlaybackController {
             override fun onNewPlaybackParameters(params: PlaybackParameters) {
-                currentPlayer.playbackParameters = androidx.media3.common.PlaybackParameters(
+                currentPlayer.playbackParameters = PlaybackParameters(
                     params.speed,
                     params.pitch
                 )
                 currentPlayer.volume = params.volume
+            }
+
+            override fun onReverbToggled(enabled: Boolean, effectId: Int) {
+                if (enabled)
+                    currentPlayer.setAuxEffectInfo(AuxEffectInfo(effectId, 1F))
+                else
+                    currentPlayer.setAuxEffectInfo(
+                        AuxEffectInfo(
+                            AuxEffectInfo.NO_AUX_EFFECT_ID,
+                            0F
+                        )
+                    )
             }
         }
         audioEffectController.updateAudioSessionId(currentPlayer.audioSessionId)

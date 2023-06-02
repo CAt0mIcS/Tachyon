@@ -41,6 +41,7 @@ interface AudioEffectController {
     fun release()
 
     interface PlaybackController {
-        fun onNewPlaybackParameters(params: PlaybackParameters)
+        fun onNewPlaybackParameters(params: PlaybackParameters) {}
+        fun onReverbToggled(enabled: Boolean, effectId: Int) {}
     }
 }

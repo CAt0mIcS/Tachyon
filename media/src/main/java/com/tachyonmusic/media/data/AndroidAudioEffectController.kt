@@ -69,6 +69,7 @@ class AndroidAudioEffectController : AudioEffectController {
         get() = environmentalReverb?.enabled == true && environmentalReverb?.hasControl() == true
         set(value) {
             environmentalReverb?.enabled = value
+            controller?.onReverbToggled(value, environmentalReverb?.id ?: return)
         }
 
     override var volumeEnhancerEnabled: Boolean
@@ -198,7 +199,7 @@ class AndroidAudioEffectController : AudioEffectController {
         equalizer = Equalizer(Int.MAX_VALUE, audioSessionId)
         virtualizer = Virtualizer(Int.MAX_VALUE, audioSessionId)
         bassBoost = BassBoost(Int.MAX_VALUE, audioSessionId)
-        environmentalReverb = EnvironmentalReverb(Int.MAX_VALUE, audioSessionId)
+        environmentalReverb = EnvironmentalReverb(0, 0)
         volumeEnhancer = LoudnessEnhancer(audioSessionId)
     }
 
