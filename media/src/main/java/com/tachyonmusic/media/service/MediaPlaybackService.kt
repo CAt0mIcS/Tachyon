@@ -26,9 +26,7 @@ import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.R
 import com.tachyonmusic.media.core.*
-import com.tachyonmusic.media.data.BrowserTree
-import com.tachyonmusic.media.data.CustomPlayerImpl
-import com.tachyonmusic.media.data.MediaNotificationProvider
+import com.tachyonmusic.media.data.*
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
@@ -88,7 +86,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     private val castPlayer: CastPlayer? by lazy {
         try {
             val castContext = CastContext.getSharedInstance(this)
-            CastPlayer(castContext).apply {
+            CastPlayer(castContext, CastMediaItemConverter()).apply {
                 setSessionAvailabilityListener(CastSessionAvailabilityListener())
                 addListener(this@MediaPlaybackService)
             }

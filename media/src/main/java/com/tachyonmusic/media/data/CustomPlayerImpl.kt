@@ -49,11 +49,6 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ReplaceableFor
                 (command == Player.COMMAND_SEEK_TO_PREVIOUS && !isPlayingAd && mediaItemCount > 1)
     }
 
-    override val mediaItems: List<MediaItem>
-        get() = List(mediaItemCount) {
-            getMediaItemAt(it)
-        }
-
     override var audioSessionId: Int
         get() = if (player is ExoPlayer) (player as ExoPlayer).audioSessionId else 0
         set(value) {

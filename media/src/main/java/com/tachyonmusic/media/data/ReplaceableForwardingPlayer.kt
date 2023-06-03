@@ -9,9 +9,10 @@ import androidx.media3.common.*
 import androidx.media3.common.Player.*
 import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.Size
+import com.tachyonmusic.media.domain.CustomPlayer
 import java.lang.Integer.min
 
-open class ReplaceableForwardingPlayer(player: Player) : Player {
+abstract class ReplaceableForwardingPlayer(player: Player) : CustomPlayer {
     protected var player: Player
         private set
 
@@ -27,7 +28,7 @@ open class ReplaceableForwardingPlayer(player: Player) : Player {
     }
 
     /** Sets a new [Player] instance to which the state of the previous player is transferred. */
-    fun setPlayer(player: Player) {
+    override fun setPlayer(player: Player) {
         // Remove add all listeners before changing the player state.
         for (listener in listeners) {
             this.player.removeListener(listener)
@@ -46,7 +47,11 @@ open class ReplaceableForwardingPlayer(player: Player) : Player {
         player.playWhenReady = this.player.playWhenReady
 
         // Prepare the new player.
-        player.setMediaItems(playlist, currentMediaItemIndex, this.player.contentPosition)
+        player.setMediaItems(
+            this.player.mediaItems,
+            currentMediaItemIndex,
+            this.player.contentPosition
+        )
         player.prepare()
 
         // Stop the previous player. Don't release so it can be used again.
@@ -774,3 +779,9 @@ open class ReplaceableForwardingPlayer(player: Player) : Player {
         }
     }
 }
+
+
+val Player.mediaItems: List<MediaItem>
+    get() = List(mediaItemCount) {
+        getMediaItemAt(it)
+    }
