@@ -77,7 +77,7 @@ abstract class AbstractCustomizedSong(
             is RemoteArtwork -> setArtworkUri(Uri.parse(artworkVal.uri.toURL().toString()))
         }
 
-        setTitle(title)
+        setTitle("$name - $title")
         setArtist(artist)
         setExtras(Bundle().apply {
             putLong(MetadataKeys.Duration, duration.inWholeMilliseconds)

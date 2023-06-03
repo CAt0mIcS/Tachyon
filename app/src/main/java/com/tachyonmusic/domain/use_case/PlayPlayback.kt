@@ -67,7 +67,7 @@ class PlayPlayback(
 
             is Playlist -> {
                 log.info("Setting playlist to ${playback.mediaId}")
-                browser.setPlaylist(playback)
+                browser.setMediaItems(playback, position)
                 browser.prepare()
                 browser.seekTo(playback.currentPlaylistIndex, position)
 

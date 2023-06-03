@@ -77,7 +77,7 @@ class MediaPlaybackServiceMediaBrowserController(
                 log.info("Updating player with new predefined song playlist during playback")
                 val prevPosition = currentPosition
                 val prevPb = currentPlayback.value ?: return@onEach
-                setPlaylist(getPlaylistForPlayback(prevPb) ?: return@onEach)
+                setMediaItems(getPlaylistForPlayback(prevPb) ?: return@onEach)
                 seekTo(prevPb.mediaId, prevPosition)
             }
         }.launchIn(owner.lifecycleScope)
@@ -87,7 +87,7 @@ class MediaPlaybackServiceMediaBrowserController(
                 log.info("Updating player with new predefined customized song playlist during playback")
                 val prevPosition = currentPosition
                 val prevPb = currentPlayback.value ?: return@onEach
-                setPlaylist(getPlaylistForPlayback(prevPb) ?: return@onEach)
+                setMediaItems(getPlaylistForPlayback(prevPb) ?: return@onEach)
                 seekTo(prevPb.mediaId, prevPosition)
             }
         }.launchIn(owner.lifecycleScope)
@@ -108,8 +108,12 @@ class MediaPlaybackServiceMediaBrowserController(
     private val _isPlaying = MutableStateFlow(false)
     override val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
-    override fun setPlaylist(playlist: Playlist) {
-        browser?.setMediaItems(playlist.playbacks.toMediaItems())
+    override fun setMediaItems(playlist: Playlist, position: Duration?) {
+        browser?.setMediaItems(
+            playlist.playbacks.toMediaItems(),
+            playlist.currentPlaylistIndex,
+            position?.inWholeMilliseconds ?: 0
+        )
         _currentPlaylist.update { playlist }
     }
 

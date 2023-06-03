@@ -27,7 +27,7 @@ class RemovePlaybackFromPlaylist(
 
             runOnUiThread {
                 if(browser.currentPlaylist.value != null)
-                    browser.setPlaylist(copy) // TODO: Check if we need to re-prepare, seek to correct item, etc...
+                    browser.setMediaItems(copy) // TODO: Check if we need to re-prepare, seek to correct item, etc...
             }
         }
 

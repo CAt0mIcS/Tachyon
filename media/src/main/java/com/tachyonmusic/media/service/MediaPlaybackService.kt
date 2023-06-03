@@ -30,6 +30,7 @@ import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.media.util.*
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -55,6 +56,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     lateinit var browserTree: BrowserTree
+
+    @Inject
+    lateinit var playbackRepository: PlaybackRepository
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
@@ -260,25 +264,65 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             mediaItems: MutableList<MediaItem>,
             startIndex: Int,
             startPositionMs: Long
-        ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> = future(Dispatchers.IO) {
-            val playlist =
-                getPlaylistForPlayback(MediaId.deserializeIfValid(mediaItems.firstOrNull()?.mediaId))
-                    ?: return@future MediaSession.MediaItemsWithStartPosition(
+        ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+            return if (mediaItems.size == 1 && startIndex == C.INDEX_UNSET) {
+                future(Dispatchers.IO) {
+                    val mediaId = MediaId.deserializeIfValid(mediaItems.first().mediaId)
+                    val playlist = if (mediaId?.isLocalPlaylist == true) {
+                        playbackRepository.getPlaylists().find { it.mediaId == mediaId }
+                    } else {
+                        getPlaylistForPlayback(mediaId)
+                    } ?: return@future MediaSession.MediaItemsWithStartPosition(
                         mediaItems,
                         startIndex,
                         startPositionMs
                     )
+                    
+                    val playlistMediaItems = playlist.playbacks.toMediaItems()
+                    runOnUiThread {
+                        currentPlayer.setMediaItems(playlistMediaItems)
+                        currentPlayer.prepare()
+                    }
 
-            val playlistMediaItems = playlist.playbacks.toMediaItems()
-            runOnUiThread {
-                currentPlayer.setMediaItems(playlistMediaItems)
-                currentPlayer.prepare()
-            }
+                    MediaSession.MediaItemsWithStartPosition(
+                        playlistMediaItems, playlist.currentPlaylistIndex, startPositionMs
+                    )
+                }
 
-            MediaSession.MediaItemsWithStartPosition(
-                playlistMediaItems, playlist.currentPlaylistIndex, startPositionMs
-            )
+            } else
+                super.onSetMediaItems(
+                    mediaSession,
+                    controller,
+                    mediaItems,
+                    startIndex,
+                    startPositionMs
+                )
         }
+
+
+//        = future(Dispatchers.IO) {
+//            if (mediaItems.size == 1 && startIndex == C.INDEX_UNSET) {
+//                val playlist =
+//                    getPlaylistForPlayback(MediaId.deserializeIfValid(mediaItems.first().mediaId))
+//                        ?: return@future MediaSession.MediaItemsWithStartPosition(
+//                            mediaItems,
+//                            startIndex,
+//                            startPositionMs
+//                        )
+//
+//                return@future MediaSession.MediaItemsWithStartPosition(
+//                    playlist.playbacks.toMediaItems(), startIndex, startPositionMs
+//                )
+//            } else {
+//                return@future super.onSetMediaItems(
+//                    mediaSession,
+//                    controller,
+//                    mediaItems,
+//                    startIndex,
+//                    startPositionMs
+//                )
+//            }
+//        }
 
         private fun handleSetRepeatModeEvent(event: SetRepeatModeEvent) {
             currentPlayer.coreRepeatMode = event.repeatMode

@@ -51,6 +51,7 @@ abstract class AbstractPlaylist(
     private fun toMediaMetadata() = MediaMetadata.Builder().apply {
         setFolderType(MediaMetadata.FOLDER_TYPE_TITLES)
         setIsPlayable(true)
+        setTitle(name)
         setExtras(Bundle().apply {
             putString(MetadataKeys.Name, name)
             putParcelable(MetadataKeys.Playback, this@AbstractPlaylist)
