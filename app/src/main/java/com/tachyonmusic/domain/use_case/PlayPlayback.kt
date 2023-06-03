@@ -7,6 +7,7 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.isPredefined
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
+import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.util.Duration
 
 enum class PlaybackLocation {
@@ -66,9 +67,9 @@ class PlayPlayback(
 
             is Playlist -> {
                 log.info("Setting playlist to ${playback.mediaId}")
-                browser.setPlaylist(playback)
+                browser.setPlaylist(playback, position)
                 browser.prepare()
-                browser.seekTo(playback.currentPlaylistIndex, position)
+//                browser.seekTo(playback.currentPlaylistIndex, position)
 
                 addNewPlaybackToHistory(playback.current)
             }

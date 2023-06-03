@@ -17,14 +17,14 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
-import com.tachyonmusic.domain.use_case.GetPlaylistForPlayback
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.media.util.fromMedia
 import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.toMediaItems
+import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.predefinedCustomizedSongPlaylistMediaId
 import com.tachyonmusic.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.*
@@ -108,9 +108,14 @@ class MediaPlaybackServiceMediaBrowserController(
     private val _isPlaying = MutableStateFlow(false)
     override val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
-    override fun setPlaylist(playlist: Playlist) {
-        browser?.setMediaItems(playlist.playbacks.toMediaItems())
+    override fun setPlaylist(playlist: Playlist, position: Duration?) {
+        browser?.setMediaItems(
+            playlist.playbacks.toMediaItems(),
+            playlist.currentPlaylistIndex,
+            position?.inWholeMilliseconds ?: 0
+        )
         _currentPlaylist.update { playlist }
+        _currentPlayback.update { playlist.current }
     }
 
     override val currentPosition: Duration?

@@ -3,7 +3,7 @@ package com.tachyonmusic.domain.use_case.player
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.playback.*
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.cycle
 import com.tachyonmusic.util.indexOf

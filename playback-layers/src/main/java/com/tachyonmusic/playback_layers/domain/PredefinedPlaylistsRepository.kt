@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain.repository
+package com.tachyonmusic.playback_layers.domain
 
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import kotlinx.coroutines.flow.StateFlow

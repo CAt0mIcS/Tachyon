@@ -1,9 +1,9 @@
-package com.tachyonmusic.data.repository
+package com.tachyonmusic.playback_layers.data
 
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
-import com.tachyonmusic.domain.use_case.ObserveSettings
+import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -11,7 +11,7 @@ import kotlinx.coroutines.plus
 
 class PredefinedPlaylistsRepositoryImpl(
     playbackRepository: PlaybackRepository,
-    observeSettings: ObserveSettings,
+    settingsRepository: SettingsRepository,
     externalScope: CoroutineScope
 ) : PredefinedPlaylistsRepository {
     private val _songPlaylist = MutableStateFlow<List<SinglePlayback>>(emptyList())
@@ -24,7 +24,7 @@ class PredefinedPlaylistsRepositoryImpl(
         combine(
             playbackRepository.songFlow,
             playbackRepository.customizedSongFlow,
-            observeSettings()
+            settingsRepository.observe()
         ) { songs, customizedSongs, settings ->
             if (settings.combineDifferentPlaybackTypes) {
                 _songPlaylist.update { songs + customizedSongs }

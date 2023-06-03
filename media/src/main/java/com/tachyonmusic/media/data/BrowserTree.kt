@@ -29,6 +29,8 @@ class BrowserTree(
         const val LOOP_ROOT = ROOT + "CustomizedSong/"
     }
 
+    var maximumRootChildLimit: Int = 4
+
     val root: MediaItem
         get() = MediaItem.Builder().apply {
             setMediaId(ROOT)
@@ -41,7 +43,36 @@ class BrowserTree(
     suspend fun get(parentId: String, page: Int, pageSize: Int): ImmutableList<MediaItem>? =
         withContext(Dispatchers.IO) {
             when (parentId) {
-                ROOT -> constraintItems(getSongs() + getCustomizedSongs() + getPlaylists(), page, pageSize)
+                ROOT -> {
+                    ImmutableList.of(
+                        MediaItem.Builder().apply {
+                            setMediaId(SONG_ROOT)
+                            setMediaMetadata(MediaMetadata.Builder().apply {
+                                setFolderType(MediaMetadata.FOLDER_TYPE_TITLES)
+                                setIsPlayable(false)
+                                setTitle("Songs") // TODO: Resources for titles v
+                            }.build())
+                        }.build(),
+
+                        MediaItem.Builder().apply {
+                            setMediaId(LOOP_ROOT)
+                            setMediaMetadata(MediaMetadata.Builder().apply {
+                                setFolderType(MediaMetadata.FOLDER_TYPE_TITLES)
+                                setIsPlayable(false)
+                                setTitle("Customized Songs")
+                            }.build())
+                        }.build(),
+
+                        MediaItem.Builder().apply {
+                            setMediaId(PLAYLIST_ROOT)
+                            setMediaMetadata(MediaMetadata.Builder().apply {
+                                setFolderType(MediaMetadata.FOLDER_TYPE_PLAYLISTS)
+                                setIsPlayable(false)
+                                setTitle("Playlists")
+                            }.build())
+                        }.build()
+                    )
+                }
                 SONG_ROOT -> constraintItems(getSongs(), page, pageSize)
                 LOOP_ROOT -> constraintItems(getCustomizedSongs(), page, pageSize)
                 PLAYLIST_ROOT -> constraintItems(getPlaylists(), page, pageSize)
@@ -78,7 +109,9 @@ class BrowserTree(
 
     // TODO: Nullable?
     private suspend fun getSongs() = playbackRepository.getSongs().map { it.toMediaItem() }
-    private suspend fun getCustomizedSongs() = playbackRepository.getCustomizedSongs().map { it.toMediaItem() }
+    private suspend fun getCustomizedSongs() =
+        playbackRepository.getCustomizedSongs().map { it.toMediaItem() }
+
     private suspend fun getPlaylists() = playbackRepository.getPlaylists().map { it.toMediaItem() }
 
     private fun constraintItems(

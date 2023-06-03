@@ -10,7 +10,10 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.PlaybackParameters
+import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.RemoteArtwork
+import com.tachyonmusic.core.data.constants.MetadataKeys
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.database.domain.repository.DataRepository
@@ -25,10 +28,9 @@ import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
-import com.tachyonmusic.media.util.coreRepeatMode
-import com.tachyonmusic.media.util.playback
-import com.tachyonmusic.media.util.supportedCommands
-import com.tachyonmusic.media.util.updateTimingDataOfCurrentPlayback
+import com.tachyonmusic.media.util.*
+import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -47,11 +49,16 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     private lateinit var exoPlayer: CustomPlayer
     private lateinit var currentPlayer: CustomPlayer
 
-    @Inject
-    lateinit var castPlayer: CustomPlayer
+    // TODO: Can't inject nullable
+//    @Inject
+//    @Nullable
+    var castPlayer: CustomPlayer? = null
 
     @Inject
     lateinit var browserTree: BrowserTree
+
+    @Inject
+    lateinit var playbackRepository: PlaybackRepository
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
@@ -67,6 +74,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     lateinit var audioEffectController: AudioEffectController
+
+    @Inject
+    lateinit var getPlaylistForPlayback: GetPlaylistForPlayback
 
     @Inject
     lateinit var log: Logger
@@ -115,7 +125,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         setMediaNotificationProvider(MediaNotificationProvider(this))
 
         exoPlayer.addListener(this)
-        castPlayer.addListener(this)
+        castPlayer?.addListener(this)
 
         mediaSession =
             MediaLibrarySession.Builder(this, exoPlayer, MediaLibrarySessionCallback()).build()
@@ -150,7 +160,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         audioEffectController.release()
 
         exoPlayer.release()
-        castPlayer.release()
+        castPlayer?.release()
         mediaSession.release()
         // TODO: Make [mediaSession] nullable and set to null?
     }
@@ -172,14 +182,40 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             )
 
             mediaSession.dispatchMediaEvent(AudioSessionIdChangedEvent(currentPlayer.audioSessionId))
+
+            mediaSession.setCustomLayout(
+                controller,
+                buildCustomNotificationLayout(
+                    if (currentPlayer.repeatMode == Player.REPEAT_MODE_OFF) RepeatMode.All
+                    else currentPlayer.coreRepeatMode
+                )
+            )
         }
 
         override fun onGetLibraryRoot(
             session: MediaLibrarySession,
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?
-        ): ListenableFuture<LibraryResult<MediaItem>> =
-            Futures.immediateFuture(LibraryResult.ofItem(browserTree.root, null))
+        ): ListenableFuture<LibraryResult<MediaItem>> {
+            val maximumRootChildLimit = params?.extras?.getInt(
+                MediaConstants.EXTRAS_KEY_ROOT_CHILDREN_LIMIT, 4
+            ) ?: 4
+            browserTree.maximumRootChildLimit = maximumRootChildLimit
+
+            /**
+             * Define app globals how media is displayed in Android Auto
+             */
+            val extras = LibraryParams.Builder().apply {
+                setExtras(Bundle().apply {
+                })
+
+                setOffline(true)
+                setSuggested(true)
+                setRecent(false)
+            }.build()
+
+            return Futures.immediateFuture(LibraryResult.ofItem(browserTree.root, extras))
+        }
 
         override fun onGetChildren(
             session: MediaLibrarySession,
@@ -213,24 +249,63 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             controller: MediaSession.ControllerInfo,
             customCommand: SessionCommand,
             args: Bundle
-        ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
-            runOnUiThread {
-                when (val event = customCommand.toMediaBrowserEvent(args)) {
-                    is SetRepeatModeEvent -> handleSetRepeatModeEvent(event)
-                    is SetTimingDataEvent -> handleSetTimingDataEvent(event)
-                }
+        ): ListenableFuture<SessionResult> {
+            when (val event = customCommand.toMediaBrowserEvent(args)) {
+                is SetRepeatModeEvent -> handleSetRepeatModeEvent(event)
+                is SetTimingDataEvent -> handleSetTimingDataEvent(event)
             }
+
+            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
 
+        override fun onSetMediaItems(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            mediaItems: MutableList<MediaItem>,
+            startIndex: Int,
+            startPositionMs: Long
+        ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
+            return if (mediaItems.size == 1 && startIndex == C.INDEX_UNSET) {
+                future(Dispatchers.IO) {
+                    val mediaId = MediaId.deserializeIfValid(mediaItems.first().mediaId)
+                    val playlist = if (mediaId?.isLocalPlaylist == true) {
+                        playbackRepository.getPlaylists().find { it.mediaId == mediaId }
+                    } else {
+                        getPlaylistForPlayback(mediaId)
+                    } ?: return@future MediaSession.MediaItemsWithStartPosition(
+                        mediaItems,
+                        startIndex,
+                        startPositionMs
+                    )
 
-        private fun handleSetRepeatModeEvent(event: SetRepeatModeEvent): SessionResult {
+                    val playlistMediaItems = playlist.playbacks.toMediaItems()
+                    runOnUiThread {
+                        currentPlayer.setMediaItems(playlistMediaItems)
+                        currentPlayer.prepare()
+                    }
+
+                    MediaSession.MediaItemsWithStartPosition(
+                        playlistMediaItems, playlist.currentPlaylistIndex, startPositionMs
+                    )
+                }
+
+            } else
+                super.onSetMediaItems(
+                    mediaSession,
+                    controller,
+                    mediaItems,
+                    startIndex,
+                    startPositionMs
+                )
+        }
+
+        private fun handleSetRepeatModeEvent(event: SetRepeatModeEvent) {
             currentPlayer.coreRepeatMode = event.repeatMode
-            return SessionResult(SessionResult.RESULT_SUCCESS)
+            mediaSession.setCustomLayout(buildCustomNotificationLayout(event.repeatMode))
         }
 
-        private fun handleSetTimingDataEvent(event: SetTimingDataEvent): SessionResult {
+        private fun handleSetTimingDataEvent(event: SetTimingDataEvent) {
             currentPlayer.updateTimingDataOfCurrentPlayback(event.timingData)
-            return SessionResult(SessionResult.RESULT_SUCCESS)
         }
     }
 
@@ -362,6 +437,19 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }, log).apply {
             registerEventListener(CustomPlayerEventListener())
         }
+
+    private fun buildCustomNotificationLayout(repeatMode: RepeatMode) = listOf(
+        CommandButton.Builder().apply {
+            setIconResId(repeatMode.icon)
+            setDisplayName("Repeat Mode")
+            setSessionCommand(
+                SessionCommand(SetRepeatModeEvent.action, Bundle().apply {
+                    putInt(MetadataKeys.RepeatMode, repeatMode.next.id)
+                })
+            )
+            setEnabled(true)
+        }.build()
+    )
 
     private inner class CustomPlayerEventListener : CustomPlayer.Listener {
         override fun onTimingDataUpdated(controller: TimingDataController?) {
