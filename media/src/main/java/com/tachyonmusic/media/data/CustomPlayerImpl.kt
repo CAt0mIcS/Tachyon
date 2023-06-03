@@ -19,7 +19,7 @@ import com.tachyonmusic.util.ms
 /**
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands
  */
-class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlayer(player),
+class CustomPlayerImpl(player: Player, private val log: Logger) : ReplaceableForwardingPlayer(player),
     CustomPlayer,
     Player.Listener,
     IListenable<CustomPlayer.Listener> by Listenable() {
@@ -32,11 +32,11 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
     }
 
     override fun getAvailableCommands(): Player.Commands {
-        return wrappedPlayer.availableCommands.run {
+        return player.availableCommands.run {
             if (mediaItemCount > 1) {
                 return@run buildUpon()
-                    .add(COMMAND_SEEK_TO_NEXT)
-                    .add(COMMAND_SEEK_TO_PREVIOUS)
+                    .add(Player.COMMAND_SEEK_TO_NEXT)
+                    .add(Player.COMMAND_SEEK_TO_PREVIOUS)
                     .build()
             }
             this
@@ -45,8 +45,8 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
 
     // TODO: [COMMAND_SEEK_TO_NEXT/-PREVIOUS] still appears when playing playlist
     override fun isCommandAvailable(command: @Player.Command Int): Boolean {
-        return wrappedPlayer.isCommandAvailable(command) || (command == COMMAND_SEEK_TO_NEXT && !isPlayingAd && mediaItemCount > 1) ||
-                (command == COMMAND_SEEK_TO_PREVIOUS && !isPlayingAd && mediaItemCount > 1)
+        return player.isCommandAvailable(command) || (command == Player.COMMAND_SEEK_TO_NEXT && !isPlayingAd && mediaItemCount > 1) ||
+                (command == Player.COMMAND_SEEK_TO_PREVIOUS && !isPlayingAd && mediaItemCount > 1)
     }
 
     override val mediaItems: List<MediaItem>
@@ -55,26 +55,24 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
         }
 
     override var audioSessionId: Int
-        get() = if (wrappedPlayer is ExoPlayer) (wrappedPlayer as ExoPlayer).audioSessionId else TODO(
-            "audioSessionId not valid on another player yet"
-        )
+        get() = if (player is ExoPlayer) (player as ExoPlayer).audioSessionId else 0
         set(value) {
-            if (wrappedPlayer is ExoPlayer) (wrappedPlayer as ExoPlayer).audioSessionId =
+            if (player is ExoPlayer) (player as ExoPlayer).audioSessionId =
                 value else TODO(
                 "audioSessionId not valid on another player yet"
             )
         }
 
     fun createMessage(target: PlayerMessage.Target) =
-        when (wrappedPlayer) {
-            is ExoPlayer -> (wrappedPlayer as ExoPlayer).createMessage(target)
+        when (player) {
+            is ExoPlayer -> (player as ExoPlayer).createMessage(target)
             is CastPlayer -> PlayerMessage(
                 castPlayerMessageSender,
                 target,
                 currentTimeline,
                 if (currentMediaItemIndex == C.INDEX_UNSET) 0 else currentMediaItemIndex,
                 Clock.DEFAULT,
-                wrappedPlayer.applicationLooper // TODO (internalPlayer.getPlaybackLooper())
+                player.applicationLooper // TODO (internalPlayer.getPlaybackLooper())
             )
 
             else -> TODO("createMessage for other types of players")
@@ -93,12 +91,12 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
             return
         }
 
-        if (wrappedPlayer.hasNextMediaItem()) {
+        if (player.hasNextMediaItem()) {
             // Dispatch to the wrapped player if not at the final media item
-            wrappedPlayer.seekToNextMediaItem()
+            player.seekToNextMediaItem()
         } else {
             // Seek to the beginning of the playlist if no next media item is present
-            wrappedPlayer.seekToDefaultPosition(0)
+            player.seekToDefaultPosition(0)
         }
     }
 
@@ -116,7 +114,7 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
             if (hasPreviousMediaItem())
                 seekToPreviousMediaItem()
             else
-                wrappedPlayer.seekToDefaultPosition(wrappedPlayer.mediaItemCount - 1)
+                player.seekToDefaultPosition(player.mediaItemCount - 1)
 
         } else {
             // If the player position is less than [maxSeekToPreviousPosition], we'll seek to
@@ -143,9 +141,9 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
              * the first timing data in the list. Currently we handle this in [TimingDataController.advanceToCurrentPosition]
              * by checking if the position is 0ms and returning index 0 in this case
              */
-            if (reason == DISCONTINUITY_REASON_SEEK ||
-                reason == DISCONTINUITY_REASON_AUTO_TRANSITION ||
-                reason == DISCONTINUITY_REASON_SKIP
+            if (reason == Player.DISCONTINUITY_REASON_SEEK ||
+                reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION ||
+                reason == Player.DISCONTINUITY_REASON_SKIP
             )
                 updateTimingData(timingData)
         }
@@ -171,8 +169,8 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
     }
 
     override fun setAuxEffectInfo(info: AuxEffectInfo) {
-        if (wrappedPlayer is ExoPlayer)
-            (wrappedPlayer as ExoPlayer).setAuxEffectInfo(info)
+        if (player is ExoPlayer)
+            (player as ExoPlayer).setAuxEffectInfo(info)
         else
             TODO("Cannot set aux effect info in another player yet")
     }
@@ -185,7 +183,7 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ForwardingPlay
             seekWithoutCallback(payload as Long)
             val timingData = currentMediaItem?.mediaMetadata?.timingData
             if (timingData != null) {
-                if (timingData.currentIndex + 1 == timingData.size && repeatMode == REPEAT_MODE_ALL) {
+                if (timingData.currentIndex + 1 == timingData.size && repeatMode == Player.REPEAT_MODE_ALL) {
                     log.debug("Timing data end reached, seeking to next playback item...")
                     seekToNext()
                     return@createMessage

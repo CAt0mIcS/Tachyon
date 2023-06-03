@@ -11,6 +11,8 @@ interface CustomPlayer : Player {
     val mediaItems: List<MediaItem>
     var audioSessionId: Int
 
+    fun setPlayer(player: Player)
+
     fun updateTimingData(newTimingData: TimingDataController)
 
     fun setAuxEffectInfo(info: AuxEffectInfo)
