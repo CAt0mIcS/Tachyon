@@ -10,7 +10,9 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.PlaybackParameters
+import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.RemoteArtwork
+import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.CustomizedSong
@@ -26,10 +28,8 @@ import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
-import com.tachyonmusic.media.util.coreRepeatMode
-import com.tachyonmusic.media.util.playback
-import com.tachyonmusic.media.util.supportedCommands
-import com.tachyonmusic.media.util.updateTimingDataOfCurrentPlayback
+import com.tachyonmusic.media.util.*
+import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -70,6 +70,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     lateinit var audioEffectController: AudioEffectController
+
+    @Inject
+    lateinit var getPlaylistForPlayback: GetPlaylistForPlayback
 
     @Inject
     lateinit var log: Logger
@@ -175,6 +178,14 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             )
 
             mediaSession.dispatchMediaEvent(AudioSessionIdChangedEvent(currentPlayer.audioSessionId))
+
+            mediaSession.setCustomLayout(
+                controller,
+                buildCustomNotificationLayout(
+                    if (currentPlayer.repeatMode == Player.REPEAT_MODE_OFF) RepeatMode.All
+                    else currentPlayer.coreRepeatMode
+                )
+            )
         }
 
         override fun onGetLibraryRoot(
@@ -190,24 +201,16 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             /**
              * Define app globals how media is displayed in Android Auto
              */
-//            val extras = LibraryParams.Builder().apply {
-//                setExtras(Bundle().apply {
-//                    putInt(
-//                        MediaConstants.EXTRAS_KEY_CONTENT_STYLE_BROWSABLE,
-//                        MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_GRID_ITEM
-//                    )
-//                    putInt(
-//                        MediaConstants.EXTRAS_KEY_CONTENT_STYLE_PLAYABLE,
-//                        MediaConstants.EXTRAS_VALUE_CONTENT_STYLE_LIST_ITEM
-//                    )
-//                })
-//
-//                setOffline(true)
-//                setSuggested(true)
-//                setRecent(false)
-//            }.build()
+            val extras = LibraryParams.Builder().apply {
+                setExtras(Bundle().apply {
+                })
 
-            return Futures.immediateFuture(LibraryResult.ofItem(browserTree.root, null))
+                setOffline(true)
+                setSuggested(true)
+                setRecent(false)
+            }.build()
+
+            return Futures.immediateFuture(LibraryResult.ofItem(browserTree.root, extras))
         }
 
         override fun onGetChildren(
@@ -242,13 +245,13 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             controller: MediaSession.ControllerInfo,
             customCommand: SessionCommand,
             args: Bundle
-        ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
-            runOnUiThread {
-                when (val event = customCommand.toMediaBrowserEvent(args)) {
-                    is SetRepeatModeEvent -> handleSetRepeatModeEvent(event)
-                    is SetTimingDataEvent -> handleSetTimingDataEvent(event)
-                }
+        ): ListenableFuture<SessionResult> {
+            when (val event = customCommand.toMediaBrowserEvent(args)) {
+                is SetRepeatModeEvent -> handleSetRepeatModeEvent(event)
+                is SetTimingDataEvent -> handleSetTimingDataEvent(event)
             }
+
+            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
 
         override fun onSetMediaItems(
@@ -257,44 +260,33 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             mediaItems: MutableList<MediaItem>,
             startIndex: Int,
             startPositionMs: Long
-        ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
-            currentPlayer.stop()
-            currentPlayer.setMediaItems(mediaItems.map {
-                it.buildUpon().setUri(MediaId.deserialize(it.mediaId).uri).build()
-            })
-            currentPlayer.prepare()
+        ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> = future(Dispatchers.IO) {
+            val playlist =
+                getPlaylistForPlayback(MediaId.deserializeIfValid(mediaItems.firstOrNull()?.mediaId))
+                    ?: return@future MediaSession.MediaItemsWithStartPosition(
+                        mediaItems,
+                        startIndex,
+                        startPositionMs
+                    )
 
-            return Futures.immediateFuture(
-                MediaSession.MediaItemsWithStartPosition(
-                    mediaItems, startIndex, startPositionMs
-                )
+            val playlistMediaItems = playlist.playbacks.toMediaItems()
+            runOnUiThread {
+                currentPlayer.setMediaItems(playlistMediaItems)
+                currentPlayer.prepare()
+            }
+
+            MediaSession.MediaItemsWithStartPosition(
+                playlistMediaItems, playlist.currentPlaylistIndex, startPositionMs
             )
         }
 
-//        override fun onPlayerCommandRequest(
-//            session: MediaSession,
-//            controller: MediaSession.ControllerInfo,
-//            playerCommand: Int
-//        ): Int {
-//            when(playerCommand) {
-//                Player.COMMAND_SET_MEDIA_ITEM -> onPrepare()
-//            }
-//
-//            return SessionResult.RESULT_SUCCESS
-//        }
-
-        private fun onPrepare() {
-
-        }
-
-        private fun handleSetRepeatModeEvent(event: SetRepeatModeEvent): SessionResult {
+        private fun handleSetRepeatModeEvent(event: SetRepeatModeEvent) {
             currentPlayer.coreRepeatMode = event.repeatMode
-            return SessionResult(SessionResult.RESULT_SUCCESS)
+            mediaSession.setCustomLayout(buildCustomNotificationLayout(event.repeatMode))
         }
 
-        private fun handleSetTimingDataEvent(event: SetTimingDataEvent): SessionResult {
+        private fun handleSetTimingDataEvent(event: SetTimingDataEvent) {
             currentPlayer.updateTimingDataOfCurrentPlayback(event.timingData)
-            return SessionResult(SessionResult.RESULT_SUCCESS)
         }
     }
 
@@ -426,6 +418,19 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }, log).apply {
             registerEventListener(CustomPlayerEventListener())
         }
+
+    private fun buildCustomNotificationLayout(repeatMode: RepeatMode) = listOf(
+        CommandButton.Builder().apply {
+            setIconResId(repeatMode.icon)
+            setDisplayName("Repeat Mode")
+            setSessionCommand(
+                SessionCommand(SetRepeatModeEvent.action, Bundle().apply {
+                    putInt(MetadataKeys.RepeatMode, repeatMode.next.id)
+                })
+            )
+            setEnabled(true)
+        }.build()
+    )
 
     private inner class CustomPlayerEventListener : CustomPlayer.Listener {
         override fun onTimingDataUpdated(controller: TimingDataController?) {

@@ -50,7 +50,7 @@ class BrowserTree(
                             setMediaMetadata(MediaMetadata.Builder().apply {
                                 setFolderType(MediaMetadata.FOLDER_TYPE_TITLES)
                                 setIsPlayable(false)
-                                setDisplayTitle("Songs") // TODO: Resources for display titles v
+                                setTitle("Songs") // TODO: Resources for titles v
                             }.build())
                         }.build(),
 
@@ -59,7 +59,7 @@ class BrowserTree(
                             setMediaMetadata(MediaMetadata.Builder().apply {
                                 setFolderType(MediaMetadata.FOLDER_TYPE_TITLES)
                                 setIsPlayable(false)
-                                setDisplayTitle("Customized Songs")
+                                setTitle("Customized Songs")
                             }.build())
                         }.build(),
 
@@ -68,7 +68,7 @@ class BrowserTree(
                             setMediaMetadata(MediaMetadata.Builder().apply {
                                 setFolderType(MediaMetadata.FOLDER_TYPE_PLAYLISTS)
                                 setIsPlayable(false)
-                                setDisplayTitle("Playlists")
+                                setTitle("Playlists")
                             }.build())
                         }.build()
                     )

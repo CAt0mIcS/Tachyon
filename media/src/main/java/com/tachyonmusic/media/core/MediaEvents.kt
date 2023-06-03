@@ -53,9 +53,17 @@ data class SetRepeatModeEvent(
 
     companion object {
         fun fromBundle(bundle: Bundle) =
-            SetRepeatModeEvent(RepeatMode.fromId(bundle.getInt(MetadataKeys.RepeatMode)))
+            SetRepeatModeEvent(
+                RepeatMode.fromId(
+                    bundle.getInt(
+                        MetadataKeys.RepeatMode,
+                        RepeatMode.All.id
+                    )
+                )
+            )
 
-        val command = SessionCommand("${actionPrefix}SET_REPEAT_MODE", Bundle.EMPTY)
+        const val action = "${actionPrefix}SET_REPEAT_MODE"
+        val command = SessionCommand(action, Bundle.EMPTY)
     }
 }
 

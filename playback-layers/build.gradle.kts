@@ -44,6 +44,7 @@ dependencies {
     coroutines()
 
     projectCore()
+    projectPlaybackLayerDatabase()
     projectPlaybackLayerArtwork()
     projectPlaybackLayerSort()
 }

@@ -1,12 +1,10 @@
-package com.tachyonmusic.domain.use_case
+package com.tachyonmusic.playback_layers.domain
 
 import com.tachyonmusic.artwork.domain.ArtworkCodex
 import com.tachyonmusic.core.data.playback.LocalPlaylistImpl
-import com.tachyonmusic.core.domain.playback.CustomizedSong
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.domain.repository.PredefinedPlaylistsRepository
 import com.tachyonmusic.predefinedCustomizedSongPlaylistMediaId
 import com.tachyonmusic.predefinedSongPlaylistMediaId
 import kotlinx.coroutines.Dispatchers
@@ -20,20 +18,22 @@ class GetPlaylistForPlayback(
     private val artworkCodex: ArtworkCodex
 ) {
 
-    suspend operator fun invoke(playback: SinglePlayback?) = withContext(Dispatchers.IO) {
-        if (playback == null)
+    suspend operator fun invoke(playback: SinglePlayback?) = invoke(playback?.mediaId)
+
+    suspend operator fun invoke(mediaId: MediaId?) = withContext(Dispatchers.IO) {
+        if (mediaId == null)
             return@withContext null
 
-        when (playback) {
-            is Song -> getSongPlaylist(playback)
-            is CustomizedSong -> getCustomizedSongPlaylist(playback)
-            else -> null
-        }
+        if (mediaId.isLocalSong)
+            getSongPlaylist(mediaId)
+        else if (mediaId.isLocalCustomizedSong)
+            getCustomizedSongPlaylist(mediaId)
+        else null
     }
 
 
     private suspend fun getSongPlaylist(
-        playback: SinglePlayback
+        mediaId: MediaId
     ): Playlist {
         val items = predefinedPlaylistsRepository.songPlaylist.value
         items.forEach {
@@ -43,13 +43,13 @@ class GetPlaylistForPlayback(
         return LocalPlaylistImpl.build(
             predefinedSongPlaylistMediaId,
             items.toMutableList(),
-            items.indexOfFirst { it.mediaId == playback.mediaId }
+            items.indexOfFirst { it.mediaId == mediaId }
         )
     }
 
 
     private suspend fun getCustomizedSongPlaylist(
-        playback: SinglePlayback
+        mediaId: MediaId
     ): Playlist {
         val items = predefinedPlaylistsRepository.customizedSongPlaylist.value
         items.forEach {
@@ -59,7 +59,7 @@ class GetPlaylistForPlayback(
         return LocalPlaylistImpl.build(
             predefinedCustomizedSongPlaylistMediaId,
             items.toMutableList(),
-            items.indexOfFirst { it.mediaId == playback.mediaId }
+            items.indexOfFirst { it.mediaId == mediaId }
         )
     }
 }
