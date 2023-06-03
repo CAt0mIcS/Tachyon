@@ -299,31 +299,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 )
         }
 
-
-//        = future(Dispatchers.IO) {
-//            if (mediaItems.size == 1 && startIndex == C.INDEX_UNSET) {
-//                val playlist =
-//                    getPlaylistForPlayback(MediaId.deserializeIfValid(mediaItems.first().mediaId))
-//                        ?: return@future MediaSession.MediaItemsWithStartPosition(
-//                            mediaItems,
-//                            startIndex,
-//                            startPositionMs
-//                        )
-//
-//                return@future MediaSession.MediaItemsWithStartPosition(
-//                    playlist.playbacks.toMediaItems(), startIndex, startPositionMs
-//                )
-//            } else {
-//                return@future super.onSetMediaItems(
-//                    mediaSession,
-//                    controller,
-//                    mediaItems,
-//                    startIndex,
-//                    startPositionMs
-//                )
-//            }
-//        }
-
         private fun handleSetRepeatModeEvent(event: SetRepeatModeEvent) {
             currentPlayer.coreRepeatMode = event.repeatMode
             mediaSession.setCustomLayout(buildCustomNotificationLayout(event.repeatMode))

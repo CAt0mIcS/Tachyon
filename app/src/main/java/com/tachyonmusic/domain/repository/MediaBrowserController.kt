@@ -28,7 +28,7 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     val isPlaying: StateFlow<Boolean>
 
 
-    fun setMediaItems(playlist: Playlist, position: Duration? = null)
+    fun setPlaylist(playlist: Playlist, position: Duration? = null)
 
     val currentPosition: Duration?
     var currentPlaybackTimingData: TimingDataController?
