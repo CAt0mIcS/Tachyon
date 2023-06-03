@@ -15,12 +15,15 @@ import com.tachyonmusic.core.data.ext.toBoolean
 import com.tachyonmusic.core.data.ext.toInt
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.util.duration
 import com.tachyonmusic.media.util.name
 import org.json.JSONObject
 
 
-class CastMediaItemConverter : MediaItemConverter {
+class CastMediaItemConverter(
+    private val castWebServerController: CastWebServerController
+) : MediaItemConverter {
     override fun toMediaQueueItem(mediaItem: MediaItem): MediaQueueItem {
         val metadata = MediaMetadata(MEDIA_TYPE_MUSIC)
         val oldMetadata = mediaItem.mediaMetadata
@@ -46,12 +49,11 @@ class CastMediaItemConverter : MediaItemConverter {
 
         metadata.putString(KEY_MEDIA_ID, mediaItem.mediaId)
 
-
         return MediaQueueItem.Builder(
             MediaInfo.Builder(mediaItem.mediaId)
                 .setStreamType(MediaInfo.STREAM_TYPE_BUFFERED)
-                .setContentType(MimeTypes.AUDIO_MPEG)
-                .setContentUrl("https://storage.googleapis.com/uamp/The_Kyoto_Connection_-_Wake_Up/01_-_Intro_-_The_Way_Of_Waking_Up_feat_Alan_Watts.mp3")
+                .setContentType(MimeTypes.AUDIO_MPEG) // TODO: Different mime types for different file extensions
+                .setContentUrl(castWebServerController.getUrl(mediaItem.localConfiguration!!.uri))
                 .setStreamDuration(oldMetadata.duration!!.inWholeMilliseconds)
                 .setCustomData(getCustomData(mediaItem))
                 .setMetadata(metadata)

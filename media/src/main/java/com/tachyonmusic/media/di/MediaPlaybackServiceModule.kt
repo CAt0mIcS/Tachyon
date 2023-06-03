@@ -13,8 +13,10 @@ import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.data.AndroidAudioEffectController
 import com.tachyonmusic.media.data.BrowserTree
+import com.tachyonmusic.media.data.CastWebServerControllerImpl
 import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.domain.AudioEffectController
+import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.*
 import com.tachyonmusic.permission.domain.PermissionMapperRepository
@@ -23,6 +25,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ServiceComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ServiceScoped
 import dagger.hilt.components.SingletonComponent
 import javax.annotation.Nullable
@@ -81,6 +84,13 @@ class MediaPlaybackRepositoryModule {
     @Provides
     @Singleton
     fun provideAudioEffectController(): AudioEffectController = AndroidAudioEffectController()
+
+    @Provides
+    @Singleton
+    fun provideCastWebServerController(
+        @ApplicationContext context: Context,
+        log: Logger
+    ): CastWebServerController = CastWebServerControllerImpl(context, log)
 }
 
 

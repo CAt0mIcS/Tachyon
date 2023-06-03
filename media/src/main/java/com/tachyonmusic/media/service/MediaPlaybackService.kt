@@ -28,6 +28,7 @@ import com.tachyonmusic.media.R
 import com.tachyonmusic.media.core.*
 import com.tachyonmusic.media.data.*
 import com.tachyonmusic.media.domain.AudioEffectController
+import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
@@ -77,6 +78,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     lateinit var getPlaylistForPlayback: GetPlaylistForPlayback
 
     @Inject
+    lateinit var castWebServerController: CastWebServerController
+
+    @Inject
     lateinit var log: Logger
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -86,7 +90,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     private val castPlayer: CastPlayer? by lazy {
         try {
             val castContext = CastContext.getSharedInstance(this)
-            CastPlayer(castContext, CastMediaItemConverter()).apply {
+            CastPlayer(castContext, CastMediaItemConverter(castWebServerController)).apply {
                 setSessionAvailabilityListener(CastSessionAvailabilityListener())
                 addListener(this@MediaPlaybackService)
             }
@@ -334,11 +338,13 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     private inner class CastSessionAvailabilityListener : SessionAvailabilityListener {
         override fun onCastSessionAvailable() {
+            castWebServerController.start()
             currentPlayer.setPlayer(castPlayer!!)
         }
 
         override fun onCastSessionUnavailable() {
             currentPlayer.setPlayer(exoPlayer)
+            castWebServerController.stop()
         }
 
     }

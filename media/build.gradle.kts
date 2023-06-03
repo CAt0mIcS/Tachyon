@@ -55,6 +55,8 @@ dependencies {
     dagger()
     implementation("androidx.documentfile:documentfile:1.0.1")
 
+    implementation("org.nanohttpd:nanohttpd:2.3.1")
+
     projectCore()
     projectPlaybackLayerDatabase()
     projectPlaybackLayers()
