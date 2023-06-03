@@ -277,7 +277,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         startIndex,
                         startPositionMs
                     )
-                    
+
                     val playlistMediaItems = playlist.playbacks.toMediaItems()
                     runOnUiThread {
                         currentPlayer.setMediaItems(playlistMediaItems)
