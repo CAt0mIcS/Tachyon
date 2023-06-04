@@ -1,11 +1,12 @@
 package com.tachyonmusic.logger.data
 
 import android.content.Context
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.UiText
 
 class ConsoleUiTextLogger(
     private val appContext: Context
-) : ConsoleLogger() {
+) : Logger {
     override fun debug(message: UiText, prefix: String) =
         debug(prefix + message.asString(appContext))
 
