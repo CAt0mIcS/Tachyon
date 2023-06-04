@@ -5,7 +5,6 @@ import android.app.UiModeManager
 import android.content.Context
 import android.content.Context.UI_MODE_SERVICE
 import android.content.res.Configuration
-import androidx.media3.cast.CastPlayer
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -14,10 +13,8 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.data.AndroidAudioEffectController
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CastWebServerControllerImpl
-import com.tachyonmusic.media.data.CustomPlayerImpl
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CastWebServerController
-import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.*
 import com.tachyonmusic.permission.domain.PermissionMapperRepository
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
@@ -25,7 +22,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ServiceComponent
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ServiceScoped
 import dagger.hilt.components.SingletonComponent
 import javax.annotation.Nullable
@@ -50,9 +46,10 @@ class MediaPlaybackServiceRepositoryModule {
 
     @Provides
     @ServiceScoped
-    @Nullable
-    fun provideCastPlayer(context: CastContext?, log: Logger): CustomPlayer? =
-        if (context == null) null else CustomPlayerImpl(CastPlayer(context), log)
+    fun provideCastWebServerController(
+        service: Service,
+        log: Logger
+    ): CastWebServerController = CastWebServerControllerImpl(service, log)
 }
 
 
@@ -84,13 +81,6 @@ class MediaPlaybackRepositoryModule {
     @Provides
     @Singleton
     fun provideAudioEffectController(): AudioEffectController = AndroidAudioEffectController()
-
-    @Provides
-    @Singleton
-    fun provideCastWebServerController(
-        @ApplicationContext context: Context,
-        log: Logger
-    ): CastWebServerController = CastWebServerControllerImpl(context, log)
 }
 
 

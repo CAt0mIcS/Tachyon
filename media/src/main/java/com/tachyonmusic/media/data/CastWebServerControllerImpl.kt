@@ -1,13 +1,11 @@
 package com.tachyonmusic.media.data
 
-import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.net.wifi.WifiManager
 import androidx.media3.common.MimeTypes
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.CastWebServerController
-import dagger.hilt.android.qualifiers.ApplicationContext
 import fi.iki.elonen.NanoHTTPD
 import java.io.FileNotFoundException
 import java.net.InetAddress
@@ -17,45 +15,57 @@ import java.nio.ByteOrder
 
 
 class CastWebServerControllerImpl(
-    @ApplicationContext private val context: Context,
+    private val context: Context,
     private val log: Logger
 ) : CastWebServerController {
     private val server = WebServer()
     private var ip: String? = null
 
-    override fun start() {
+    private val items = mutableListOf<Uri>()
+
+    override fun start(newItems: List<Uri>) {
         ip = getIPAddress()
         if (ip == null)
             TODO("Not connected to WIFI: Warn user")
 
+        items += newItems
         server.start()
     }
 
     override fun stop() {
         server.stop()
         ip = null
+        items.clear()
     }
 
     override fun getUrl(uri: Uri): String {
         assert(ip != null) { "Server must be started before querying urls for media" }
-        return "http://$ip:$PORT/${uri}"
+        assert(items.contains(uri)) { "Uri $uri not contained in the items set in start()" }
+
+        return "http://$ip:$PORT/${items.indexOf(uri)}".apply {
+            log.debug("Url for $uri created: $this")
+        }
     }
 
     private inner class WebServer : NanoHTTPD(PORT) {
         override fun serve(session: IHTTPSession?): Response {
-            val playbackUri = Uri.parse(session?.uri ?: return invalidServeResponse)
-                .buildUpon()
-                .scheme(ContentResolver.SCHEME_CONTENT)
-                .build()
+            /**
+             * We fail reading the Uri if we parse [session.uri] using [Uri.parse] because we're
+             * apparently reading a directory. But using the Uri from the media items works. Thus the
+             * Url will contain the index of the Uri in [items]
+             */
+            val playbackId =
+                session?.uri?.removePrefix("/")?.toIntOrNull() ?: return invalidServeResponse
+            val playbackUri = items.getOrNull(playbackId) ?: return invalidServeResponse
 
-            try {
+            return try {
                 val inputStream = context.contentResolver.openInputStream(playbackUri)
-                    ?: return invalidServeResponse
 
                 // TODO: Different mime types for other file extensions
-                return newChunkedResponse(Response.Status.OK, MimeTypes.AUDIO_MPEG, inputStream)
+                newChunkedResponse(Response.Status.OK, MimeTypes.AUDIO_MPEG, inputStream)
             } catch (e: FileNotFoundException) {
-                TODO("File not found $playbackUri")
+                e.printStackTrace()
+                invalidServeResponse
             }
         }
 
@@ -81,6 +91,6 @@ class CastWebServerControllerImpl(
     }
 
     companion object {
-        private val PORT = 8080
+        private const val PORT = 8080
     }
 }

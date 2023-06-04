@@ -338,7 +338,14 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     private inner class CastSessionAvailabilityListener : SessionAvailabilityListener {
         override fun onCastSessionAvailable() {
-            castWebServerController.start()
+//            val playbackUri = currentPlayer.mediaItems.first().localConfiguration!!.uri
+//            val file = DocumentFile.fromSingleUri(this@MediaPlaybackService, playbackUri)!!
+//            val inputStream = contentResolver.openInputStream(file.uri)
+//            val reader = BufferedReader(InputStreamReader(inputStream))
+//            val lines = reader.readLines()
+//            println(lines)
+
+            castWebServerController.start(currentPlayer.mediaItems.map { it.localConfiguration!!.uri })
             currentPlayer.setPlayer(castPlayer!!)
         }
 
