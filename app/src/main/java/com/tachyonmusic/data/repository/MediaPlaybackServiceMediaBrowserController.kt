@@ -225,6 +225,9 @@ class MediaPlaybackServiceMediaBrowserController(
     }
 
     override fun onRepeatModeChanged(repeatMode: Int) {
+        if(repeatMode == 0)
+            return // TODO: Handle repeat mode for cast player
+
         _repeatMode.update {
             RepeatMode.fromMedia(
                 repeatMode,

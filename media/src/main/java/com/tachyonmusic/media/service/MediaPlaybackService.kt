@@ -154,26 +154,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         castPlayer?.addListener(this)
 
         mediaSession =
-            MediaLibrarySession.Builder(this, exoPlayer, MediaLibrarySessionCallback()).build()
-    }
-
-    /**
-     * TODO: Seamlessly switch between old and new exo player instances
-     */
-    fun switchPlayer(oldPlayer: CustomPlayer, newPlayer: CustomPlayer) {
-        val pos = oldPlayer.currentPosition
-        val items = oldPlayer.mediaItems
-        val currentIndex = oldPlayer.currentMediaItemIndex
-        val playWhenReady = oldPlayer.playWhenReady
-
-        if (items.isNotEmpty()) {
-            newPlayer.setMediaItems(items)
-            newPlayer.seekTo(currentIndex, pos)
-            newPlayer.playWhenReady = playWhenReady
-            newPlayer.prepare()
-        }
-
-        currentPlayer = newPlayer
+            MediaLibrarySession.Builder(this, currentPlayer, MediaLibrarySessionCallback()).build()
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession =
@@ -338,13 +319,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     private inner class CastSessionAvailabilityListener : SessionAvailabilityListener {
         override fun onCastSessionAvailable() {
-//            val playbackUri = currentPlayer.mediaItems.first().localConfiguration!!.uri
-//            val file = DocumentFile.fromSingleUri(this@MediaPlaybackService, playbackUri)!!
-//            val inputStream = contentResolver.openInputStream(file.uri)
-//            val reader = BufferedReader(InputStreamReader(inputStream))
-//            val lines = reader.readLines()
-//            println(lines)
-
             castWebServerController.start(currentPlayer.mediaItems.map { it.localConfiguration!!.uri })
             currentPlayer.setPlayer(castPlayer!!)
         }
@@ -352,6 +326,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         override fun onCastSessionUnavailable() {
             currentPlayer.setPlayer(exoPlayer)
             castWebServerController.stop()
+            Player.COMMAND_ADJUST_DEVICE_VOLUME
         }
 
     }

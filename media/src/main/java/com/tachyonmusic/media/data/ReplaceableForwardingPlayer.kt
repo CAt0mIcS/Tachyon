@@ -38,6 +38,7 @@ abstract class ReplaceableForwardingPlayer(player: Player) : CustomPlayer {
         this.player.removeListener(playerListener)
         player.addListener(playerListener)
 
+        // TODO: Handle repeat mode for cast player (should never be 0)
         player.repeatMode =
             if (this.player.repeatMode == 0) player.repeatMode else this.player.repeatMode
         player.shuffleModeEnabled = this.player.shuffleModeEnabled

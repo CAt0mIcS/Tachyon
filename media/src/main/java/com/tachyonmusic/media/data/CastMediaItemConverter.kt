@@ -73,7 +73,7 @@ class CastMediaItemConverter(
 
             setTitle(metadata.getString(MediaMetadata.KEY_TITLE))
             setArtist(metadata.getString(MediaMetadata.KEY_ARTIST))
-            setArtworkUri(metadata.images.first().url)
+            setArtworkUri(metadata.images.firstOrNull()?.url)
 
             setExtras(Bundle().apply {
                 putString(MetadataKeys.Name, metadata.getString(KEY_NAME))

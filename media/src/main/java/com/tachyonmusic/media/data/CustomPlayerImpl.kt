@@ -19,7 +19,8 @@ import com.tachyonmusic.util.ms
 /**
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands
  */
-class CustomPlayerImpl(player: Player, private val log: Logger) : ReplaceableForwardingPlayer(player),
+class CustomPlayerImpl(player: Player, private val log: Logger) :
+    ReplaceableForwardingPlayer(player),
     CustomPlayer,
     Player.Listener,
     IListenable<CustomPlayer.Listener> by Listenable() {
@@ -145,7 +146,11 @@ class CustomPlayerImpl(player: Player, private val log: Logger) : ReplaceableFor
     }
 
     override fun updateTimingData(newTimingData: TimingDataController) {
-        if(newTimingData.size == 0 || newTimingData.size == 1 && newTimingData.coversDuration(0.ms, duration.ms)) {
+        if (newTimingData.size == 0 || newTimingData.size == 1 && newTimingData.coversDuration(
+                0.ms,
+                duration.ms
+            )
+        ) {
             currentMediaItem?.mediaMetadata?.timingData = null
             return
         }
