@@ -19,14 +19,16 @@ import com.tachyonmusic.util.ms
 /**
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands
  */
-class CustomPlayerImpl(player: Player, private val log: Logger) :
-    ReplaceableForwardingPlayer(player),
+class CustomPlayerImpl(
+    player: Player,
+    private val log: Logger
+) : ReplaceableForwardingPlayer(player),
     CustomPlayer,
     Player.Listener,
     IListenable<CustomPlayer.Listener> by Listenable() {
-    private var customizedSongMessage: PlayerMessage? = null
 
-    private val castPlayerMessageSender = CastPlayerMessageSender()
+    private var customizedSongMessage: PlayerMessage? = null
+    private var castPlayerMessageSender: CastPlayerMessageSender? = null
 
     init {
         addListener(this)
@@ -62,14 +64,19 @@ class CustomPlayerImpl(player: Player, private val log: Logger) :
     fun createMessage(target: PlayerMessage.Target) =
         when (player) {
             is ExoPlayer -> (player as ExoPlayer).createMessage(target)
-            is CastPlayer -> PlayerMessage(
-                castPlayerMessageSender,
-                target,
-                currentTimeline,
-                if (currentMediaItemIndex == C.INDEX_UNSET) 0 else currentMediaItemIndex,
-                Clock.DEFAULT,
-                player.applicationLooper // TODO (internalPlayer.getPlaybackLooper())
-            )
+            is CastPlayer -> {
+                if(castPlayerMessageSender == null)
+                    castPlayerMessageSender = CastPlayerMessageSender(player as CastPlayer, log)
+
+                PlayerMessage(
+                    castPlayerMessageSender!!,
+                    target,
+                    currentTimeline,
+                    if (currentMediaItemIndex == C.INDEX_UNSET) 0 else currentMediaItemIndex,
+                    Clock.DEFAULT,
+                    player.applicationLooper // TODO (internalPlayer.getPlaybackLooper())
+                )
+            }
 
             else -> TODO("createMessage for other types of players")
         }
