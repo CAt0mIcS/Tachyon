@@ -1,10 +1,14 @@
 package com.tachyonmusic.media.service
 
 import android.os.Bundle
+import android.widget.Toast
+import androidx.media3.cast.CastPlayer
+import androidx.media3.cast.SessionAvailabilityListener
 import androidx.media3.common.*
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.session.*
+import com.google.android.gms.cast.framework.CastContext
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
@@ -20,11 +24,11 @@ import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.R
 import com.tachyonmusic.media.core.*
-import com.tachyonmusic.media.data.BrowserTree
-import com.tachyonmusic.media.data.CustomPlayerImpl
-import com.tachyonmusic.media.data.MediaNotificationProvider
+import com.tachyonmusic.media.data.*
 import com.tachyonmusic.media.domain.AudioEffectController
+import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
@@ -46,13 +50,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
-    private lateinit var exoPlayer: CustomPlayer
+    private lateinit var exoPlayer: ExoPlayer
     private lateinit var currentPlayer: CustomPlayer
-
-    // TODO: Can't inject nullable
-//    @Inject
-//    @Nullable
-    var castPlayer: CustomPlayer? = null
 
     @Inject
     lateinit var browserTree: BrowserTree
@@ -79,44 +78,71 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     lateinit var getPlaylistForPlayback: GetPlaylistForPlayback
 
     @Inject
+    lateinit var castWebServerController: CastWebServerController
+
+    @Inject
     lateinit var log: Logger
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var mediaSession: MediaLibrarySession
 
-    // use CustomPlayer.setAuxEffectInfo(reverb.id, 1f) (currently in isPlayingChanged)
+    private val castPlayer: CastPlayer? by lazy {
+        try {
+            val castContext = CastContext.getSharedInstance(this)
+            CastPlayer(castContext, CastMediaItemConverter(castWebServerController)).apply {
+                setSessionAvailabilityListener(CastSessionAvailabilityListener())
+                addListener(this@MediaPlaybackService)
+            }
+        } catch (e: Exception) {
+            log.debug(
+                "Cast is not available on this device. " +
+                        "Exception thrown when attempting to obtain CastContext. " + e.message
+            )
+            null
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
 
         runBlocking {
             exoPlayer = buildExoPlayer(!settingsRepository.getSettings().ignoreAudioFocus)
-            currentPlayer = exoPlayer
+        }
+
+        currentPlayer = CustomPlayerImpl(
+            if (castPlayer?.isCastSessionAvailable == true)
+                castPlayer!!
+            else
+                exoPlayer,
+            log
+        ).apply {
+            registerEventListener(CustomPlayerEventListener())
         }
 
         audioEffectController.controller = object : AudioEffectController.PlaybackController {
             override fun onNewPlaybackParameters(params: PlaybackParameters) {
-                currentPlayer.playbackParameters = PlaybackParameters(
+                exoPlayer.playbackParameters = PlaybackParameters(
                     params.speed,
                     params.pitch
                 )
-                currentPlayer.volume = params.volume
+                exoPlayer.volume = params.volume
+                castPlayer?.playbackParameters = exoPlayer.playbackParameters
+                castPlayer?.volume = exoPlayer.volume
             }
 
             override fun onReverbToggled(enabled: Boolean, effectId: Int) {
-                if (enabled)
+                if (enabled) {
                     currentPlayer.setAuxEffectInfo(AuxEffectInfo(effectId, 1F))
-                else
-                    currentPlayer.setAuxEffectInfo(
-                        AuxEffectInfo(
-                            AuxEffectInfo.NO_AUX_EFFECT_ID,
-                            0F
-                        )
-                    )
+                } else {
+                    val effectInfo = AuxEffectInfo(AuxEffectInfo.NO_AUX_EFFECT_ID, 0F)
+                    exoPlayer.setAuxEffectInfo(effectInfo)
+                }
+
+                // TODO: Set aux effects for [CastPlayer]
             }
         }
-        audioEffectController.updateAudioSessionId(currentPlayer.audioSessionId)
+        audioEffectController.updateAudioSessionId(exoPlayer.audioSessionId)
 
 //        settingsRepository.observe().onEach {
 //            switchPlayer(exoPlayer, buildExoPlayer(!it.ignoreAudioFocus))
@@ -128,26 +154,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         castPlayer?.addListener(this)
 
         mediaSession =
-            MediaLibrarySession.Builder(this, exoPlayer, MediaLibrarySessionCallback()).build()
-    }
-
-    /**
-     * TODO: Seamlessly switch between old and new exo player instances
-     */
-    fun switchPlayer(oldPlayer: CustomPlayer, newPlayer: CustomPlayer) {
-        val pos = oldPlayer.currentPosition
-        val items = oldPlayer.mediaItems
-        val currentIndex = oldPlayer.currentMediaItemIndex
-        val playWhenReady = oldPlayer.playWhenReady
-
-        if (items.isNotEmpty()) {
-            newPlayer.setMediaItems(items)
-            newPlayer.seekTo(currentIndex, pos)
-            newPlayer.playWhenReady = playWhenReady
-            newPlayer.prepare()
-        }
-
-        currentPlayer = newPlayer
+            MediaLibrarySession.Builder(this, currentPlayer, MediaLibrarySessionCallback()).build()
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession =
@@ -162,7 +169,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         exoPlayer.release()
         castPlayer?.release()
         mediaSession.release()
-        // TODO: Make [mediaSession] nullable and set to null?
     }
 
     private inner class MediaLibrarySessionCallback : MediaLibrarySession.Callback {
@@ -181,7 +187,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 )
             )
 
-            mediaSession.dispatchMediaEvent(AudioSessionIdChangedEvent(currentPlayer.audioSessionId))
+            mediaSession.dispatchMediaEvent(AudioSessionIdChangedEvent(exoPlayer.audioSessionId))
 
             mediaSession.setCustomLayout(
                 controller,
@@ -300,13 +306,29 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }
 
         private fun handleSetRepeatModeEvent(event: SetRepeatModeEvent) {
-            currentPlayer.coreRepeatMode = event.repeatMode
+            exoPlayer.coreRepeatMode = event.repeatMode
+            // castPlayer?.coreRepeatMode = event.repeatMode // TODO: Set repeat mode for cast player
             mediaSession.setCustomLayout(buildCustomNotificationLayout(event.repeatMode))
         }
 
         private fun handleSetTimingDataEvent(event: SetTimingDataEvent) {
             currentPlayer.updateTimingDataOfCurrentPlayback(event.timingData)
         }
+    }
+
+
+    private inner class CastSessionAvailabilityListener : SessionAvailabilityListener {
+        override fun onCastSessionAvailable() {
+            castWebServerController.start(currentPlayer.mediaItems.map { it.localConfiguration!!.uri })
+            currentPlayer.setPlayer(castPlayer!!)
+        }
+
+        override fun onCastSessionUnavailable() {
+            currentPlayer.setPlayer(exoPlayer)
+            castWebServerController.stop()
+            Player.COMMAND_ADJUST_DEVICE_VOLUME
+        }
+
     }
 
 
@@ -417,12 +439,27 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }
     }
 
+    override fun onPlayerError(error: PlaybackException) {
+        var message = R.string.generic_error
+        log.error("Player error: ${error.errorCodeName} (${error.errorCode}): ${error.message}")
+        if (error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
+            || error.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
+        ) {
+            message = R.string.error_media_not_found
+        }
+        Toast.makeText(
+            applicationContext,
+            message,
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
 
     /**************************************************************************
      ********** HELPER FUNCTIONS
      *************************************************************************/
-    private fun buildExoPlayer(handleAudioFocus: Boolean): CustomPlayer =
-        CustomPlayerImpl(ExoPlayer.Builder(this).apply {
+    private fun buildExoPlayer(handleAudioFocus: Boolean): ExoPlayer =
+        ExoPlayer.Builder(this).apply {
             setAudioAttributes(
                 AudioAttributes.Builder()
                     .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
@@ -434,8 +471,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }.build().apply {
             // TODO: Debug only
             addAnalyticsListener(EventLogger())
-        }, log).apply {
-            registerEventListener(CustomPlayerEventListener())
         }
 
     private fun buildCustomNotificationLayout(repeatMode: RepeatMode) = listOf(

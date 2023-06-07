@@ -6,17 +6,22 @@
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
         android:name="com.tachyonmusic.TachyonApplication"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AppCompat.DayNight">
 
+<!--        Android Auto support-->
         <meta-data android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc"/>
+
+<!--        Cast support-->
+        <meta-data android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+            android:value="com.tachyonmusic.data.repository.CastOptionsProvider"/>
 
         <activity
             android:name="com.tachyonmusic.presentation.entry.ActivityMain"
@@ -31,10 +36,6 @@
 
 
         <profileable android:shell="true" />
-
-        <meta-data
-            android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-            android:value="androidx.media3.cast.DefaultCastOptionsProvider" />
 
         <!--
        Declare the common MediaBrowserService for use in the mobile app, including

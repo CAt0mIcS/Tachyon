@@ -3,9 +3,12 @@ plugins {
     id("org.jetbrains.kotlin.android")
 
     id("kotlin-kapt")
+    id("kotlin-android")
+    id("kotlin-android-extensions")
     id("com.google.dagger.hilt.android")
     id("dagger.hilt.android.plugin")
 }
+
 
 kotlin {
     sourceSets {
@@ -37,9 +40,9 @@ android {
 
     buildTypes {
         release {
-            isDebuggable = false
-            isShrinkResources = true
-            isMinifyEnabled = true
+//            isDebuggable = false
+//            isShrinkResources = true
+            isMinifyEnabled = false
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -89,6 +92,7 @@ dependencies {
     implementation(Dependency.DaggerHilt.NAVIGATION_COMPOSE)
 
     implementation(Dependency.Media3.MEDIA_SESSION)
+    implementation(Dependency.Media3.CAST)
     implementation(Dependency.Compose.COIL)
 
 
