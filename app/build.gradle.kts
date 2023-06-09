@@ -36,6 +36,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        manifestPlaceholders["redirectSchemeName"] = "spotify-sdk"
+        manifestPlaceholders["redirectHostName"] = "auth"
     }
 
     buildTypes {
@@ -95,6 +98,9 @@ dependencies {
     implementation(Dependency.Media3.CAST)
     implementation(Dependency.Compose.COIL)
 
+    implementation(files(Dependency.Spotify.AAR))
+    implementation("com.spotify.android:auth:2.0.2")
+    implementation(Dependency.GSON.GSON)
 
     projectCore()
     projectMedia()

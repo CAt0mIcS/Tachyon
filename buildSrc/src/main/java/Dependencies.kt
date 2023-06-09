@@ -106,6 +106,12 @@ object Dependency {
         const val COROUTINES = "androidx.room:room-ktx:${Version.ROOM}"
         const val PAGING = "androidx.room:room-paging:${Version.ROOM}"
     }
+
+    object Spotify {
+        // TODO: Relative path
+        const val AAR =
+            "D:\\dev\\Android\\Projects\\Tachyon\\lib\\Spotify\\spotify-app-remote-release-0.7.2.aar"
+    }
 }
 
 fun DependencyHandler.firebase() {
