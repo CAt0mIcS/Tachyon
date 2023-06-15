@@ -5,18 +5,23 @@ import android.content.Intent
 import com.spotify.android.appremote.api.ConnectionParams
 import com.spotify.android.appremote.api.Connector
 import com.spotify.android.appremote.api.SpotifyAppRemote
+import com.spotify.protocol.types.Repeat
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.ArtworkType
+import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
+import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import kaaes.spotify.webapi.android.SpotifyApi
 import kotlinx.coroutines.Dispatchers
@@ -27,12 +32,24 @@ class SpotifyInterfacerImpl(
     private val application: TachyonApplication,
     private val songRepository: SongRepository,
     private val playlistRepository: PlaylistRepository,
+    private val settingsRepository: SettingsRepository,
     private val log: Logger
 ) : SpotifyInterfacer {
     private var spotifyAppRemote: SpotifyAppRemote? = null
     private var api: SpotifyApi? = null
 
     private val ioScope = application.coroutineScope + Dispatchers.IO
+
+    init {
+        ioScope.launch {
+            val updateInterval = settingsRepository.getSettings().audioUpdateInterval
+            while (true) {
+                currentPosition =
+                    spotifyAppRemote?.playerApi?.playerState?.await()?.data?.playbackPosition?.ms
+                delay(updateInterval)
+            }
+        }
+    }
 
     override fun authorize(activity: Activity) {
         val builder = AuthorizationRequest.Builder(
@@ -72,6 +89,51 @@ class SpotifyInterfacerImpl(
         }
     }
 
+    /**************************************************************************
+     ********** PLAYBACK CONTROL
+     *************************************************************************/
+    override var currentPosition: Duration? = 0.ms
+        private set
+
+    override fun play(uri: String, index: Int?) {
+        spotifyAppRemote?.playerApi?.play(uri)
+        spotifyAppRemote?.playerApi?.skipToIndex(uri, index ?: return)
+    }
+
+    override fun resume() {
+        spotifyAppRemote?.playerApi?.resume()
+    }
+
+    override fun pause() {
+        spotifyAppRemote?.playerApi?.pause()
+    }
+
+    override fun seekTo(pos: Duration) {
+        spotifyAppRemote?.playerApi?.seekTo(pos.inWholeMilliseconds)
+    }
+
+    override fun seekTo(playlistUri: String, index: Int, pos: Duration) {
+        spotifyAppRemote?.playerApi?.skipToIndex(playlistUri, index)
+        spotifyAppRemote?.playerApi?.seekTo(pos.inWholeMilliseconds)
+    }
+
+    override fun setRepeatMode(repeatMode: RepeatMode) {
+        when (repeatMode) {
+            is RepeatMode.All -> {
+                spotifyAppRemote?.playerApi?.setRepeat(Repeat.ALL)
+                spotifyAppRemote?.playerApi?.setShuffle(false)
+            }
+            is RepeatMode.One -> {
+                spotifyAppRemote?.playerApi?.setRepeat(Repeat.ONE)
+                spotifyAppRemote?.playerApi?.setShuffle(false)
+            }
+            is RepeatMode.Shuffle -> {
+                spotifyAppRemote?.playerApi?.setRepeat(Repeat.ALL)
+                spotifyAppRemote?.playerApi?.setShuffle(true)
+            }
+        }
+
+    }
 
     private fun connectToSpotify(accessToken: String) {
         val connectionParams = ConnectionParams.Builder(CLIENT_ID)
@@ -110,7 +172,7 @@ class SpotifyInterfacerImpl(
                 ).items.map { playlistTrack ->
                     val track = playlistTrack.track
                     SongEntity(
-                        MediaId(track.href),
+                        MediaId(track.uri),
                         track.name,
                         track.artists.firstOrNull()?.name ?: "Unknown Artist",
                         track.duration_ms.ms,

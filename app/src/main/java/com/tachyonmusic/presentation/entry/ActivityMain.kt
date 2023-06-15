@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
-import com.spotify.android.appremote.api.SpotifyAppRemote
 import com.tachyonmusic.app.R
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
@@ -35,8 +34,6 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     lateinit var spotifyInterfacer: SpotifyInterfacer
 
     private var castContext: CastContext? = null
-
-    private var spotifyAppRemote: SpotifyAppRemote? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {

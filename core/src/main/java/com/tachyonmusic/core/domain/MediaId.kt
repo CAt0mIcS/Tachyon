@@ -59,7 +59,7 @@ data class MediaId(
         get() = source.contains(PlaybackType.Playlist.Local().toString())
 
     val isSpotifySong: Boolean
-        get() = source.startsWith("https://api.spotify.com") && source.contains("/tracks/")
+        get() = source.startsWith("spotify:track:")
 
     val isSpotifyPlaylist: Boolean
         get() = source.startsWith("spotify:playlist:")

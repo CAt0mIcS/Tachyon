@@ -3,6 +3,7 @@ package com.tachyonmusic.data.repository
 import android.app.Activity
 import android.content.ComponentName
 import android.os.Bundle
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
@@ -44,6 +45,9 @@ class MediaPlaybackServiceMediaBrowserController(
 
     private var browser: MediaBrowser? = null
 
+    override fun registerLifecycle(lifecycle: Lifecycle) {
+        lifecycle.addObserver(this)
+    }
 
     override fun onCreate(owner: LifecycleOwner) {
         // TODO: Does this need to be done in onStart/onResume?

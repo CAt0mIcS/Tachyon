@@ -1,81 +1,93 @@
 package com.tachyonmusic.data.repository
 
-import androidx.media3.common.PlaybackParameters
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.IListenable
-import com.tachyonmusic.util.Listenable
+import com.tachyonmusic.util.cycle
+import com.tachyonmusic.util.indexOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
-class SpotifyMediaBrowserController : MediaBrowserController,
-    IListenable<MediaBrowserController.EventListener> by Listenable() {
+class SpotifyMediaBrowserController(
+    private val api: SpotifyInterfacer
+) {
 
-    override val currentPlaylist: StateFlow<Playlist?>
-        get() = TODO("Not yet implemented")
-    override val currentPlayback: StateFlow<SinglePlayback?>
-        get() = TODO("Not yet implemented")
-    override val isPlaying: StateFlow<Boolean>
-        get() = TODO("Not yet implemented")
+    private val _currentPlaylist = MutableStateFlow<Playlist?>(null)
+    val currentPlaylist: StateFlow<Playlist?> = _currentPlaylist.asStateFlow()
 
-    override fun setPlaylist(playlist: Playlist, position: Duration?) {
-        TODO("Not yet implemented")
+    private val _currentPlayback = MutableStateFlow<SinglePlayback?>(null)
+    val currentPlayback: StateFlow<SinglePlayback?> = _currentPlayback.asStateFlow()
+
+    private val _isPlaying = MutableStateFlow(false)
+    val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
+
+    fun setPlaylist(playlist: Playlist, position: Duration?) {
+        api.play(playlist.mediaId.source, playlist.currentPlaylistIndex)
+        api.seekTo(position ?: return)
+
+        _currentPlaylist.update { playlist }
+        _currentPlayback.update { playlist.current }
     }
 
-    override val currentPosition: Duration?
-        get() = TODO("Not yet implemented")
-    override var currentPlaybackTimingData: TimingDataController?
-        get() = TODO("Not yet implemented")
+    val currentPosition: Duration?
+        get() = api.currentPosition
+
+    var currentPlaybackTimingData: TimingDataController?
+        get() = TimingDataController()
         set(value) {}
-    override val canPrepare: Boolean
-        get() = TODO("Not yet implemented")
-    override var playbackParameters: PlaybackParameters
-        get() = TODO("Not yet implemented")
-        set(value) {}
-    override var volume: Float
-        get() = TODO("Not yet implemented")
-        set(value) {}
-    override val audioSessionId: Int?
-        get() = TODO("Not yet implemented")
-    override val nextPlayback: SinglePlayback?
-        get() = TODO("Not yet implemented")
-    override val repeatMode: StateFlow<RepeatMode>
-        get() = TODO("Not yet implemented")
 
-    override fun setRepeatMode(repeatMode: RepeatMode) {
-        TODO("Not yet implemented")
+
+    val nextPlayback: SinglePlayback?
+        get() {
+            // TODO: Doesn't account for shuffle
+            return currentPlaylist.value?.playbacks?.cycle(
+                (currentPlaylist.value?.currentPlaylistIndex ?: return null) + 1
+            )
+        }
+
+    private val _repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.All)
+    val repeatMode = _repeatMode.asStateFlow()
+
+    fun setRepeatMode(repeatMode: RepeatMode) {
+        api.setRepeatMode(repeatMode)
+        _repeatMode.update { repeatMode }
     }
 
-    override suspend fun prepare() {
-        TODO("Not yet implemented")
+    fun play(playback: SinglePlayback) {
+        api.play(playback.mediaId.source)
     }
 
-    override fun play() {
-        TODO("Not yet implemented")
+    fun play() {
+        api.resume()
     }
 
-    override fun pause() {
-        TODO("Not yet implemented")
+    fun pause() {
+        api.pause()
     }
 
-    override fun stop() {
-        TODO("Not yet implemented")
+    fun seekTo(pos: Duration?) {
+        api.seekTo(pos ?: return)
     }
 
-    override fun seekTo(pos: Duration?) {
-        TODO("Not yet implemented")
+    fun seekTo(mediaId: MediaId, pos: Duration?) {
+        api.seekTo(
+            currentPlaylist.value?.mediaId?.source ?: return,
+            currentPlaylist.value?.playbacks?.indexOf { it.mediaId == mediaId } ?: return,
+            pos ?: return
+        )
     }
 
-    override fun seekTo(mediaId: MediaId, pos: Duration?) {
-        TODO("Not yet implemented")
+    fun seekTo(index: Int, pos: Duration?) {
+        api.seekTo(
+            currentPlaylist.value?.mediaId?.source ?: return,
+            index,
+            pos ?: return
+        )
     }
-
-    override fun seekTo(index: Int, pos: Duration?) {
-        TODO("Not yet implemented")
-    }
-
 }
