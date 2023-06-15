@@ -8,11 +8,11 @@ import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
-import com.tachyonmusic.playback_layers.data.PredefinedPlaylistsRepositoryImpl
+import com.tachyonmusic.data.repository.SpotifyInterfacerImpl
 import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
+import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
@@ -28,8 +28,10 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.permission.domain.UriPermissionRepository
+import com.tachyonmusic.playback_layers.data.PredefinedPlaylistsRepositoryImpl
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.sort.domain.SortedPlaybackRepository
 import dagger.Module
 import dagger.Provides
@@ -304,4 +306,12 @@ object AppRepositoryModule {
             (app as TachyonApplication).coroutineScope
         )
 
+    @Provides
+    @Singleton
+    fun provideSpotifyInterfacer(
+        application: Application,
+        playlistRepository: PlaylistRepository,
+        logger: Logger
+    ): SpotifyInterfacer =
+        SpotifyInterfacerImpl(application as TachyonApplication, playlistRepository, logger)
 }

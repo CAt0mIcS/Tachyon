@@ -45,6 +45,7 @@ fun CustomizedSong.toEntity(): CustomizedSongEntity {
 }
 
 fun Playlist.toEntity() = PlaylistEntity(
+    name,
     mediaId,
     playbacks.map { it.mediaId },
     currentPlaylistIndex

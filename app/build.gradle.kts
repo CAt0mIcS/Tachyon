@@ -100,6 +100,7 @@ dependencies {
 
     implementation(files(Dependency.Spotify.AAR))
     implementation("com.spotify.android:auth:2.0.2")
+    implementation("com.github.kaaes:spotify-web-api-android:0.4.1")
     implementation(Dependency.GSON.GSON)
 
     projectCore()

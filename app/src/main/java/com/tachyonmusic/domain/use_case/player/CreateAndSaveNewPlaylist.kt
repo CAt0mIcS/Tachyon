@@ -31,6 +31,7 @@ class CreateAndSaveNewPlaylist(
 
         playlistRepository.add(
             PlaylistEntity(
+                name,
                 MediaId.ofLocalPlaylist(name),
                 emptyList()
             )
