@@ -2,13 +2,11 @@ package com.tachyonmusic.core.data.playback
 
 import android.net.Uri
 import android.os.Bundle
-import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.core.data.ext.toInt
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
@@ -58,17 +56,6 @@ abstract class AbstractSong(
             putParcelable(MetadataKeys.Playback, this@AbstractSong)
         })
     }.build()
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeParcelable(uri, flags)
-        parcel.writeString(mediaId.source)
-        parcel.writeString(title)
-        parcel.writeString(artist)
-        parcel.writeLong(duration.inWholeMilliseconds)
-        parcel.writeParcelable(artwork, flags)
-        parcel.writeInt(isArtworkLoading.toInt())
-        parcel.writeInt(isPlayable.toInt())
-    }
 
     override fun toString() = mediaId.toString()
 

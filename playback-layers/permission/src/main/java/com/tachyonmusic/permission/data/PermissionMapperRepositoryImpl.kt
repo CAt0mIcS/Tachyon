@@ -3,12 +3,12 @@ package com.tachyonmusic.permission.data
 import android.content.Context
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.database.domain.model.HistoryEntity
 import com.tachyonmusic.database.domain.model.CustomizedSongEntity
+import com.tachyonmusic.database.domain.model.HistoryEntity
 import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.SongEntity
-import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
+import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.permission.checkIfPlayable
@@ -39,7 +39,10 @@ class PermissionMapperRepositoryImpl(
         }
 
     override val customizedSongFlow =
-        combine(uriPermissionRepository.permissions, customizedSongRepository.observe()) { _, customizedSongs ->
+        combine(
+            uriPermissionRepository.permissions,
+            customizedSongRepository.observe()
+        ) { _, customizedSongs ->
             transformCustomizedSongs(customizedSongs)
         }
 
@@ -85,9 +88,10 @@ class PermissionMapperRepositoryImpl(
         it.toSong(it.checkIfPlayable(context))
     }
 
-    private fun transformCustomizedSongs(customizedSongs: List<CustomizedSongEntity>) = customizedSongs.map {
-        it.toCustomizedSong(it.checkIfPlayable(context))
-    }
+    private fun transformCustomizedSongs(customizedSongs: List<CustomizedSongEntity>) =
+        customizedSongs.map {
+            it.toCustomizedSong(it.checkIfPlayable(context))
+        }
 
     private fun transformPlaylists(
         playlists: List<PlaylistEntity>,
@@ -95,8 +99,14 @@ class PermissionMapperRepositoryImpl(
         customizedSongs: List<CustomizedSong>
     ) = playlists.map { playlist ->
         playlist.toPlaylist(playlist.items.mapNotNull { playlistItem ->
-            songs.find { playlistItem == it.mediaId }
-                ?: customizedSongs.find { playlistItem == it.mediaId }
+            if (playlistItem.isLocalSong || playlistItem.isSpotifySong) {
+                songs.find { playlistItem == it.mediaId }
+            } else if(playlistItem.isLocalCustomizedSong) {
+                customizedSongs.find { playlistItem == it.mediaId }
+            }
+            else {
+                TODO("Invalid playlist item $playlistItem")
+            }
         })
     }
 

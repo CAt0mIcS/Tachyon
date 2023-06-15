@@ -310,8 +310,14 @@ object AppRepositoryModule {
     @Singleton
     fun provideSpotifyInterfacer(
         application: Application,
+        songRepository: SongRepository,
         playlistRepository: PlaylistRepository,
         logger: Logger
     ): SpotifyInterfacer =
-        SpotifyInterfacerImpl(application as TachyonApplication, playlistRepository, logger)
+        SpotifyInterfacerImpl(
+            application as TachyonApplication,
+            songRepository,
+            playlistRepository,
+            logger
+        )
 }

@@ -9,11 +9,15 @@ import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
 import com.tachyonmusic.TachyonApplication
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.PlaylistEntity
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
+import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.util.ms
 import kaaes.spotify.webapi.android.SpotifyApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,6 +25,7 @@ import kotlinx.coroutines.plus
 
 class SpotifyInterfacerImpl(
     private val application: TachyonApplication,
+    private val songRepository: SongRepository,
     private val playlistRepository: PlaylistRepository,
     private val log: Logger
 ) : SpotifyInterfacer {
@@ -103,10 +108,23 @@ class SpotifyInterfacerImpl(
                     CLIENT_ID,
                     it.id
                 ).items.map { playlistTrack ->
-                    MediaId(playlistTrack.track.uri)
+                    val track = playlistTrack.track
+                    SongEntity(
+                        MediaId(track.href),
+                        track.name,
+                        track.artists.firstOrNull()?.name ?: "Unknown Artist",
+                        track.duration_ms.ms,
+                        if (track.album.images.firstOrNull() != null) ArtworkType.REMOTE else ArtworkType.NO_ARTWORK,
+                        track.album.images.firstOrNull()?.url
+                    )
                 }
 
-                PlaylistEntity(it.name, MediaId(it.uri), playlistTracks)
+                songRepository.addAll(playlistTracks)
+
+                PlaylistEntity(
+                    it.name,
+                    MediaId(it.uri),
+                    playlistTracks.map { track -> track.mediaId })
             }
             playlistRepository.addAll(playlists)
         }

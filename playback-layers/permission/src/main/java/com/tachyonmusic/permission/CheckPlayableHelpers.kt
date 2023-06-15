@@ -9,4 +9,4 @@ fun Uri?.isPlayable(context: Context) =
     if (this == null) false else DocumentFile.fromTreeUri(context, this)!!.canRead()
 
 fun SinglePlaybackEntity.checkIfPlayable(context: Context) =
-    mediaId.uri?.isPlayable(context) == true
+    if (mediaId.isSpotifySong) true else mediaId.uri?.isPlayable(context) == true

@@ -2,8 +2,8 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import androidx.room.Room
-import com.tachyonmusic.core.data.playback.LocalCustomizedSongImpl
-import com.tachyonmusic.core.data.playback.LocalPlaylistImpl
+import com.tachyonmusic.core.data.playback.LocalCustomizedSong
+import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
@@ -50,7 +50,7 @@ object TestAppModule {
     fun provideCustomizedSongs(repository: SongRepository): MutableList<CustomizedSong> = runBlocking {
         MutableList(3) { i ->
             val song = repository.getSongs()[i]
-            LocalCustomizedSongImpl(
+            LocalCustomizedSong(
                 MediaId.ofLocalCustomizedSong(i.toString(), song.mediaId),
                 i.toString(),
                 TimingDataController(
@@ -68,7 +68,7 @@ object TestAppModule {
     @Singleton
     fun providePlaylists(repository: SongRepository): MutableList<Playlist> = runBlocking {
         MutableList(2) { i ->
-            LocalPlaylistImpl(
+            LocalPlaylist(
                 MediaId.ofLocalPlaylist(i.toString()),
                 i.toString(),
                 repository.getSongs().filter {

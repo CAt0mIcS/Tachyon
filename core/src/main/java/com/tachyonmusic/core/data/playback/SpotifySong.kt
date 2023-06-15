@@ -5,26 +5,22 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.ext.toBoolean
+import com.tachyonmusic.core.data.ext.toInt
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
 
-/**
- * Song stored in local storage with a path in the filesystem
- */
-class LocalSongImpl(
-    override val uri: Uri,
+class SpotifySong(
     mediaId: MediaId,
     title: String,
     artist: String,
     duration: Duration
 ) : AbstractSong(mediaId, title, artist, duration) {
+    override val playbackType = PlaybackType.Song.Spotify()
 
-    override val playbackType = PlaybackType.Song.Local()
-
-    override fun copy(): Song = LocalSongImpl(uri, mediaId, title, artist, duration).let {
+    override fun copy(): Song = SpotifySong(mediaId, title, artist, duration).let {
         it.artwork = artwork
         it.isArtworkLoading = isArtworkLoading
         it.isPlayable = isPlayable
@@ -32,8 +28,9 @@ class LocalSongImpl(
         it
     }
 
+    override val uri: Uri = mediaId.uri!!
+
     constructor(parcel: Parcel) : this(
-        parcel.readParcelable<Uri>(Uri::class.java.classLoader)!!,
         MediaId(parcel.readString()!!),
         parcel.readString()!!,
         parcel.readString()!!,
@@ -44,11 +41,21 @@ class LocalSongImpl(
         isPlayable = parcel.readInt().toBoolean()
     }
 
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(mediaId.source)
+        parcel.writeString(title)
+        parcel.writeString(artist)
+        parcel.writeLong(duration.inWholeMilliseconds)
+        parcel.writeParcelable(artwork, flags)
+        parcel.writeInt(isArtworkLoading.toInt())
+        parcel.writeInt(isPlayable.toInt())
+    }
+
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<LocalSongImpl> {
-            override fun createFromParcel(parcel: Parcel) = LocalSongImpl(parcel)
-            override fun newArray(size: Int): Array<LocalSongImpl?> = arrayOfNulls(size)
+        val CREATOR = object : Parcelable.Creator<SpotifySong> {
+            override fun createFromParcel(parcel: Parcel) = SpotifySong(parcel)
+            override fun newArray(size: Int): Array<SpotifySong?> = arrayOfNulls(size)
         }
     }
 }

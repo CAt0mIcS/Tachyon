@@ -1,8 +1,6 @@
 package com.tachyonmusic.permission
 
-import com.tachyonmusic.core.data.playback.LocalCustomizedSongImpl
-import com.tachyonmusic.core.data.playback.LocalPlaylistImpl
-import com.tachyonmusic.core.data.playback.LocalSongImpl
+import com.tachyonmusic.core.data.playback.*
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Playlist
@@ -14,14 +12,23 @@ import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 
 fun SongEntity.toSong(isPlayable: Boolean): Song =
-    LocalSongImpl(mediaId.uri!!, mediaId, title, artist, duration).let {
-        it.isPlayable = isPlayable
-        it
+    if (mediaId.isLocalSong) {
+        LocalSong(mediaId.uri!!, mediaId, title, artist, duration).let {
+            it.isPlayable = isPlayable
+            it
+        }
+    } else if (mediaId.isSpotifySong) {
+        SpotifySong(mediaId, title, artist, duration).let {
+            it.isPlayable = isPlayable
+            it
+        }
+    } else {
+        TODO("Invalid song conversion media id $mediaId")
     }
 
 fun CustomizedSongEntity.toCustomizedSong(
     isPlayable: Boolean,
-    song: Song = LocalSongImpl(
+    song: Song = LocalSong(
         mediaId.underlyingMediaId!!.uri!!,
         mediaId.underlyingMediaId!!,
         title,
@@ -31,7 +38,7 @@ fun CustomizedSongEntity.toCustomizedSong(
         it.isPlayable = isPlayable
         it
     }
-): CustomizedSong = LocalCustomizedSongImpl(
+): CustomizedSong = LocalCustomizedSong(
     mediaId,
     song
 ).let {
@@ -51,5 +58,12 @@ fun SinglePlaybackEntity.toPlayback(isPlayable: Boolean): SinglePlayback = when 
 }
 
 fun PlaylistEntity.toPlaylist(items: List<SinglePlayback>): Playlist =
-    LocalPlaylistImpl.build(mediaId, items.toMutableList(), currentItemIndex)
+    if (mediaId.isSpotifyPlaylist) {
+        SpotifyPlaylist(name, mediaId, items.toMutableList(), currentItemIndex)
+    } else if (mediaId.isLocalPlaylist) {
+        LocalPlaylist.build(mediaId, items.toMutableList(), currentItemIndex)
+    } else {
+        TODO("Invalid playlist conversion media id $mediaId")
+    }
+
 

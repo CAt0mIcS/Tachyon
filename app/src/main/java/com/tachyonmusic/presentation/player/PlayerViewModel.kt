@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.core.data.playback.LocalSongImpl
+import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
@@ -62,7 +62,7 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(
         viewModelScope + Dispatchers.IO,
         SharingStarted.Lazily,
-        LocalSongImpl(Uri.EMPTY, MediaId.EMPTY, "", "", 0.ms)
+        LocalSong(Uri.EMPTY, MediaId.EMPTY, "", "", 0.ms)
     )
 
     val shouldShowPlayer = _playback.map {

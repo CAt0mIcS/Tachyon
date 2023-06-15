@@ -1,7 +1,7 @@
 package com.tachyonmusic.playback_layers.domain
 
 import com.tachyonmusic.artwork.domain.ArtworkCodex
-import com.tachyonmusic.core.data.playback.LocalPlaylistImpl
+import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
@@ -40,7 +40,7 @@ class GetPlaylistForPlayback(
             artworkCodex.await(it.mediaId.underlyingMediaId ?: it.mediaId)
         }
 
-        return LocalPlaylistImpl.build(
+        return LocalPlaylist.build(
             predefinedSongPlaylistMediaId,
             items.toMutableList(),
             items.indexOfFirst { it.mediaId == mediaId }
@@ -56,7 +56,7 @@ class GetPlaylistForPlayback(
             artworkCodex.await(it.mediaId.underlyingMediaId ?: it.mediaId)
         }
 
-        return LocalPlaylistImpl.build(
+        return LocalPlaylist.build(
             predefinedCustomizedSongPlaylistMediaId,
             items.toMutableList(),
             items.indexOfFirst { it.mediaId == mediaId }

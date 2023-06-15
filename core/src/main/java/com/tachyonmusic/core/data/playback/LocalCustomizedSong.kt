@@ -11,7 +11,7 @@ import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Song
 
-class LocalCustomizedSongImpl(
+class LocalCustomizedSong(
     mediaId: MediaId,
     song: Song
 ) : AbstractCustomizedSong(mediaId, song) {
@@ -19,7 +19,7 @@ class LocalCustomizedSongImpl(
     override val playbackType = PlaybackType.CustomizedSong.Local()
 
     override fun copy(): CustomizedSong =
-        LocalCustomizedSongImpl(mediaId, song.copy()).let {
+        LocalCustomizedSong(mediaId, song.copy()).let {
             it.bassBoost = bassBoost
             it.virtualizerStrength = virtualizerStrength
             it.equalizerBands = equalizerBands
@@ -33,13 +33,13 @@ class LocalCustomizedSongImpl(
 
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<LocalCustomizedSongImpl> {
-            override fun createFromParcel(parcel: Parcel): LocalCustomizedSongImpl {
+        val CREATOR = object : Parcelable.Creator<LocalCustomizedSong> {
+            override fun createFromParcel(parcel: Parcel): LocalCustomizedSong {
                 val name = parcel.readString()!!
 
                 val song: Song =
                     parcel.readParcelable(Song::class.java.classLoader)!!
-                return LocalCustomizedSongImpl(
+                return LocalCustomizedSong(
                     MediaId.ofLocalCustomizedSong(name, song.mediaId),
                     song
                 ).apply {
@@ -64,7 +64,7 @@ class LocalCustomizedSongImpl(
                 }
             }
 
-            override fun newArray(size: Int): Array<LocalCustomizedSongImpl?> = arrayOfNulls(size)
+            override fun newArray(size: Int): Array<LocalCustomizedSong?> = arrayOfNulls(size)
         }
     }
 }
