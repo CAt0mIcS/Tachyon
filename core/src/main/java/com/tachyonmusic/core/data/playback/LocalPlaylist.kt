@@ -8,6 +8,10 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.util.copy
 
+/**
+ * Playlist which was created locally, might have only local songs, a mix of local and remote (spotify)
+ * songs, or only spotify songs.
+ */
 class LocalPlaylist(
     mediaId: MediaId,
     playbacks: MutableList<SinglePlayback>,

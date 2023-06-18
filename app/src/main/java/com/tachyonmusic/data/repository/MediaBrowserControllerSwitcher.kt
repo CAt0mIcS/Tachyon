@@ -76,7 +76,7 @@ class MediaBrowserControllerSwitcher(
     override fun setPlaylist(playlist: Playlist, position: Duration?) {
         when (playlist) {
             is LocalPlaylist -> {
-                when (playlist.current) {
+                when (playlist.current?.underlyingSong) {
                     is LocalSong -> {
                         localBrowser.setPlaylist(playlist, position)
                         playbackLocation.update { PlaybackLocation.Local }
@@ -85,6 +85,7 @@ class MediaBrowserControllerSwitcher(
                         spotifyBrowser.play(playlist.current ?: return)
                         playbackLocation.update { PlaybackLocation.Spotify }
                     }
+                    else -> error("Invalid song type ${playlist.current?.underlyingSong}")
                 }
 
             }

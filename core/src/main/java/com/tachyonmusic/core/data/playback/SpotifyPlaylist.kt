@@ -6,18 +6,25 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.util.copy
 
+/**
+ * Playlist which has a direct Spotify uri (spotify:playlist:{ID}).
+ */
 class SpotifyPlaylist(
     override val name: String,
     mediaId: MediaId,
-    playbacks: MutableList<SinglePlayback>,
+    playbacks: MutableList<SpotifySong>,
     currentPlaylistIndex: Int = 0
-) : AbstractPlaylist(mediaId, playbacks, currentPlaylistIndex) {
+) : AbstractPlaylist(mediaId, playbacks.toMutableList(), currentPlaylistIndex) {
     override val playbackType = PlaybackType.Playlist.Spotify()
 
     override fun copy(): Playlist =
-        SpotifyPlaylist(name, mediaId, _playbacks.copy(), currentPlaylistIndex)
+        SpotifyPlaylist(
+            name,
+            mediaId,
+            _playbacks.map { it as SpotifySong }.toMutableList(),
+            currentPlaylistIndex
+        )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
@@ -33,7 +40,7 @@ class SpotifyPlaylist(
                 val name = parcel.readString()!!
                 val uri = parcel.readString()!!
                 val playbacks = parcel.readParcelableArray(SinglePlayback::class.java.classLoader)!!
-                    .map { it as SinglePlayback }.toMutableList()
+                    .map { it as SpotifySong }.toMutableList()
 
                 val currentPlaylistIndex = parcel.readInt()
 

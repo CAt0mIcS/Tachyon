@@ -59,7 +59,12 @@ fun SinglePlaybackEntity.toPlayback(isPlayable: Boolean): SinglePlayback = when 
 
 fun PlaylistEntity.toPlaylist(items: List<SinglePlayback>): Playlist =
     if (mediaId.isSpotifyPlaylist) {
-        SpotifyPlaylist(name, mediaId, items.toMutableList(), currentItemIndex)
+        SpotifyPlaylist(
+            name,
+            mediaId,
+            items.map { it as SpotifySong }.toMutableList(),
+            currentItemIndex
+        )
     } else if (mediaId.isLocalPlaylist) {
         LocalPlaylist.build(mediaId, items.toMutableList(), currentItemIndex)
     } else {

@@ -11,6 +11,10 @@ import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Song
 
+/**
+ * Currently customized songs will always be local because Spotify doesn't have any song customization
+ * API. However, the underlying [song] could still be a [SpotifySong]
+ */
 class LocalCustomizedSong(
     mediaId: MediaId,
     song: Song
