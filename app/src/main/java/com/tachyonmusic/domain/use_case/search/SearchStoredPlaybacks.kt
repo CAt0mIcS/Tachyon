@@ -1,45 +1,36 @@
 package com.tachyonmusic.domain.use_case.search
 
-import com.tachyonmusic.app.R
-import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
-import com.tachyonmusic.database.domain.repository.PlaylistRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.util.Resource
-import com.tachyonmusic.util.UiText
-import kotlinx.coroutines.flow.flow
+import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import java.util.*
 
 /**
  * Searches through all playbacks that don't come from Spotify/Soundcloud/...
  */
 class SearchStoredPlaybacks(
-    private val songRepository: SongRepository,
-    private val customizedSongRepository: CustomizedSongRepository,
-    private val playlistRepository: PlaylistRepository
+    private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
+    private val playbackRepository: PlaybackRepository
 ) {
-    operator fun invoke(query: String?) = flow {
-        if (query.isNullOrEmpty()) {
-            emit(
-                Resource.Error(
-                    UiText.StringResource(
-                        R.string.invalid_search_query,
-                        "null/empty"
-                    )
-                )
-            )
-            return@flow
-        }
+    // TODO: Optimize
+    suspend operator fun invoke(query: String?): List<Playback> {
+        val playbacks =
+            predefinedPlaylistsRepository.songPlaylist.value + predefinedPlaylistsRepository.customizedSongPlaylist.value + playbackRepository.getPlaylists()
 
-        // TODO: Optimize
-        val playbackNames =
-            (songRepository.getSongs() + customizedSongRepository.getCustomizedSongs()).map { it.title } + playlistRepository.getPlaylists()
-                .map { it.name }
+        if (query.isNullOrEmpty())
+            return playbacks
 
         // TODO: Better string searches?
-        for (playbackName in playbackNames) {
-            val coefficient = diceCoefficient(playbackName, query)
-            emit(Resource.Success(playbackName to 1f - coefficient))
+        val coefficientMap = mutableMapOf<Double, Playback>()
+        for (playback in playbacks) {
+            var coefficient =
+                diceCoefficient(if (playback is Playlist) playback.name else playback.title, query)
+            while (coefficientMap.containsKey(1.0 - coefficient))
+                coefficient -= .00000000001
+            coefficientMap[1.0 - coefficient] = playback
         }
+        return coefficientMap.toSortedMap().values.toList()
     }
 }
 

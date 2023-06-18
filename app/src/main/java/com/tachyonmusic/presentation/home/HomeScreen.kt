@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -16,6 +17,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -30,6 +32,7 @@ import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.BottomNavigationItem
+import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.home.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.isEnabled
@@ -47,8 +50,9 @@ object HomeScreen :
         miniPlayerHeight: Dp,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
-        var searchText by remember { mutableStateOf("") }
+        var isSearching by remember { mutableStateOf(false) }
         val history by viewModel.history.collectAsState()
+        val searchResults by viewModel.searchResults.collectAsState()
 
         val scope = rememberCoroutineScope()
 
@@ -65,12 +69,21 @@ object HomeScreen :
                 val interactionSource: MutableInteractionSource =
                     remember { MutableInteractionSource() }
 
+                var searchText by remember { mutableStateOf("") }
+
+                // TODO: Don't rely on states to display search view/normal home view
+                val focusManager = LocalFocusManager.current
+                BackHandler(isSearching) {
+                    isSearching = false
+                    searchText = ""
+                    focusManager.clearFocus()
+                }
+
                 BasicTextField(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
-                            start = Theme.padding.small,
-                            end = Theme.padding.small,
+                            end = Theme.padding.medium,
                             top = Theme.padding.medium
                         )
                         .shadow(Theme.shadow.medium, shape = Theme.shapes.medium)
@@ -80,9 +93,14 @@ object HomeScreen :
                             minHeight = TextFieldDefaults.MinHeight
                         ),
                     value = searchText,
-                    onValueChange = { searchText = it },
+                    onValueChange = {
+                        searchText = it
+                        isSearching = true
+                        viewModel.search(it)
+                    },
+
                     textStyle = TextStyle.Default.copy(
-                        fontSize = 25.sp,
+                        fontSize = 22.sp,
                         color = Theme.colors.contrastLow
                     ),
                     singleLine = true,
@@ -94,14 +112,14 @@ object HomeScreen :
                         placeholder = { //
                             Text(
                                 text = stringResource(androidx.appcompat.R.string.search_menu_title),
-                                fontSize = 25.sp
+                                fontSize = 22.sp
                             )
                         },
                         leadingIcon = {
                             Icon(
                                 painterResource(R.drawable.ic_search),
                                 contentDescription = "Search Playbacks",
-                                modifier = Modifier.scale(1.4f)
+                                modifier = Modifier.scale(1.2f)
                             )
                         },
                         interactionSource = interactionSource,
@@ -120,90 +138,106 @@ object HomeScreen :
                 }
             }
 
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(IntrinsicSize.Min)
-                        .padding(
-                            start = Theme.padding.medium,
-                            top = Theme.padding.large,
-                            end = Theme.padding.small
+            if (isSearching) {
+                items(searchResults, key = { it.mediaId.toString() }) {
+                    HorizontalPlaybackView(
+                        playback = it,
+                        artwork = it.underlyingSinglePlayback?.artwork ?: PlaceholderArtwork,
+                        isArtworkLoading = false,
+                        modifier = Modifier.padding(
+                            top = Theme.padding.small,
+                            end = Theme.padding.medium
                         ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                        onClick = { viewModel.onItemClicked(it) }
+                    )
+                }
+            } else {
+
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(IntrinsicSize.Min)
+                            .padding(
+                                start = Theme.padding.medium,
+                                top = Theme.padding.large,
+                                end = Theme.padding.small
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Text(
+                            text = "Recently Played",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.End,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            TextButton(
+                                onClick = { viewModel.refreshArtwork() },
+                            ) {
+                                Text(
+                                    "View All",
+                                    color = Theme.colors.blue,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+
+
+
+                item {
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = Theme.padding.small, top = Theme.padding.extraSmall),
+                    ) {
+                        playbacksView(history) {
+                            viewModel.onItemClicked(it)
+                            scope.launch {
+                                sheetState.expand()
+                            }
+                        }
+                    }
+                }
+
+                item {
 
                     Text(
-                        text = "Recently Played",
+                        "Recommended for You",
                         fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(
+                            start = Theme.padding.medium,
+                            top = Theme.padding.large,
+                            end = Theme.padding.medium
+                        )
                     )
+                }
 
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.End,
-                        verticalArrangement = Arrangement.Center
+                item {
+                    // TODO: Recommendations
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = Theme.padding.small, top = Theme.padding.small)
                     ) {
-                        TextButton(
-                            onClick = { viewModel.refreshArtwork() },
-                        ) {
-                            Text(
-                                "View All",
-                                color = Theme.colors.blue,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                        playbacksView(playbacks = history) {
+                            viewModel.onItemClicked(it)
+                            scope.launch {
+                                sheetState.expand()
+                            }
                         }
                     }
+
                 }
-            }
-
-
-
-            item {
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = Theme.padding.small, top = Theme.padding.extraSmall),
-                ) {
-                    playbacksView(history) {
-                        viewModel.onItemClicked(it)
-                        scope.launch {
-                            sheetState.expand()
-                        }
-                    }
-                }
-            }
-
-            item {
-
-                Text(
-                    "Recommended for You",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(
-                        start = Theme.padding.medium,
-                        top = Theme.padding.large,
-                        end = Theme.padding.medium
-                    )
-                )
-            }
-
-            item {
-                // TODO: Recommendations
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = Theme.padding.small, top = Theme.padding.small)
-                ) {
-                    playbacksView(playbacks = history) {
-                        viewModel.onItemClicked(it)
-                        scope.launch {
-                            sheetState.expand()
-                        }
-                    }
-                }
-
             }
         }
     }

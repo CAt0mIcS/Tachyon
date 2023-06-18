@@ -11,6 +11,7 @@ import com.tachyonmusic.domain.use_case.home.UnloadArtworks
 import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.player.SetRepeatMode
+import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +34,9 @@ class HomeViewModel @Inject constructor(
 
     private val playPlayback: PlayPlayback,
 
-    private val unloadArtworks: UnloadArtworks
+    private val unloadArtworks: UnloadArtworks,
+
+    private val searchStoredPlaybacks: SearchStoredPlaybacks
 ) : ViewModel() {
 
     val history = playbackRepository.historyFlow.map { history ->
@@ -46,6 +49,9 @@ class HomeViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(),
         emptyList()
     )
+
+    private val _searchResults = MutableStateFlow<List<Playback>>(emptyList())
+    val searchResults = _searchResults.asStateFlow()
 
 
     init {
@@ -73,6 +79,13 @@ class HomeViewModel @Inject constructor(
     fun refreshArtwork() {
         viewModelScope.launch(Dispatchers.IO) {
             unloadArtworks()
+        }
+    }
+
+    fun search(searchText: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val results = searchStoredPlaybacks(searchText)
+            _searchResults.update { results }
         }
     }
 }
