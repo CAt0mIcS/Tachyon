@@ -317,6 +317,7 @@ object AppRepositoryModule {
         songRepository: SongRepository,
         playlistRepository: PlaylistRepository,
         settingsRepository: SettingsRepository,
+        dataRepository: DataRepository,
         logger: Logger
     ): SpotifyInterfacer =
         SpotifyInterfacerImpl(
@@ -324,6 +325,7 @@ object AppRepositoryModule {
             songRepository,
             playlistRepository,
             settingsRepository,
+            dataRepository,
             logger
         )
 }

@@ -24,7 +24,8 @@ class RoomDataRepository(
 
     override suspend fun update(
         recentlyPlayed: RecentlyPlayed?,
-        repeatMode: RepeatMode?
+        repeatMode: RepeatMode?,
+        spotifyAccessToken: String?
     ) {
         if (recentlyPlayed != null)
             dao.setRecentlyPlayed(
@@ -37,5 +38,7 @@ class RoomDataRepository(
 
         if (repeatMode != null)
             dao.setRepeatMode(repeatMode)
+        if (spotifyAccessToken != null)
+            dao.setSpotifyAccessToken(spotifyAccessToken)
     }
 }

@@ -17,5 +17,8 @@ data class DataEntity(
     var recentlyPlayedArtworkUrl: String? = null,
 
     var repeatMode: RepeatMode = RepeatMode.All,
+
+    var spotifyAccessToken: String = "",
+
     @PrimaryKey val id: Int = 0
 )

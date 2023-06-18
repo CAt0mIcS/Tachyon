@@ -7,7 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
+import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.app.R
+import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.logger.domain.Logger
@@ -33,11 +35,16 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     @Inject
     lateinit var spotifyInterfacer: SpotifyInterfacer
 
+    @Inject
+    lateinit var dataRepository: DataRepository
+
     private var castContext: CastContext? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        (application as TachyonApplication).mainActivity = this
 
         // Initialize the Cast context. This is required so that the media route button can be
         // created in the AppBar
@@ -54,7 +61,6 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
     override fun onStart() {
         super.onStart()
-        spotifyInterfacer.authorize(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {

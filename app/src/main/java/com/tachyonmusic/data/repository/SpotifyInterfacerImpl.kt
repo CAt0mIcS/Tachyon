@@ -16,6 +16,7 @@ import com.tachyonmusic.core.data.playback.SpotifySong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.SongEntity
+import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
@@ -24,6 +25,7 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.runOnUiThreadAsync
 import kaaes.spotify.webapi.android.SpotifyApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +39,7 @@ class SpotifyInterfacerImpl(
     private val songRepository: SongRepository,
     private val playlistRepository: PlaylistRepository,
     private val settingsRepository: SettingsRepository,
+    private val dataRepository: DataRepository,
     private val log: Logger
 ) : SpotifyInterfacer {
     private var spotifyAppRemote: SpotifyAppRemote? = null
@@ -46,6 +49,9 @@ class SpotifyInterfacerImpl(
 
     init {
         ioScope.launch {
+            val accessToken = dataRepository.getData().spotifyAccessToken
+            if (accessToken.isNotEmpty())
+                runOnUiThreadAsync { connectToSpotify(accessToken) }
             val updateInterval = settingsRepository.getSettings().audioUpdateInterval
             while (true) {
                 currentPosition =
@@ -83,6 +89,9 @@ class SpotifyInterfacerImpl(
             val response = AuthorizationClient.getResponse(resultCode, intent)
             when (response.type) {
                 AuthorizationResponse.Type.TOKEN -> {
+                    ioScope.launch {
+                        dataRepository.update(spotifyAccessToken = response.accessToken)
+                    }
                     connectToSpotify(response.accessToken)
                 }
                 AuthorizationResponse.Type.ERROR -> {

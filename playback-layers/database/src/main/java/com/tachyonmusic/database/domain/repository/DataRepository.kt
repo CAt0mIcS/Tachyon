@@ -22,6 +22,7 @@ interface DataRepository {
 
     suspend fun update(
         recentlyPlayed: RecentlyPlayed? = null,
-        repeatMode: RepeatMode? = null
+        repeatMode: RepeatMode? = null,
+        spotifyAccessToken: String? = null
     )
 }

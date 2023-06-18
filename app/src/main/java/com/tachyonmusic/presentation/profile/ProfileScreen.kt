@@ -135,6 +135,10 @@ object ProfileScreen :
                     Text("Select")
                 }
             }
+
+            Button(onClick = { viewModel.connectToSpotify() }) {
+                Text("Connect to Spotify")
+            }
         }
     }
 }
