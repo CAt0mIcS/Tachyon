@@ -12,6 +12,7 @@ import com.spotify.sdk.android.auth.AuthorizationResponse
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.RepeatMode
+import com.tachyonmusic.core.data.playback.SpotifySong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.SongEntity
@@ -25,6 +26,9 @@ import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import kaaes.spotify.webapi.android.SpotifyApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 
@@ -94,6 +98,15 @@ class SpotifyInterfacerImpl(
      *************************************************************************/
     override var currentPosition: Duration? = 0.ms
         private set
+
+    private val _currentPlayback = MutableStateFlow<SpotifySong?>(null)
+    override val currentPlayback = _currentPlayback.asStateFlow()
+
+    private val _isPlaying = MutableStateFlow(false)
+    override val isPlaying = _isPlaying.asStateFlow()
+
+    private val _repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.All)
+    override val repeatMode = _repeatMode.asStateFlow()
 
     override fun play(uri: String, index: Int?) {
         spotifyAppRemote?.playerApi?.play(uri)
@@ -189,6 +202,24 @@ class SpotifyInterfacerImpl(
                     playlistTracks.map { track -> track.mediaId })
             }
             playlistRepository.addAll(playlists)
+
+            spotifyAppRemote?.playerApi?.subscribeToPlayerState()?.setEventCallback { data ->
+                _currentPlayback.update {
+                    SpotifySong(
+                        MediaId(data.track.uri),
+                        data.track.name,
+                        data.track.artists.firstOrNull()?.name ?: "Unknown Artist",
+                        data.track.duration.ms
+                    )
+                }
+                _isPlaying.update { !data.isPaused }
+                _repeatMode.update {
+                    when (data.playbackOptions.repeatMode) {
+                        Repeat.ALL -> if (data.playbackOptions.isShuffling) RepeatMode.Shuffle else RepeatMode.All
+                        else -> RepeatMode.One  // Default to RepeatMode.One
+                    }
+                }
+            }
         }
     }
 

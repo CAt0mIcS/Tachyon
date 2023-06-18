@@ -21,18 +21,15 @@ class SpotifyMediaBrowserController(
     private val _currentPlaylist = MutableStateFlow<Playlist?>(null)
     val currentPlaylist: StateFlow<Playlist?> = _currentPlaylist.asStateFlow()
 
-    private val _currentPlayback = MutableStateFlow<SinglePlayback?>(null)
-    val currentPlayback: StateFlow<SinglePlayback?> = _currentPlayback.asStateFlow()
+    val currentPlayback = api.currentPlayback
 
-    private val _isPlaying = MutableStateFlow(false)
-    val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
+    val isPlaying = api.isPlaying
 
     fun setPlaylist(playlist: Playlist, position: Duration?) {
         api.play(playlist.mediaId.source, playlist.currentPlaylistIndex)
         api.seekTo(position ?: return)
 
         _currentPlaylist.update { playlist }
-        _currentPlayback.update { playlist.current }
     }
 
     val currentPosition: Duration?
@@ -51,12 +48,10 @@ class SpotifyMediaBrowserController(
             )
         }
 
-    private val _repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.All)
-    val repeatMode = _repeatMode.asStateFlow()
+    val repeatMode = api.repeatMode
 
     fun setRepeatMode(repeatMode: RepeatMode) {
         api.setRepeatMode(repeatMode)
-        _repeatMode.update { repeatMode }
     }
 
     fun play(playback: SinglePlayback) {

@@ -2,6 +2,7 @@ package com.tachyonmusic.data.repository
 
 import androidx.lifecycle.Lifecycle
 import androidx.media3.common.PlaybackParameters
+import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.data.playback.LocalSong
@@ -15,18 +16,19 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
-import com.tachyonmusic.util.combineStates
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.plus
 
 class MediaBrowserControllerSwitcher(
     private val localBrowser: MediaPlaybackServiceMediaBrowserController,
-    private val spotifyBrowser: SpotifyMediaBrowserController
+    private val spotifyBrowser: SpotifyMediaBrowserController,
+    application: TachyonApplication
 ) : MediaBrowserController,
     IListenable<MediaBrowserController.EventListener> by Listenable() {
 
     private var playbackLocation = MutableStateFlow(PlaybackLocation.Local)
+    private val ioScope = application.coroutineScope + Dispatchers.IO
 
     override fun registerLifecycle(lifecycle: Lifecycle) {
         localBrowser.registerLifecycle(lifecycle)
@@ -40,7 +42,7 @@ class MediaBrowserControllerSwitcher(
         localBrowser.unregisterEventListener(listener)
     }
 
-    override val currentPlaylist: StateFlow<Playlist?> = combineStates(
+    override val currentPlaylist: StateFlow<Playlist?> = combine(
         localBrowser.currentPlaylist,
         spotifyBrowser.currentPlaylist,
         playbackLocation
@@ -49,9 +51,9 @@ class MediaBrowserControllerSwitcher(
             PlaybackLocation.Local -> local
             PlaybackLocation.Spotify -> spotify
         }
-    }
+    }.stateIn(ioScope, SharingStarted.Eagerly, null)
 
-    override val currentPlayback: StateFlow<SinglePlayback?> = combineStates(
+    override val currentPlayback: StateFlow<SinglePlayback?> = combine(
         localBrowser.currentPlayback,
         spotifyBrowser.currentPlayback,
         playbackLocation
@@ -60,9 +62,9 @@ class MediaBrowserControllerSwitcher(
             PlaybackLocation.Local -> local
             PlaybackLocation.Spotify -> spotify
         }
-    }
+    }.stateIn(ioScope, SharingStarted.Eagerly, null)
 
-    override val isPlaying: StateFlow<Boolean> = combineStates(
+    override val isPlaying: StateFlow<Boolean> = combine(
         localBrowser.isPlaying,
         spotifyBrowser.isPlaying,
         playbackLocation
@@ -71,7 +73,8 @@ class MediaBrowserControllerSwitcher(
             PlaybackLocation.Local -> local
             PlaybackLocation.Spotify -> spotify
         }
-    }
+    }.stateIn(ioScope, SharingStarted.Eagerly, false)
+
 
     override fun setPlaylist(playlist: Playlist, position: Duration?) {
         when (playlist) {

@@ -275,7 +275,8 @@ object AppRepositoryModule {
         getPlaylistForPlayback: GetPlaylistForPlayback,
         predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
         logger: Logger,
-        spotifyInterfacer: SpotifyInterfacer
+        spotifyInterfacer: SpotifyInterfacer,
+        application: Application
     ): MediaBrowserController =
         MediaBrowserControllerSwitcher(
             MediaPlaybackServiceMediaBrowserController(
@@ -283,7 +284,8 @@ object AppRepositoryModule {
                 predefinedPlaylistsRepository,
                 logger
             ),
-            SpotifyMediaBrowserController(spotifyInterfacer)
+            SpotifyMediaBrowserController(spotifyInterfacer),
+            application as TachyonApplication
         )
 
     @Provides
