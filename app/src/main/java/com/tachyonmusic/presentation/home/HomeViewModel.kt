@@ -11,6 +11,8 @@ import com.tachyonmusic.domain.use_case.home.UnloadArtworks
 import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.player.SetRepeatMode
+import com.tachyonmusic.domain.use_case.search.SearchLocation
+import com.tachyonmusic.domain.use_case.search.SearchSpotify
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,7 +38,8 @@ class HomeViewModel @Inject constructor(
 
     private val unloadArtworks: UnloadArtworks,
 
-    private val searchStoredPlaybacks: SearchStoredPlaybacks
+    private val searchStoredPlaybacks: SearchStoredPlaybacks,
+    private val searchSpotify: SearchSpotify
 ) : ViewModel() {
 
     val history = playbackRepository.historyFlow.map { history ->
@@ -82,9 +85,12 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun search(searchText: String) {
+    fun search(searchText: String, searchLocation: SearchLocation) {
         viewModelScope.launch(Dispatchers.IO) {
-            val results = searchStoredPlaybacks(searchText)
+            val results = when(searchLocation) {
+                is SearchLocation.Local -> searchStoredPlaybacks(searchText)
+                is SearchLocation.Spotify -> searchSpotify(searchText)
+            }
             _searchResults.update { results }
         }
     }

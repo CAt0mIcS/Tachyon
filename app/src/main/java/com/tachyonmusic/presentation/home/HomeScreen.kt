@@ -31,6 +31,7 @@ import androidx.navigation.NavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.domain.use_case.search.SearchLocation
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.home.component.VerticalPlaybackView
@@ -51,6 +52,7 @@ object HomeScreen :
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var isSearching by remember { mutableStateOf(false) }
+        var searchLocation by remember { mutableStateOf<SearchLocation>(SearchLocation.Local) }
         val history by viewModel.history.collectAsState()
         val searchResults by viewModel.searchResults.collectAsState()
 
@@ -96,7 +98,7 @@ object HomeScreen :
                     onValueChange = {
                         searchText = it
                         isSearching = true
-                        viewModel.search(it)
+                        viewModel.search(it, searchLocation)
                     },
 
                     textStyle = TextStyle.Default.copy(
@@ -120,6 +122,19 @@ object HomeScreen :
                                 painterResource(R.drawable.ic_search),
                                 contentDescription = "Search Playbacks",
                                 modifier = Modifier.scale(1.2f)
+                            )
+                        },
+                        trailingIcon = {
+                            Icon(
+                                painterResource(searchLocation.icon),
+                                contentDescription = "Change search location",
+                                modifier = Modifier
+                                    .scale(.9f)
+                                    .clickable {
+                                        searchLocation = searchLocation.next
+                                        if (isSearching)
+                                            viewModel.search(searchText, searchLocation)
+                                    }
                             )
                         },
                         interactionSource = interactionSource,

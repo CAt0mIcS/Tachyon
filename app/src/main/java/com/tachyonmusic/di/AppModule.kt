@@ -18,6 +18,7 @@ import com.tachyonmusic.domain.use_case.home.*
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
+import com.tachyonmusic.domain.use_case.search.SearchSpotify
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.data.ConsoleLogger
@@ -111,6 +112,11 @@ object AppUseCaseModule {
         predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
         playbackRepository: PlaybackRepository
     ) = SearchStoredPlaybacks(predefinedPlaylistsRepository, playbackRepository)
+
+    @Provides
+    @Singleton
+    fun provideSearchSpotifyUseCase() = SearchSpotify()
+
 
     @Provides
     @Singleton

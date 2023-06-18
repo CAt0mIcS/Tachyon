@@ -16,7 +16,8 @@ class SearchStoredPlaybacks(
     // TODO: Optimize
     suspend operator fun invoke(query: String?): List<Playback> {
         val playbacks =
-            predefinedPlaylistsRepository.songPlaylist.value + predefinedPlaylistsRepository.customizedSongPlaylist.value + playbackRepository.getPlaylists()
+            predefinedPlaylistsRepository.songPlaylist.value.filter { it.mediaId.isLocalSong } +
+                    predefinedPlaylistsRepository.customizedSongPlaylist.value + playbackRepository.getPlaylists()
 
         if (query.isNullOrEmpty())
             return playbacks
