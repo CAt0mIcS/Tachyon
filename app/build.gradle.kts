@@ -4,7 +4,6 @@ plugins {
 
     id("kotlin-kapt")
     id("kotlin-android")
-    id("kotlin-android-extensions")
     id("com.google.dagger.hilt.android")
     id("dagger.hilt.android.plugin")
 }
@@ -71,7 +70,7 @@ android {
     namespace = "com.tachyonmusic.app"
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.3.0"
+        kotlinCompilerExtensionVersion = Version.COMPOSE_COMPILER
     }
 
     packagingOptions {

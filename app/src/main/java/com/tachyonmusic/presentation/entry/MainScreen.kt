@@ -4,14 +4,13 @@ package com.tachyonmusic.presentation.entry
 
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -20,6 +19,7 @@ import com.tachyonmusic.presentation.player.PlayerLayout
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
 
+@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
@@ -53,19 +53,33 @@ fun MainScreen(
             return@TachyonTheme
         }
 
-        val sheetState = rememberBottomSheetState(
-            initialValue = BottomSheetValue.Collapsed, animationSpec = tween(
-                durationMillis = Theme.animation.medium, easing = LinearEasing
-            )
+        val sheetAnimationSpec = tween<Float>(
+            durationMillis = Theme.animation.medium, easing = LinearEasing
         )
-        val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
+        val sheetState = rememberBottomSheetState(
+            initialValue = BottomSheetValue.Collapsed,
+            animationSpec = sheetAnimationSpec,
+        )
+
+        var targetSheetFraction by remember { mutableStateOf(0f) }
+        val sheetFraction by animateFloatAsState(
+            targetValue = targetSheetFraction,
+            animationSpec = sheetAnimationSpec
+        )
+
+        val scaffoldState =
+            rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
 
         val miniPlayerHeight = remember { mutableStateOf(0.dp) }
         val navController = rememberAnimatedNavController()
 
         Scaffold(
-            modifier = Modifier.nestedScroll(rememberNestedScrollInteropConnection()),
-            bottomBar = { BottomNavigation(navController, sheetState) }
+            bottomBar = {
+                BottomNavigation(
+                    navController,
+                    sheetState,
+                    onSheetStateFraction = { targetSheetFraction = it })
+            }
         ) { innerPaddingScaffold ->
 
             BottomSheetScaffold(
@@ -80,19 +94,29 @@ fun MainScreen(
                             navController,
                             sheetState,
                             onMiniPlayerHeight = { miniPlayerHeight.value = it },
-                            miniPlayerHeight = miniPlayerHeight.value
+                            miniPlayerHeight = miniPlayerHeight.value,
+                            onTargetSheetFraction = { targetSheetFraction = it },
+                            sheetFraction = sheetFraction
                         )
                     }
                 },
                 sheetPeekHeight = miniPlayerHeight.value,
-                sheetBackgroundColor = Theme.colors.primary
+                sheetBackgroundColor = Theme.colors.primary,
+                sheetGesturesEnabled = false
             ) { innerPaddingSheet ->
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPaddingSheet)
                 ) {
-                    NavigationGraph(navController, sheetState, miniPlayerHeight.value)
+                    NavigationGraph(
+                        navController,
+                        sheetState,
+                        miniPlayerHeight.value,
+                        onTargetSheetFraction = {
+                            targetSheetFraction = it
+                        }
+                    )
                 }
             }
         }

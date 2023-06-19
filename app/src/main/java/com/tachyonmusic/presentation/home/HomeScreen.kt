@@ -48,6 +48,7 @@ object HomeScreen :
     operator fun invoke(
         navController: NavController,
         sheetState: BottomSheetState,
+        onSheetStateFraction: (Float) -> Unit,
         miniPlayerHeight: Dp,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
@@ -171,6 +172,7 @@ object HomeScreen :
                             scope.launch {
                                 sheetState.expand()
                             }
+                            onSheetStateFraction(1f)
                         }
                     )
                 }
@@ -227,6 +229,7 @@ object HomeScreen :
                             scope.launch {
                                 sheetState.expand()
                             }
+                            onSheetStateFraction(1f)
                         }
                     }
                 }
@@ -257,6 +260,7 @@ object HomeScreen :
                             scope.launch {
                                 sheetState.expand()
                             }
+                            onSheetStateFraction(1f)
                         }
                     }
 

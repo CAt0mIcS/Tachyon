@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.presentation.player.component.MiniPlayer
-import com.tachyonmusic.presentation.util.currentFraction
 import com.tachyonmusic.util.delay
 import kotlinx.coroutines.launch
 
@@ -20,11 +19,13 @@ import kotlinx.coroutines.launch
 fun MiniPlayerScreen(
     sheetState: BottomSheetState,
     onMiniPlayerHeight: (Dp) -> Unit,
+    sheetFraction: Float,
+    onTargetSheetFraction: (Float) -> Unit,
     viewModel: MiniPlayerViewModel = hiltViewModel()
 ) {
     val playback by viewModel.playback.collectAsState()
 
-    if(playback == null)
+    if (playback == null)
         return
 
     val isPlaying by viewModel.isPlaying.collectAsState()
@@ -48,7 +49,7 @@ fun MiniPlayerScreen(
      *   ProgressIndicator line
      */
     Layout(
-        modifier = Modifier.graphicsLayer(alpha = 1f - sheetState.currentFraction),
+        modifier = Modifier.graphicsLayer(alpha = 1f - sheetFraction),
         content = {
             MiniPlayer(
                 playback = playback,
@@ -61,6 +62,7 @@ fun MiniPlayerScreen(
                     scope.launch {
                         sheetState.expand()
                     }
+                    onTargetSheetFraction(1f)
                 }
             )
         }

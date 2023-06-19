@@ -43,6 +43,7 @@ object LibraryScreen :
     @Composable
     operator fun invoke(
         sheetState: BottomSheetState,
+        onSheetStateFraction: (Float) -> Unit,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
         var sortOptionsExpanded by remember { mutableStateOf(false) }
@@ -187,6 +188,7 @@ object LibraryScreen :
                                 scope.launch {
                                     sheetState.expand()
                                 }
+                                onSheetStateFraction(1f)
                             }
                         })
                 }

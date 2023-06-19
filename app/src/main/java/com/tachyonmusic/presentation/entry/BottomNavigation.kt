@@ -26,7 +26,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun BottomNavigation(
     navController: NavController,
-    sheetState: BottomSheetState
+    sheetState: BottomSheetState,
+    onSheetStateFraction: (Float) -> Unit
 ) {
     val items = listOf(
         HomeScreen,
@@ -57,7 +58,10 @@ fun BottomNavigation(
                     selected = selected,
                     onClick = {
                         if (sheetState.isExpanded) {
-                            scope.launch { sheetState.collapse() }
+                            scope.launch {
+                                sheetState.collapse()
+                            }
+                            onSheetStateFraction(0f)
                         }
 
                         navController.navigate(item.route) {

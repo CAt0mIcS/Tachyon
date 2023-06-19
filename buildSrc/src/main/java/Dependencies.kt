@@ -30,7 +30,7 @@ object Dependency {
 
         object Accompanist {
             const val NAVIGATION_ANIMATION =
-                "com.google.accompanist:accompanist-navigation-animation:0.28.0"
+                "com.google.accompanist:accompanist-navigation-animation:0.31.3-beta"
         }
     }
 

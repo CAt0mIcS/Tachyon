@@ -19,14 +19,15 @@ import com.tachyonmusic.presentation.profile.ProfileScreen
 fun NavigationGraph(
     navController: NavHostController,
     sheetState: BottomSheetState,
-    miniPlayerHeight: Dp
+    miniPlayerHeight: Dp,
+    onTargetSheetFraction: (Float) -> Unit
 ) {
     AnimatedNavHost(navController, startDestination = HomeScreen.route) {
         composable(HomeScreen.route) {
-            HomeScreen(navController, sheetState, miniPlayerHeight)
+            HomeScreen(navController, sheetState, onTargetSheetFraction, miniPlayerHeight)
         }
         composable(LibraryScreen.route) {
-            LibraryScreen(sheetState)
+            LibraryScreen(sheetState, onTargetSheetFraction)
         }
         composable(ProfileScreen.route) {
             ProfileScreen()

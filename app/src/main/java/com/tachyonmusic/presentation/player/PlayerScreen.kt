@@ -34,10 +34,7 @@ import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
 import com.tachyonmusic.presentation.player.data.TimingDataEditor
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.util.currentFraction
-import com.tachyonmusic.presentation.util.displaySubtitle
-import com.tachyonmusic.presentation.util.displayTitle
-import com.tachyonmusic.presentation.util.isEnabled
+import com.tachyonmusic.presentation.util.*
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
@@ -47,6 +44,7 @@ import com.tachyonmusic.util.toReadableString
 fun PlayerScreen(
     sheetState: BottomSheetState,
     miniPlayerHeight: Dp,
+    sheetFraction: Float,
     navController: NavController,
     viewModel: PlayerViewModel = hiltViewModel()
 ) {
@@ -91,8 +89,8 @@ fun PlayerScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = miniPlayerHeight * (1f - sheetState.currentFraction))
-            .graphicsLayer(alpha = sheetState.currentFraction + .25f),
+            .padding(top = miniPlayerHeight * (1f - sheetFraction))
+            .graphicsLayer(alpha = sheetFraction + .25f),
         contentPadding = PaddingValues(bottom = Theme.padding.small)
     ) {
         item {
