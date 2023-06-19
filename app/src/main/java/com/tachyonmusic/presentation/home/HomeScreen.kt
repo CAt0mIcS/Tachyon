@@ -56,6 +56,9 @@ object HomeScreen :
         val history by viewModel.history.collectAsState()
         val searchResults by viewModel.searchResults.collectAsState()
 
+        var searchText by remember { mutableStateOf("") }
+        val focusManager = LocalFocusManager.current
+
         val scope = rememberCoroutineScope()
 
         LazyColumn(
@@ -71,10 +74,6 @@ object HomeScreen :
                 val interactionSource: MutableInteractionSource =
                     remember { MutableInteractionSource() }
 
-                var searchText by remember { mutableStateOf("") }
-
-                // TODO: Don't rely on states to display search view/normal home view
-                val focusManager = LocalFocusManager.current
                 BackHandler(isSearching) {
                     isSearching = false
                     searchText = ""
@@ -153,6 +152,7 @@ object HomeScreen :
                 }
             }
 
+            // TODO: Don't rely on states to display search view/normal home view
             if (isSearching) {
                 items(searchResults, key = { it.mediaId.toString() }) {
                     HorizontalPlaybackView(
@@ -163,7 +163,15 @@ object HomeScreen :
                             top = Theme.padding.small,
                             end = Theme.padding.medium
                         ),
-                        onClick = { viewModel.onItemClicked(it) }
+                        onClick = {
+                            viewModel.onItemClicked(it)
+                            isSearching = false
+                            searchText = ""
+                            focusManager.clearFocus()
+                            scope.launch {
+                                sheetState.expand()
+                            }
+                        }
                     )
                 }
             } else {

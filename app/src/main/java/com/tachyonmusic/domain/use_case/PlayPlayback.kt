@@ -9,6 +9,7 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.runOnUiThread
 
 enum class PlaybackLocation {
     PREDEFINED_PLAYLIST,
@@ -25,7 +26,7 @@ class PlayPlayback(
         playback: Playback?,
         position: Duration? = null,
         playbackLocation: PlaybackLocation? = null
-    ) {
+    ) = runOnUiThread {
         when (playback) {
             is SinglePlayback -> {
                 invokeOnNewPlaylist(playback, position)
@@ -74,7 +75,7 @@ class PlayPlayback(
                 addNewPlaybackToHistory(playback.current)
             }
 
-            null -> return
+            null -> return@runOnUiThread
             else -> TODO("Invalid playback type ${playback::class.java.name}")
         }
         browser.play()

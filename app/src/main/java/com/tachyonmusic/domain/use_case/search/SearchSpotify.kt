@@ -7,6 +7,9 @@ class SearchSpotify(
     private val spotifyInterfacer: SpotifyInterfacer
 ) {
     suspend operator fun invoke(searchText: String): List<Playback> {
+        if(!spotifyInterfacer.isAuthorized)
+            return emptyList()
+
         return spotifyInterfacer.searchTracks(searchText)
     }
 }

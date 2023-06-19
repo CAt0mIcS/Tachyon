@@ -58,7 +58,6 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val playback = _playback.map {
-        println(it)
         it!!
     }.stateIn(
         viewModelScope + Dispatchers.IO,

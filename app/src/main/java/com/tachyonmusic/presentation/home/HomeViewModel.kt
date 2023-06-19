@@ -18,6 +18,9 @@ import com.tachyonmusic.domain.use_case.search.SearchLocation
 import com.tachyonmusic.domain.use_case.search.SearchSpotify
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
+import com.tachyonmusic.util.delay
+import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -29,7 +32,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    playbackRepository: PlaybackRepository,
+    private val playbackRepository: PlaybackRepository,
 
     setRepeatMode: SetRepeatMode,
     getSavedData: GetSavedData,
@@ -42,6 +45,7 @@ class HomeViewModel @Inject constructor(
     private val unloadArtworks: UnloadArtworks,
 
     private val songRepository: SongRepository,
+    private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
     private val searchStoredPlaybacks: SearchStoredPlaybacks,
     private val searchSpotify: SearchSpotify,
 ) : ViewModel() {
@@ -78,9 +82,16 @@ class HomeViewModel @Inject constructor(
     }
 
     fun onItemClicked(playback: Playback) {
-        viewModelScope.launch {
-            if(playback.mediaId.isSpotifySong)
+        viewModelScope.launch(Dispatchers.IO) {
+            if (playback.mediaId.isSpotifySong &&
+                !predefinedPlaylistsRepository.songPlaylist.value.contains(playback)
+            ) {
+                val prevSize = predefinedPlaylistsRepository.songPlaylist.value.size
                 songRepository.addAll(listOf((playback as Song).toEntity()))
+
+                while (predefinedPlaylistsRepository.songPlaylist.value.size == prevSize)
+                    delay(10.ms)
+            }
 
             playPlayback(playback, playbackLocation = PlaybackLocation.PREDEFINED_PLAYLIST)
         }
@@ -94,7 +105,7 @@ class HomeViewModel @Inject constructor(
 
     fun search(searchText: String, searchLocation: SearchLocation) {
         viewModelScope.launch(Dispatchers.IO) {
-            val results = when(searchLocation) {
+            val results = when (searchLocation) {
                 is SearchLocation.Local -> searchStoredPlaybacks(searchText)
                 is SearchLocation.Spotify -> searchSpotify(searchText)
             }
