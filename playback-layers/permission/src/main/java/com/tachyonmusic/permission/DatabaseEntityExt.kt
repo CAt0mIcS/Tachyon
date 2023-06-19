@@ -1,6 +1,7 @@
 package com.tachyonmusic.permission
 
 import com.tachyonmusic.core.data.playback.*
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Playlist
@@ -11,15 +12,17 @@ import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 
-fun SongEntity.toSong(isPlayable: Boolean): Song =
+fun SongEntity.toSong(isPlayable: Boolean, artwork: Artwork? = null): Song =
     if (mediaId.isLocalSong) {
         LocalSong(mediaId.uri!!, mediaId, title, artist, duration).let {
             it.isPlayable = isPlayable
+            it.artwork = artwork
             it
         }
     } else if (mediaId.isSpotifySong) {
         SpotifySong(mediaId, title, artist, duration).let {
             it.isPlayable = isPlayable
+            it.artwork = artwork
             it
         }
     } else {

@@ -5,6 +5,7 @@ import android.content.Intent
 import com.spotify.android.appremote.api.ConnectionParams
 import com.spotify.android.appremote.api.Connector
 import com.spotify.android.appremote.api.SpotifyAppRemote
+import com.spotify.protocol.types.Album
 import com.spotify.protocol.types.Repeat
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
@@ -12,6 +13,8 @@ import com.spotify.sdk.android.auth.AuthorizationResponse
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.RepeatMode
+import com.tachyonmusic.core.data.RemoteArtwork
+import com.tachyonmusic.core.data.playback.SpotifyPlaylist
 import com.tachyonmusic.core.data.playback.SpotifySong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.PlaylistEntity
@@ -22,17 +25,22 @@ import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.permission.toSong
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThreadAsync
 import kaaes.spotify.webapi.android.SpotifyApi
+import kaaes.spotify.webapi.android.models.Track
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
+import retrofit.RetrofitError
+import java.net.URI
 
 class SpotifyInterfacerImpl(
     private val application: TachyonApplication,
@@ -47,11 +55,16 @@ class SpotifyInterfacerImpl(
 
     private val ioScope = application.coroutineScope + Dispatchers.IO
 
+    override val isAuthorized: Boolean
+        get() = spotifyAppRemote != null && api != null
+
     init {
         ioScope.launch {
-            val accessToken = dataRepository.getData().spotifyAccessToken
-            if (accessToken.isNotEmpty())
-                runOnUiThreadAsync { connectToSpotify(accessToken) }
+            if (!isAuthorized) {
+                val accessToken = dataRepository.getData().spotifyAccessToken
+                if (accessToken.isNotEmpty())
+                    runOnUiThreadAsync { connectToSpotify(accessToken) }
+            }
             val updateInterval = settingsRepository.getSettings().audioUpdateInterval
             while (true) {
                 currentPosition =
@@ -157,7 +170,28 @@ class SpotifyInterfacerImpl(
 
     }
 
+    override suspend fun searchTracks(query: String) = withContext(Dispatchers.IO) {
+        api!!.service.searchTracks(query).tracks.items.map {
+            it.toSpotifySong()
+        }
+    }
+
+    override suspend fun searchPlaylists(query: String) = withContext(Dispatchers.IO) {
+        api!!.service.searchPlaylists(query).playlists.items.map {
+            SpotifyPlaylist(
+                it.name,
+                MediaId(it.uri),
+                api!!.service.getPlaylistTracks(CLIENT_ID, it.id).items.map { track ->
+                    track.track.toSpotifySong()
+                }.toMutableList()
+            )
+        }
+    }
+
+
     private fun connectToSpotify(accessToken: String) {
+        log.debug("Connecting to spotify with accessToken: $accessToken")
+
         val connectionParams = ConnectionParams.Builder(CLIENT_ID)
             .setRedirectUri(REDIRECT_URI)
             .showAuthView(true)
@@ -187,20 +221,21 @@ class SpotifyInterfacerImpl(
 
     private fun onSpotifyConnected() {
         ioScope.launch {
+            // TODO: When does this Unauthorized exception occur?
+            try {
+                api!!.service.me
+            } catch (e: RetrofitError) {
+                log.error("Retrofit error occurred: " + e.message.toString())
+                runOnUiThreadAsync { authorize(application.mainActivity!!) }
+                return@launch
+            }
+
             val playlists = api!!.service.myPlaylists.items.map {
                 val playlistTracks = api!!.service.getPlaylistTracks(
                     CLIENT_ID,
                     it.id
                 ).items.map { playlistTrack ->
-                    val track = playlistTrack.track
-                    SongEntity(
-                        MediaId(track.uri),
-                        track.name,
-                        track.artists.firstOrNull()?.name ?: "Unknown Artist",
-                        track.duration_ms.ms,
-                        if (track.album.images.firstOrNull() != null) ArtworkType.REMOTE else ArtworkType.NO_ARTWORK,
-                        track.album.images.firstOrNull()?.url
-                    )
+                    playlistTrack.track.toSongEntity()
                 }
 
                 songRepository.addAll(playlistTracks)
@@ -213,14 +248,11 @@ class SpotifyInterfacerImpl(
             playlistRepository.addAll(playlists)
 
             spotifyAppRemote?.playerApi?.subscribeToPlayerState()?.setEventCallback { data ->
-                _currentPlayback.update {
-                    SpotifySong(
-                        MediaId(data.track.uri),
-                        data.track.name,
-                        data.track.artists.firstOrNull()?.name ?: "Unknown Artist",
-                        data.track.duration.ms
-                    )
+                ioScope.launch {
+                    val updatedSong = data.track?.toSpotifySong(getImage(data.track?.album))
+                    _currentPlayback.update { updatedSong }
                 }
+
                 _isPlaying.update { !data.isPaused }
                 _repeatMode.update {
                     when (data.playbackOptions.repeatMode) {
@@ -232,9 +264,45 @@ class SpotifyInterfacerImpl(
         }
     }
 
+    private suspend fun getImage(album: Album?) = withContext(Dispatchers.IO) {
+        RemoteArtwork(
+            URI(
+                api?.service?.getAlbum(
+                    album?.uri?.replace("spotify:album:", "") ?: return@withContext null
+                )?.images?.firstOrNull()?.url
+                    ?: return@withContext null
+            )
+        )
+    }
+
+
     companion object {
         private const val AUTHORIZE_REQUEST_CODE = 4382
         private const val CLIENT_ID = "2a708447488345f3b1d0452821e269af"
         private const val REDIRECT_URI = "https://com.tachyonmusic/callback"
     }
 }
+
+
+private fun Track.toSpotifySong(): SpotifySong = toSongEntity().let {
+    it.toSong(true, RemoteArtwork(URI(it.artworkUrl))) as SpotifySong
+}
+
+private fun Track.toSongEntity() = SongEntity(
+    MediaId(uri),
+    name,
+    artists.firstOrNull()?.name ?: "Unknown Artist",
+    duration_ms.ms,
+    if (album.images.firstOrNull() != null) ArtworkType.REMOTE else ArtworkType.NO_ARTWORK,
+    album.images.firstOrNull()?.url
+)
+
+private fun com.spotify.protocol.types.Track.toSpotifySong(artwork: RemoteArtwork?): SpotifySong =
+    SpotifySong(
+        MediaId(uri),
+        name,
+        artists.firstOrNull()?.name ?: "Unknown Artist",
+        duration.ms
+    ).apply {
+        this.artwork = artwork
+    }

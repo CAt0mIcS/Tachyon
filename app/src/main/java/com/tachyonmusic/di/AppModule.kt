@@ -115,7 +115,8 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideSearchSpotifyUseCase() = SearchSpotify()
+    fun provideSearchSpotifyUseCase(spotifyInterfacer: SpotifyInterfacer) =
+        SearchSpotify(spotifyInterfacer)
 
 
     @Provides

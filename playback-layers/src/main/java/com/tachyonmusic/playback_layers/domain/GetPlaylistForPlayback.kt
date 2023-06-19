@@ -7,6 +7,7 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.predefinedCustomizedSongPlaylistMediaId
 import com.tachyonmusic.predefinedSongPlaylistMediaId
+import com.tachyonmusic.util.indexOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -43,7 +44,7 @@ class GetPlaylistForPlayback(
         return LocalPlaylist.build(
             predefinedSongPlaylistMediaId,
             items.toMutableList(),
-            items.indexOfFirst { it.mediaId == mediaId }
+            items.indexOf { it.mediaId == mediaId } ?: 0
         )
     }
 
@@ -59,7 +60,7 @@ class GetPlaylistForPlayback(
         return LocalPlaylist.build(
             predefinedCustomizedSongPlaylistMediaId,
             items.toMutableList(),
-            items.indexOfFirst { it.mediaId == mediaId }
+            items.indexOf { it.mediaId == mediaId } ?: 0
         )
     }
 }

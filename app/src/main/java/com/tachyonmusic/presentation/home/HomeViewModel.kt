@@ -3,6 +3,9 @@ package com.tachyonmusic.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.util.toEntity
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
@@ -38,8 +41,9 @@ class HomeViewModel @Inject constructor(
 
     private val unloadArtworks: UnloadArtworks,
 
+    private val songRepository: SongRepository,
     private val searchStoredPlaybacks: SearchStoredPlaybacks,
-    private val searchSpotify: SearchSpotify
+    private val searchSpotify: SearchSpotify,
 ) : ViewModel() {
 
     val history = playbackRepository.historyFlow.map { history ->
@@ -75,6 +79,9 @@ class HomeViewModel @Inject constructor(
 
     fun onItemClicked(playback: Playback) {
         viewModelScope.launch {
+            if(playback.mediaId.isSpotifySong)
+                songRepository.addAll(listOf((playback as Song).toEntity()))
+
             playPlayback(playback, playbackLocation = PlaybackLocation.PREDEFINED_PLAYLIST)
         }
     }

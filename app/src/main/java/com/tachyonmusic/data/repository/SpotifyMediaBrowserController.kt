@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
+// TODO: Handle case where client is not authorized to use Spotify
 class SpotifyMediaBrowserController(
     private val api: SpotifyInterfacer
 ) {
@@ -26,6 +27,9 @@ class SpotifyMediaBrowserController(
     val isPlaying = api.isPlaying
 
     fun setPlaylist(playlist: Playlist, position: Duration?) {
+        if (!api.isAuthorized)
+            return
+
         api.play(playlist.mediaId.source, playlist.currentPlaylistIndex)
         api.seekTo(position ?: return)
 
@@ -33,7 +37,7 @@ class SpotifyMediaBrowserController(
     }
 
     val currentPosition: Duration?
-        get() = api.currentPosition
+        get() = if (api.isAuthorized) api.currentPosition else null
 
     var currentPlaybackTimingData: TimingDataController?
         get() = TimingDataController()
@@ -51,26 +55,38 @@ class SpotifyMediaBrowserController(
     val repeatMode = api.repeatMode
 
     fun setRepeatMode(repeatMode: RepeatMode) {
+        if (!api.isAuthorized)
+            return
         api.setRepeatMode(repeatMode)
     }
 
     fun play(playback: SinglePlayback) {
+        if (!api.isAuthorized)
+            return
         api.play(playback.mediaId.source)
     }
 
     fun play() {
+        if (!api.isAuthorized)
+            return
         api.resume()
     }
 
     fun pause() {
+        if (!api.isAuthorized)
+            return
         api.pause()
     }
 
     fun seekTo(pos: Duration?) {
+        if (!api.isAuthorized)
+            return
         api.seekTo(pos ?: return)
     }
 
     fun seekTo(mediaId: MediaId, pos: Duration?) {
+        if (!api.isAuthorized)
+            return
         api.seekTo(
             currentPlaylist.value?.mediaId?.source ?: return,
             currentPlaylist.value?.playbacks?.indexOf { it.mediaId == mediaId } ?: return,
@@ -79,6 +95,8 @@ class SpotifyMediaBrowserController(
     }
 
     fun seekTo(index: Int, pos: Duration?) {
+        if (!api.isAuthorized)
+            return
         api.seekTo(
             currentPlaylist.value?.mediaId?.source ?: return,
             index,
