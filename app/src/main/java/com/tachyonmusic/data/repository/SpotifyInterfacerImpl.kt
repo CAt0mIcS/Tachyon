@@ -2,10 +2,11 @@ package com.tachyonmusic.data.repository
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import com.spotify.android.appremote.api.ConnectionParams
 import com.spotify.android.appremote.api.Connector
 import com.spotify.android.appremote.api.SpotifyAppRemote
-import com.spotify.protocol.types.Album
+import com.spotify.protocol.types.ImageUri
 import com.spotify.protocol.types.Repeat
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
@@ -13,9 +14,11 @@ import com.spotify.sdk.android.auth.AuthorizationResponse
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.RepeatMode
+import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.playback.SpotifyPlaylist
 import com.tachyonmusic.core.data.playback.SpotifySong
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.SongEntity
@@ -249,7 +252,7 @@ class SpotifyInterfacerImpl(
 
             spotifyAppRemote?.playerApi?.subscribeToPlayerState()?.setEventCallback { data ->
                 ioScope.launch {
-                    val updatedSong = data.track?.toSpotifySong(getImage(data.track?.album))
+                    val updatedSong = data.track?.toSpotifySong(getImage(data.track?.imageUri))
                     _currentPlayback.update { updatedSong }
                 }
 
@@ -264,15 +267,20 @@ class SpotifyInterfacerImpl(
         }
     }
 
-    private suspend fun getImage(album: Album?) = withContext(Dispatchers.IO) {
-        RemoteArtwork(
-            URI(
-                api?.service?.getAlbum(
-                    album?.uri?.replace("spotify:album:", "") ?: return@withContext null
-                )?.images?.firstOrNull()?.url
-                    ?: return@withContext null
+    private suspend fun getImage(image: ImageUri?) = withContext(Dispatchers.IO) {
+        if (image == null)
+            return@withContext null
+
+        try {
+            EmbeddedArtwork(
+                spotifyAppRemote?.imagesApi?.getImage(image)?.await()?.data
+                    ?: return@withContext null,
+                Uri.parse(image.raw)
             )
-        )
+        } catch (e: RetrofitError) {
+            log.error("Network error while trying to get artwork image for ${image.raw.toString()}")
+            error(e.stackTraceToString())
+        }
     }
 
 
@@ -297,7 +305,7 @@ private fun Track.toSongEntity() = SongEntity(
     album.images.firstOrNull()?.url
 )
 
-private fun com.spotify.protocol.types.Track.toSpotifySong(artwork: RemoteArtwork?): SpotifySong =
+private fun com.spotify.protocol.types.Track.toSpotifySong(artwork: Artwork?): SpotifySong =
     SpotifySong(
         MediaId(uri),
         name,
