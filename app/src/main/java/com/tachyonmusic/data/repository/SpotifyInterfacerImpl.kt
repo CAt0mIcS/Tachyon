@@ -26,13 +26,11 @@ import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.permission.toSong
-import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.delay
-import com.tachyonmusic.util.ms
-import com.tachyonmusic.util.runOnUiThreadAsync
+import com.tachyonmusic.util.*
 import kaaes.spotify.webapi.android.SpotifyApi
 import kaaes.spotify.webapi.android.models.Track
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +50,7 @@ class SpotifyInterfacerImpl(
     private val settingsRepository: SettingsRepository,
     private val dataRepository: DataRepository,
     private val log: Logger
-) : SpotifyInterfacer {
+) : SpotifyInterfacer, IListenable<MediaBrowserController.EventListener> by Listenable() {
     private var spotifyAppRemote: SpotifyAppRemote? = null
     private var api: SpotifyApi? = null
 
@@ -251,10 +249,11 @@ class SpotifyInterfacerImpl(
             playlistRepository.addAll(playlists)
 
             spotifyAppRemote?.playerApi?.subscribeToPlayerState()?.setEventCallback { data ->
-                ioScope.launch {
-                    val updatedSong = data.track?.toSpotifySong(getImage(data.track?.imageUri))
-                    _currentPlayback.update { updatedSong }
-                }
+                if (currentPlayback.value?.mediaId?.source != data.track.uri)
+                    ioScope.launch {
+                        val updatedSong = data.track?.toSpotifySong(getImage(data.track?.imageUri))
+                        _currentPlayback.update { updatedSong }
+                    }
 
                 _isPlaying.update { !data.isPaused }
                 _repeatMode.update {
@@ -263,6 +262,9 @@ class SpotifyInterfacerImpl(
                         else -> RepeatMode.One  // Default to RepeatMode.One
                     }
                 }
+
+                if (!data.isPaused)
+                    invokeEvent { it.onMediaItemTransition(currentPlayback.value) }
             }
         }
     }

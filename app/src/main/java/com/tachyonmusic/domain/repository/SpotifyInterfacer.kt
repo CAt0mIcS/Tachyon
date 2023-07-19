@@ -6,9 +6,10 @@ import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.playback.SpotifyPlaylist
 import com.tachyonmusic.core.data.playback.SpotifySong
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.IListenable
 import kotlinx.coroutines.flow.StateFlow
 
-interface SpotifyInterfacer {
+interface SpotifyInterfacer : IListenable<MediaBrowserController.EventListener> {
     fun authorize(activity: Activity)
     fun onAuthorization(requestCode: Int, resultCode: Int, intent: Intent?)
 

@@ -28,7 +28,7 @@ class SpotifySong(
         it
     }
 
-    override val uri: Uri = mediaId.uri!!
+    override val uri: Uri = mediaId.uri ?: TODO("Invalid Spotify mediaId: $mediaId")
 
     constructor(parcel: Parcel) : this(
         MediaId(parcel.readString()!!),

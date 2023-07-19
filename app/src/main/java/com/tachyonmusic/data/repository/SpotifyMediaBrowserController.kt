@@ -5,10 +5,9 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
-import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.cycle
-import com.tachyonmusic.util.indexOf
+import com.tachyonmusic.util.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +16,7 @@ import kotlinx.coroutines.flow.update
 // TODO: Handle case where client is not authorized to use Spotify
 class SpotifyMediaBrowserController(
     private val api: SpotifyInterfacer
-) {
+): IListenable<MediaBrowserController.EventListener> by Listenable() {
 
     private val _currentPlaylist = MutableStateFlow<Playlist?>(null)
     val currentPlaylist: StateFlow<Playlist?> = _currentPlaylist.asStateFlow()
@@ -25,6 +24,14 @@ class SpotifyMediaBrowserController(
     val currentPlayback = api.currentPlayback
 
     val isPlaying = api.isPlaying
+
+    override fun registerEventListener(listener: MediaBrowserController.EventListener) {
+        api.registerEventListener(listener)
+    }
+
+    override fun unregisterEventListener(listener: MediaBrowserController.EventListener) {
+        api.unregisterEventListener(listener)
+    }
 
     fun setPlaylist(playlist: Playlist, position: Duration?) {
         if (!api.isAuthorized)

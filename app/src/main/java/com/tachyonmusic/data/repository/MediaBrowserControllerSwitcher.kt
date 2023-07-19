@@ -24,11 +24,15 @@ class MediaBrowserControllerSwitcher(
     private val localBrowser: MediaPlaybackServiceMediaBrowserController,
     private val spotifyBrowser: SpotifyMediaBrowserController,
     application: TachyonApplication
-) : MediaBrowserController,
+) : MediaBrowserController, MediaBrowserController.EventListener,
     IListenable<MediaBrowserController.EventListener> by Listenable() {
 
     private var playbackLocation = MutableStateFlow(PlaybackLocation.Local)
     private val ioScope = application.coroutineScope + Dispatchers.IO
+
+    init {
+        registerEventListener(this)
+    }
 
     override fun registerLifecycle(lifecycle: Lifecycle) {
         localBrowser.registerLifecycle(lifecycle)
@@ -36,10 +40,12 @@ class MediaBrowserControllerSwitcher(
 
     override fun registerEventListener(listener: MediaBrowserController.EventListener) {
         localBrowser.registerEventListener(listener)
+        spotifyBrowser.registerEventListener(listener)
     }
 
     override fun unregisterEventListener(listener: MediaBrowserController.EventListener) {
         localBrowser.unregisterEventListener(listener)
+        spotifyBrowser.unregisterEventListener(listener)
     }
 
     override val currentPlaylist: StateFlow<Playlist?> = combine(
@@ -49,7 +55,7 @@ class MediaBrowserControllerSwitcher(
     ) { local, spotify, location ->
         when (location) {
             PlaybackLocation.Local -> local
-            PlaybackLocation.Spotify -> spotify
+            PlaybackLocation.Spotify -> spotify ?: local
         }
     }.stateIn(ioScope, SharingStarted.Eagerly, null)
 
@@ -153,7 +159,11 @@ class MediaBrowserControllerSwitcher(
     override val nextPlayback: SinglePlayback?
         get() = when (playbackLocation.value) {
             PlaybackLocation.Local -> localBrowser.nextPlayback
-            PlaybackLocation.Spotify -> spotifyBrowser.nextPlayback
+            PlaybackLocation.Spotify ->
+                if (currentPlaylist.value?.mediaId?.isSpotifyPlaylist == true)
+                    spotifyBrowser.nextPlayback
+                else
+                    localBrowser.nextPlayback
         }
 
     override val repeatMode: StateFlow<RepeatMode>
@@ -206,6 +216,29 @@ class MediaBrowserControllerSwitcher(
         when (playbackLocation.value) {
             PlaybackLocation.Local -> localBrowser.seekTo(index, pos)
             PlaybackLocation.Spotify -> spotifyBrowser.seekTo(index, pos)
+        }
+    }
+
+    override fun onMediaItemTransition(playback: SinglePlayback?) {
+        switchToCorrectPlayer(
+            if (currentPlaylist.value?.playbacks?.contains(playback) == true)
+                playback ?: return
+            else
+                nextPlayback ?: return
+        )
+    }
+
+
+    private fun switchToCorrectPlayer(playback: SinglePlayback) {
+        if (playbackLocation.value != PlaybackLocation.Spotify && playback is SpotifySong) {
+            localBrowser.pause()
+            spotifyBrowser.play(playback)
+            playbackLocation.update { PlaybackLocation.Spotify }
+        } else if (playbackLocation.value != PlaybackLocation.Local && playback !is SpotifySong) {
+            spotifyBrowser.pause()
+            localBrowser.seekTo(playback.mediaId)
+            localBrowser.play()
+            playbackLocation.update { PlaybackLocation.Local }
         }
     }
 

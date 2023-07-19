@@ -216,6 +216,7 @@ class MediaPlaybackServiceMediaBrowserController(
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
             _currentPlayback.update { mediaItem?.mediaMetadata?.playback }
+        invokeEvent { it.onMediaItemTransition(mediaItem?.mediaMetadata?.playback) }
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
@@ -229,7 +230,7 @@ class MediaPlaybackServiceMediaBrowserController(
     }
 
     override fun onRepeatModeChanged(repeatMode: Int) {
-        if(repeatMode == 0)
+        if (repeatMode == 0)
             return // TODO: Handle repeat mode for cast player
 
         _repeatMode.update {
