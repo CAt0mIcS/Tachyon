@@ -65,7 +65,7 @@ class CustomPlayerImpl(
         when (player) {
             is ExoPlayer -> (player as ExoPlayer).createMessage(target)
             is CastPlayer -> {
-                if(castPlayerMessageSender == null)
+                if (castPlayerMessageSender == null)
                     castPlayerMessageSender = CastPlayerMessageSender(player as CastPlayer, log)
 
                 PlayerMessage(
@@ -136,19 +136,15 @@ class CustomPlayerImpl(
          */
         val timingData = currentMediaItem?.mediaMetadata?.timingData
         if (timingData != null && timingData.isNotEmpty()) {
-            // TODO: See bellow
             /**
-             * When a new playback is played, we don't want to call [TimingDataController.advanceToCurrentPosition]
-             * because at position 0ms (starting pos) the second/third/... timing data might be closer to position 0ms
-             * than the first one in the timing data array. But when starting a new song we want to play
-             * the first timing data in the list. Currently we handle this in [TimingDataController.advanceToCurrentPosition]
-             * by checking if the position is 0ms and returning index 0 in this case
+             * TODO:
+             *  When a new playback is played, we don't want to call [TimingDataController.advanceToCurrentPosition]
+             *  because at position 0ms (starting pos) the second/third/... timing data might be closer to position 0ms
+             *  than the first one in the timing data array. But when starting a new song we want to play
+             *  the first timing data in the list. Currently we handle this in [TimingDataController.advanceToCurrentPosition]
+             *  by checking if the position is 0ms and returning index 0 in this case
              */
-            if (reason == Player.DISCONTINUITY_REASON_SEEK ||
-                reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION ||
-                reason == Player.DISCONTINUITY_REASON_SKIP
-            )
-                updateTimingData(timingData)
+            updateTimingData(timingData)
         }
     }
 
