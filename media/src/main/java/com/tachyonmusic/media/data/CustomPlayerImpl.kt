@@ -134,7 +134,11 @@ class CustomPlayerImpl(
         /**
          * When seeking we need to update the [currentTimingDataIndex] depending on the seek position
          */
-        val timingData = currentMediaItem?.mediaMetadata?.timingData
+        onMediaItemTransition(currentMediaItem, Player.MEDIA_ITEM_TRANSITION_REASON_AUTO)
+    }
+
+    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        val timingData = mediaItem?.mediaMetadata?.timingData
         if (timingData != null && timingData.isNotEmpty()) {
             /**
              * TODO:
