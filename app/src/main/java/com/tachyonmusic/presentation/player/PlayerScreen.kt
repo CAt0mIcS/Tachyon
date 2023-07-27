@@ -25,9 +25,9 @@ import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
-import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
@@ -326,7 +326,7 @@ fun PlayerScreen(
             }
         }
 
-        if(isEditingEqualizer) {
+        if (isEditingEqualizer) {
             item {
                 EqualizerEditor(modifier = Modifier.fillMaxWidth())
             }
@@ -348,49 +348,28 @@ fun PlayerScreen(
             }
 
             items(subPlaybackItems, key = { it.mediaId.toString() }) { playback ->
-
-                val content = @Composable {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = Theme.padding.medium,
+                            end = Theme.padding.medium,
+                            bottom = Theme.padding.extraSmall
+                        )
+                        .isEnabled(playback.isPlayable)
+                ) {
                     HorizontalPlaybackView(
                         playback,
                         playback.artwork ?: PlaceholderArtwork,
                         playback.isArtworkLoading,
-                        onClick = { if (playback.isPlayable) viewModel.play(playback) }
+                        onClick = {
+                            if (playback.isPlayable) viewModel.play(
+                                playback,
+                                PlaybackLocation.CUSTOM_PLAYLIST
+                            )
+                        }
                     )
                 }
-
-                val modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = Theme.padding.medium,
-                        end = Theme.padding.medium,
-                        bottom = Theme.padding.extraSmall
-                    )
-                    .isEnabled(playback.isPlayable)
-
-
-                if (playbackType is PlaybackType.Playlist) {
-                    val updatedPlayback by rememberUpdatedState(playback)
-                    val dismissState = rememberDismissState {
-                        if (it == DismissValue.DismissedToStart) {
-                            viewModel.removeFromCurrentPlaylist(updatedPlayback)
-                            true
-                        } else false
-                    }
-
-                    SwipeDelete(
-                        dismissState,
-                        shape = Theme.shapes.medium,
-                        modifier = modifier
-                    ) {
-                        content()
-                    }
-
-                } else {
-                    Box(modifier = modifier) {
-                        content()
-                    }
-                }
-
             }
         }
     }

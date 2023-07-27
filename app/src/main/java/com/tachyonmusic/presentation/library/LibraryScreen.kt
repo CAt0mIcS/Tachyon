@@ -27,7 +27,6 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
-import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
@@ -82,7 +81,10 @@ object LibraryScreen :
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
-                    FilterItem(R.string.customized_songs, playbackType is PlaybackType.CustomizedSong) {
+                    FilterItem(
+                        R.string.customized_songs,
+                        playbackType is PlaybackType.CustomizedSong
+                    ) {
                         viewModel.onFilterCustomizedSongs()
                     }
 
@@ -144,14 +146,6 @@ object LibraryScreen :
             }
 
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
-                val updatedPlayback by rememberUpdatedState(playback)
-                val dismissState = rememberDismissState {
-                    if (it == DismissValue.DismissedToStart) {
-                        viewModel.excludePlayback(updatedPlayback)
-                        true
-                    } else false
-                }
-
                 // TODO: Shouldn't be checked in UI
                 val artwork: Artwork?
                 val isLoading: Boolean
@@ -170,28 +164,23 @@ object LibraryScreen :
                     else -> error("Invalid playback type ${playback::class.java.name}")
                 }
 
-                SwipeDelete(
-                    dismissState,
-                    shape = Theme.shapes.medium,
+                HorizontalPlaybackView(
+                    playback,
+                    artwork ?: PlaceholderArtwork,
+                    isLoading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall)
-                ) {
-                    HorizontalPlaybackView(
-                        playback,
-                        artwork ?: PlaceholderArtwork,
-                        isLoading,
-                        modifier = Modifier.isEnabled(isPlayable),
-                        onClick = {
-                            if (isPlayable) {
-                                viewModel.onItemClicked(playback)
-                                scope.launch {
-                                    sheetState.expand()
-                                }
-                                onSheetStateFraction(1f)
+                        .isEnabled(isPlayable),
+                    onClick = {
+                        if (isPlayable) {
+                            viewModel.onItemClicked(playback)
+                            scope.launch {
+                                sheetState.expand()
                             }
-                        })
-                }
+                            onSheetStateFraction(1f)
+                        }
+                    })
             }
         }
     }

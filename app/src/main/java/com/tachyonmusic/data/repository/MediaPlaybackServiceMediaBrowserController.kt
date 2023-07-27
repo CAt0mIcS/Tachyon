@@ -274,11 +274,7 @@ class MediaPlaybackServiceMediaBrowserController(
                 log.info("Received state update event with ${event.currentPlayback}, playWhenReady=${event.playWhenReady}")
                 _currentPlayback.update { event.currentPlayback }
                 _isPlaying.update { event.playWhenReady }
-
-                if (event.playWhenReady)
-                    _currentPlaylist.update {
-                        it ?: getPlaylistForPlayback(event.currentPlayback)
-                    }
+                _currentPlaylist.update { event.currentPlaylist }
             }
 
             is AudioSessionIdChangedEvent -> {

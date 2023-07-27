@@ -9,10 +9,7 @@ import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
-import com.tachyonmusic.domain.use_case.GetRepositoryStates
-import com.tachyonmusic.domain.use_case.ObserveSettings
-import com.tachyonmusic.domain.use_case.PlayPlayback
+import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.isPredefined
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
@@ -129,9 +126,9 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun play(playback: SinglePlayback) {
+    fun play(playback: SinglePlayback, playbackLocation: PlaybackLocation? = null) {
         viewModelScope.launch {
-            playPlayback(playback)
+            playPlayback(playback, playbackLocation = playbackLocation)
         }
     }
 

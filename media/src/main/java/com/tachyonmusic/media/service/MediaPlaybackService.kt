@@ -17,10 +17,12 @@ import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
+import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.database.domain.repository.DataRepository
+import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.logger.domain.Logger
@@ -35,6 +37,9 @@ import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.media.util.*
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
+import com.tachyonmusic.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -82,6 +87,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     lateinit var log: Logger
+
+    @Inject
+    lateinit var predefinedPlaylistsRepository: PredefinedPlaylistsRepository
+
+    @Inject
+    lateinit var playlistRepository: PlaylistRepository
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -183,6 +194,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             mediaSession.dispatchMediaEvent(
                 StateUpdateEvent(
                     playback,
+                    getCurrentPlaylist(),
                     currentPlayer.playWhenReady
                 )
             )
@@ -491,6 +503,31 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             setEnabled(true)
         }.build()
     )
+
+    private fun getCurrentPlaylist(): LocalPlaylist? {
+        val items = currentPlayer.mediaItems
+        if (items.isEmpty())
+            return null
+
+        val mediaId =
+            when (val mediaIds = items.map { MediaId.deserialize(it.mediaId) }) {
+                predefinedPlaylistsRepository.songPlaylist.value.map { it.mediaId } ->
+                    predefinedSongPlaylistMediaId
+                predefinedPlaylistsRepository.customizedSongPlaylist.value.map { it.mediaId } ->
+                    predefinedCustomizedSongPlaylistMediaId
+                else -> findPlaylistWithPlaybacks(mediaIds)
+            } ?: return null
+
+        return LocalPlaylist(
+            mediaId,
+            items.mapNotNull { it.mediaMetadata.playback }.toMutableList(),
+            currentPlayer.currentMediaItemIndex
+        )
+    }
+
+    private fun findPlaylistWithPlaybacks(mediaIds: List<MediaId>): MediaId? = runBlocking {
+        playlistRepository.getPlaylists().find { it.items == mediaIds }?.mediaId
+    }
 
     private inner class CustomPlayerEventListener : CustomPlayer.Listener {
         override fun onTimingDataUpdated(controller: TimingDataController?) {

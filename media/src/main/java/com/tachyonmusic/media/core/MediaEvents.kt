@@ -8,6 +8,7 @@ import androidx.media3.session.SessionCommand
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.media.util.parcelable
 
@@ -97,6 +98,7 @@ data class TimingDataUpdatedEvent(
 
 data class StateUpdateEvent(
     val currentPlayback: SinglePlayback?,
+    val currentPlaylist: Playlist?,
     val playWhenReady: Boolean
 ) : MediaSessionEvent {
     override val command: SessionCommand
@@ -104,6 +106,7 @@ data class StateUpdateEvent(
 
     override fun toBundle() = Bundle().apply {
         putParcelable(MetadataKeys.Playback, currentPlayback)
+        putParcelable(MetadataKeys.Playlist, currentPlaylist)
         putBoolean(MetadataKeys.IsPlaying, playWhenReady)
     }
 
@@ -111,6 +114,7 @@ data class StateUpdateEvent(
         fun fromBundle(bundle: Bundle) =
             StateUpdateEvent(
                 bundle.parcelable(MetadataKeys.Playback),
+                bundle.parcelable(MetadataKeys.Playlist),
                 bundle.getBoolean(MetadataKeys.IsPlaying)
             )
 

@@ -29,7 +29,10 @@ class PlayPlayback(
     ) = runOnUiThread {
         when (playback) {
             is SinglePlayback -> {
-                invokeOnNewPlaylist(playback, position)
+                if (playbackLocation == PlaybackLocation.CUSTOM_PLAYLIST)
+                    browser.seekTo(playback.mediaId)
+                else
+                    invokeOnNewPlaylist(playback, position)
 //                if (browser.canPrepare) {
 //                    browser.prepare()
 //                    browser.seekTo(playback.mediaId, position)
