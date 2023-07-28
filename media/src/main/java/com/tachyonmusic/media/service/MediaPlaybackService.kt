@@ -195,7 +195,11 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 StateUpdateEvent(
                     playback,
                     getCurrentPlaylist(),
-                    currentPlayer.playWhenReady
+                    currentPlayer.playWhenReady,
+                    if (currentPlayer.repeatMode == Player.REPEAT_MODE_OFF)
+                        RepeatMode.All
+                    else
+                        currentPlayer.coreRepeatMode
                 )
             )
 
@@ -320,6 +324,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         private fun handleSetRepeatModeEvent(event: SetRepeatModeEvent) {
             exoPlayer.coreRepeatMode = event.repeatMode
             // castPlayer?.coreRepeatMode = event.repeatMode // TODO: Set repeat mode for cast player
+            runBlocking {
+                dataRepository.update(repeatMode = event.repeatMode)
+            }
             mediaSession.setCustomLayout(buildCustomNotificationLayout(event.repeatMode))
         }
 

@@ -275,6 +275,7 @@ class MediaPlaybackServiceMediaBrowserController(
                 _currentPlayback.update { event.currentPlayback }
                 _isPlaying.update { event.playWhenReady }
                 _currentPlaylist.update { event.currentPlaylist }
+                _repeatMode.update { event.repeatMode }
             }
 
             is AudioSessionIdChangedEvent -> {

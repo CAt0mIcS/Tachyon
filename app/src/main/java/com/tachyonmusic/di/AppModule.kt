@@ -240,10 +240,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideSetRepeatModeUseCase(
-        browser: MediaBrowserController,
-        dataRepository: DataRepository
-    ) = SetRepeatMode(browser, dataRepository)
+    fun provideSetRepeatModeUseCase(browser: MediaBrowserController) = SetRepeatMode(browser)
 
     @Provides
     @Singleton

@@ -99,7 +99,8 @@ data class TimingDataUpdatedEvent(
 data class StateUpdateEvent(
     val currentPlayback: SinglePlayback?,
     val currentPlaylist: Playlist?,
-    val playWhenReady: Boolean
+    val playWhenReady: Boolean,
+    val repeatMode: RepeatMode
 ) : MediaSessionEvent {
     override val command: SessionCommand
         get() = Companion.command
@@ -108,6 +109,7 @@ data class StateUpdateEvent(
         putParcelable(MetadataKeys.Playback, currentPlayback)
         putParcelable(MetadataKeys.Playlist, currentPlaylist)
         putBoolean(MetadataKeys.IsPlaying, playWhenReady)
+        putInt(MetadataKeys.RepeatMode, repeatMode.id)
     }
 
     companion object {
@@ -115,7 +117,8 @@ data class StateUpdateEvent(
             StateUpdateEvent(
                 bundle.parcelable(MetadataKeys.Playback),
                 bundle.parcelable(MetadataKeys.Playlist),
-                bundle.getBoolean(MetadataKeys.IsPlaying)
+                bundle.getBoolean(MetadataKeys.IsPlaying),
+                RepeatMode.fromId(bundle.getInt(MetadataKeys.RepeatMode))
             )
 
         val command = SessionCommand("${actionPrefix}STATE_UPDATE_COMMAND", Bundle.EMPTY)
