@@ -129,6 +129,12 @@ object ProfileScreen :
                 )
             }
 
+            Setting(text = "Play newly created customized song") {
+                Switch(
+                    checked = settings.playNewlyCreatedCustomizedSong,
+                    onCheckedChange = viewModel::playNewlyCreatedCustomizedSong
+                )
+            }
 
             Setting(text = "Add new music directory") {
                 Button(onClick = { showUriPermissionDialog = true }) {

@@ -24,6 +24,14 @@ data class SettingsEntity(
      */
     val shouldMillisecondsBeShown: Boolean = false,
 
+    /**
+     * The app may revert customization changes to the currently playing media item due to the
+     * playlist update that happens when saving a newly created customized song. This controls
+     * whether you want to play the newly created customized song or keep playing the old playback
+     * which will revert to either no customization (if it's a song) or customization of the customized song
+     */
+    val playNewlyCreatedCustomizedSong: Boolean = true,
+
     val excludedSongFiles: List<Uri> = emptyList(),
     val musicDirectories: List<Uri> = emptyList(),
     @PrimaryKey val id: Int = 0

@@ -89,6 +89,12 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun playNewlyCreatedCustomizedSong(playNewly: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            writeSettings(playNewlyCreatedCustomizedSong = playNewly)
+        }
+    }
+
     fun shouldMillisecondsBeShownChanged(shouldShow: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             writeSettings(shouldMillisecondsBeShown = shouldShow)

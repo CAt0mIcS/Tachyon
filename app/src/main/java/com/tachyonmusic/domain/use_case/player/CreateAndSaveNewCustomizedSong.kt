@@ -8,6 +8,7 @@ import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.domain.AudioEffectController
+import com.tachyonmusic.playback_layers.toCustomizedSong
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.runOnUiThread
@@ -40,24 +41,15 @@ class CreateAndSaveNewCustomizedSong(
             )
 
 
-        /**
-         * Building the new customizedSong by using either the [underlyingMediaId] of the current playback
-         * which means that the current playback is a customizedSong or using the direct media id of the current
-         * playback which means that it's a song TODO: Saving current playlist item as CustomizedSong
-         */
-        val songMediaId = playback!!.mediaId.underlyingMediaId ?: playback!!.mediaId
-        val song = songRepository.findByMediaId(songMediaId) ?: return@withContext Resource.Error(
-            UiText.StringResource(R.string.song_not_found, songMediaId.toString())
-        )
-
+        val song = playback!!.underlyingSong
         val customizedSong = runOnUiThread {
             CustomizedSongEntity(
-                MediaId.ofLocalCustomizedSong(name, songMediaId),
+                MediaId.ofLocalCustomizedSong(name, song.mediaId),
                 song.title,
                 song.artist,
                 song.duration,
                 playback!!.timingData?.timingData,
-                currentTimingDataIndex = 0, // TODO
+                currentTimingDataIndex = 0,
                 audioEffectController.bass,
                 audioEffectController.virtualizerStrength,
                 audioEffectController.bands,
@@ -70,7 +62,7 @@ class CreateAndSaveNewCustomizedSong(
         if (res is Resource.Error)
             return@withContext Resource.Error(res)
 
-        Resource.Success(customizedSong)
+        Resource.Success(customizedSong.toCustomizedSong(song))
     }
 
     private fun isInvalidPlayback() = browser.currentPlayback.value == null

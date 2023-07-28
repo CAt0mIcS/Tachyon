@@ -2,9 +2,9 @@ package com.tachyonmusic.playback_layers.data
 
 import android.content.Context
 import com.tachyonmusic.core.ArtworkType
-import com.tachyonmusic.core.data.RemoteArtwork
-import com.tachyonmusic.core.data.playback.*
-import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.data.playback.LocalPlaylist
+import com.tachyonmusic.core.data.playback.SpotifyPlaylist
+import com.tachyonmusic.core.data.playback.SpotifySong
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.model.CustomizedSongEntity
@@ -16,16 +16,13 @@ import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.playback_layers.SortingPreferences
-import com.tachyonmusic.playback_layers.checkIfPlayable
+import com.tachyonmusic.playback_layers.*
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
-import com.tachyonmusic.playback_layers.sortedBy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.plus
-import java.net.URI
 
 class PlaybackRepositoryImpl(
     private val songRepository: SongRepository,
@@ -127,32 +124,10 @@ class PlaybackRepositoryImpl(
                     artworkUpdateData.artwork
                 }
 
-                LocalSong(
-                    entity.mediaId.uri!!,
-                    entity.mediaId,
-                    entity.title,
-                    entity.artist,
-                    entity.duration,
-                    entity.isHidden
-                ).let {
-                    it.isPlayable = entity.checkIfPlayable(context)
-                    it.isArtworkLoading = entity.artworkType == ArtworkType.UNKNOWN
-                    it.artwork = artwork
-                    it
-                }
-            } else if (entity.mediaId.isSpotifySong) {
-                SpotifySong(
-                    entity.mediaId,
-                    entity.title,
-                    entity.artist,
-                    entity.duration,
-                    entity.isHidden
-                ).let {
-                    it.isPlayable = true
-                    it.artwork = RemoteArtwork(URI(entity.artworkUrl))
-                    it
-                }
-            } else
+                entity.toLocalSong(artwork, entity.checkIfPlayable(context))
+            } else if (entity.mediaId.isSpotifySong)
+                entity.toSpotifySong()
+            else
                 TODO("Invalid media id ${entity.mediaId}")
         }.sortedBy(sorting)
 
@@ -162,24 +137,10 @@ class PlaybackRepositoryImpl(
         sorting: SortingPreferences
     ): List<CustomizedSong> =
         entities.map { entity ->
-            LocalCustomizedSong(
-                entity.mediaId,
+            entity.toCustomizedSong(
                 songs.find { it.mediaId == entity.mediaId.underlyingMediaId }
                     ?: TODO("Invalid song media id ${entity.mediaId.underlyingMediaId}")
-            ).let {
-                it.timingData = entity.timingData?.let {
-                    TimingDataController(
-                        it,
-                        entity.currentTimingDataIndex
-                    )
-                }
-                it.bassBoost = entity.bassBoost
-                it.virtualizerStrength = entity.virtualizerStrength
-                it.equalizerBands = entity.equalizerBands
-                it.playbackParameters = entity.playbackParameters
-                it.reverb = entity.reverb
-                it
-            }
+            )
         }.sortedBy(sorting)
 
     private fun transformPlaylists(
