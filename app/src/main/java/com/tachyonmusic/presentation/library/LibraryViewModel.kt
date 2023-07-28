@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.DeletePlayback
 import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.PlayPlayback
@@ -28,6 +29,7 @@ class LibraryViewModel @Inject constructor(
     private val playPlayback: PlayPlayback,
 
     private val addSongToExcludedSongs: AddSongToExcludedSongs,
+    private val browser: MediaBrowserController,
     private val deletePlayback: DeletePlayback,
 ) : ViewModel() {
 
@@ -94,8 +96,14 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch {
             if (playback is Song)
                 addSongToExcludedSongs(playback)
-            else
+            else {
+                if (browser.currentPlayback.value == playback)
+                    if ((browser.currentPlaylist.value?.playbacks?.size ?: 0) > 1)
+                        browser.seekToNext()
+                    else
+                        browser.stop()
                 deletePlayback(playback)
+            }
         }
     }
 }

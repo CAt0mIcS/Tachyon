@@ -190,6 +190,10 @@ class MediaPlaybackServiceMediaBrowserController(
     override fun stop() {
         browser?.stop()
         browser?.clearMediaItems()
+
+        _currentPlayback.update { null }
+        _currentPlaylist.update { null }
+        _isPlaying.update { false }
     }
 
     override fun seekTo(pos: Duration?) {
@@ -210,6 +214,14 @@ class MediaPlaybackServiceMediaBrowserController(
         if (index == 0) {
             _currentPlayback.update { browser?.getMediaItemAt(0)?.mediaMetadata?.playback }
         }
+    }
+
+    override fun seekToNext() {
+        browser?.seekToNext()
+    }
+
+    override fun seekToPrevious() {
+        browser?.seekToPrevious()
     }
 
 

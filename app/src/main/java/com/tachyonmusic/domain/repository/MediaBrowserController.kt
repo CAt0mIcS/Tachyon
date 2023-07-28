@@ -62,6 +62,9 @@ interface MediaBrowserController : DefaultLifecycleObserver,
      */
     fun seekTo(index: Int, pos: Duration? = null)
 
+    fun seekToNext()
+    fun seekToPrevious()
+
     interface EventListener {
         fun onConnected() {}
         fun onAudioSessionIdChanged(audioSessionId: Int) {}

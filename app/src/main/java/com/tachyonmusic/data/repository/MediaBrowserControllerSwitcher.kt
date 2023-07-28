@@ -219,6 +219,16 @@ class MediaBrowserControllerSwitcher(
         }
     }
 
+    override fun seekToNext() {
+        // TODO: Spotify
+        localBrowser.seekToNext()
+    }
+
+    override fun seekToPrevious() {
+        // TODO: Spotify
+        localBrowser.seekToPrevious()
+    }
+
     override fun onMediaItemTransition(playback: SinglePlayback?) {
         switchToCorrectPlayer(
             if (currentPlaylist.value?.playbacks?.contains(playback) == true)
