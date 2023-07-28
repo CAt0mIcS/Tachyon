@@ -16,20 +16,28 @@ class AddSongToExcludedSongs(
 ) {
     suspend operator fun invoke(song: Song) = withContext(Dispatchers.IO) {
         settingsRepository.addExcludedFilesRange(listOf(song.uri))
-        songRepository.remove(song.mediaId)
-        historyRepository.removeHierarchical(song.mediaId)
-        customizedSongRepository.removeIf {
-            it.mediaId.underlyingMediaId == song.mediaId
-        }
+        songRepository.updateIsHidden(song.mediaId, isHidden = true)
 
-        val playlists = playbackRepository.getPlaylists()
-        for (i in playlists.indices) {
-            playlists[i].apply {
-                if (hasPlayback(song)) {
-                    remove(song)
-                    playlistRepository.setPlaybacksOfPlaylist(mediaId, playbacks.map { it.mediaId })
-                }
-            }
-        }
+        // TODO: Decide below
+
+        // We don't want to remove the hidden song from history
+//        historyRepository.removeHierarchical(song.mediaId)
+
+        // We don't want to remove customized songs using the hidden song
+//        customizedSongRepository.removeIf {
+//            it.mediaId.underlyingMediaId == song.mediaId
+//        }
+
+
+        // We don't want to remove the hidden song from existing playlists
+//        val playlists = playbackRepository.getPlaylists()
+//        for (i in playlists.indices) {
+//            playlists[i].apply {
+//                if (hasPlayback(song)) {
+//                    remove(song)
+//                    playlistRepository.setPlaybacksOfPlaylist(mediaId, playbacks.map { it.mediaId })
+//                }
+//            }
+//        }
     }
 }

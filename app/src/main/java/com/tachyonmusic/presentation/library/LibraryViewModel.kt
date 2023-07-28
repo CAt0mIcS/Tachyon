@@ -34,9 +34,7 @@ class LibraryViewModel @Inject constructor(
     val sortParams = getRepositoryStates.sortPrefs()
 
     private var songs = playbackRepository.songFlow.map { songs ->
-        songs.map {
-            it.copy()
-        }
+        songs.filter { !it.isHidden }.map { it.copy() }
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     private var customizedSongs = playbackRepository.customizedSongFlow.map { customizedSongs ->
@@ -55,7 +53,12 @@ class LibraryViewModel @Inject constructor(
     val filterType = _filterType.asStateFlow()
 
     val items =
-        combine(songs, customizedSongs, playlists, filterType) { songs, customizedSongs, playlists, filterType ->
+        combine(
+            songs,
+            customizedSongs,
+            playlists,
+            filterType
+        ) { songs, customizedSongs, playlists, filterType ->
             when (filterType) {
                 is PlaybackType.Song -> songs
                 is PlaybackType.CustomizedSong -> customizedSongs

@@ -20,12 +20,13 @@ class LocalSong(
     mediaId: MediaId,
     title: String,
     artist: String,
-    duration: Duration
+    duration: Duration,
+    override val isHidden: Boolean
 ) : AbstractSong(mediaId, title, artist, duration) {
 
     override val playbackType = PlaybackType.Song.Local()
 
-    override fun copy(): Song = LocalSong(uri, mediaId, title, artist, duration).let {
+    override fun copy(): Song = LocalSong(uri, mediaId, title, artist, duration, isHidden).let {
         it.artwork = artwork
         it.isArtworkLoading = isArtworkLoading
         it.isPlayable = isPlayable
@@ -38,7 +39,8 @@ class LocalSong(
         MediaId(parcel.readString()!!),
         parcel.readString()!!,
         parcel.readString()!!,
-        parcel.readLong().ms
+        parcel.readLong().ms,
+        parcel.readInt().toBoolean()
     ) {
         artwork = parcel.readParcelable(Artwork::class.java.classLoader)
         isArtworkLoading = parcel.readInt().toBoolean()
@@ -51,6 +53,7 @@ class LocalSong(
         parcel.writeString(title)
         parcel.writeString(artist)
         parcel.writeLong(duration.inWholeMilliseconds)
+        parcel.writeInt(isHidden.toInt())
         parcel.writeParcelable(artwork, flags)
         parcel.writeInt(isArtworkLoading.toInt())
         parcel.writeInt(isPlayable.toInt())

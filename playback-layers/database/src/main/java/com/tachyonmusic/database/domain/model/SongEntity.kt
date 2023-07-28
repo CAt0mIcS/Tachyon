@@ -11,6 +11,9 @@ class SongEntity(
     title: String,
     artist: String,
     duration: Duration,
+
+    // Whether the song should be hidden in the UI
+    var isHidden: Boolean = false,
     var artworkType: String = ArtworkType.UNKNOWN,
     var artworkUrl: String? = null
 ) : SinglePlaybackEntity(mediaId, title, artist, duration)

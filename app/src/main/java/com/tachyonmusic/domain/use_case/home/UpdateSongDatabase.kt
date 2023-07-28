@@ -7,13 +7,11 @@ import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.util.removeFirst
 import kotlinx.coroutines.*
 
 /**
- * Checks if every song that is not excluded is saved in the database. If a song was removed by the
- * user or a new song was added, it removes/adds the song to the database.
+ * Checks if every song in all added directories are also saved in the database and adds missing ones
  */
 class UpdateSongDatabase(
     private val songRepo: SongRepository,
@@ -36,11 +34,10 @@ class UpdateSongDatabase(
          * TODO
          *  Make sure all parts of the UI are updated if we remove a uri permission
          */
-        songRepo.removeIf { song ->
+        songRepo.getSongs().forEach { song ->
             val uri = song.mediaId.uri
             if (uri != null) {
                 paths.removeFirst { it.uri == uri }
-                settings.excludedSongFiles.contains(uri)
             } else TODO("Invalid path null")
         }
 

@@ -1,7 +1,6 @@
 package com.tachyonmusic.playback_layers.data
 
 import android.content.Context
-import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.playback.*
@@ -17,9 +16,10 @@ import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.playback_layers.checkIfPlayable
-import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.SortingPreferences
+import com.tachyonmusic.playback_layers.checkIfPlayable
+import com.tachyonmusic.playback_layers.domain.ArtworkCodex
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.sortedBy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -132,7 +132,8 @@ class PlaybackRepositoryImpl(
                     entity.mediaId,
                     entity.title,
                     entity.artist,
-                    entity.duration
+                    entity.duration,
+                    entity.isHidden
                 ).let {
                     it.isPlayable = entity.checkIfPlayable(context)
                     it.isArtworkLoading = entity.artworkType == ArtworkType.UNKNOWN
@@ -140,7 +141,13 @@ class PlaybackRepositoryImpl(
                     it
                 }
             } else if (entity.mediaId.isSpotifySong) {
-                SpotifySong(entity.mediaId, entity.title, entity.artist, entity.duration).let {
+                SpotifySong(
+                    entity.mediaId,
+                    entity.title,
+                    entity.artist,
+                    entity.duration,
+                    entity.isHidden
+                ).let {
                     it.isPlayable = true
                     it.artwork = RemoteArtwork(URI(entity.artworkUrl))
                     it

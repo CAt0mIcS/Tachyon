@@ -17,7 +17,7 @@ abstract class AbstractSong(
     final override val mediaId: MediaId,
     final override val title: String,
     final override val artist: String,
-    final override val duration: Duration,
+    final override val duration: Duration
 ) : Song {
 
     final override var timingData: TimingDataController? = null
@@ -65,5 +65,6 @@ abstract class AbstractSong(
         other is AbstractSong && mediaId == other.mediaId && title == other.title &&
                 artist == other.artist && duration == other.duration &&
                 timingData == other.timingData && isPlayable == other.isPlayable &&
-                artwork == other.artwork && isArtworkLoading == other.isArtworkLoading
+                artwork == other.artwork && isArtworkLoading == other.isArtworkLoading &&
+                isHidden == other.isHidden
 }

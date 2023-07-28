@@ -294,7 +294,7 @@ class SpotifyInterfacerImpl(
 
 
 private fun Track.toSpotifySong(): SpotifySong = toSongEntity().let { entity ->
-    SpotifySong(entity.mediaId, entity.title, entity.artist, entity.duration).let {
+    SpotifySong(entity.mediaId, entity.title, entity.artist, entity.duration, entity.isHidden).let {
         it.isPlayable = true
         it.artwork = RemoteArtwork(URI(entity.artworkUrl))
         it
@@ -306,6 +306,7 @@ private fun Track.toSongEntity() = SongEntity(
     name,
     artists.firstOrNull()?.name ?: "Unknown Artist",
     duration_ms.ms,
+    isHidden = false,
     if (album.images.firstOrNull() != null) ArtworkType.REMOTE else ArtworkType.NO_ARTWORK,
     album.images.firstOrNull()?.url
 )
@@ -315,7 +316,8 @@ private fun com.spotify.protocol.types.Track.toSpotifySong(artwork: Artwork?): S
         MediaId(uri),
         name,
         artists.firstOrNull()?.name ?: "Unknown Artist",
-        duration.ms
+        duration.ms,
+        isHidden = false
     ).apply {
         this.artwork = artwork
     }

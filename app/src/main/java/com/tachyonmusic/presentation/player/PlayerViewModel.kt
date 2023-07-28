@@ -59,7 +59,7 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(
         viewModelScope + Dispatchers.IO,
         SharingStarted.Lazily,
-        LocalSong(Uri.EMPTY, MediaId.EMPTY, "", "", 0.ms)
+        LocalSong(Uri.EMPTY, MediaId.EMPTY, "", "", 0.ms, false)
     )
 
     val shouldShowPlayer = _playback.map {
