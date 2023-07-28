@@ -1,7 +1,8 @@
-package com.tachyonmusic.artwork.data
+package com.tachyonmusic.playback_layers.data
 
-import com.tachyonmusic.artwork.domain.ArtworkCodex
-import com.tachyonmusic.artwork.domain.ArtworkLoader
+import com.tachyonmusic.playback_layers.domain.ArtworkCodex
+import com.tachyonmusic.playback_layers.domain.ArtworkLoader
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.SongEntity
@@ -85,7 +86,22 @@ class ArtworkCodexImpl internal constructor(
         throw NoSuchElementException("Key $mediaId is missing in the map.")
     }
 
-    override fun getOrNull(mediaId: MediaId) = codex[mediaId]?.artwork
+    override fun getOrNull(mediaId: MediaId) = codex.getOrDefault(mediaId, null)?.artwork
+
+    override suspend fun loadExisting(entity: SongEntity): ArtworkCodex.ArtworkUpdateData {
+        assert(entity.artworkType != ArtworkType.UNKNOWN) { "Invalid artwork type UNKNOWN for ArtworkCodex.loadExisting" }
+
+        if (codex.containsKey(entity.mediaId)) {
+            await(entity.mediaId)
+            return ArtworkCodex.ArtworkUpdateData(codex[entity.mediaId]?.artwork)
+        }
+
+        if (!codex.containsKey(entity.mediaId))
+            codex[entity.mediaId] = CodexedArtworkData(artwork = null)
+
+        val res = internalRequest(entity, fetchOnline = false).data
+        return ArtworkCodex.ArtworkUpdateData(res?.artwork, res?.entityToUpdate)
+    }
 
     override fun isLoaded(mediaId: MediaId) =
         codex.containsKey(mediaId) && codex[mediaId]!!.job.isCompleted

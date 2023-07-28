@@ -1,4 +1,4 @@
-package com.tachyonmusic.permission.domain
+package com.tachyonmusic.playback_layers.domain
 
 import android.net.Uri
 import kotlinx.coroutines.flow.StateFlow

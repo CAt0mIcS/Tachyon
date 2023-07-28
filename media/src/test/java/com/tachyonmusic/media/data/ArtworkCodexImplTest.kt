@@ -4,6 +4,8 @@ import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.playback_layers.data.ArtworkCodexImpl
+import com.tachyonmusic.playback_layers.domain.ArtworkLoader
 import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.assertResource
 import com.tachyonmusic.util.Resource
@@ -21,9 +23,9 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class ArtworkCodexImplTest {
 
-    private val artworkLoader: com.tachyonmusic.artwork.domain.ArtworkLoader = mockk()
+    private val artworkLoader: ArtworkLoader = mockk()
     private val log: Logger = mockk(relaxed = true)
-    private val codex = com.tachyonmusic.artwork.data.ArtworkCodexImpl(artworkLoader, log)
+    private val codex = ArtworkCodexImpl(artworkLoader, log)
 
     private val testEntity = SinglePlaybackEntity(
         MediaId("/Music/SomeSong.mp3"),
@@ -36,7 +38,7 @@ internal class ArtworkCodexImplTest {
 
     @Before
     fun setUp() {
-        coEvery { artworkLoader.requestLoad(testEntity) } returns Resource.Success(com.tachyonmusic.artwork.domain.ArtworkLoader.ArtworkData())
+        coEvery { artworkLoader.requestLoad(testEntity) } returns Resource.Success(ArtworkLoader.ArtworkData())
     }
 
     @Test
@@ -60,7 +62,7 @@ internal class ArtworkCodexImplTest {
         coEvery { artworkLoader.requestLoad(testEntity) } coAnswers {
             delay(10000)
             Resource.Success(
-                com.tachyonmusic.artwork.domain.ArtworkLoader.ArtworkData(
+                ArtworkLoader.ArtworkData(
                     entityToUpdate = SinglePlaybackEntity(
                         testEntity.mediaId,
                         testEntity.title,

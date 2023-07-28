@@ -1,11 +1,11 @@
-package com.tachyonmusic.permission.data
+package com.tachyonmusic.playback_layers.data
 
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Binder
-import com.tachyonmusic.permission.domain.UriPermissionRepository
+import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

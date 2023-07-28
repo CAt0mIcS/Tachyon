@@ -1,4 +1,4 @@
-package com.tachyonmusic.artwork.domain
+package com.tachyonmusic.playback_layers.domain
 
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.util.Resource

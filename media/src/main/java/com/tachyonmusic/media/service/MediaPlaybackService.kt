@@ -357,7 +357,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val playback = mediaItem?.mediaMetadata?.playback ?: return
 
-        // TODO: Update equalizer
         when (playback) {
             is CustomizedSong -> {
                 if (playback.bassBoostEnabled) {
@@ -462,7 +461,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         // Local player will also try to transition to [SpotifySong], ignoring exception as it's
         // handled in the [MediaBrowserControllerSwitcher] (Local player paused, Spotify player started)
         if (error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED &&
-            MediaId.deserializeIfValid(currentPlayer.currentMediaItem?.mediaId)?.isSpotifySong == true
+            MediaId.deserializeIfValid(currentPlayer.currentMediaItem?.mediaId)?.isSpotify == true
         ) return
 
         var message = R.string.generic_error

@@ -10,9 +10,8 @@ import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
+import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
-import com.tachyonmusic.sort.domain.SortedPlaybackRepository
-import com.tachyonmusic.sort.domain.model.SortType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -24,8 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     getRepositoryStates: GetRepositoryStates,
-    playbackRepository: PlaybackRepository,
-    private val sortedPlaybackRepository: SortedPlaybackRepository,
+    private val playbackRepository: PlaybackRepository,
 
     private val playPlayback: PlayPlayback,
 
@@ -80,7 +78,7 @@ class LibraryViewModel @Inject constructor(
 
     fun onSortTypeChanged(type: SortType) {
         // TODO: UseCase
-        sortedPlaybackRepository.setSortingPreferences(sortParams.value.copy(type = type))
+        playbackRepository.setSortingPreferences(sortParams.value.copy(type = type))
     }
 
     fun onItemClicked(playback: Playback) {

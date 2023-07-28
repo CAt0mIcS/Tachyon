@@ -32,7 +32,7 @@ import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.presentation.util.isEnabled
-import com.tachyonmusic.sort.domain.model.SortType
+import com.tachyonmusic.playback_layers.SortType
 import kotlinx.coroutines.launch
 
 object LibraryScreen :

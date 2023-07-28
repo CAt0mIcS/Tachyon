@@ -43,9 +43,11 @@ dependencies {
     dagger()
     coroutines()
 
+    implementation("androidx.documentfile:documentfile:1.0.1")
+
     projectCore()
     projectUtil()
+    projectLogger()
     projectPlaybackLayerDatabase()
-    projectPlaybackLayerArtwork()
-    projectPlaybackLayerSort()
+    projectArtworkFetcher()
 }

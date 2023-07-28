@@ -1,8 +1,6 @@
-package com.tachyonmusic.sort.domain.model
+package com.tachyonmusic.playback_layers
 
 import com.tachyonmusic.core.domain.playback.*
-import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
-import com.tachyonmusic.permission.toPlayback
 
 enum class SortOrder {
     Ascending, Descending;
@@ -36,19 +34,6 @@ fun <T : Playback> Collection<T>.sortedBy(sortType: SortType, sortOrder: SortOrd
 
 @JvmName("sortedByPb")
 fun <T : Playback> Collection<T>.sortedBy(sortParams: SortingPreferences) =
-    sortedBy(sortParams.type, sortParams.order)
-
-
-@JvmName("sortedByEntity")
-fun <T : SinglePlaybackEntity> Collection<T>.sortedBy(
-    sortType: SortType,
-    sortOrder: SortOrder
-): List<T> = sortWithOrder(sortOrder) {
-    it.toPlayback(false).getComparedString(sortType)
-}
-
-@JvmName("sortedByE")
-fun <T : SinglePlaybackEntity> Collection<T>.sortedBy(sortParams: SortingPreferences) =
     sortedBy(sortParams.type, sortParams.order)
 
 

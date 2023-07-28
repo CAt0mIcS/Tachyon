@@ -13,7 +13,7 @@ import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.permission.domain.UriPermissionRepository
+import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 

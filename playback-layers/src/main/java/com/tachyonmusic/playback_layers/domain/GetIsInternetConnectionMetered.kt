@@ -1,4 +1,4 @@
-package com.tachyonmusic.artwork.domain
+package com.tachyonmusic.playback_layers.domain
 
 import android.content.Context
 import android.net.ConnectivityManager

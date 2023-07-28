@@ -1,8 +1,5 @@
-package com.tachyonmusic.artwork.data
+package com.tachyonmusic.playback_layers.data
 
-import com.tachyonmusic.artwork.R
-import com.tachyonmusic.artwork.domain.ArtworkCodex
-import com.tachyonmusic.artwork.domain.ArtworkLoader
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
@@ -11,6 +8,9 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.playback_layers.R
+import com.tachyonmusic.playback_layers.domain.ArtworkCodex
+import com.tachyonmusic.playback_layers.domain.ArtworkLoader
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.flow.collect

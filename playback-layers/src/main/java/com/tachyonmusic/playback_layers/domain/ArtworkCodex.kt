@@ -1,4 +1,4 @@
-package com.tachyonmusic.artwork.domain
+package com.tachyonmusic.playback_layers.domain
 
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
@@ -42,6 +42,12 @@ interface ArtworkCodex {
      * Gets already loaded artwork by media id or null if the artwork is null or doesn't exist
      */
     fun getOrNull(mediaId: MediaId): Artwork?
+
+    /**
+     * Gets artwork that is already cached in the database (SongEntity has any [ArtworkType] other
+     * than [ArtworkType.UNKNOWN]). May return an entity to update if cached artwork is invalid
+     */
+    suspend fun loadExisting(entity: SongEntity): ArtworkUpdateData
 
     fun isLoaded(mediaId: MediaId): Boolean
 }

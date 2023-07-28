@@ -29,7 +29,6 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.permission.toSong
 import com.tachyonmusic.util.*
 import kaaes.spotify.webapi.android.SpotifyApi
 import kaaes.spotify.webapi.android.models.Track
@@ -294,8 +293,12 @@ class SpotifyInterfacerImpl(
 }
 
 
-private fun Track.toSpotifySong(): SpotifySong = toSongEntity().let {
-    it.toSong(true, RemoteArtwork(URI(it.artworkUrl))) as SpotifySong
+private fun Track.toSpotifySong(): SpotifySong = toSongEntity().let { entity ->
+    SpotifySong(entity.mediaId, entity.title, entity.artist, entity.duration).let {
+        it.isPlayable = true
+        it.artwork = RemoteArtwork(URI(entity.artworkUrl))
+        it
+    }
 }
 
 private fun Track.toSongEntity() = SongEntity(
