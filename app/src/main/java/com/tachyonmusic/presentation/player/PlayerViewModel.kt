@@ -187,9 +187,8 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun removeFromCurrentPlaylist(toRemove: SinglePlayback) {
-//        viewModelScope.launch {
-//            removePlaybackFromPlaylist(toRemove, associatedPlaylist.value)
-//            playPlayback(associatedPlaylist.value)
-//        }
+        viewModelScope.launch {
+            removePlaybackFromPlaylist(toRemove, currentPlaylist.value)
+        }
     }
 }

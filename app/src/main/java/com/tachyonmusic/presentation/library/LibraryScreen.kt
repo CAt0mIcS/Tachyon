@@ -16,8 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
@@ -25,14 +24,15 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
+import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.presentation.util.isEnabled
-import com.tachyonmusic.playback_layers.SortType
 import kotlinx.coroutines.launch
 
 object LibraryScreen :
@@ -164,23 +164,30 @@ object LibraryScreen :
                     else -> error("Invalid playback type ${playback::class.java.name}")
                 }
 
-                HorizontalPlaybackView(
-                    playback,
-                    artwork ?: PlaceholderArtwork,
-                    isLoading,
+                val updatedPlayback by rememberUpdatedState(playback)
+
+                SwipeDelete(
+                    shape = Theme.shapes.medium,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = Theme.padding.extraSmall)
-                        .isEnabled(isPlayable),
-                    onClick = {
-                        if (isPlayable) {
-                            viewModel.onItemClicked(playback)
-                            scope.launch {
-                                sheetState.expand()
+                        .padding(bottom = Theme.padding.extraSmall),
+                    onClick = { viewModel.excludePlayback(updatedPlayback) }
+                ) {
+                    HorizontalPlaybackView(
+                        playback,
+                        artwork ?: PlaceholderArtwork,
+                        isLoading,
+                        modifier = Modifier.isEnabled(isPlayable),
+                        onClick = {
+                            if (isPlayable) {
+                                viewModel.onItemClicked(playback)
+                                scope.launch {
+                                    sheetState.expand()
+                                }
+                                onSheetStateFraction(1f)
                             }
-                            onSheetStateFraction(1f)
-                        }
-                    })
+                        })
+                }
             }
         }
     }

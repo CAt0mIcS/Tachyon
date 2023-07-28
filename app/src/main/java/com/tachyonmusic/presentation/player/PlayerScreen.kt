@@ -28,6 +28,7 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
+import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
@@ -348,6 +349,8 @@ fun PlayerScreen(
             }
 
             items(subPlaybackItems, key = { it.mediaId.toString() }) { playback ->
+                val updatedPlayback by rememberUpdatedState(playback)
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -358,17 +361,23 @@ fun PlayerScreen(
                         )
                         .isEnabled(playback.isPlayable)
                 ) {
-                    HorizontalPlaybackView(
-                        playback,
-                        playback.artwork ?: PlaceholderArtwork,
-                        playback.isArtworkLoading,
-                        onClick = {
-                            if (playback.isPlayable) viewModel.play(
-                                playback,
-                                PlaybackLocation.CUSTOM_PLAYLIST
-                            )
-                        }
-                    )
+                    SwipeDelete(
+                        shape = Theme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { viewModel.removeFromCurrentPlaylist(updatedPlayback) }
+                    ) {
+                        HorizontalPlaybackView(
+                            playback,
+                            playback.artwork ?: PlaceholderArtwork,
+                            playback.isArtworkLoading,
+                            onClick = {
+                                if (playback.isPlayable) viewModel.play(
+                                    playback,
+                                    PlaybackLocation.CUSTOM_PLAYLIST
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }
