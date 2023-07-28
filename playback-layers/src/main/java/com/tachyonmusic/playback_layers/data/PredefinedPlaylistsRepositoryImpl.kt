@@ -27,10 +27,10 @@ class PredefinedPlaylistsRepositoryImpl(
             settingsRepository.observe()
         ) { songs, customizedSongs, settings ->
             if (settings.combineDifferentPlaybackTypes) {
-                _songPlaylist.update { songs + customizedSongs }
-                _customizedSongPlaylist.update { customizedSongs + songs }
+                _songPlaylist.update { songs.filter { !it.isHidden } + customizedSongs }
+                _customizedSongPlaylist.update { customizedSongs + songs.filter { !it.isHidden } }
             } else {
-                _songPlaylist.update { songs }
+                _songPlaylist.update { songs.filter { !it.isHidden } }
                 _customizedSongPlaylist.update { customizedSongs }
             }
         }.launchIn(externalScope + Dispatchers.IO)
