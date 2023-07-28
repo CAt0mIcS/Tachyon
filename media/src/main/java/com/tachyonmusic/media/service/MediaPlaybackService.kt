@@ -306,8 +306,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         currentPlayer.prepare()
                     }
 
+                    ioScope.launch {
+                        addNewPlaybackToHistory(playlist.current)
+                    }
+
                     MediaSession.MediaItemsWithStartPosition(
-                        playlistMediaItems, playlist.currentPlaylistIndex, startPositionMs
+                        playlistMediaItems, playlist.currentPlaylistIndex, 0
                     )
                 }
 
