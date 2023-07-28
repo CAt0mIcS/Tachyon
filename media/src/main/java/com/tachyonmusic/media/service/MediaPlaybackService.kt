@@ -42,6 +42,7 @@ import com.tachyonmusic.predefinedCustomizedSongPlaylistMediaId
 import com.tachyonmusic.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -189,16 +190,18 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
             val playback = currentPlayer.mediaMetadata.playback
-            log.info("Dispatching StateUpdateEvent with $playback and playWhenReady=${currentPlayer.playWhenReady}")
+            val repeatMode = if (currentPlayer.repeatMode == Player.REPEAT_MODE_OFF)
+                RepeatMode.All
+            else
+                currentPlayer.coreRepeatMode
+
+            log.info("Dispatching StateUpdateEvent with $playback, playWhenReady=${currentPlayer.playWhenReady}, and repeatMode=$repeatMode")
             mediaSession.dispatchMediaEvent(
                 StateUpdateEvent(
                     playback,
                     getCurrentPlaylist(),
                     currentPlayer.playWhenReady,
-                    if (currentPlayer.repeatMode == Player.REPEAT_MODE_OFF)
-                        RepeatMode.All
-                    else
-                        currentPlayer.coreRepeatMode
+                    repeatMode
                 )
             )
 
@@ -206,10 +209,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
             mediaSession.setCustomLayout(
                 controller,
-                buildCustomNotificationLayout(
-                    if (currentPlayer.repeatMode == Player.REPEAT_MODE_OFF) RepeatMode.All
-                    else currentPlayer.coreRepeatMode
-                )
+                buildCustomNotificationLayout(repeatMode)
             )
         }
 
@@ -287,6 +287,11 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             startPositionMs: Long
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
             return if (mediaItems.size == 1 && startIndex == C.INDEX_UNSET) {
+                /**
+                 * When clicking on any item in Android Auto the clicked item will be the only
+                 * item in [mediaItems]. So if we click on a playlist in Android Auto the playlist
+                 * media id will be [mediaItems.first().mediaId] and [mediaItems.size] will be 1
+                 */
                 future(Dispatchers.IO) {
                     val mediaId = MediaId.deserializeIfValid(mediaItems.first().mediaId)
                     val playlist = if (mediaId?.isLocalPlaylist == true) {
@@ -299,12 +304,17 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         startPositionMs
                     )
 
-                    ioScope.launch {
+                    launch {
                         addNewPlaybackToHistory(playlist.current)
+                    }
+                    runOnUiThread {
+                        handleSetRepeatModeEvent(SetRepeatModeEvent(dataRepository.getData().repeatMode))
                     }
 
                     MediaSession.MediaItemsWithStartPosition(
-                        playlist.playbacks.toMediaItems(), playlist.currentPlaylistIndex, startPositionMs
+                        playlist.playbacks.toMediaItems(),
+                        playlist.currentPlaylistIndex,
+                        startPositionMs
                     )
                 }
 

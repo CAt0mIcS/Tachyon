@@ -42,4 +42,10 @@ sealed class RepeatMode(val id: Int) {
                 else -> TODO("Invalid repeat mode id $id")
             }
     }
+
+    override fun toString() = when (this) {
+        is One -> "One"
+        is All -> "All"
+        is Shuffle -> "Shuffle"
+    }
 }
