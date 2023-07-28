@@ -42,7 +42,6 @@ import com.tachyonmusic.predefinedCustomizedSongPlaylistMediaId
 import com.tachyonmusic.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
-import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -300,18 +299,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         startPositionMs
                     )
 
-                    val playlistMediaItems = playlist.playbacks.toMediaItems()
-                    runOnUiThread {
-                        currentPlayer.setMediaItems(playlistMediaItems)
-                        currentPlayer.prepare()
-                    }
-
                     ioScope.launch {
                         addNewPlaybackToHistory(playlist.current)
                     }
 
                     MediaSession.MediaItemsWithStartPosition(
-                        playlistMediaItems, playlist.currentPlaylistIndex, 0
+                        playlist.playbacks.toMediaItems(), playlist.currentPlaylistIndex, startPositionMs
                     )
                 }
 
