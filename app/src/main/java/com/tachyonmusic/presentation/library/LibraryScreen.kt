@@ -229,7 +229,7 @@ fun HorizontalPlaybackView(
                 contentDescription = "Album Artwork",
                 modifier = Modifier
                     .padding(Theme.padding.extraSmall)
-                    .size(50.dp, 50.dp)
+                    .size(55.dp, 55.dp)
                     .clip(Theme.shapes.medium)
             )
 

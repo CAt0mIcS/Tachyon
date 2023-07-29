@@ -17,12 +17,12 @@ class LoadArtworkForPlayback(
     private val log: Logger
 ) {
     @JvmName("invokeSongs")
-    operator fun invoke(songs: List<Song>, range: IntRange): List<Song> {
+    operator fun invoke(songs: List<Song>, range: IntRange, quality: Int = 100): List<Song> {
         return songs.mapIndexed { i, song ->
             if (i in range && song.artwork is EmbeddedArtwork && !song.artwork!!.isLoaded) {
                 // Load artwork
                 val uri = (song.artwork as EmbeddedArtwork).uri
-                song.artwork = EmbeddedArtwork(EmbeddedArtwork.load(uri, metadataExtractor), uri)
+                song.artwork = EmbeddedArtwork(EmbeddedArtwork.load(uri, metadataExtractor, quality), uri)
                 log.debug("Loading artwork for $song")
             } else if (i !in range && song.artwork is EmbeddedArtwork && song.artwork!!.isLoaded) {
                 // Unload artwork
@@ -36,16 +36,21 @@ class LoadArtworkForPlayback(
     @JvmName("invokeCustomizedSongs")
     operator fun invoke(
         customizedSongs: List<CustomizedSong>,
-        range: IntRange
+        range: IntRange,
+        quality: Int = 100
     ): List<CustomizedSong> {
-        val newSongs = invoke(customizedSongs.map { it.song }, range)
+        val newSongs = invoke(customizedSongs.map { it.song }, range, quality)
         return customizedSongs.onEachIndexed { i, customized ->
             customized.artwork = newSongs[i].artwork
         }
     }
 
     @JvmName("invokePlaylists")
-    operator fun invoke(playlists: List<Playlist>, range: IntRange): List<Artwork?> {
+    operator fun invoke(
+        playlists: List<Playlist>,
+        range: IntRange,
+        quality: Int = 100
+    ): List<Artwork?> {
         return playlists.mapIndexed { i, playlist ->
             val artwork = if (i in range) {
                 log.debug("Loading artwork for $playlist")
@@ -54,7 +59,7 @@ class LoadArtworkForPlayback(
                 if (itemWithArtwork == null)
                     null
                 else
-                    invoke(itemWithArtwork).artwork
+                    invoke(itemWithArtwork, quality).artwork
             } else if (i !in range) {
                 log.debug("Unloading artwork for $playlist")
 
@@ -65,9 +70,9 @@ class LoadArtworkForPlayback(
     }
 
     @JvmName("invokeSinglePlayback")
-    operator fun invoke(playback: SinglePlayback) = when (playback) {
-        is Song -> invoke(playback)
-        is CustomizedSong -> invoke(playback)
+    operator fun invoke(playback: SinglePlayback, quality: Int = 100) = when (playback) {
+        is Song -> invoke(playback, quality)
+        is CustomizedSong -> invoke(playback, quality)
         else -> TODO("Invalid playback type")
     }
 
@@ -75,12 +80,12 @@ class LoadArtworkForPlayback(
      * @return song with loaded artwork
      */
     @JvmName("invokeSong")
-    operator fun invoke(song: Song): Song {
+    operator fun invoke(song: Song, quality: Int = 100): Song {
         if (song.artwork == null || song.artwork!!.isLoaded || song.artwork !is EmbeddedArtwork)
             return song
 
         val uri = (song.artwork as EmbeddedArtwork).uri
-        song.artwork = EmbeddedArtwork(EmbeddedArtwork.load(uri, metadataExtractor), uri)
+        song.artwork = EmbeddedArtwork(EmbeddedArtwork.load(uri, metadataExtractor, quality), uri)
         return song
     }
 
@@ -88,8 +93,8 @@ class LoadArtworkForPlayback(
      * @return customized song with loaded artwork for underlying song
      */
     @JvmName("invokeCustomizedSong")
-    operator fun invoke(customized: CustomizedSong): CustomizedSong {
-        customized.artwork = invoke(customized.song).artwork
+    operator fun invoke(customized: CustomizedSong, quality: Int = 100): CustomizedSong {
+        customized.artwork = invoke(customized.song, quality).artwork
         return customized
     }
 }

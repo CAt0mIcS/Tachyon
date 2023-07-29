@@ -44,8 +44,8 @@ class EmbeddedArtwork(
     }
 
     companion object {
-        fun load(uri: Uri, metadataExtractor: SongMetadataExtractor) =
-            metadataExtractor.loadBitmap(uri)
+        fun load(uri: Uri, metadataExtractor: SongMetadataExtractor, quality: Int = 100) =
+            metadataExtractor.loadBitmap(uri, quality)
 
         @JvmField
         val CREATOR = object : Parcelable.Creator<EmbeddedArtwork> {

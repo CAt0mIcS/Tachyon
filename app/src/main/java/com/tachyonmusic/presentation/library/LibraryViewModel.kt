@@ -67,8 +67,9 @@ class LibraryViewModel @Inject constructor(
             filterType,
             artworkLoadingRange
         ) { songs, customizedSongs, playlists, filterType, itemsToLoad ->
+            val quality = 50
             when (filterType) {
-                is PlaybackType.Song -> loadArtworkForPlayback(songs, itemsToLoad).map {
+                is PlaybackType.Song -> loadArtworkForPlayback(songs, itemsToLoad, quality).map {
                     PlaybackUiEntity(
                         it.title,
                         it.artist,
@@ -79,7 +80,8 @@ class LibraryViewModel @Inject constructor(
                 }
                 is PlaybackType.CustomizedSong -> loadArtworkForPlayback(
                     customizedSongs,
-                    itemsToLoad
+                    itemsToLoad,
+                    quality
                 ).map {
                     PlaybackUiEntity(
                         it.name,
@@ -90,7 +92,7 @@ class LibraryViewModel @Inject constructor(
                     )
                 }
                 is PlaybackType.Playlist -> {
-                    val artworks = loadArtworkForPlayback(playlists, itemsToLoad)
+                    val artworks = loadArtworkForPlayback(playlists, itemsToLoad, quality)
                     playlists.mapIndexed { i, it ->
                         PlaybackUiEntity(
                             it.name,
