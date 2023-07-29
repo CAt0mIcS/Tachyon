@@ -7,6 +7,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -25,11 +26,15 @@ import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.SwipeDelete
+import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.presentation.util.isEnabled
+import com.tachyonmusic.util.delay
+import com.tachyonmusic.util.ms
+import kotlinx.coroutines.launch
 
 object LibraryScreen :
     BottomNavigationItem(R.string.btmNav_library, R.drawable.ic_library, "library") {
@@ -48,7 +53,24 @@ object LibraryScreen :
         val playbackType by viewModel.filterType.collectAsState()
         val playbackItems by viewModel.items.collectAsState()
 
+        val listState = rememberLazyListState()
+        LaunchedEffect(listState.firstVisibleItemIndex) {
+            /**
+             * If [listState.firstVisibleItemIndex] changes the coroutine will get cancelled and
+             * relaunched. If it changes too fast we don't want to always load artwork, waiting for
+             * the value to stay the same before updating artwork
+             */
+            delay(200.ms)
+            viewModel.loadArtwork(
+                kotlin.math.max(
+                    listState.firstVisibleItemIndex - 2,
+                    0
+                )..listState.firstVisibleItemIndex + listState.layoutInfo.visibleItemsInfo.size + 4
+            )
+        }
+
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
@@ -144,26 +166,6 @@ object LibraryScreen :
 
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
 
-//                // TODO: Shouldn't be checked in UI
-//                val artwork: Artwork?
-//                val isLoading: Boolean
-//                val isPlayable: Boolean
-//                when (playback) {
-//                    is SinglePlayback -> {
-////                        artwork = playback.artwork
-////                        isLoading = playback.isArtworkLoading
-//                        artwork = viewModel.artworkMap[playback.mediaId]!!.collectAsState().value
-//                        isLoading = false
-//                        isPlayable = playback.isPlayable
-//                    }
-//                    is Playlist -> {
-//                        artwork = playback.playbacks.firstOrNull()?.artwork
-//                        isLoading = playback.playbacks.firstOrNull()?.isArtworkLoading ?: false
-//                        isPlayable = true
-//                    }
-//                    else -> error("Invalid playback type ${playback::class.java.name}")
-//                }
-
                 val artwork = playback.artwork
                 val isLoading = false
                 val isPlayable = true
@@ -176,7 +178,7 @@ object LibraryScreen :
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall),
                     onClick = {
-//                        viewModel.excludePlayback(updatedPlayback)
+                        viewModel.excludePlayback(updatedPlayback)
                     }
                 ) {
                     HorizontalPlaybackView(
@@ -185,13 +187,13 @@ object LibraryScreen :
                         isLoading,
                         modifier = Modifier.isEnabled(isPlayable),
                         onClick = {
-//                            if (isPlayable) {
-//                                viewModel.onItemClicked(playback)
-//                                scope.launch {
-//                                    sheetState.expand()
-//                                }
-//                                onSheetStateFraction(1f)
-//                            }
+                            if (isPlayable) {
+                                viewModel.onItemClicked(playback)
+                                scope.launch {
+                                    sheetState.expand()
+                                }
+                                onSheetStateFraction(1f)
+                            }
                         })
                 }
             }
@@ -202,7 +204,7 @@ object LibraryScreen :
 
 @Composable
 fun HorizontalPlaybackView(
-    playback: SongUiEntity,
+    playback: PlaybackUiEntity,
     artwork: Artwork,
     isArtworkLoading: Boolean,
     modifier: Modifier = Modifier,
