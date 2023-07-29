@@ -44,19 +44,13 @@ class PlaybackLayerRepositoryModule {
         customizedSongRepository: CustomizedSongRepository,
         playlistRepository: PlaylistRepository,
         historyRepository: HistoryRepository,
-        artworkCodex: ArtworkCodex,
         @ApplicationContext context: Context,
-        coroutineScope: CoroutineScope,
-        logger: Logger
     ): PlaybackRepository = PlaybackRepositoryImpl(
         songRepository,
         customizedSongRepository,
         playlistRepository,
         historyRepository,
-        artworkCodex,
-        context,
-        coroutineScope,
-        logger
+        context
     )
 
     @Provides

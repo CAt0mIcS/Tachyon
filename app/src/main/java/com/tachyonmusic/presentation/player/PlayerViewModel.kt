@@ -9,8 +9,9 @@ import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.player.*
-import com.tachyonmusic.isPredefined
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
+import com.tachyonmusic.playback_layers.isPredefined
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.core_components.model.toUiEntity
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
@@ -38,6 +39,7 @@ class PlayerViewModel @Inject constructor(
     private val seekToPosition: SeekToPosition,
     private val getRecentlyPlayed: GetRecentlyPlayed,
     private val setRepeatMode: SetRepeatMode,
+    private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
     private val pauseResumePlayback: PauseResumePlayback,
     private val playPlayback: PlayPlayback,
 
@@ -129,13 +131,24 @@ class PlayerViewModel @Inject constructor(
 
     fun play(entity: PlaybackUiEntity, playbackLocation: PlaybackLocation? = null) {
         viewModelScope.launch {
-            val playback = when (entity.playbackType) {
-                is PlaybackType.Song -> playbackRepository.getSongs()
-                    .find { it.mediaId == entity.mediaId }
-                is PlaybackType.CustomizedSong -> playbackRepository.getCustomizedSongs()
-                    .find { it.mediaId == entity.mediaId }
-                is PlaybackType.Playlist -> playbackRepository.getPlaylists()
-                    .find { it.mediaId == entity.mediaId }
+            val playback = when (playbackType.value) {
+                is PlaybackType.Playlist -> // Currently playing a custom playlist (not predefined)
+                    currentPlaylist.value?.playbacks
+                        ?.find { it.mediaId == entity.mediaId }
+                else -> { // Playing predefined playlist
+                    when (repeatMode.value) {
+                        is RepeatMode.One -> _playback.value
+                        else -> when (entity.playbackType) {
+                            is PlaybackType.Song ->
+                                predefinedPlaylistsRepository.songPlaylist.value
+                                    .find { it.mediaId == entity.mediaId }
+                            is PlaybackType.CustomizedSong ->
+                                predefinedPlaylistsRepository.customizedSongPlaylist.value
+                                    .find { it.mediaId == entity.mediaId }
+                            else -> TODO("Can't have playlists inside playlists yet")
+                        }
+                    }
+                }
             }
             playPlayback(playback, playbackLocation = playbackLocation)
         }
@@ -158,11 +171,12 @@ class PlayerViewModel @Inject constructor(
         _playback,
         currentPlaylist,
         repeatMode,
-        playbackType
+        playbackType,
     ) { playback, playlist, repeatMode, playbackType ->
         getPlaybackChildren(
             if (playbackType is PlaybackType.Playlist) playlist else playback,
-            repeatMode
+            repeatMode,
+            playlist?.mediaId
         ).map {
             loadArtworkForPlayback(it).toUiEntity()
         }

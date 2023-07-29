@@ -65,11 +65,6 @@ class MediaPlaybackUseCaseModule {
     @Singleton
     fun provideSaveRecentlyPlayedUseCase(dataRepository: DataRepository) =
         SaveRecentlyPlayed(dataRepository)
-
-    @Provides
-    @Singleton
-    fun provideGetSettingsUseCase(settingsRepository: SettingsRepository) =
-        GetSettings(settingsRepository)
 }
 
 @Module

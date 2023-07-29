@@ -59,10 +59,6 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
         uriPermissionRepository.dispatchUpdate()
     }
 
-    override fun onStart() {
-        super.onStart()
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
         super.onActivityResult(requestCode, resultCode, intent)
         spotifyInterfacer.onAuthorization(requestCode, resultCode, intent)

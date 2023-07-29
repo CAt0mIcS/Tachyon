@@ -33,7 +33,7 @@ import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
-import com.tachyonmusic.presentation.player.data.TimingDataEditor
+import com.tachyonmusic.presentation.player.component.TimingDataEditor
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.*
 import com.tachyonmusic.util.delay

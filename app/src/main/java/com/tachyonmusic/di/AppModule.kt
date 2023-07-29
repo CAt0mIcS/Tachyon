@@ -100,12 +100,6 @@ object AppUseCaseModule {
         logger: Logger
     ) = LoadArtworkForPlayback(metadataExtractor, logger)
 
-
-    @Provides
-    @Singleton
-    fun provideObserveHistoryUseCase(playbackRepository: PlaybackRepository) =
-        ObserveHistory(playbackRepository)
-
     @Provides
     @Singleton
     fun provideSearchStoredPlaybacksUseCase(
@@ -122,12 +116,10 @@ object AppUseCaseModule {
     @Provides
     @Singleton
     fun provideCreateNewCustomizedSongUseCase(
-        songRepository: SongRepository,
         customizedSongRepository: CustomizedSongRepository,
         browser: MediaBrowserController,
         audioEffectController: AudioEffectController
     ) = CreateAndSaveNewCustomizedSong(
-        songRepository,
         customizedSongRepository,
         browser,
         audioEffectController
@@ -181,19 +173,8 @@ object AppUseCaseModule {
     @Singleton
     fun provideAddSongToExcludedSongsUseCase(
         settingsRepository: SettingsRepository,
-        songRepository: SongRepository,
-        historyRepository: HistoryRepository,
-        customizedSongRepository: CustomizedSongRepository,
-        playbackRepository: PlaybackRepository,
-        playlistRepository: PlaylistRepository
-    ) = AddSongToExcludedSongs(
-        settingsRepository,
-        songRepository,
-        historyRepository,
-        customizedSongRepository,
-        playbackRepository,
-        playlistRepository
-    )
+        songRepository: SongRepository
+    ) = AddSongToExcludedSongs(settingsRepository, songRepository)
 
     @Provides
     @Singleton

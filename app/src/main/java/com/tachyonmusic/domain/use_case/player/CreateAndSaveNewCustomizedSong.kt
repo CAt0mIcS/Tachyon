@@ -5,7 +5,6 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.CustomizedSongEntity
 import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.playback_layers.toCustomizedSong
@@ -16,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class CreateAndSaveNewCustomizedSong(
-    private val songRepository: SongRepository,
     private val customizedSongRepository: CustomizedSongRepository,
     private val browser: MediaBrowserController,
     private val audioEffectController: AudioEffectController

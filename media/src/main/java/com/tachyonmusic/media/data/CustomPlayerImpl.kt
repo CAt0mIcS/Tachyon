@@ -175,6 +175,11 @@ class CustomPlayerImpl(
         invokeEvent { it.onTimingDataUpdated(newTimingData) }
     }
 
+    override fun stop() {
+        super.stop()
+        playWhenReady = false
+    }
+
     override fun setAuxEffectInfo(info: AuxEffectInfo) {
         if (player is ExoPlayer)
             (player as ExoPlayer).setAuxEffectInfo(info)
@@ -190,10 +195,19 @@ class CustomPlayerImpl(
             seekWithoutCallback(payload as Long)
             val timingData = currentMediaItem?.mediaMetadata?.timingData
             if (timingData != null) {
-                if (timingData.currentIndex + 1 == timingData.size && repeatMode == Player.REPEAT_MODE_ALL) {
-                    log.debug("Timing data end reached, seeking to next playback item...")
-                    seekToNext()
-                    return@createMessage
+                if (timingData.currentIndex + 1 == timingData.size) {
+                    if (repeatMode == Player.REPEAT_MODE_ALL) {
+                        log.debug("Timing data end reached, seeking to next playback item...")
+                        seekToNext()
+                        return@createMessage
+                    } else if (repeatMode == Player.REPEAT_MODE_OFF) {
+                        log.debug("Timing data end reached, seeking to next playback item or stopping playback due to repeatMode=RepeatMode.Off...")
+                        if (player.hasNextMediaItem())
+                            seekToNext()
+                        else
+                            stop()
+                        return@createMessage
+                    }
                 }
 
                 timingData.advanceToNext()

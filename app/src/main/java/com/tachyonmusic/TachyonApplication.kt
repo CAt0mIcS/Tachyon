@@ -11,14 +11,4 @@ import kotlinx.coroutines.SupervisorJob
 class TachyonApplication : Application() {
     val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     var mainActivity: Activity? = null // TODO: Remove
-
-    // TODO: Remove this and debugPrint function
-    override fun onCreate() {
-        super.onCreate()
-        instance = this
-    }
-
-    companion object {
-        var instance: TachyonApplication? = null
-    }
 }

@@ -32,7 +32,7 @@ fun Playback.toUiEntity() = when (this) {
     )
     is CustomizedSong -> PlaybackUiEntity(
         name,
-        "$title by $artist",
+        if(isPlayable) "$title by $artist" else "Missing: ${mediaId.uri}",
         duration,
         mediaId,
         playbackType,

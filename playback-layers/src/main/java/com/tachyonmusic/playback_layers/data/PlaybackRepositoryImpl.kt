@@ -17,11 +17,8 @@ import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.*
-import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -34,11 +31,7 @@ class PlaybackRepositoryImpl(
     private val playlistRepository: PlaylistRepository,
     private val historyRepository: HistoryRepository,
 
-    private val artworkCodex: ArtworkCodex,
-
     private val context: Context,
-    private val coroutineScope: CoroutineScope,
-    private val log: Logger
 ) : PlaybackRepository {
 
     private val _sortingPreferences = MutableStateFlow(SortingPreferences())

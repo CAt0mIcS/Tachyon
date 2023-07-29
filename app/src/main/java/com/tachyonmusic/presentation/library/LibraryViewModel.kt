@@ -45,7 +45,6 @@ class LibraryViewModel @Inject constructor(
 
     private var customizedSongs = playbackRepository.customizedSongFlow.map { customizedSongs ->
         customizedSongs.map {
-            println("${it.name} ${it.isPlayable}")
             it.copy()
         }
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())

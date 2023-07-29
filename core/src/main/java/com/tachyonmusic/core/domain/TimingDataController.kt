@@ -50,7 +50,7 @@ data class TimingDataController(
         for (i in timingData.indices) {
             val distance =
                 (timingData[i].startTime - position).inWholeMilliseconds.toInt()
-            if (distance > 0 && distance < closestApproach) {
+            if (distance in 1 until closestApproach) {
                 closestApproach = distance
                 closestApproachIndex = i
             }

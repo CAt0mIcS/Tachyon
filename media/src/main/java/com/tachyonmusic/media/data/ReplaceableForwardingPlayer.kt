@@ -755,7 +755,7 @@ abstract class ReplaceableForwardingPlayer(player: Player) : CustomPlayer {
 
 
     private inner class PlayerListener : Listener {
-        override fun onEvents(player: Player, events: Player.Events) {
+        override fun onEvents(player: Player, events: Events) {
             if (events.contains(EVENT_MEDIA_ITEM_TRANSITION)
                 && !events.contains(EVENT_MEDIA_METADATA_CHANGED)
             ) {

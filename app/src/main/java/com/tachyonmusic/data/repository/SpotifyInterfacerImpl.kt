@@ -166,6 +166,10 @@ class SpotifyInterfacerImpl(
                 spotifyAppRemote?.playerApi?.setRepeat(Repeat.ALL)
                 spotifyAppRemote?.playerApi?.setShuffle(true)
             }
+            is RepeatMode.Off -> {
+                spotifyAppRemote?.playerApi?.setRepeat(Repeat.OFF)
+                spotifyAppRemote?.playerApi?.setShuffle(false)
+            }
         }
 
     }

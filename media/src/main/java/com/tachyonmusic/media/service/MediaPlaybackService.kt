@@ -38,8 +38,8 @@ import com.tachyonmusic.media.util.*
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
-import com.tachyonmusic.predefinedCustomizedSongPlaylistMediaId
-import com.tachyonmusic.predefinedSongPlaylistMediaId
+import com.tachyonmusic.playback_layers.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -159,8 +159,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 //            switchPlayer(exoPlayer, buildExoPlayer(!it.ignoreAudioFocus))
 //        }.launchIn(ioScope)
 
-        setMediaNotificationProvider(MediaNotificationProvider(this))
-
         exoPlayer.addListener(this)
         castPlayer?.addListener(this)
 
@@ -190,18 +188,14 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
             val playback = currentPlayer.mediaMetadata.playback
-            val repeatMode = if (currentPlayer.repeatMode == Player.REPEAT_MODE_OFF)
-                RepeatMode.All
-            else
-                currentPlayer.coreRepeatMode
 
-            log.info("Dispatching StateUpdateEvent with $playback, playWhenReady=${currentPlayer.playWhenReady}, and repeatMode=$repeatMode")
+            log.info("Dispatching StateUpdateEvent with $playback, playWhenReady=${currentPlayer.playWhenReady}, and repeatMode=${currentPlayer.coreRepeatMode}")
             mediaSession.dispatchMediaEvent(
                 StateUpdateEvent(
                     playback,
                     getCurrentPlaylist(),
                     currentPlayer.playWhenReady,
-                    repeatMode
+                    currentPlayer.coreRepeatMode
                 )
             )
 
@@ -209,7 +203,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
             mediaSession.setCustomLayout(
                 controller,
-                buildCustomNotificationLayout(repeatMode)
+                buildCustomNotificationLayout(currentPlayer.coreRepeatMode)
             )
         }
 

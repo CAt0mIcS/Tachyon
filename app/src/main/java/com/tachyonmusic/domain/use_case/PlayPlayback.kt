@@ -4,7 +4,6 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.isPredefined
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
@@ -88,9 +87,4 @@ class PlayPlayback(
         val playlist = getPlaylistForPlayback(playback) ?: return
         invoke(playlist, position)
     }
-
-    private fun playbackLocationMatches(playbackLocation: PlaybackLocation?) =
-        playbackLocation == null ||
-                playbackLocation == PlaybackLocation.PREDEFINED_PLAYLIST && browser.currentPlaylist.value?.isPredefined == true ||
-                playbackLocation == PlaybackLocation.CUSTOM_PLAYLIST && browser.currentPlaylist.value?.isPredefined != true
 }

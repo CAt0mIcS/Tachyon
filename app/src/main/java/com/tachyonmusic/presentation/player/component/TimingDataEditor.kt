@@ -1,4 +1,4 @@
-package com.tachyonmusic.presentation.player.data
+package com.tachyonmusic.presentation.player.component
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer

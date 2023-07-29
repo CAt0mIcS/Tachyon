@@ -8,9 +8,6 @@ import com.tachyonmusic.core.data.FileSongMetadataExtractor
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.TimingData
-import com.tachyonmusic.logger.LoggerImpl
-import com.tachyonmusic.logger.data.ConsoleLogger
-import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
 import dagger.Module
 import dagger.Provides
