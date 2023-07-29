@@ -58,8 +58,14 @@ class HomeViewModel @Inject constructor(
     private val historyLoading = MutableStateFlow(true)
     private val databaseUpdating = MutableStateFlow(true)
 
+    private val _history = playbackRepository.historyFlow.stateIn(
+        viewModelScope + Dispatchers.IO,
+        SharingStarted.Lazily,
+        emptyList()
+    )
+
     val history = combine(
-        playbackRepository.historyFlow,
+        _history,
         historyArtworkLoadingRange
     ) { history, artworkLoadingRange ->
         loadArtworkForPlayback(history, artworkLoadingRange).map {
@@ -101,7 +107,7 @@ class HomeViewModel @Inject constructor(
 
     fun onItemClicked(entity: PlaybackUiEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            val playback = playbackRepository.getHistory().find { it.mediaId == entity.mediaId }
+            val playback = _history.value.find { it.mediaId == entity.mediaId }
                 ?: return@launch
 
             if (playback.mediaId.isSpotifySong &&
