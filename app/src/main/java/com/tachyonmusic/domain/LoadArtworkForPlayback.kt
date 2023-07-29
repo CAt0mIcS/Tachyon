@@ -1,12 +1,8 @@
 package com.tachyonmusic.domain
 
 import com.tachyonmusic.core.data.EmbeddedArtwork
-import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.core.domain.playback.CustomizedSong
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.core.domain.playback.*
 import com.tachyonmusic.logger.domain.Logger
 
 /**
@@ -22,7 +18,8 @@ class LoadArtworkForPlayback(
             if (i in range && song.artwork is EmbeddedArtwork && !song.artwork!!.isLoaded) {
                 // Load artwork
                 val uri = (song.artwork as EmbeddedArtwork).uri
-                song.artwork = EmbeddedArtwork(EmbeddedArtwork.load(uri, metadataExtractor, quality), uri)
+                song.artwork =
+                    EmbeddedArtwork(EmbeddedArtwork.load(uri, metadataExtractor, quality), uri)
                 log.debug("Loading artwork for $song")
             } else if (i !in range && song.artwork is EmbeddedArtwork && song.artwork!!.isLoaded) {
                 // Unload artwork
@@ -50,22 +47,47 @@ class LoadArtworkForPlayback(
         playlists: List<Playlist>,
         range: IntRange,
         quality: Int = 100
-    ): List<Artwork?> {
+    ): List<Playlist> {
         return playlists.mapIndexed { i, playlist ->
-            val artwork = if (i in range) {
+            if (i in range) {
                 log.debug("Loading artwork for $playlist")
 
                 val itemWithArtwork = playlist.playbacks.find { it.hasArtwork }
                 if (itemWithArtwork == null)
-                    null
-                else
-                    invoke(itemWithArtwork, quality).artwork
+                    playlist
+                else {
+                    itemWithArtwork.artwork = invoke(itemWithArtwork, quality).artwork
+                    playlist
+                }
             } else if (i !in range) {
                 log.debug("Unloading artwork for $playlist")
+                val itemWithArtwork = playlist.playbacks.find { it.hasArtwork }
+                itemWithArtwork?.artwork = null
+                playlist
+            } else playlist
+        }
+    }
 
-                null
-            } else null
-            artwork
+    @JvmName("invokeSinglePlaybacks")
+    operator fun invoke(
+        playbacks: List<Playback>,
+        range: IntRange,
+        quality: Int = 100
+    ): List<Playback> {
+        val songs = invoke(playbacks.map {
+            when (it) {
+                is SinglePlayback -> it.underlyingSong
+                is Playlist -> (it.playbacks.find { it.hasArtwork }
+                    ?: it.playbacks.first()).underlyingSong
+                else -> TODO("Invalid playback type")
+            }
+        }, range, quality)
+        return playbacks.onEachIndexed { i, it ->
+            when (it) {
+                is SinglePlayback -> it.artwork = songs[i].artwork
+                is Playlist -> (it.playbacks.find { it.hasArtwork }
+                    ?: it.playbacks.first()).artwork = songs[i].artwork
+            }
         }
     }
 

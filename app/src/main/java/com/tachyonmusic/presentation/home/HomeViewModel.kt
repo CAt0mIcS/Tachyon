@@ -2,10 +2,10 @@ package com.tachyonmusic.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.database.util.toEntity
+import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
@@ -19,6 +19,8 @@ import com.tachyonmusic.domain.use_case.search.SearchSpotify
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
+import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
+import com.tachyonmusic.presentation.core_components.model.toUiEntity
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,6 +35,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val playbackRepository: PlaybackRepository,
+    private val loadArtworkForPlayback: LoadArtworkForPlayback,
 
     setRepeatMode: SetRepeatMode,
     getSavedData: GetSavedData,
@@ -50,10 +53,14 @@ class HomeViewModel @Inject constructor(
     private val searchSpotify: SearchSpotify,
 ) : ViewModel() {
 
-    val history = playbackRepository.historyFlow.map { history ->
-        // TODO: Optimize? How long does this take in total for all playback states
-        history.map {
-            it.copy()
+    private val artworkLoadingRange = MutableStateFlow(0..0)
+
+    val history = combine(
+        playbackRepository.historyFlow,
+        artworkLoadingRange
+    ) { history, artworkLoadingRange ->
+        loadArtworkForPlayback(history, artworkLoadingRange).map {
+            it.toUiEntity()
         }
     }.stateIn(
         viewModelScope + Dispatchers.IO,
@@ -61,7 +68,7 @@ class HomeViewModel @Inject constructor(
         emptyList()
     )
 
-    private val _searchResults = MutableStateFlow<List<Playback>>(emptyList())
+    private val _searchResults = MutableStateFlow<List<PlaybackUiEntity>>(emptyList())
     val searchResults = _searchResults.asStateFlow()
 
 
@@ -81,8 +88,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun onItemClicked(playback: Playback) {
+    fun onItemClicked(entity: PlaybackUiEntity) {
         viewModelScope.launch(Dispatchers.IO) {
+            val playback = playbackRepository.getHistory().find { it.mediaId == entity.mediaId }
+                ?: return@launch
+
             if (playback.mediaId.isSpotifySong &&
                 !predefinedPlaylistsRepository.songPlaylist.value.contains(playback)
             ) {
@@ -109,7 +119,14 @@ class HomeViewModel @Inject constructor(
                 is SearchLocation.Local -> searchStoredPlaybacks(searchText)
                 is SearchLocation.Spotify -> searchSpotify(searchText)
             }
-            _searchResults.update { results }
+            val loadedArtworkResults = loadArtworkForPlayback(results, 0..Int.MAX_VALUE).map {
+                it.toUiEntity()
+            }
+            _searchResults.update { loadedArtworkResults }
         }
+    }
+
+    fun loadArtwork(range: IntRange) {
+        artworkLoadingRange.update { range }
     }
 }

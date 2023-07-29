@@ -14,6 +14,7 @@ import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
+import com.tachyonmusic.presentation.core_components.model.toUiEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -70,37 +71,18 @@ class LibraryViewModel @Inject constructor(
             val quality = 50
             when (filterType) {
                 is PlaybackType.Song -> loadArtworkForPlayback(songs, itemsToLoad, quality).map {
-                    PlaybackUiEntity(
-                        it.title,
-                        it.artist,
-                        it.mediaId,
-                        it.playbackType,
-                        it.artwork
-                    )
+                    it.toUiEntity()
                 }
                 is PlaybackType.CustomizedSong -> loadArtworkForPlayback(
                     customizedSongs,
                     itemsToLoad,
                     quality
                 ).map {
-                    PlaybackUiEntity(
-                        it.name,
-                        "${it.title} by ${it.artist}",
-                        it.mediaId,
-                        it.playbackType,
-                        it.artwork
-                    )
+                    it.toUiEntity()
                 }
                 is PlaybackType.Playlist -> {
-                    val artworks = loadArtworkForPlayback(playlists, itemsToLoad, quality)
-                    playlists.mapIndexed { i, it ->
-                        PlaybackUiEntity(
-                            it.name,
-                            "${it.playbacks.size} Item(s)",
-                            it.mediaId,
-                            it.playbackType,
-                            artworks[i]
-                        )
+                    loadArtworkForPlayback(playlists, itemsToLoad, quality).map {
+                        it.toUiEntity()
                     }
                 }
             }

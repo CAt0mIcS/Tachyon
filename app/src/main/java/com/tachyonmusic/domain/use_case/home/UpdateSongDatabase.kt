@@ -1,5 +1,6 @@
 package com.tachyonmusic.domain.use_case.home
 
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.model.SettingsEntity
@@ -7,8 +8,11 @@ import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.util.removeFirst
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 
 /**
  * Checks if every song in all added directories are also saved in the database and adds missing ones
@@ -17,6 +21,7 @@ class UpdateSongDatabase(
     private val songRepo: SongRepository,
     private val fileRepository: FileRepository,
     private val metadataExtractor: SongMetadataExtractor,
+    private val artworkCodex: ArtworkCodex,
     private val log: Logger
 ) {
     suspend operator fun invoke(settings: SettingsEntity) = withContext(Dispatchers.IO) {
@@ -69,6 +74,33 @@ class UpdateSongDatabase(
 
             // TODO: Warn user of null playback
             songRepo.addAll(songs.awaitAll().filterNotNull())
+        }
+
+
+        /**
+         * FIND MISSING ARTWORK
+         */
+        songRepo.getSongs().filter { it.artworkType == ArtworkType.UNKNOWN }.forEach { entity ->
+            launch {
+                /**
+                 * Load new artwork for newly found [entity]
+                 */
+                artworkCodex.awaitOrLoad(entity).onEach {
+                    val entityToUpdate = it.data?.entityToUpdate
+                    if (entityToUpdate != null) {
+                        songRepo.updateArtwork(
+                            entityToUpdate.mediaId,
+                            entityToUpdate.artworkType,
+                            entityToUpdate.artworkUrl
+                        )
+                    }
+
+                    log.warning(
+                        prefix = "ArtworkLoader error on ${entityToUpdate?.title} - ${entityToUpdate?.artist}: ",
+                        message = it.message ?: return@onEach
+                    )
+                }.collect()
+            }
         }
     }
 }

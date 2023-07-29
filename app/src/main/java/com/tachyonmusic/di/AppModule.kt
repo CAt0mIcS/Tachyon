@@ -51,11 +51,13 @@ object AppUseCaseModule {
         songRepository: SongRepository,
         fileRepository: FileRepository,
         metadataExtractor: SongMetadataExtractor,
+        artworkCodex: ArtworkCodex,
         logger: Logger
     ) = UpdateSongDatabase(
         songRepository,
         fileRepository,
         metadataExtractor,
+        artworkCodex,
         logger
     )
 

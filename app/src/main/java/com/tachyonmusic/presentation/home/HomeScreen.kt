@@ -4,10 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -30,13 +27,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.use_case.search.SearchLocation
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
+import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.home.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.isEnabled
+import com.tachyonmusic.util.delay
+import com.tachyonmusic.util.ms
 import kotlinx.coroutines.launch
 
 
@@ -158,8 +157,7 @@ object HomeScreen :
                 items(searchResults, key = { it.mediaId.toString() }) {
                     HorizontalPlaybackView(
                         playback = it,
-                        artwork = it.underlyingSinglePlayback?.artwork ?: PlaceholderArtwork,
-                        isArtworkLoading = false,
+                        artwork = it.artwork ?: PlaceholderArtwork,
                         modifier = Modifier.padding(
                             top = Theme.padding.small,
                             end = Theme.padding.medium
@@ -219,7 +217,20 @@ object HomeScreen :
 
 
                 item {
+                    val rowState = rememberLazyListState()
+
+                    LaunchedEffect(rowState.firstVisibleItemIndex) {
+                        delay(200.ms)
+                        viewModel.loadArtwork(
+                            kotlin.math.max(
+                                rowState.firstVisibleItemIndex - 2,
+                                0
+                            )..rowState.firstVisibleItemIndex + rowState.layoutInfo.visibleItemsInfo.size + 4
+                        )
+                    }
+
                     LazyRow(
+                        state = rowState,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(start = Theme.padding.small, top = Theme.padding.extraSmall),
@@ -234,37 +245,37 @@ object HomeScreen :
                     }
                 }
 
-                item {
+//                item {
+//
+//                    Text(
+//                        "Recommended for You",
+//                        fontSize = 24.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        modifier = Modifier.padding(
+//                            start = Theme.padding.medium,
+//                            top = Theme.padding.large,
+//                            end = Theme.padding.medium
+//                        )
+//                    )
+//                }
 
-                    Text(
-                        "Recommended for You",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(
-                            start = Theme.padding.medium,
-                            top = Theme.padding.large,
-                            end = Theme.padding.medium
-                        )
-                    )
-                }
-
-                item {
-                    // TODO: Recommendations
-                    LazyRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = Theme.padding.small, top = Theme.padding.small)
-                    ) {
-                        playbacksView(playbacks = history) {
-                            viewModel.onItemClicked(it)
-                            scope.launch {
-                                sheetState.expand()
-                            }
-                            onSheetStateFraction(1f)
-                        }
-                    }
-
-                }
+//                item {
+//                    // TODO: Recommendations
+//                    LazyRow(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(start = Theme.padding.small, top = Theme.padding.small)
+//                    ) {
+//                        playbacksView(playbacks = history) {
+//                            viewModel.onItemClicked(it)
+//                            scope.launch {
+//                                sheetState.expand()
+//                            }
+//                            onSheetStateFraction(1f)
+//                        }
+//                    }
+//
+//                }
             }
         }
     }
@@ -272,8 +283,8 @@ object HomeScreen :
 
 
 private fun LazyListScope.playbacksView(
-    playbacks: List<SinglePlayback>,
-    onClick: (SinglePlayback) -> Unit
+    playbacks: List<PlaybackUiEntity>,
+    onClick: (PlaybackUiEntity) -> Unit
 ) {
     items(playbacks) { playback ->
 
@@ -290,7 +301,6 @@ private fun LazyListScope.playbacksView(
                 .isEnabled(playback.isPlayable),
             playback = playback,
             artwork = playback.artwork ?: PlaceholderArtwork,
-            isArtworkLoading = playback.isArtworkLoading
         )
     }
 }

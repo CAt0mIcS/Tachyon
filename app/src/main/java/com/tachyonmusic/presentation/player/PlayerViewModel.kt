@@ -1,18 +1,18 @@
 package com.tachyonmusic.presentation.player
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
+import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.isPredefined
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
+import com.tachyonmusic.presentation.core_components.model.toUiEntity
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.player.data.SeekIncrements
 import com.tachyonmusic.util.Duration
@@ -29,7 +29,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     getRepositoryStates: GetRepositoryStates,
-    playbackRepository: PlaybackRepository,
+    private val playbackRepository: PlaybackRepository,
+    loadArtworkForPlayback: LoadArtworkForPlayback,
 
     observeSettings: ObserveSettings,
 
@@ -55,11 +56,11 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val playback = _playback.map {
-        it!!
+        loadArtworkForPlayback(it!!).toUiEntity()
     }.stateIn(
         viewModelScope + Dispatchers.IO,
         SharingStarted.Lazily,
-        LocalSong(Uri.EMPTY, MediaId.EMPTY, "", "", 0.ms, false)
+        PlaybackUiEntity("", "", 0.ms, MediaId.EMPTY, PlaybackType.Song.Local(), null, false)
     )
 
     val shouldShowPlayer = _playback.map {
@@ -126,8 +127,16 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun play(playback: SinglePlayback, playbackLocation: PlaybackLocation? = null) {
+    fun play(entity: PlaybackUiEntity, playbackLocation: PlaybackLocation? = null) {
         viewModelScope.launch {
+            val playback = when (entity.playbackType) {
+                is PlaybackType.Song -> playbackRepository.getSongs()
+                    .find { it.mediaId == entity.mediaId }
+                is PlaybackType.CustomizedSong -> playbackRepository.getCustomizedSongs()
+                    .find { it.mediaId == entity.mediaId }
+                is PlaybackType.Playlist -> playbackRepository.getPlaylists()
+                    .find { it.mediaId == entity.mediaId }
+            }
             playPlayback(playback, playbackLocation = playbackLocation)
         }
     }
@@ -154,7 +163,9 @@ class PlayerViewModel @Inject constructor(
         getPlaybackChildren(
             if (playbackType is PlaybackType.Playlist) playlist else playback,
             repeatMode
-        )
+        ).map {
+            loadArtworkForPlayback(it).toUiEntity()
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
@@ -174,9 +185,9 @@ class PlayerViewModel @Inject constructor(
     fun editPlaylist(i: Int, shouldAdd: Boolean) {
         viewModelScope.launch {
             if (shouldAdd)
-                savePlaybackToPlaylist(playback.value, i)
+                savePlaybackToPlaylist(_playback.value, i)
             else
-                removePlaybackFromPlaylist(playback.value, i)
+                removePlaybackFromPlaylist(_playback.value, i)
         }
     }
 
@@ -186,9 +197,12 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun removeFromCurrentPlaylist(toRemove: SinglePlayback) {
+    fun removeFromCurrentPlaylist(toRemove: PlaybackUiEntity) {
         viewModelScope.launch {
-            removePlaybackFromPlaylist(toRemove, currentPlaylist.value)
+            removePlaybackFromPlaylist(
+                currentPlaylist.value?.playbacks?.find { it.mediaId == toRemove.mediaId },
+                currentPlaylist.value
+            )
         }
     }
 }

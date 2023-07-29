@@ -3,7 +3,6 @@ package com.tachyonmusic.presentation.player.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.runtime.Composable
@@ -18,21 +17,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.core_components.AnimatedText
+import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.util.displaySubtitle
-import com.tachyonmusic.presentation.util.displayTitle
 
 @Composable
 fun MiniPlayer(
-    playback: SinglePlayback?,
+    playback: PlaybackUiEntity?,
     currentPosition: Float,
     isPlaying: Boolean,
     onClick: () -> Unit,
     onPlayPauseClicked: () -> Unit,
     artwork: Artwork,
-    isArtworkLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     if (playback == null)
@@ -57,14 +53,8 @@ fun MiniPlayer(
                 .size(48.dp, 48.dp)
                 .clip(Theme.shapes.medium)
 
-            if (isArtworkLoading) {
-                CircularProgressIndicator(modifier = artworkModifier)
-            } else {
-                artwork(
-                    contentDescription = "Album Artwork",
-                    modifier = artworkModifier
-                )
-            }
+
+            artwork(contentDescription = "Album Artwork", modifier = artworkModifier)
 
             Row(
                 modifier = Modifier

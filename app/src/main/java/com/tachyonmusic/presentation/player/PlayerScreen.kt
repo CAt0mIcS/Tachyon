@@ -101,11 +101,8 @@ fun PlayerScreen(
                 .aspectRatio(1f)
                 .shadow(Theme.shadow.small, shape = Theme.shapes.large)
 
-            if (playback.isArtworkLoading)
-                CircularProgressIndicator(modifier = artworkModifier)
-            else
-                playback.artwork?.Image(modifier = artworkModifier, contentDescription = null)
-                    ?: PlaceholderArtwork(modifier = artworkModifier, contentDescription = null)
+            playback.artwork?.Image(modifier = artworkModifier, contentDescription = null)
+                ?: PlaceholderArtwork(modifier = artworkModifier, contentDescription = null)
         }
 
         item {
@@ -369,7 +366,6 @@ fun PlayerScreen(
                         HorizontalPlaybackView(
                             playback,
                             playback.artwork ?: PlaceholderArtwork,
-                            playback.isArtworkLoading,
                             onClick = {
                                 if (playback.isPlayable) viewModel.play(
                                     playback,

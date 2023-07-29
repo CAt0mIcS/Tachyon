@@ -54,7 +54,6 @@ fun MiniPlayerScreen(
             MiniPlayer(
                 playback = playback,
                 artwork = playback?.artwork ?: PlaceholderArtwork,
-                isArtworkLoading = playback?.isArtworkLoading ?: false,
                 currentPosition = currentPositionNormalized,
                 isPlaying = isPlaying,
                 onPlayPauseClicked = viewModel::pauseResume,
