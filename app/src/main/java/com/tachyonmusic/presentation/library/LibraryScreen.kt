@@ -163,8 +163,6 @@ object LibraryScreen :
             }
 
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
-                val artwork = playback.artwork
-                val isPlayable = true
 
                 val updatedPlayback by rememberUpdatedState(playback)
 
@@ -179,10 +177,10 @@ object LibraryScreen :
                 ) {
                     HorizontalPlaybackView(
                         playback,
-                        artwork ?: PlaceholderArtwork,
-                        modifier = Modifier.isEnabled(isPlayable),
+                        playback.artwork ?: PlaceholderArtwork,
+                        modifier = Modifier.isEnabled(playback.isPlayable),
                         onClick = {
-                            if (isPlayable) {
+                            if (playback.isPlayable) {
                                 viewModel.onItemClicked(playback)
                                 scope.launch {
                                     sheetState.expand()

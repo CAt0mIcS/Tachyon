@@ -36,13 +36,16 @@ class UpdateSongDatabase(
          * Remove all invalid or excluded paths in the [songRepo]
          * Update [paths] to only contain new songs that we need to add to [songRepo]
          *
-         * TODO
-         *  Make sure all parts of the UI are updated if we remove a uri permission
+         * If we remove a song from the [SongRepository] items in history or other playbacks that
+         * contain the song will automatically exclude it
          */
-        songRepo.getSongs().forEach { song ->
+        songRepo.removeIf { song ->
             val uri = song.mediaId.uri
             if (uri != null) {
-                paths.removeFirst { it.uri == uri }
+                /**
+                 * If it can't find the song to remove it means that the file was deleted
+                 */
+                !paths.removeFirst { it.uri == uri }
             } else TODO("Invalid path null")
         }
 
