@@ -2,7 +2,11 @@ package com.tachyonmusic.presentation.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.core.domain.Artwork
+import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -11,14 +15,27 @@ import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.presentation.util.displayTitle
+import com.tachyonmusic.util.delay
+import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
+
+data class SongUiEntity(
+    val mediaId: MediaId,
+    val title: String,
+    val artist: String,
+    val displayTitle: String,
+    val displaySubtitle: String,
+    val artwork: Artwork?
+)
 
 
 @HiltViewModel
@@ -31,6 +48,9 @@ class LibraryViewModel @Inject constructor(
     private val addSongToExcludedSongs: AddSongToExcludedSongs,
     private val browser: MediaBrowserController,
     private val deletePlayback: DeletePlayback,
+
+    private val metadataExtractor: SongMetadataExtractor,
+    private val log: Logger
 ) : ViewModel() {
 
     val sortParams = getRepositoryStates.sortPrefs()
@@ -54,20 +74,59 @@ class LibraryViewModel @Inject constructor(
     private var _filterType = MutableStateFlow<PlaybackType>(PlaybackType.Song.Local())
     val filterType = _filterType.asStateFlow()
 
+    val itemsToLoad = MutableStateFlow(0..0)
+
     val items =
         combine(
             songs,
             customizedSongs,
             playlists,
-            filterType
-        ) { songs, customizedSongs, playlists, filterType ->
+            filterType,
+            itemsToLoad
+        ) { songs, customizedSongs, playlists, filterType, itemsToLoad ->
             when (filterType) {
-                is PlaybackType.Song -> songs
-                is PlaybackType.CustomizedSong -> customizedSongs
-                is PlaybackType.Playlist -> playlists
+                is PlaybackType.Song -> loadArtwork(songs, itemsToLoad)
+//                is PlaybackType.Song -> songs
+//                is PlaybackType.CustomizedSong -> customizedSongs
+//                is PlaybackType.Playlist -> playlists
+                else -> emptyList()
             }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+        }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
+
+    private fun loadArtwork(songs: List<Song>, itemsToLoad: ClosedRange<Int>): List<SongUiEntity> {
+        return songs.mapIndexed { i, song ->
+            if (i in itemsToLoad && song.artwork is EmbeddedArtwork && !song.artwork!!.isLoaded) {
+                // Load artwork
+                val uri = (song.artwork as EmbeddedArtwork).uri
+                song.artwork = EmbeddedArtwork(EmbeddedArtwork.load(uri, metadataExtractor), uri)
+
+                log.debug("Loading artwork for $song")
+            } else if (i !in itemsToLoad && song.artwork is EmbeddedArtwork && song.artwork!!.isLoaded) {
+                // Unload artwork
+                song.artwork = EmbeddedArtwork(null, (song.artwork as EmbeddedArtwork).uri)
+                log.debug("Unloading artwork for $song")
+            }
+            SongUiEntity(
+                song.mediaId,
+                song.title,
+                song.artist,
+                song.displayTitle,
+                song.artist,
+                song.artwork
+            )
+        }
+    }
+
+    init {
+        viewModelScope.launch {
+            while (true) {
+                delay(3000.ms)
+                itemsToLoad.update { (itemsToLoad.value.first + 1)..(itemsToLoad.value.last + 2) }
+                log.debug("Updating items to load ${itemsToLoad.value}")
+            }
+        }
+    }
 
     fun onFilterSongs() {
         _filterType.value = PlaybackType.Song.Local()

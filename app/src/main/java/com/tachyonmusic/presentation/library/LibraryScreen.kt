@@ -2,38 +2,34 @@ package com.tachyonmusic.presentation.library
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.presentation.BottomNavigationItem
-import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
+import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.presentation.util.isEnabled
-import kotlinx.coroutines.launch
 
 object LibraryScreen :
     BottomNavigationItem(R.string.btmNav_library, R.drawable.ic_library, "library") {
@@ -145,24 +141,32 @@ object LibraryScreen :
                 }
             }
 
+
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
-                // TODO: Shouldn't be checked in UI
-                val artwork: Artwork?
-                val isLoading: Boolean
-                val isPlayable: Boolean
-                when (playback) {
-                    is SinglePlayback -> {
-                        artwork = playback.artwork
-                        isLoading = playback.isArtworkLoading
-                        isPlayable = playback.isPlayable
-                    }
-                    is Playlist -> {
-                        artwork = playback.playbacks.firstOrNull()?.artwork
-                        isLoading = playback.playbacks.firstOrNull()?.isArtworkLoading ?: false
-                        isPlayable = true
-                    }
-                    else -> error("Invalid playback type ${playback::class.java.name}")
-                }
+
+//                // TODO: Shouldn't be checked in UI
+//                val artwork: Artwork?
+//                val isLoading: Boolean
+//                val isPlayable: Boolean
+//                when (playback) {
+//                    is SinglePlayback -> {
+////                        artwork = playback.artwork
+////                        isLoading = playback.isArtworkLoading
+//                        artwork = viewModel.artworkMap[playback.mediaId]!!.collectAsState().value
+//                        isLoading = false
+//                        isPlayable = playback.isPlayable
+//                    }
+//                    is Playlist -> {
+//                        artwork = playback.playbacks.firstOrNull()?.artwork
+//                        isLoading = playback.playbacks.firstOrNull()?.isArtworkLoading ?: false
+//                        isPlayable = true
+//                    }
+//                    else -> error("Invalid playback type ${playback::class.java.name}")
+//                }
+
+                val artwork = playback.artwork
+                val isLoading = false
+                val isPlayable = true
 
                 val updatedPlayback by rememberUpdatedState(playback)
 
@@ -171,7 +175,9 @@ object LibraryScreen :
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall),
-                    onClick = { viewModel.excludePlayback(updatedPlayback) }
+                    onClick = {
+//                        viewModel.excludePlayback(updatedPlayback)
+                    }
                 ) {
                     HorizontalPlaybackView(
                         playback,
@@ -179,13 +185,13 @@ object LibraryScreen :
                         isLoading,
                         modifier = Modifier.isEnabled(isPlayable),
                         onClick = {
-                            if (isPlayable) {
-                                viewModel.onItemClicked(playback)
-                                scope.launch {
-                                    sheetState.expand()
-                                }
-                                onSheetStateFraction(1f)
-                            }
+//                            if (isPlayable) {
+//                                viewModel.onItemClicked(playback)
+//                                scope.launch {
+//                                    sheetState.expand()
+//                                }
+//                                onSheetStateFraction(1f)
+//                            }
                         })
                 }
             }
@@ -193,3 +199,58 @@ object LibraryScreen :
     }
 }
 
+
+@Composable
+fun HorizontalPlaybackView(
+    playback: SongUiEntity,
+    artwork: Artwork,
+    isArtworkLoading: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
+) {
+    Row(
+        modifier = modifier
+            .shadow(Theme.shadow.extraSmall, shape = Theme.shapes.medium)
+            .background(Theme.colors.secondary, shape = Theme.shapes.medium)
+            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
+            .clickable { onClick() }
+    ) {
+        if (isArtworkLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .padding(Theme.padding.extraSmall)
+                    .size(50.dp, 50.dp)
+                    .clip(Theme.shapes.medium)
+            )
+        } else
+            artwork.Image(
+                contentDescription = "Album Artwork",
+                modifier = Modifier
+                    .padding(Theme.padding.extraSmall)
+                    .size(50.dp, 50.dp)
+                    .clip(Theme.shapes.medium)
+            )
+
+        Column(modifier = Modifier.padding(start = Theme.padding.small)) {
+            AnimatedText(
+                modifier = Modifier
+                    .padding(top = Theme.padding.small),
+                text = playback.displayTitle,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                gradientEdgeColor = Theme.colors.secondary
+            )
+
+            AnimatedText(
+                modifier = Modifier
+                    .padding(
+                        start = Theme.padding.small,
+                        bottom = Theme.padding.small
+                    ),
+                text = playback.displaySubtitle,
+                fontSize = 12.sp,
+                gradientEdgeColor = Theme.colors.secondary
+            )
+        }
+    }
+}

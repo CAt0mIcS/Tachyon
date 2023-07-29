@@ -2,6 +2,8 @@ package com.tachyonmusic.playback_layers.data
 
 import android.content.Context
 import com.tachyonmusic.core.ArtworkType
+import com.tachyonmusic.core.data.EmbeddedArtwork
+import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.data.playback.SpotifyPlaylist
 import com.tachyonmusic.core.data.playback.SpotifySong
@@ -20,9 +22,11 @@ import com.tachyonmusic.playback_layers.*
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.plus
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
+import java.net.URI
 
 class PlaybackRepositoryImpl(
     private val songRepository: SongRepository,
@@ -100,31 +104,39 @@ class PlaybackRepositoryImpl(
         entities.map { entity ->
             if (entity.mediaId.isLocalSong) {
 
-                val artwork = if (entity.artworkType == ArtworkType.UNKNOWN) {
-                    /**
-                     * Load new artwork for [entity] if artwork is not cached in the database
-                     */
-                    artworkCodex.awaitOrLoad(entity).onEach {
-                        val entityToUpdate = it.data?.entityToUpdate
-                        maybeUpdateEntityArtwork(entityToUpdate)
-
-                        log.warning(
-                            prefix = "ArtworkLoader error on ${entityToUpdate?.title} - ${entityToUpdate?.artist}: ",
-                            message = it.message ?: return@onEach
-                        )
-                    }.launchIn(coroutineScope + Dispatchers.IO)
-                    null
-                } else {
-                    /**
-                     * Artwork is already cached in the database and we just need to load it and set it
-                     * in the song constructor
-                     */
-                    val artworkUpdateData = artworkCodex.loadExisting(entity)
-                    maybeUpdateEntityArtwork(artworkUpdateData.entityToUpdate)
-                    artworkUpdateData.artwork
-                }
-
-                entity.toLocalSong(artwork, entity.checkIfPlayable(context))
+//                val artwork = if (entity.artworkType == ArtworkType.UNKNOWN) {
+//                    /**
+//                     * Load new artwork for [entity] if artwork is not cached in the database
+//                     */
+//                    artworkCodex.awaitOrLoad(entity).onEach {
+//                        val entityToUpdate = it.data?.entityToUpdate
+//                        maybeUpdateEntityArtwork(entityToUpdate)
+//
+//                        log.warning(
+//                            prefix = "ArtworkLoader error on ${entityToUpdate?.title} - ${entityToUpdate?.artist}: ",
+//                            message = it.message ?: return@onEach
+//                        )
+//                    }.launchIn(coroutineScope + Dispatchers.IO)
+//                    null
+//                } else {
+//                    /**
+//                     * Artwork is already cached in the database and we just need to load it and set it
+//                     * in the song constructor
+//                     */
+//                    val artworkUpdateData = artworkCodex.loadExisting(entity)
+//                    maybeUpdateEntityArtwork(artworkUpdateData.entityToUpdate)
+//                    artworkUpdateData.artwork
+//                }
+//
+//                entity.toLocalSong(artwork, entity.checkIfPlayable(context))
+                entity.toLocalSong(
+                    when (entity.artworkType) {
+                        ArtworkType.REMOTE -> RemoteArtwork(URI(entity.artworkUrl))
+                        ArtworkType.EMBEDDED -> EmbeddedArtwork(null, entity.mediaId.uri!!)
+                        else -> null
+                    },
+                    entity.checkIfPlayable(context)
+                )
             } else if (entity.mediaId.isSpotifySong)
                 entity.toSpotifySong()
             else

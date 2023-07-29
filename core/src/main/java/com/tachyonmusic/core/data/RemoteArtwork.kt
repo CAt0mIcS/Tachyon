@@ -20,6 +20,8 @@ import java.net.URI
 class RemoteArtwork(
     val uri: URI
 ) : Artwork {
+    override val isLoaded = true
+
     @Composable
     override fun Image(contentDescription: String?, modifier: Modifier) {
         val url = try {
