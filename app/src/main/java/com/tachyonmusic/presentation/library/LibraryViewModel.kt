@@ -58,7 +58,7 @@ class LibraryViewModel @Inject constructor(
     private var _filterType = MutableStateFlow<PlaybackType>(PlaybackType.Song.Local())
     val filterType = _filterType.asStateFlow()
 
-    private val artworkLoadingRange = MutableStateFlow(0..0)
+    private val artworkLoadingRange = MutableStateFlow(0..10)
 
     val items =
         combine(
@@ -80,13 +80,19 @@ class LibraryViewModel @Inject constructor(
                 ).map {
                     it.toUiEntity()
                 }
-                is PlaybackType.Playlist -> {
-                    loadArtworkForPlayback(playlists, itemsToLoad, quality).map {
-                        it.toUiEntity()
-                    }
+                is PlaybackType.Playlist -> loadArtworkForPlayback(
+                    playlists,
+                    itemsToLoad,
+                    quality
+                ).map {
+                    it.toUiEntity()
                 }
             }
-        }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
+        }.stateIn(
+            viewModelScope + Dispatchers.IO,
+            SharingStarted.WhileSubscribed(),
+            emptyList()
+        )
 
 
     fun onFilterSongs() {

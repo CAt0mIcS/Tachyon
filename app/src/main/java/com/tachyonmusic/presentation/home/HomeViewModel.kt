@@ -53,24 +53,32 @@ class HomeViewModel @Inject constructor(
     private val searchSpotify: SearchSpotify,
 ) : ViewModel() {
 
-    private val artworkLoadingRange = MutableStateFlow(0..0)
+    private val historyArtworkLoadingRange = MutableStateFlow(0..0)
+
+    private val historyLoading = MutableStateFlow(true)
+    private val databaseUpdating = MutableStateFlow(true)
 
     val history = combine(
         playbackRepository.historyFlow,
-        artworkLoadingRange
+        historyArtworkLoadingRange
     ) { history, artworkLoadingRange ->
         loadArtworkForPlayback(history, artworkLoadingRange).map {
             it.toUiEntity()
+        }.apply {
+            historyLoading.update { false }
         }
     }.stateIn(
         viewModelScope + Dispatchers.IO,
-        SharingStarted.WhileSubscribed(),
+        SharingStarted.Lazily,
         emptyList()
     )
 
     private val _searchResults = MutableStateFlow<List<PlaybackUiEntity>>(emptyList())
     val searchResults = _searchResults.asStateFlow()
 
+    val isLoading = combine(databaseUpdating, historyLoading) { databaseUpdating, historyLoading ->
+        databaseUpdating || historyLoading
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), true)
 
     init {
         viewModelScope.launch {
@@ -82,8 +90,11 @@ class HomeViewModel @Inject constructor(
             updateSettingsDatabase()
 
             observeSettings().onEach {
-                if (it.musicDirectories.isNotEmpty())
+                if (it.musicDirectories.isNotEmpty()) {
+                    databaseUpdating.update { true }
                     updateSongDatabase(it)
+                    databaseUpdating.update { false }
+                }
             }.collect()
         }
     }
@@ -119,7 +130,8 @@ class HomeViewModel @Inject constructor(
                 is SearchLocation.Local -> searchStoredPlaybacks(searchText)
                 is SearchLocation.Spotify -> searchSpotify(searchText)
             }
-            val loadedArtworkResults = loadArtworkForPlayback(results, 0..Int.MAX_VALUE).map {
+            // TODO: Paging for search
+            val loadedArtworkResults = loadArtworkForPlayback(results, 0..results.size + 1).map {
                 it.toUiEntity()
             }
             _searchResults.update { loadedArtworkResults }
@@ -127,6 +139,6 @@ class HomeViewModel @Inject constructor(
     }
 
     fun loadArtwork(range: IntRange) {
-        artworkLoadingRange.update { range }
+        historyArtworkLoadingRange.update { range }
     }
 }

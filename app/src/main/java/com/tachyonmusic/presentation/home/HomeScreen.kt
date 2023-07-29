@@ -30,6 +30,7 @@ import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.domain.use_case.search.SearchLocation
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
+import com.tachyonmusic.presentation.core_components.LoadingBox
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.home.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
@@ -51,6 +52,11 @@ object HomeScreen :
         miniPlayerHeight: Dp,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
+        val isLoading by viewModel.isLoading.collectAsState()
+        if (isLoading) {
+            LoadingBox(zIndex = 0f)
+        }
+
         var isSearching by remember { mutableStateOf(false) }
         var searchLocation by remember { mutableStateOf<SearchLocation>(SearchLocation.Local) }
         val history by viewModel.history.collectAsState()

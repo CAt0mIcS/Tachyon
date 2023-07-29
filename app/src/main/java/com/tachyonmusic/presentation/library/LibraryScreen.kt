@@ -49,6 +49,7 @@ object LibraryScreen :
         val playbackType by viewModel.filterType.collectAsState()
         val playbackItems by viewModel.items.collectAsState()
 
+
         val listState = rememberLazyListState()
         LaunchedEffect(listState.firstVisibleItemIndex) {
             /**
@@ -157,11 +158,11 @@ object LibraryScreen :
                         color = iconAndTextColor
                     )
                 }
+
+
             }
 
-
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
-
                 val artwork = playback.artwork
                 val isPlayable = true
 
