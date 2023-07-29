@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -17,16 +16,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.util.displaySubtitle
-import com.tachyonmusic.presentation.util.displayTitle
 
 @Composable
 fun HorizontalPlaybackView(
-    playback: Playback,
+    playback: PlaybackUiEntity,
     artwork: Artwork,
-    isArtworkLoading: Boolean,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
@@ -37,21 +33,14 @@ fun HorizontalPlaybackView(
             .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
             .clickable { onClick() }
     ) {
-        if (isArtworkLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(50.dp, 50.dp)
-                    .clip(Theme.shapes.medium)
-            )
-        } else
-            artwork.Image(
-                contentDescription = "Album Artwork",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(50.dp, 50.dp)
-                    .clip(Theme.shapes.medium)
-            )
+
+        artwork.Image(
+            contentDescription = "Album Artwork",
+            modifier = Modifier
+                .padding(Theme.padding.extraSmall)
+                .size(50.dp, 50.dp)
+                .clip(Theme.shapes.medium)
+        )
 
         Column(modifier = Modifier.padding(start = Theme.padding.small)) {
             AnimatedText(

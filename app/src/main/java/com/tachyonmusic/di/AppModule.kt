@@ -6,6 +6,7 @@ import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.*
 import com.tachyonmusic.database.domain.repository.*
+import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
@@ -50,11 +51,13 @@ object AppUseCaseModule {
         songRepository: SongRepository,
         fileRepository: FileRepository,
         metadataExtractor: SongMetadataExtractor,
+        artworkCodex: ArtworkCodex,
         logger: Logger
     ) = UpdateSongDatabase(
         songRepository,
         fileRepository,
         metadataExtractor,
+        artworkCodex,
         logger
     )
 
@@ -89,6 +92,14 @@ object AppUseCaseModule {
     fun provideUnloadArtworksUseCase(
         songRepository: SongRepository
     ) = UnloadArtworks(songRepository)
+
+    @Provides
+    @Singleton
+    fun provideLoadArtworkForPlaybackUseCase(
+        metadataExtractor: SongMetadataExtractor,
+        logger: Logger
+    ) = LoadArtworkForPlayback(metadataExtractor, logger)
+
 
     @Provides
     @Singleton
@@ -291,7 +302,8 @@ object AppRepositoryModule {
 
     @Provides
     @Singleton
-    fun provideApplicationCoroutineScope(app: Application) = (app as TachyonApplication).coroutineScope
+    fun provideApplicationCoroutineScope(app: Application) =
+        (app as TachyonApplication).coroutineScope
 
     @Provides
     @Singleton

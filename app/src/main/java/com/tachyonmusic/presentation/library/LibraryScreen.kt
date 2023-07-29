@@ -2,14 +2,12 @@ package com.tachyonmusic.presentation.library
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,9 +19,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
@@ -33,6 +28,8 @@ import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.extraLarge
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.presentation.util.isEnabled
+import com.tachyonmusic.util.delay
+import com.tachyonmusic.util.ms
 import kotlinx.coroutines.launch
 
 object LibraryScreen :
@@ -52,7 +49,25 @@ object LibraryScreen :
         val playbackType by viewModel.filterType.collectAsState()
         val playbackItems by viewModel.items.collectAsState()
 
+
+        val listState = rememberLazyListState()
+        LaunchedEffect(listState.firstVisibleItemIndex) {
+            /**
+             * If [listState.firstVisibleItemIndex] changes the coroutine will get cancelled and
+             * relaunched. If it changes too fast we don't want to always load artwork, waiting for
+             * the value to stay the same before updating artwork
+             */
+            delay(200.ms)
+            viewModel.loadArtwork(
+                kotlin.math.max(
+                    listState.firstVisibleItemIndex - 2,
+                    0
+                )..listState.firstVisibleItemIndex + listState.layoutInfo.visibleItemsInfo.size + 4
+            )
+        }
+
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
@@ -143,26 +158,11 @@ object LibraryScreen :
                         color = iconAndTextColor
                     )
                 }
+
+
             }
 
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
-                // TODO: Shouldn't be checked in UI
-                val artwork: Artwork?
-                val isLoading: Boolean
-                val isPlayable: Boolean
-                when (playback) {
-                    is SinglePlayback -> {
-                        artwork = playback.artwork
-                        isLoading = playback.isArtworkLoading
-                        isPlayable = playback.isPlayable
-                    }
-                    is Playlist -> {
-                        artwork = playback.playbacks.firstOrNull()?.artwork
-                        isLoading = playback.playbacks.firstOrNull()?.isArtworkLoading ?: false
-                        isPlayable = true
-                    }
-                    else -> error("Invalid playback type ${playback::class.java.name}")
-                }
 
                 val updatedPlayback by rememberUpdatedState(playback)
 
@@ -171,15 +171,16 @@ object LibraryScreen :
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall),
-                    onClick = { viewModel.excludePlayback(updatedPlayback) }
+                    onClick = {
+                        viewModel.excludePlayback(updatedPlayback)
+                    }
                 ) {
                     HorizontalPlaybackView(
                         playback,
-                        artwork ?: PlaceholderArtwork,
-                        isLoading,
-                        modifier = Modifier.isEnabled(isPlayable),
+                        playback.artwork ?: PlaceholderArtwork,
+                        modifier = Modifier.isEnabled(playback.isPlayable),
                         onClick = {
-                            if (isPlayable) {
+                            if (playback.isPlayable) {
                                 viewModel.onItemClicked(playback)
                                 scope.launch {
                                     sheetState.expand()
@@ -192,4 +193,3 @@ object LibraryScreen :
         }
     }
 }
-

@@ -5,6 +5,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 interface Artwork : Parcelable {
+    val isLoaded: Boolean
+
     @Composable
     operator fun invoke(contentDescription: String?, modifier: Modifier) {
         Image(contentDescription, modifier)

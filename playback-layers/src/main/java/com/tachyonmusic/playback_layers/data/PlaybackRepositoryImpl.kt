@@ -2,6 +2,8 @@ package com.tachyonmusic.playback_layers.data
 
 import android.content.Context
 import com.tachyonmusic.core.ArtworkType
+import com.tachyonmusic.core.data.EmbeddedArtwork
+import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.data.playback.SpotifyPlaylist
 import com.tachyonmusic.core.data.playback.SpotifySong
@@ -20,9 +22,11 @@ import com.tachyonmusic.playback_layers.*
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.plus
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
+import java.net.URI
 
 class PlaybackRepositoryImpl(
     private val songRepository: SongRepository,
@@ -96,35 +100,17 @@ class PlaybackRepositoryImpl(
         _sortingPreferences.update { sortPrefs }
     }
 
-    private suspend fun transformSongs(entities: List<SongEntity>, sorting: SortingPreferences) =
+    private fun transformSongs(entities: List<SongEntity>, sorting: SortingPreferences) =
         entities.map { entity ->
             if (entity.mediaId.isLocalSong) {
-
-                val artwork = if (entity.artworkType == ArtworkType.UNKNOWN) {
-                    /**
-                     * Load new artwork for [entity] if artwork is not cached in the database
-                     */
-                    artworkCodex.awaitOrLoad(entity).onEach {
-                        val entityToUpdate = it.data?.entityToUpdate
-                        maybeUpdateEntityArtwork(entityToUpdate)
-
-                        log.warning(
-                            prefix = "ArtworkLoader error on ${entityToUpdate?.title} - ${entityToUpdate?.artist}: ",
-                            message = it.message ?: return@onEach
-                        )
-                    }.launchIn(coroutineScope + Dispatchers.IO)
-                    null
-                } else {
-                    /**
-                     * Artwork is already cached in the database and we just need to load it and set it
-                     * in the song constructor
-                     */
-                    val artworkUpdateData = artworkCodex.loadExisting(entity)
-                    maybeUpdateEntityArtwork(artworkUpdateData.entityToUpdate)
-                    artworkUpdateData.artwork
-                }
-
-                entity.toLocalSong(artwork, entity.checkIfPlayable(context))
+                entity.toLocalSong(
+                    when (entity.artworkType) {
+                        ArtworkType.REMOTE -> RemoteArtwork(URI(entity.artworkUrl))
+                        ArtworkType.EMBEDDED -> EmbeddedArtwork(null, entity.mediaId.uri!!)
+                        else -> null
+                    },
+                    entity.checkIfPlayable(context)
+                )
             } else if (entity.mediaId.isSpotifySong)
                 entity.toSpotifySong()
             else
@@ -137,10 +123,7 @@ class PlaybackRepositoryImpl(
         sorting: SortingPreferences
     ): List<CustomizedSong> =
         entities.map { entity ->
-            entity.toCustomizedSong(
-                songs.find { it.mediaId == entity.mediaId.underlyingMediaId }
-                    ?: TODO("Invalid song media id ${entity.mediaId.underlyingMediaId}")
-            )
+            entity.toCustomizedSong(songs.find { it.mediaId == entity.mediaId.underlyingMediaId })
         }.sortedBy(sorting)
 
     private fun transformPlaylists(
@@ -149,6 +132,7 @@ class PlaybackRepositoryImpl(
         customizedSongs: List<CustomizedSong>,
         sorting: SortingPreferences
     ) = entities.map { entity ->
+        // TODO: Somehow display deleted songs and customized songs
         val items = entity.items.mapNotNull { playlistItem ->
             if (playlistItem.isLocalSong || playlistItem.isSpotify) {
                 songs.find { playlistItem == it.mediaId }
@@ -179,22 +163,5 @@ class PlaybackRepositoryImpl(
     ) = entities.mapNotNull { historyItem ->
         songs.find { historyItem.mediaId == it.mediaId }
             ?: customizedSongs.find { historyItem.mediaId == it.mediaId }
-    }
-
-    private suspend fun maybeUpdateEntityArtwork(entity: SongEntity?) {
-        if (entity != null) {
-            log.info("Updating entity: ${entity.title} - ${entity.artist} with ${entity.artworkType}")
-
-            /**
-             * This means that we found new artwork for a playback that hasn't been cached
-             * in the database and thus needs to be cached now OR that there was cached artwork but
-             * it was invalid and couldn't be resolved
-             */
-            songRepository.updateArtwork(
-                entity.mediaId,
-                entity.artworkType,
-                entity.artworkUrl
-            )
-        }
     }
 }

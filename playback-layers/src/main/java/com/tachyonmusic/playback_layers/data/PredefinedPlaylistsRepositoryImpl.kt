@@ -26,12 +26,15 @@ class PredefinedPlaylistsRepositoryImpl(
             playbackRepository.customizedSongFlow,
             settingsRepository.observe()
         ) { songs, customizedSongs, settings ->
+            val filteredSongs = songs.filter { it.isPlayable && !it.isHidden }
+            val filteredCustomizedSongs = customizedSongs.filter { it.isPlayable }
+
             if (settings.combineDifferentPlaybackTypes) {
-                _songPlaylist.update { songs.filter { !it.isHidden } + customizedSongs }
-                _customizedSongPlaylist.update { customizedSongs + songs.filter { !it.isHidden } }
+                _songPlaylist.update { filteredSongs + filteredCustomizedSongs }
+                _customizedSongPlaylist.update { filteredCustomizedSongs + filteredSongs }
             } else {
-                _songPlaylist.update { songs.filter { !it.isHidden } }
-                _customizedSongPlaylist.update { customizedSongs }
+                _songPlaylist.update { filteredSongs }
+                _customizedSongPlaylist.update { filteredCustomizedSongs }
             }
         }.launchIn(externalScope + Dispatchers.IO)
     }

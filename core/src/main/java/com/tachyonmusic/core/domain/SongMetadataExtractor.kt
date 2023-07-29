@@ -12,5 +12,11 @@ interface SongMetadataExtractor {
     )
 
     fun loadMetadata(uri: Uri, defaultTitle: String): SongMetadata?
-    fun loadBitmap(uri: Uri): Bitmap?
+
+    /**
+     * Uses JPEG compression
+     * @param quality the lower the [quality], the more compressed the image will be
+     *  (accepted range: 0..100)
+     */
+    fun loadBitmap(uri: Uri, quality: Int = 100): Bitmap?
 }

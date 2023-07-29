@@ -11,6 +11,8 @@ import com.tachyonmusic.core.domain.Artwork
 open class ResourceArtwork(
     @DrawableRes private val id: Int
 ) : Artwork {
+    override val isLoaded = true
+
     @Composable
     override fun Image(contentDescription: String?, modifier: Modifier) {
         androidx.compose.foundation.Image(
