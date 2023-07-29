@@ -176,8 +176,22 @@ class CustomPlayerImpl(
     }
 
     override fun stop() {
+        if (currentMediaItem?.mediaMetadata?.timingData?.isNotEmpty() == true) {
+            // already handled by timing data message
+        } else
+            seekToDefaultPosition()
         super.stop()
         playWhenReady = false
+    }
+
+    override fun onPlaybackStateChanged(playbackState: Int) {
+        if(playbackState == Player.STATE_ENDED) {
+            if (currentMediaItem?.mediaMetadata?.timingData?.isNotEmpty() == true) {
+                // already handled by timing data message
+            } else
+                seekToDefaultPosition()
+            playWhenReady = false
+        }
     }
 
     override fun setAuxEffectInfo(info: AuxEffectInfo) {

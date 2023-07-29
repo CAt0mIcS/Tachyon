@@ -100,6 +100,8 @@ data class TimingDataController(
     fun isNotEmpty() = timingData.isNotEmpty()
     val size get() = timingData.size
     val indices get() = timingData.indices
+    fun first() = timingData.first()
+    fun last() = timingData.last()
     operator fun get(index: Int) = timingData[index]
 
     override fun equals(other: Any?): Boolean {
