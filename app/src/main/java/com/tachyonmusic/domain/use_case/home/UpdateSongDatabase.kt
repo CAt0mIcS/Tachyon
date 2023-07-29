@@ -27,10 +27,10 @@ class UpdateSongDatabase(
     suspend operator fun invoke(settings: SettingsEntity) = withContext(Dispatchers.IO) {
         // TODO: Support more extensions
 
-        val paths = fileRepository.getFilesInDirectoriesWithExtensions(
+        val songsToAddToDatabase = fileRepository.getFilesInDirectoriesWithExtensions(
             settings.musicDirectories,
             listOf("mp3")
-        ).filter { !settings.excludedSongFiles.contains(it.uri) }.toMutableList()
+        ).toMutableList()
 
         /**
          * Remove all invalid or excluded paths in the [songRepo]
@@ -44,16 +44,26 @@ class UpdateSongDatabase(
             if (uri != null) {
                 /**
                  * If it can't find the song to remove it means that the file was deleted
+                 * Remove because song does not exist anymore
                  */
-                !paths.removeFirst { it.uri == uri }
+                val shouldRemoveFromDatabase = !songsToAddToDatabase.removeFirst { it.uri == uri }
+                shouldRemoveFromDatabase
             } else TODO("Invalid path null")
         }
 
+        /**
+         * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
+         */
+        songRepo.getSongs().filter { it.isHidden }.forEach {
+            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
+                songRepo.updateIsHidden(it.mediaId, false)
+        }
+
         // TODO: Better async song loading?
-        if (paths.isNotEmpty()) {
-            log.debug("Loading ${paths.size} songs...")
+        if (songsToAddToDatabase.isNotEmpty()) {
+            log.debug("Loading ${songsToAddToDatabase.size} songs...")
             val songs = mutableListOf<Deferred<SongEntity?>>()
-            for (path in paths) {
+            for (path in songsToAddToDatabase) {
                 songs += async(Dispatchers.IO) {
                     val metadata = metadataExtractor.loadMetadata(
                         path.uri,
@@ -73,7 +83,7 @@ class UpdateSongDatabase(
                 }
             }
 
-            log.debug("Loaded ${paths.size} songs")
+            log.debug("Loaded ${songsToAddToDatabase.size} songs")
 
             // TODO: Warn user of null playback
             songRepo.addAll(songs.awaitAll().filterNotNull())
