@@ -262,7 +262,8 @@ object AppRepositoryModule {
         logger: Logger,
         spotifyInterfacer: SpotifyInterfacer,
         application: Application,
-        saveRecentlyPlayed: SaveRecentlyPlayed
+        saveRecentlyPlayed: SaveRecentlyPlayed,
+        addNewPlaybackToHistory: AddNewPlaybackToHistory
     ): MediaBrowserController =
         MediaBrowserControllerSwitcher(
             MediaPlaybackServiceMediaBrowserController(
@@ -272,7 +273,8 @@ object AppRepositoryModule {
             ),
             SpotifyMediaBrowserController(spotifyInterfacer),
             application as TachyonApplication,
-            saveRecentlyPlayed
+            saveRecentlyPlayed,
+            addNewPlaybackToHistory
         )
 
     @Provides
@@ -297,7 +299,6 @@ object AppRepositoryModule {
         playlistRepository: PlaylistRepository,
         settingsRepository: SettingsRepository,
         dataRepository: DataRepository,
-        addNewPlaybackToHistory: AddNewPlaybackToHistory,
         logger: Logger
     ): SpotifyInterfacer =
         SpotifyInterfacerImpl(
@@ -306,7 +307,6 @@ object AppRepositoryModule {
             playlistRepository,
             settingsRepository,
             dataRepository,
-            addNewPlaybackToHistory,
             logger
         )
 }

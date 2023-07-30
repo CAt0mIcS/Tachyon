@@ -16,6 +16,7 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
@@ -28,13 +29,15 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 
 class MediaBrowserControllerSwitcher(
     private val localBrowser: MediaPlaybackServiceMediaBrowserController,
     private val spotifyBrowser: SpotifyMediaBrowserController,
     application: TachyonApplication,
-    saveRecentlyPlayed: SaveRecentlyPlayed
+    saveRecentlyPlayed: SaveRecentlyPlayed,
+    private val addNewPlaybackToHistory: AddNewPlaybackToHistory
 ) : MediaBrowserController, MediaBrowserController.EventListener,
     IListenable<MediaBrowserController.EventListener> by Listenable() {
 
@@ -274,6 +277,20 @@ class MediaBrowserControllerSwitcher(
 //            else
 //                nextPlayback ?: return
 //        )
+    }
+
+    override fun onMediaItemTransition(
+        playback: SinglePlayback?,
+        source: MediaBrowserController.PlaybackLocation
+    ) {
+        if (source == MediaBrowserController.PlaybackLocation.Spotify &&
+            playbackLocation.value == MediaBrowserController.PlaybackLocation.Spotify &&
+            playback != null
+        ) {
+            ioScope.launch {
+                addNewPlaybackToHistory(playback)
+            }
+        }
     }
 
 

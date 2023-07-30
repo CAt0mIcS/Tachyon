@@ -25,7 +25,6 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.playback_layers.toSpotifySong
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
@@ -53,7 +52,6 @@ class SpotifyInterfacerImpl(
     private val playlistRepository: PlaylistRepository,
     private val settingsRepository: SettingsRepository,
     private val dataRepository: DataRepository,
-    private val addNewPlaybackToHistory: AddNewPlaybackToHistory,
     private val log: Logger
 ) : SpotifyInterfacer, IListenable<MediaBrowserController.EventListener> by Listenable() {
     private var spotifyAppRemote: SpotifyAppRemote? = null
@@ -333,8 +331,21 @@ class SpotifyInterfacerImpl(
                          * the mediaId it points to doesn't exist in the database
                          */
                         songRepository.addAll(listOf(updatedEntity))
-                        addNewPlaybackToHistory(updatedSong)
-                        dispatchControl = true
+
+                        /**
+                         * Only pass control to [SpotifyMediaBrowserController] if it's the first
+                         * item in history
+                         */
+                        if (dataRepository.getData().recentlyPlayedMediaId == updatedEntity.mediaId) {
+                            dispatchControl = true
+                        }
+
+                        invokeEvent {
+                            it.onMediaItemTransition(
+                                updatedSong,
+                                MediaBrowserController.PlaybackLocation.Spotify
+                            )
+                        }
                     }
 
                     _currentPlayback.update { updatedSong }
