@@ -25,6 +25,7 @@ import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
+import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.playback_layers.domain.*
 import dagger.Module
 import dagger.Provides
@@ -260,7 +261,8 @@ object AppRepositoryModule {
         predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
         logger: Logger,
         spotifyInterfacer: SpotifyInterfacer,
-        application: Application
+        application: Application,
+        saveRecentlyPlayed: SaveRecentlyPlayed
     ): MediaBrowserController =
         MediaBrowserControllerSwitcher(
             MediaPlaybackServiceMediaBrowserController(
@@ -269,7 +271,8 @@ object AppRepositoryModule {
                 logger
             ),
             SpotifyMediaBrowserController(spotifyInterfacer),
-            application as TachyonApplication
+            application as TachyonApplication,
+            saveRecentlyPlayed
         )
 
     @Provides

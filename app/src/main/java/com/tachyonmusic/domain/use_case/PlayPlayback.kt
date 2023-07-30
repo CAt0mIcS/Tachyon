@@ -29,43 +29,9 @@ class PlayPlayback(
         when (playback) {
             is SinglePlayback -> {
                 if (playbackLocation == PlaybackLocation.CUSTOM_PLAYLIST)
-                    browser.seekTo(playback.mediaId)
+                    browser.seekTo(playback.mediaId, position)
                 else
                     invokeOnNewPlaylist(playback, position)
-//                if (browser.canPrepare) {
-//                    browser.prepare()
-//                    browser.seekTo(playback.mediaId, position)
-//                } else if (!browser.canPrepare) {
-//                    if (browser.currentPlaylist.value == null) {
-//                        log.info("Browser doesn't have any playlist. Setting a new playlist and preparing the player...")
-//                        invokeOnNewPlaylist(playback, position)
-//                    } else if (playback == browser.currentPlayback.value) {
-//
-//                        if (!playbackLocationMatches(playbackLocation)) {
-//                            log.info("Current playback would match, but client requested playback location $playbackLocation, reloading playlist...")
-//                            invokeOnNewPlaylist(playback, position)
-//                        } else {
-//                            log.info("Current playback is already set and browser can't prepare anymore, unpausing playback...")
-//                            browser.seekTo(playback.mediaId, position)
-//                        }
-//
-//                    } else if (browser.currentPlaylist.value?.hasPlayback(playback) == true) {
-//
-//                        if (!playbackLocationMatches(playbackLocation)) {
-//                            log.info("Current playback would be in current playlist, but client requested playback location $playbackLocation, reloading playlist...")
-//                            invokeOnNewPlaylist(playback, position)
-//                        } else {
-//                            log.info("New playback already contained in playlist, seeking to new playback...")
-//                            browser.seekTo(playback.mediaId, position)
-//                        }
-//
-//                    } else {
-//                        log.info("Playlist out of date. Setting a new playlist and preparing the player...")
-//                        invokeOnNewPlaylist(playback, position)
-//                    }
-//                } else error("Shouldn't happen")
-
-//                addNewPlaybackToHistory(playback)
             }
 
             is Playlist -> {
@@ -83,7 +49,6 @@ class PlayPlayback(
 
                 browser.setPlaylist(playback, position)
                 browser.prepare()
-//                browser.seekTo(playback.currentPlaylistIndex, position)
 
                 addNewPlaybackToHistory(playback.current)
             }

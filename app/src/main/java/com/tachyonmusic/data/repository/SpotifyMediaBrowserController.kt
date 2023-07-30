@@ -112,6 +112,11 @@ class SpotifyMediaBrowserController(
         if (!api.isAuthorized)
             return
 
+        if(currentPlayback.value?.mediaId == mediaId) {
+            seekTo(pos)
+            return
+        }
+
         val index = correctIndex(
             currentPlaylist.value ?: return,
             currentPlaylist.value?.playbacks?.indexOf { it.mediaId == mediaId } ?: return

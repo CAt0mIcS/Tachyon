@@ -3,7 +3,9 @@ package com.tachyonmusic.data.repository
 import androidx.lifecycle.Lifecycle
 import androidx.media3.common.PlaybackParameters
 import com.tachyonmusic.TachyonApplication
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.RepeatMode
+import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.data.playback.SpotifyPlaylist
@@ -12,7 +14,9 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
@@ -21,6 +25,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.plus
@@ -28,7 +33,8 @@ import kotlinx.coroutines.plus
 class MediaBrowserControllerSwitcher(
     private val localBrowser: MediaPlaybackServiceMediaBrowserController,
     private val spotifyBrowser: SpotifyMediaBrowserController,
-    application: TachyonApplication
+    application: TachyonApplication,
+    saveRecentlyPlayed: SaveRecentlyPlayed
 ) : MediaBrowserController, MediaBrowserController.EventListener,
     IListenable<MediaBrowserController.EventListener> by Listenable() {
 
@@ -37,6 +43,21 @@ class MediaBrowserControllerSwitcher(
 
     init {
         registerEventListener(this)
+
+        combine(playbackLocation, spotifyBrowser.isPlaying) { playbackLocation, isPlaying ->
+            if (playbackLocation == MediaBrowserController.PlaybackLocation.Spotify && !isPlaying) {
+                val playback = currentPlayback.value ?: return@combine
+                saveRecentlyPlayed(
+                    RecentlyPlayed(
+                        playback.mediaId,
+                        currentPosition ?: return@combine,
+                        playback.duration,
+                        ArtworkType.REMOTE,
+                        (playback.artwork as RemoteArtwork).uri.toString()
+                    )
+                )
+            }
+        }.launchIn(ioScope)
     }
 
     override fun registerLifecycle(lifecycle: Lifecycle) {
@@ -98,6 +119,7 @@ class MediaBrowserControllerSwitcher(
 
                     is SpotifySong -> {
                         spotifyBrowser.play(playlist.current ?: return)
+                        spotifyBrowser.seekTo(position)
                         playbackLocation.update { MediaBrowserController.PlaybackLocation.Spotify }
                     }
 
@@ -242,7 +264,7 @@ class MediaBrowserControllerSwitcher(
     }
 
     override fun onControlDispatched(playbackLocation: MediaBrowserController.PlaybackLocation) {
-        if(this.playbackLocation.value == playbackLocation)
+        if (this.playbackLocation.value == playbackLocation)
             return
 
         this.playbackLocation.update { playbackLocation }

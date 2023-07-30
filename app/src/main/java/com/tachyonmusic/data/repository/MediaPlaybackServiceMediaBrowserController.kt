@@ -216,10 +216,15 @@ class MediaPlaybackServiceMediaBrowserController(
     }
 
     override fun seekTo(pos: Duration?) {
-        browser?.seekTo(pos?.inWholeMilliseconds ?: C.TIME_UNSET)
+        browser?.seekTo(pos?.inWholeMilliseconds ?: return)
     }
 
     override fun seekTo(mediaId: MediaId, pos: Duration?) {
+        if(MediaId.deserializeIfValid(browser?.currentMediaItem?.mediaId) == mediaId) {
+            seekTo(pos)
+            return
+        }
+
         seekTo(browser?.indexOf(mediaId) ?: return, pos)
     }
 

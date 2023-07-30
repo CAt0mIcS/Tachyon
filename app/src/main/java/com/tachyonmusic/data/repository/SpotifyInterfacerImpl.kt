@@ -35,7 +35,9 @@ import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThreadAsync
 import kaaes.spotify.webapi.android.SpotifyApi
 import kaaes.spotify.webapi.android.models.Track
+import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -141,29 +143,48 @@ class SpotifyInterfacerImpl(
     private val _repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.All)
     override val repeatMode = _repeatMode.asStateFlow()
 
+    private val jobLock = Any()
+    private var awaitingPlaybackStart: CompletableJob? = null
+
     override fun play(uri: String, index: Int?) {
         spotifyAppRemote?.playerApi?.play(uri)
+
+        synchronized(jobLock) {
+            awaitingPlaybackStart = Job()
+        }
+
         ioScope.launch {
-            delay(2000.ms)
-            spotifyAppRemote?.playerApi?.skipToIndex(uri, index ?: return@launch)
+            awaitingPlaybackStart?.invokeOnCompletion {
+                spotifyAppRemote?.playerApi?.skipToIndex(uri, index ?: return@invokeOnCompletion)
+            }
         }
     }
 
     override fun resume() {
-        spotifyAppRemote?.playerApi?.resume()
+        awaitingPlaybackStart.invokeOnCompletionOrNull {
+            spotifyAppRemote?.playerApi?.resume()
+        }
     }
 
     override fun pause() {
-        spotifyAppRemote?.playerApi?.pause()
+        awaitingPlaybackStart.invokeOnCompletionOrNull {
+            spotifyAppRemote?.playerApi?.pause()
+        }
     }
 
     override fun seekTo(pos: Duration) {
-        spotifyAppRemote?.playerApi?.seekTo(pos.inWholeMilliseconds)
+        awaitingPlaybackStart.invokeOnCompletionOrNull {
+            spotifyAppRemote?.playerApi?.seekTo(pos.inWholeMilliseconds)
+        }
     }
 
     override fun seekTo(playlistUri: String, index: Int, pos: Duration?) {
-        spotifyAppRemote?.playerApi?.skipToIndex(playlistUri, index)
-        spotifyAppRemote?.playerApi?.seekTo(pos?.inWholeMilliseconds ?: return)
+        awaitingPlaybackStart.invokeOnCompletionOrNull {
+            spotifyAppRemote?.playerApi?.skipToIndex(playlistUri, index)
+            spotifyAppRemote?.playerApi?.seekTo(
+                pos?.inWholeMilliseconds ?: return@invokeOnCompletionOrNull
+            )
+        }
     }
 
     override fun setRepeatMode(repeatMode: RepeatMode) {
@@ -295,10 +316,15 @@ class SpotifyInterfacerImpl(
                     ) return@setEventCallback
 
                 ioScope.launch {
-//                    val updatedSong = data.track?.toSpotifySong(getImage(data.track?.imageUri))
-                    val updatedEntity = api!!.service.getTrack(data.track?.id)?.toSongEntity(userCountry)
+                    val updatedEntity =
+                        api!!.service.getTrack(data.track?.id)?.toSongEntity(userCountry)
                     val updatedSong = updatedEntity?.toSpotifySong()
                     var dispatchControl = false
+
+                    synchronized(jobLock) {
+                        awaitingPlaybackStart?.complete()
+                        awaitingPlaybackStart = null
+                    }
 
                     if (updatedEntity != null && updatedEntity.mediaId != currentPlayback.value?.mediaId) {
                         /**
@@ -320,7 +346,7 @@ class SpotifyInterfacerImpl(
                         )
                     }
 
-                    if (dispatchControl)
+                    if (dispatchControl && !data.isPaused)
                         invokeEvent { it.onControlDispatched(MediaBrowserController.PlaybackLocation.Spotify) }
                 }
             }
@@ -388,3 +414,10 @@ private fun RepeatMode.Companion.fromSpotify(repeatMode: Int, isShuffling: Boole
         Repeat.ONE -> RepeatMode.One
         else -> TODO("Invalid spotify repeat mode $repeatMode and shuffle $isShuffling")
     }
+
+private fun CompletableJob?.invokeOnCompletionOrNull(action: () -> Unit) {
+    if (this == null)
+        action()
+    else
+        invokeOnCompletion { action() }
+}
