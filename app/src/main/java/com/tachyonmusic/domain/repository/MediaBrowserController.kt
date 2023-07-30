@@ -16,6 +16,11 @@ import kotlinx.coroutines.flow.StateFlow
 interface MediaBrowserController : DefaultLifecycleObserver,
     IListenable<MediaBrowserController.EventListener> {
 
+    enum class PlaybackLocation {
+        Local,
+        Spotify
+    }
+
     /**
      * Binds a lifecycle object to the [MediaBrowserController]
      */
@@ -68,6 +73,6 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     interface EventListener {
         fun onConnected() {}
         fun onAudioSessionIdChanged(audioSessionId: Int) {}
-        fun onMediaItemTransition(playback: SinglePlayback?) {}
+        fun onControlDispatched(playbackLocation: PlaybackLocation) {}
     }
 }

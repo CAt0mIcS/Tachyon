@@ -10,7 +10,11 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
-import androidx.media3.session.*
+import androidx.media3.session.MediaBrowser
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionCommand
+import androidx.media3.session.SessionResult
+import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
@@ -19,7 +23,13 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.core.*
+import com.tachyonmusic.media.core.AudioSessionIdChangedEvent
+import com.tachyonmusic.media.core.SetRepeatModeEvent
+import com.tachyonmusic.media.core.SetTimingDataEvent
+import com.tachyonmusic.media.core.StateUpdateEvent
+import com.tachyonmusic.media.core.TimingDataUpdatedEvent
+import com.tachyonmusic.media.core.dispatchMediaEvent
+import com.tachyonmusic.media.core.toMediaSessionEvent
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.media.util.fromMedia
 import com.tachyonmusic.media.util.playback
@@ -28,11 +38,20 @@ import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.predefinedCustomizedSongPlaylistMediaId
 import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
-import com.tachyonmusic.util.*
+import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.IListenable
+import com.tachyonmusic.util.Listenable
+import com.tachyonmusic.util.future
+import com.tachyonmusic.util.ms
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
 
@@ -228,7 +247,7 @@ class MediaPlaybackServiceMediaBrowserController(
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
             _currentPlayback.update { mediaItem?.mediaMetadata?.playback }
-        invokeEvent { it.onMediaItemTransition(mediaItem?.mediaMetadata?.playback) }
+        invokeEvent { it.onControlDispatched(MediaBrowserController.PlaybackLocation.Local) }
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {

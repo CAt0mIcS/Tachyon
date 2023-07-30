@@ -2,11 +2,9 @@ package com.tachyonmusic.data.repository
 
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import com.spotify.android.appremote.api.ConnectionParams
 import com.spotify.android.appremote.api.Connector
 import com.spotify.android.appremote.api.SpotifyAppRemote
-import com.spotify.protocol.types.ImageUri
 import com.spotify.protocol.types.Repeat
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
@@ -14,11 +12,9 @@ import com.spotify.sdk.android.auth.AuthorizationResponse
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.RepeatMode
-import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.playback.SpotifyPlaylist
 import com.tachyonmusic.core.data.playback.SpotifySong
-import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.SongEntity
@@ -30,6 +26,7 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
+import com.tachyonmusic.playback_layers.toSpotifySong
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
@@ -298,19 +295,34 @@ class SpotifyInterfacerImpl(
                     ) return@setEventCallback
 
                 ioScope.launch {
-                    val updatedSong = data.track?.toSpotifySong(getImage(data.track?.imageUri))
+//                    val updatedSong = data.track?.toSpotifySong(getImage(data.track?.imageUri))
+                    val updatedEntity = api!!.service.getTrack(data.track?.id)?.toSongEntity(userCountry)
+                    val updatedSong = updatedEntity?.toSpotifySong()
+                    var dispatchControl = false
 
-                    if(updatedSong?.mediaId != currentPlayback.value?.mediaId) {
+                    if (updatedEntity != null && updatedEntity.mediaId != currentPlayback.value?.mediaId) {
+                        /**
+                         * Add it in case playback was started in spotify before opening app
+                         * If it's not added it won't show in history or the mini player since
+                         * the mediaId it points to doesn't exist in the database
+                         */
+                        songRepository.addAll(listOf(updatedEntity))
                         addNewPlaybackToHistory(updatedSong)
+                        dispatchControl = true
                     }
 
                     _currentPlayback.update { updatedSong }
+                    _isPlaying.update { !data.isPaused }
+                    _repeatMode.update {
+                        RepeatMode.fromSpotify(
+                            data.playbackOptions.repeatMode,
+                            data.playbackOptions.isShuffling
+                        )
+                    }
+
+                    if (dispatchControl)
+                        invokeEvent { it.onControlDispatched(MediaBrowserController.PlaybackLocation.Spotify) }
                 }
-
-                _isPlaying.update { !data.isPaused }
-
-                if (!data.isPaused)
-                    invokeEvent { it.onMediaItemTransition(currentPlayback.value) }
             }
         }
     }
@@ -330,22 +342,6 @@ class SpotifyInterfacerImpl(
         return false
     }
 
-    private suspend fun getImage(image: ImageUri?) = withContext(Dispatchers.IO) {
-        if (image == null)
-            return@withContext null
-
-        try {
-            EmbeddedArtwork(
-                spotifyAppRemote?.imagesApi?.getImage(image)?.await()?.data
-                    ?: return@withContext null,
-                Uri.parse(image.raw)
-            )
-        } catch (e: RetrofitError) {
-            log.error("Network error while trying to get artwork image for ${image.raw.toString()}")
-            error(e.stackTraceToString())
-        }
-    }
-
 
     companion object {
         private const val AUTHORIZE_REQUEST_CODE = 4382
@@ -355,13 +351,20 @@ class SpotifyInterfacerImpl(
 }
 
 
-private fun Track.toSpotifySong(userCountry: String): SpotifySong = toSongEntity(userCountry).let { entity ->
-    SpotifySong(entity.mediaId, entity.title, entity.artist, entity.duration, entity.isHidden).let {
-        it.isPlayable = true
-        it.artwork = RemoteArtwork(URI(entity.artworkUrl))
-        it
+private fun Track.toSpotifySong(userCountry: String): SpotifySong =
+    toSongEntity(userCountry).let { entity ->
+        SpotifySong(
+            entity.mediaId,
+            entity.title,
+            entity.artist,
+            entity.duration,
+            entity.isHidden
+        ).let {
+            it.isPlayable = true
+            it.artwork = RemoteArtwork(URI(entity.artworkUrl))
+            it
+        }
     }
-}
 
 private fun Track.toSongEntity(userCountry: String) = SongEntity(
     MediaId(uri),
@@ -374,16 +377,8 @@ private fun Track.toSongEntity(userCountry: String) = SongEntity(
     album.images.firstOrNull()?.url
 )
 
-private fun com.spotify.protocol.types.Track.toSpotifySong(artwork: Artwork?): SpotifySong =
-    SpotifySong(
-        MediaId(uri),
-        name,
-        artists.firstOrNull()?.name ?: "Unknown Artist",
-        duration.ms,
-        isHidden = true,
-    ).apply {
-        this.artwork = artwork
-    }
+private val com.spotify.protocol.types.Track.id: String
+    get() = uri.substring(uri.indexOfLast { it == ':' } + 1)
 
 
 private fun RepeatMode.Companion.fromSpotify(repeatMode: Int, isShuffling: Boolean) =
