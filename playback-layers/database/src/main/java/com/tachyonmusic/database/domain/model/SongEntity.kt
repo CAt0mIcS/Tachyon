@@ -14,6 +14,9 @@ class SongEntity(
 
     // Whether the song should be hidden in the UI
     var isHidden: Boolean = false,
+
+    // Spotify songs may be unavailable, not used for local songs
+    var isPlayable: Boolean = true,
     var artworkType: String = ArtworkType.UNKNOWN,
     var artworkUrl: String? = null
 ) : SinglePlaybackEntity(mediaId, title, artist, duration)

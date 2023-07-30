@@ -29,10 +29,12 @@ interface SpotifyInterfacer : IListenable<MediaBrowserController.EventListener> 
     fun resume()
     fun pause()
     fun seekTo(pos: Duration)
-    fun seekTo(playlistUri: String, index: Int, pos: Duration)
+    fun seekTo(playlistUri: String, index: Int, pos: Duration? = null)
 
     fun setRepeatMode(repeatMode: RepeatMode)
 
     suspend fun searchTracks(query: String): List<SpotifySong>
     suspend fun searchPlaylists(query: String): List<SpotifyPlaylist>
+
+    suspend fun disconnect()
 }

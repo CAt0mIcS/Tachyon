@@ -38,7 +38,7 @@ fun SongEntity.toSpotifySong() =
         duration,
         isHidden
     ).let {
-        it.isPlayable = true
+        it.isPlayable = isPlayable
         it.artwork = RemoteArtwork(URI(artworkUrl))
         it
     }

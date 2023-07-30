@@ -7,8 +7,19 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.LoadArtworkForPlayback
-import com.tachyonmusic.domain.use_case.*
-import com.tachyonmusic.domain.use_case.player.*
+import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
+import com.tachyonmusic.domain.use_case.GetRepositoryStates
+import com.tachyonmusic.domain.use_case.ObserveSettings
+import com.tachyonmusic.domain.use_case.PlayPlayback
+import com.tachyonmusic.domain.use_case.PlaybackLocation
+import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewPlaylist
+import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
+import com.tachyonmusic.domain.use_case.player.GetPlaybackChildren
+import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
+import com.tachyonmusic.domain.use_case.player.RemovePlaybackFromPlaylist
+import com.tachyonmusic.domain.use_case.player.SavePlaybackToPlaylist
+import com.tachyonmusic.domain.use_case.player.SeekToPosition
+import com.tachyonmusic.domain.use_case.player.SetRepeatMode
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.isPredefined
@@ -21,7 +32,12 @@ import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
@@ -117,7 +133,11 @@ class PlayerViewModel @Inject constructor(
             viewModelScope.launch(Dispatchers.IO) {
                 val recentlyPlayed = getRecentlyPlayed()
                 runOnUiThreadAsync {
-                    playPlayback(_playback.value, recentlyPlayed?.position)
+                    playPlayback(
+                        _playback.value,
+                        recentlyPlayed?.position,
+                        if (playbackType.value is PlaybackType.Playlist) PlaybackLocation.CUSTOM_PLAYLIST else null
+                    )
                 }
             }
         }
@@ -135,6 +155,7 @@ class PlayerViewModel @Inject constructor(
                 is PlaybackType.Playlist -> // Currently playing a custom playlist (not predefined)
                     currentPlaylist.value?.playbacks
                         ?.find { it.mediaId == entity.mediaId }
+
                 else -> { // Playing predefined playlist
                     when (repeatMode.value) {
                         is RepeatMode.One -> _playback.value
@@ -142,9 +163,11 @@ class PlayerViewModel @Inject constructor(
                             is PlaybackType.Song ->
                                 predefinedPlaylistsRepository.songPlaylist.value
                                     .find { it.mediaId == entity.mediaId }
+
                             is PlaybackType.CustomizedSong ->
                                 predefinedPlaylistsRepository.customizedSongPlaylist.value
                                     .find { it.mediaId == entity.mediaId }
+
                             else -> TODO("Can't have playlists inside playlists yet")
                         }
                     }

@@ -70,6 +70,17 @@ class PlayPlayback(
 
             is Playlist -> {
                 log.info("Setting playlist to ${playback.mediaId}")
+
+                if (!playback.playbacks.any { it.isPlayable })
+                    TODO("Not a single item in playlist $playback is playable")
+
+                while (playback.current?.isPlayable != true) {
+                    if (playback.currentPlaylistIndex + 1 >= playback.playbacks.size)
+                        playback.currentPlaylistIndex = 0
+                    else
+                        playback.currentPlaylistIndex += 1
+                }
+
                 browser.setPlaylist(playback, position)
                 browser.prepare()
 //                browser.seekTo(playback.currentPlaylistIndex, position)
