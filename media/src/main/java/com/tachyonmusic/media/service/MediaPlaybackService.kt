@@ -291,7 +291,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     val playlist = if (mediaId?.isLocalPlaylist == true) {
                         playbackRepository.getPlaylists().find { it.mediaId == mediaId }
                     } else {
-                        getPlaylistForPlayback(mediaId)
+                        getPlaylistForPlayback(mediaItems.first().mediaMetadata.playback)
                     } ?: return@future MediaSession.MediaItemsWithStartPosition(
                         mediaItems,
                         startIndex,

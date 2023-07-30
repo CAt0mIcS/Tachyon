@@ -18,16 +18,20 @@ class GetPlaylistForPlayback(
     private val artworkCodex: ArtworkCodex
 ) {
 
-    suspend operator fun invoke(playback: SinglePlayback?) = invoke(playback?.mediaId)
-
-    suspend operator fun invoke(mediaId: MediaId?) = withContext(Dispatchers.IO) {
-        if (mediaId == null)
+    suspend operator fun invoke(playback: SinglePlayback?) = withContext(Dispatchers.IO) {
+        if (playback == null)
             return@withContext null
 
-        if (mediaId.isLocalSong || mediaId.isSpotifySong)
-            getSongPlaylist(mediaId)
-        else if (mediaId.isLocalCustomizedSong)
-            getCustomizedSongPlaylist(mediaId)
+        if (playback.mediaId.isLocalSong)
+            getSongPlaylist(playback.mediaId)
+        else if (playback.mediaId.isSpotify)
+            LocalPlaylist(
+                MediaId.ofLocalPlaylist(playback.mediaId.toString()),
+                mutableListOf(playback),
+                0
+            )
+        else if (playback.mediaId.isLocalCustomizedSong)
+            getCustomizedSongPlaylist(playback.mediaId)
         else null
     }
 

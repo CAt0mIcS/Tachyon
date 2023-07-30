@@ -2,13 +2,10 @@ package com.tachyonmusic.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.util.toEntity
 import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.PlayPlayback
-import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.domain.use_case.home.GetSavedData
 import com.tachyonmusic.domain.use_case.home.UnloadArtworks
 import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
@@ -21,11 +18,16 @@ import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.core_components.model.toUiEntity
-import com.tachyonmusic.util.delay
-import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
@@ -110,17 +112,7 @@ class HomeViewModel @Inject constructor(
             val playback = _history.value.find { it.mediaId == entity.mediaId }
                 ?: return@launch
 
-            if (playback.mediaId.isSpotifySong &&
-                !predefinedPlaylistsRepository.songPlaylist.value.contains(playback)
-            ) {
-                val prevSize = predefinedPlaylistsRepository.songPlaylist.value.size
-                songRepository.addAll(listOf((playback as Song).toEntity()))
-
-                while (predefinedPlaylistsRepository.songPlaylist.value.size == prevSize)
-                    delay(10.ms)
-            }
-
-            playPlayback(playback, playbackLocation = PlaybackLocation.PREDEFINED_PLAYLIST)
+            playPlayback(playback)
         }
     }
 
