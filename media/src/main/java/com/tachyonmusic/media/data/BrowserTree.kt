@@ -71,7 +71,11 @@ class BrowserTree(
                         }.build()
                     )
                 }
-                SONG_ROOT -> constraintItems(getSongs(), page, pageSize)
+
+                SONG_ROOT -> {
+                    constraintItems(getSongs(), page, pageSize)
+                }
+
                 LOOP_ROOT -> constraintItems(getCustomizedSongs(), page, pageSize)
                 PLAYLIST_ROOT -> constraintItems(getPlaylists(), page, pageSize)
                 else -> {
@@ -105,10 +109,15 @@ class BrowserTree(
     /** Type for a folder containing media categorized by year.  */
 
 
-    // TODO: Nullable?
-    private suspend fun getSongs() = playbackRepository.getSongs().map { it.toMediaItem() }
+    private suspend fun getSongs() =
+        playbackRepository.getSongs()
+            .filter { it.isPlayable && !it.isHidden }
+            .map { it.toMediaItem() }
+
     private suspend fun getCustomizedSongs() =
-        playbackRepository.getCustomizedSongs().map { it.toMediaItem() }
+        playbackRepository.getCustomizedSongs()
+            .filter { it.isPlayable }
+            .map { it.toMediaItem() }
 
     private suspend fun getPlaylists() = playbackRepository.getPlaylists().map { it.toMediaItem() }
 
