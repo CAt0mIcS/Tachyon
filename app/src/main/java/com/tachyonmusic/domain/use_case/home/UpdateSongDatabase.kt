@@ -52,11 +52,12 @@ class UpdateSongDatabase(
         }
 
         /**
-         * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
+         * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles] and are not Spotify songs
          */
-        songRepo.getSongs().filter { it.isHidden }.forEach {
-            if (!settings.excludedSongFiles.contains(it.mediaId.uri) && !it.mediaId.isSpotify)
-                songRepo.updateIsHidden(it.mediaId, false)
+        songRepo.getSongs().filter {
+            it.isHidden && !it.mediaId.isSpotify && !settings.excludedSongFiles.contains(it.mediaId.uri)
+        }.forEach {
+            songRepo.updateIsHidden(it.mediaId, false)
         }
 
         // TODO: Better async song loading?
