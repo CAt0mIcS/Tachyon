@@ -15,23 +15,36 @@ import kotlinx.coroutines.withContext
  */
 class GetPlaylistForPlayback(
     private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
-    private val artworkCodex: ArtworkCodex
+    private val artworkCodex: ArtworkCodex,
+    private val playbackRepository: PlaybackRepository
 ) {
 
     suspend operator fun invoke(playback: SinglePlayback?) = withContext(Dispatchers.IO) {
-        if (playback == null)
-            return@withContext null
-
-        if (playback.mediaId.isLocalSong)
-            getSongPlaylist(playback.mediaId)
-        else if (playback.mediaId.isSpotify)
+        if (playback?.mediaId?.isSpotify == true)
             LocalPlaylist(
                 MediaId.ofLocalPlaylist(playback.mediaId.toString()),
                 mutableListOf(playback),
                 0
             )
-        else if (playback.mediaId.isLocalCustomizedSong)
-            getCustomizedSongPlaylist(playback.mediaId)
+        else
+            invoke(playback?.mediaId)
+    }
+
+    suspend operator fun invoke(mediaId: MediaId?) = withContext(Dispatchers.IO) {
+        if (mediaId == null)
+            return@withContext null
+
+        if (mediaId.isLocalSong)
+            getSongPlaylist(mediaId)
+        else if (mediaId.isLocalCustomizedSong)
+            getCustomizedSongPlaylist(mediaId)
+        else if (mediaId.isSpotify)
+            LocalPlaylist(
+                MediaId.ofLocalPlaylist(mediaId.toString()),
+                mutableListOf(playbackRepository.getSongs().find { it.mediaId == mediaId }
+                    ?: TODO("Invalid spotify song $mediaId")),
+                0
+            )
         else null
     }
 

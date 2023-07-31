@@ -291,7 +291,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     val playlist = if (mediaId?.isLocalPlaylist == true) {
                         playbackRepository.getPlaylists().find { it.mediaId == mediaId }
                     } else {
-                        getPlaylistForPlayback(mediaItems.first().mediaMetadata.playback)
+                        getPlaylistForPlayback(mediaId)
                     } ?: return@future MediaSession.MediaItemsWithStartPosition(
                         mediaItems,
                         startIndex,
@@ -397,6 +397,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     audioEffectController.reverb = playback.reverb
                 }
             }
+
             else -> {
                 audioEffectController.bass = null
                 audioEffectController.virtualizerStrength = null
@@ -409,17 +410,11 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 audioEffectController.equalizerEnabled = false
             }
         }
-
-        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
-            ioScope.launch {
-                addNewPlaybackToHistory(playback)
-            }
-        }
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
+        val playback = currentPlayer.currentMediaItem?.mediaMetadata?.playback ?: return
         if (!isPlaying) {
-            val playback = currentPlayer.currentMediaItem?.mediaMetadata?.playback ?: return
             val currentPos = currentPlayer.currentPosition.ms
             ioScope.launch {
                 saveRecentlyPlayed(
@@ -433,6 +428,10 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                                 .toString() else null
                     )
                 )
+            }
+        } else {
+            ioScope.launch {
+                addNewPlaybackToHistory(playback)
             }
         }
     }
@@ -520,8 +519,10 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             when (val mediaIds = items.map { MediaId.deserialize(it.mediaId) }) {
                 predefinedPlaylistsRepository.songPlaylist.value.map { it.mediaId } ->
                     predefinedSongPlaylistMediaId
+
                 predefinedPlaylistsRepository.customizedSongPlaylist.value.map { it.mediaId } ->
                     predefinedCustomizedSongPlaylistMediaId
+
                 else -> findPlaylistWithPlaybacks(mediaIds)
             } ?: return null
 
