@@ -3,7 +3,6 @@ package com.tachyonmusic.media.domain.use_case
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
-import com.tachyonmusic.database.util.toEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -19,9 +18,7 @@ class AddNewPlaybackToHistory(
         if (settings.maxPlaybacksInHistory <= 0)
             return@withContext
 
-        val entity = playback.toEntity()
-
-        repository += entity
+        repository += playback.mediaId
 
         /**
          * Shrinking history to [settings.maxPlaybacksInHistory]

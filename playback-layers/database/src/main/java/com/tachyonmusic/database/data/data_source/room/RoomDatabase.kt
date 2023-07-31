@@ -11,7 +11,6 @@ import com.tachyonmusic.database.domain.model.*
         SongEntity::class,
         CustomizedSongEntity::class,
         PlaylistEntity::class,
-        PlaybackEntity::class,
         HistoryEntity::class,
         DataEntity::class
     ],

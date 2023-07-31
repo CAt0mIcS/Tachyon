@@ -270,7 +270,7 @@ class SpotifyInterfacerImpl(
 
     private fun onSpotifyConnected() {
         ioScope.launch {
-            // TODO: When does this Unauthorized exception occur?
+            // TODO: When does this Unauthorized exception occur?y
             try {
                 api!!.service.me
             } catch (e: RetrofitError) {
@@ -278,6 +278,8 @@ class SpotifyInterfacerImpl(
                 runOnUiThreadAsync { authorize(application.mainActivity!!) }
                 return@launch
             }
+
+            // TODO: RetrofitError timeout
 
             if (api?.service?.me?.product != "premium") {
                 log.info("Disconnecting from Spotify due to invalid product state ${api?.service?.me?.product}")

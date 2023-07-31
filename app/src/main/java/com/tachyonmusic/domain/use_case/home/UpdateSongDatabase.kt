@@ -41,21 +41,21 @@ class UpdateSongDatabase(
          */
         songRepo.removeIf { song ->
             val uri = song.mediaId.uri
-            if (uri != null) {
+            if (uri != null && !song.mediaId.isSpotify) {
                 /**
                  * If it can't find the song to remove it means that the file was deleted
                  * Remove because song does not exist anymore
                  */
                 val shouldRemoveFromDatabase = !songsToAddToDatabase.removeFirst { it.uri == uri }
                 shouldRemoveFromDatabase
-            } else TODO("Invalid path null")
+            } else false
         }
 
         /**
          * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
          */
         songRepo.getSongs().filter { it.isHidden }.forEach {
-            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
+            if (!settings.excludedSongFiles.contains(it.mediaId.uri) && !it.mediaId.isSpotify)
                 songRepo.updateIsHidden(it.mediaId, false)
         }
 

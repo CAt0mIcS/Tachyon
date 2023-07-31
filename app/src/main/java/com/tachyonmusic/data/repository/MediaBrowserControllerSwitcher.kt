@@ -56,7 +56,7 @@ class MediaBrowserControllerSwitcher(
                         currentPosition ?: return@combine,
                         playback.duration,
                         ArtworkType.REMOTE,
-                        (playback.artwork as RemoteArtwork).uri.toString()
+                        (playback.artwork as RemoteArtwork).uri.toURL().toString()
                     )
                 )
             }

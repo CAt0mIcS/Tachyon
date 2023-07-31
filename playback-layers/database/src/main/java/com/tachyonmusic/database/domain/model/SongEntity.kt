@@ -1,22 +1,23 @@
 package com.tachyonmusic.database.domain.model
 
 import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.util.Duration
 
 @Entity
-class SongEntity(
-    mediaId: MediaId,
-    title: String,
-    artist: String,
-    duration: Duration,
+data class SongEntity(
+    @PrimaryKey val mediaId: MediaId,
+    val title: String,
+    val artist: String,
+    val duration: Duration,
 
     // Whether the song should be hidden in the UI
-    var isHidden: Boolean = false,
+    val isHidden: Boolean = false,
 
     // Spotify songs may be unavailable, not used for local songs
-    var isPlayable: Boolean = true,
+    val isPlayable: Boolean = true,
     var artworkType: String = ArtworkType.UNKNOWN,
     var artworkUrl: String? = null
-) : SinglePlaybackEntity(mediaId, title, artist, duration)
+)
