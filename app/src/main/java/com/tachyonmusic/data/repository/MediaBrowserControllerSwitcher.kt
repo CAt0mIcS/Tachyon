@@ -16,6 +16,8 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.media.domain.model.MediaSyncEventListener
+import com.tachyonmusic.media.domain.model.PlaybackController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.util.Duration
@@ -38,17 +40,17 @@ class MediaBrowserControllerSwitcher(
     application: TachyonApplication,
     saveRecentlyPlayed: SaveRecentlyPlayed,
     private val addNewPlaybackToHistory: AddNewPlaybackToHistory
-) : MediaBrowserController, MediaBrowserController.EventListener,
-    IListenable<MediaBrowserController.EventListener> by Listenable() {
+) : MediaBrowserController, MediaSyncEventListener,
+    IListenable<MediaSyncEventListener> by Listenable() {
 
-    private var playbackLocation = MutableStateFlow(MediaBrowserController.PlaybackLocation.Local)
+    private var playbackController = MutableStateFlow(PlaybackController.Local)
     private val ioScope = application.coroutineScope + Dispatchers.IO
 
     init {
         registerEventListener(this)
 
-        combine(playbackLocation, spotifyBrowser.isPlaying) { playbackLocation, isPlaying ->
-            if (playbackLocation == MediaBrowserController.PlaybackLocation.Spotify && !isPlaying) {
+        combine(playbackController, spotifyBrowser.isPlaying) { playbackController, isPlaying ->
+            if (playbackController == PlaybackController.Spotify && !isPlaying) {
                 val playback = currentPlayback.value ?: return@combine
                 saveRecentlyPlayed(
                     RecentlyPlayed(
@@ -67,12 +69,12 @@ class MediaBrowserControllerSwitcher(
         localBrowser.registerLifecycle(lifecycle)
     }
 
-    override fun registerEventListener(listener: MediaBrowserController.EventListener) {
+    override fun registerEventListener(listener: MediaSyncEventListener) {
         localBrowser.registerEventListener(listener)
         spotifyBrowser.registerEventListener(listener)
     }
 
-    override fun unregisterEventListener(listener: MediaBrowserController.EventListener) {
+    override fun unregisterEventListener(listener: MediaSyncEventListener) {
         localBrowser.unregisterEventListener(listener)
         spotifyBrowser.unregisterEventListener(listener)
     }
@@ -80,33 +82,33 @@ class MediaBrowserControllerSwitcher(
     override val currentPlaylist: StateFlow<Playlist?> = combine(
         localBrowser.currentPlaylist,
         spotifyBrowser.currentPlaylist,
-        playbackLocation
+        playbackController
     ) { local, spotify, location ->
         when (location) {
-            MediaBrowserController.PlaybackLocation.Local -> local
-            MediaBrowserController.PlaybackLocation.Spotify -> spotify ?: local
+            PlaybackController.Local -> local
+            PlaybackController.Spotify -> spotify ?: local
         }
     }.stateIn(ioScope, SharingStarted.Eagerly, null)
 
     override val currentPlayback: StateFlow<SinglePlayback?> = combine(
         localBrowser.currentPlayback,
         spotifyBrowser.currentPlayback,
-        playbackLocation
+        playbackController
     ) { local, spotify, location ->
         when (location) {
-            MediaBrowserController.PlaybackLocation.Local -> local
-            MediaBrowserController.PlaybackLocation.Spotify -> spotify
+            PlaybackController.Local -> local
+            PlaybackController.Spotify -> spotify
         }
     }.stateIn(ioScope, SharingStarted.Eagerly, null)
 
     override val isPlaying: StateFlow<Boolean> = combine(
         localBrowser.isPlaying,
         spotifyBrowser.isPlaying,
-        playbackLocation
+        playbackController
     ) { local, spotify, location ->
         when (location) {
-            MediaBrowserController.PlaybackLocation.Local -> local
-            MediaBrowserController.PlaybackLocation.Spotify -> spotify
+            PlaybackController.Local -> local
+            PlaybackController.Spotify -> spotify
         }
     }.stateIn(ioScope, SharingStarted.Eagerly, false)
 
@@ -117,13 +119,13 @@ class MediaBrowserControllerSwitcher(
                 when (playlist.current?.underlyingSong) {
                     is LocalSong -> {
                         localBrowser.setPlaylist(playlist, position)
-                        playbackLocation.update { MediaBrowserController.PlaybackLocation.Local }
+                        playbackController.update { PlaybackController.Local }
                     }
 
                     is SpotifySong -> {
                         spotifyBrowser.play(playlist.current ?: return)
                         spotifyBrowser.seekTo(position)
-                        playbackLocation.update { MediaBrowserController.PlaybackLocation.Spotify }
+                        playbackController.update { PlaybackController.Spotify }
                     }
 
                     else -> error("Invalid song type ${playlist.current?.underlyingSong}")
@@ -133,7 +135,7 @@ class MediaBrowserControllerSwitcher(
 
             is SpotifyPlaylist -> {
                 spotifyBrowser.setPlaylist(playlist, position)
-                playbackLocation.update { MediaBrowserController.PlaybackLocation.Spotify }
+                playbackController.update { PlaybackController.Spotify }
             }
 
             else -> TODO()
@@ -141,62 +143,62 @@ class MediaBrowserControllerSwitcher(
     }
 
     override val currentPosition: Duration?
-        get() = when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.currentPosition
-            MediaBrowserController.PlaybackLocation.Spotify -> spotifyBrowser.currentPosition
+        get() = when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.currentPosition
+            PlaybackController.Spotify -> spotifyBrowser.currentPosition
         }
 
     override var currentPlaybackTimingData: TimingDataController?
-        get() = when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.currentPlaybackTimingData
-            MediaBrowserController.PlaybackLocation.Spotify -> spotifyBrowser.currentPlaybackTimingData
+        get() = when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.currentPlaybackTimingData
+            PlaybackController.Spotify -> spotifyBrowser.currentPlaybackTimingData
         }
         set(value) {
-            when (playbackLocation.value) {
-                MediaBrowserController.PlaybackLocation.Local -> localBrowser.currentPlaybackTimingData =
+            when (playbackController.value) {
+                PlaybackController.Local -> localBrowser.currentPlaybackTimingData =
                     value
 
-                MediaBrowserController.PlaybackLocation.Spotify -> spotifyBrowser.currentPlaybackTimingData =
+                PlaybackController.Spotify -> spotifyBrowser.currentPlaybackTimingData =
                     value
             }
         }
 
     override val canPrepare: Boolean
-        get() = when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.canPrepare
-            MediaBrowserController.PlaybackLocation.Spotify -> false
+        get() = when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.canPrepare
+            PlaybackController.Spotify -> false
         }
 
     override var playbackParameters: PlaybackParameters
-        get() = when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.playbackParameters
-            MediaBrowserController.PlaybackLocation.Spotify -> PlaybackParameters.DEFAULT
+        get() = when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.playbackParameters
+            PlaybackController.Spotify -> PlaybackParameters.DEFAULT
         }
         set(value) {
-            if (playbackLocation.value == MediaBrowserController.PlaybackLocation.Local)
+            if (playbackController.value == PlaybackController.Local)
                 localBrowser.playbackParameters = value
         }
 
     override var volume: Float
-        get() = when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.volume
-            MediaBrowserController.PlaybackLocation.Spotify -> 1f
+        get() = when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.volume
+            PlaybackController.Spotify -> 1f
         }
         set(value) {
-            if (playbackLocation.value == MediaBrowserController.PlaybackLocation.Local)
+            if (playbackController.value == PlaybackController.Local)
                 localBrowser.volume = value
         }
 
     override val audioSessionId: Int?
-        get() = when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.audioSessionId
-            MediaBrowserController.PlaybackLocation.Spotify -> 0
+        get() = when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.audioSessionId
+            PlaybackController.Spotify -> 0
         }
 
     override val nextPlayback: SinglePlayback?
-        get() = when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.nextPlayback
-            MediaBrowserController.PlaybackLocation.Spotify ->
+        get() = when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.nextPlayback
+            PlaybackController.Spotify ->
                 if (currentPlaylist.value?.mediaId?.isSpotifyPlaylist == true)
                     spotifyBrowser.nextPlayback
                 else
@@ -212,47 +214,47 @@ class MediaBrowserControllerSwitcher(
     }
 
     override suspend fun prepare() {
-        if (playbackLocation.value == MediaBrowserController.PlaybackLocation.Local)
+        if (playbackController.value == PlaybackController.Local)
             localBrowser.prepare()
     }
 
     override fun play() {
-        when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.play()
-            MediaBrowserController.PlaybackLocation.Spotify -> spotifyBrowser.play()
+        when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.play()
+            PlaybackController.Spotify -> spotifyBrowser.play()
         }
     }
 
     override fun pause() {
-        when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.pause()
-            MediaBrowserController.PlaybackLocation.Spotify -> spotifyBrowser.pause()
+        when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.pause()
+            PlaybackController.Spotify -> spotifyBrowser.pause()
         }
     }
 
     override fun stop() {
-        if (playbackLocation.value == MediaBrowserController.PlaybackLocation.Local)
+        if (playbackController.value == PlaybackController.Local)
             localBrowser.stop()
     }
 
     override fun seekTo(pos: Duration?) {
-        when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.seekTo(pos)
-            MediaBrowserController.PlaybackLocation.Spotify -> spotifyBrowser.seekTo(pos)
+        when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.seekTo(pos)
+            PlaybackController.Spotify -> spotifyBrowser.seekTo(pos)
         }
     }
 
     override fun seekTo(mediaId: MediaId, pos: Duration?) {
-        when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.seekTo(mediaId, pos)
-            MediaBrowserController.PlaybackLocation.Spotify -> spotifyBrowser.seekTo(mediaId, pos)
+        when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.seekTo(mediaId, pos)
+            PlaybackController.Spotify -> spotifyBrowser.seekTo(mediaId, pos)
         }
     }
 
     override fun seekTo(index: Int, pos: Duration?) {
-        when (playbackLocation.value) {
-            MediaBrowserController.PlaybackLocation.Local -> localBrowser.seekTo(index, pos)
-            MediaBrowserController.PlaybackLocation.Spotify -> spotifyBrowser.seekTo(index, pos)
+        when (playbackController.value) {
+            PlaybackController.Local -> localBrowser.seekTo(index, pos)
+            PlaybackController.Spotify -> spotifyBrowser.seekTo(index, pos)
         }
     }
 
@@ -266,11 +268,11 @@ class MediaBrowserControllerSwitcher(
         localBrowser.seekToPrevious()
     }
 
-    override fun onControlDispatched(playbackLocation: MediaBrowserController.PlaybackLocation) {
-        if (this.playbackLocation.value == playbackLocation)
+    override fun onControlDispatched(playbackController: PlaybackController) {
+        if (this.playbackController.value == playbackController)
             return
 
-        this.playbackLocation.update { playbackLocation }
+        this.playbackController.update { playbackController }
 //        switchToCorrectPlayer(
 //            if (currentPlaylist.value?.playbacks?.contains(playback) == true)
 //                playback ?: return
@@ -281,10 +283,10 @@ class MediaBrowserControllerSwitcher(
 
     override fun onMediaItemTransition(
         playback: SinglePlayback?,
-        source: MediaBrowserController.PlaybackLocation
+        source: PlaybackController
     ) {
-        if (source == MediaBrowserController.PlaybackLocation.Spotify &&
-            playbackLocation.value == MediaBrowserController.PlaybackLocation.Spotify &&
+        if (source == PlaybackController.Spotify &&
+            playbackController.value == PlaybackController.Spotify &&
             playback != null
         ) {
             ioScope.launch {
@@ -295,15 +297,15 @@ class MediaBrowserControllerSwitcher(
 
 
     private fun switchToCorrectPlayer(playback: SinglePlayback) {
-        if (playbackLocation.value != MediaBrowserController.PlaybackLocation.Spotify && playback is SpotifySong) {
+        if (playbackController.value != PlaybackController.Spotify && playback is SpotifySong) {
             localBrowser.pause()
             spotifyBrowser.play(playback)
-            playbackLocation.update { MediaBrowserController.PlaybackLocation.Spotify }
-        } else if (playbackLocation.value != MediaBrowserController.PlaybackLocation.Local && playback !is SpotifySong) {
+            playbackController.update { PlaybackController.Spotify }
+        } else if (playbackController.value != PlaybackController.Local && playback !is SpotifySong) {
             spotifyBrowser.pause()
             localBrowser.seekTo(playback.mediaId)
             localBrowser.play()
-            playbackLocation.update { MediaBrowserController.PlaybackLocation.Local }
+            playbackController.update { PlaybackController.Local }
         }
     }
 }

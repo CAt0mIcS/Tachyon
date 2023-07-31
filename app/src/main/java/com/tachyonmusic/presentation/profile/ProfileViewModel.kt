@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.repository.SpotifyInterfacer
+import com.tachyonmusic.media.domain.SpotifyInterfacer
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.profile.WriteSettings

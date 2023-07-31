@@ -30,6 +30,8 @@ import com.tachyonmusic.media.core.StateUpdateEvent
 import com.tachyonmusic.media.core.TimingDataUpdatedEvent
 import com.tachyonmusic.media.core.dispatchMediaEvent
 import com.tachyonmusic.media.core.toMediaSessionEvent
+import com.tachyonmusic.media.domain.model.MediaSyncEventListener
+import com.tachyonmusic.media.domain.model.PlaybackController
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.media.util.fromMedia
 import com.tachyonmusic.media.util.playback
@@ -60,7 +62,7 @@ class MediaPlaybackServiceMediaBrowserController(
     private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
     private val log: Logger
 ) : MediaBrowserController, Player.Listener,
-    MediaBrowser.Listener, IListenable<MediaBrowserController.EventListener> by Listenable() {
+    MediaBrowser.Listener, IListenable<MediaSyncEventListener> by Listenable() {
 
     private var browser: MediaBrowser? = null
 
@@ -252,7 +254,7 @@ class MediaPlaybackServiceMediaBrowserController(
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
             _currentPlayback.update { mediaItem?.mediaMetadata?.playback }
-        invokeEvent { it.onControlDispatched(MediaBrowserController.PlaybackLocation.Local) }
+        invokeEvent { it.onControlDispatched(PlaybackController.Local) }
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {

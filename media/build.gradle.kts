@@ -57,6 +57,10 @@ dependencies {
 
     implementation("org.nanohttpd:nanohttpd:2.3.1")
 
+    implementation(files(Dependency.Spotify.AAR))
+    implementation("com.spotify.android:auth:2.0.2")
+    implementation("com.github.kaaes:spotify-web-api-android:0.4.1")
+
     projectCore()
     projectPlaybackLayerDatabase()
     projectPlaybackLayers()

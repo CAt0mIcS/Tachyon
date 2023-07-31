@@ -11,8 +11,9 @@ import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.app.R
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.domain.SpotifyInterfacer
+import com.tachyonmusic.media.domain.model.MediaSyncEventListener
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -21,7 +22,7 @@ import javax.inject.Inject
 // https://developer.spotify.com/documentation/android/tutorials/getting-started#introduction
 
 @AndroidEntryPoint
-class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
+class ActivityMain : AppCompatActivity(), MediaSyncEventListener {
 
     @Inject
     lateinit var log: Logger

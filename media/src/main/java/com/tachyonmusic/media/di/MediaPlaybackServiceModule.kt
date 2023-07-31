@@ -13,16 +13,20 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.data.AndroidAudioEffectController
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CastWebServerControllerImpl
+import com.tachyonmusic.media.data.SpotifyInterfacerImpl
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CastWebServerController
+import com.tachyonmusic.media.domain.SpotifyInterfacer
 import com.tachyonmusic.media.domain.use_case.*
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ServiceComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.android.scopes.ServiceScoped
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
 import javax.annotation.Nullable
 import javax.inject.Singleton
 
@@ -73,6 +77,27 @@ class MediaPlaybackRepositoryModule {
     @Provides
     @Singleton
     fun provideAudioEffectController(): AudioEffectController = AndroidAudioEffectController()
+
+    @Provides
+    @Singleton
+    fun provideSpotifyInterfacer(
+        coroutineScope: CoroutineScope,
+        @ApplicationContext context: Context,
+        songRepository: SongRepository,
+        playlistRepository: PlaylistRepository,
+        settingsRepository: SettingsRepository,
+        dataRepository: DataRepository,
+        logger: Logger
+    ): SpotifyInterfacer =
+        SpotifyInterfacerImpl(
+            coroutineScope,
+            context,
+            songRepository,
+            playlistRepository,
+            settingsRepository,
+            dataRepository,
+            logger
+        )
 }
 
 

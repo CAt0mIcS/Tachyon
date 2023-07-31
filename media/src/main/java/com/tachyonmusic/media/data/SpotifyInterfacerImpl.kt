@@ -1,6 +1,7 @@
-package com.tachyonmusic.data.repository
+package com.tachyonmusic.media.data
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import com.spotify.android.appremote.api.ConnectionParams
 import com.spotify.android.appremote.api.Connector
@@ -9,7 +10,6 @@ import com.spotify.protocol.types.Repeat
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
-import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.RemoteArtwork
@@ -22,9 +22,10 @@ import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.domain.SpotifyInterfacer
+import com.tachyonmusic.media.domain.model.MediaSyncEventListener
+import com.tachyonmusic.media.domain.model.PlaybackController
 import com.tachyonmusic.playback_layers.toSpotifySong
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
@@ -35,6 +36,7 @@ import com.tachyonmusic.util.runOnUiThreadAsync
 import kaaes.spotify.webapi.android.SpotifyApi
 import kaaes.spotify.webapi.android.models.Track
 import kotlinx.coroutines.CompletableJob
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,17 +49,18 @@ import retrofit.RetrofitError
 import java.net.URI
 
 class SpotifyInterfacerImpl(
-    private val application: TachyonApplication,
+    coroutineScope: CoroutineScope,
+    private val context: Context,
     private val songRepository: SongRepository,
     private val playlistRepository: PlaylistRepository,
     private val settingsRepository: SettingsRepository,
     private val dataRepository: DataRepository,
     private val log: Logger
-) : SpotifyInterfacer, IListenable<MediaBrowserController.EventListener> by Listenable() {
+) : SpotifyInterfacer, IListenable<MediaSyncEventListener> by Listenable() {
     private var spotifyAppRemote: SpotifyAppRemote? = null
     private var api: SpotifyApi? = null
 
-    private val ioScope = application.coroutineScope + Dispatchers.IO
+    private val ioScope = coroutineScope + Dispatchers.IO
 
     override val isAuthorized: Boolean
         get() = spotifyAppRemote != null && api != null
@@ -247,7 +250,7 @@ class SpotifyInterfacerImpl(
             .build()
 
         SpotifyAppRemote.connect(
-            application,
+            context,
             connectionParams,
             object : Connector.ConnectionListener {
                 override fun onConnected(appRemote: SpotifyAppRemote) {
@@ -275,7 +278,7 @@ class SpotifyInterfacerImpl(
                 api!!.service.me
             } catch (e: RetrofitError) {
                 log.error("Retrofit error occurred: " + e.message.toString())
-                runOnUiThreadAsync { authorize(application.mainActivity!!) }
+//                runOnUiThreadAsync { authorize(application.mainActivity!!) } // TODO
                 return@launch
             }
 
@@ -345,7 +348,7 @@ class SpotifyInterfacerImpl(
                         invokeEvent {
                             it.onMediaItemTransition(
                                 updatedSong,
-                                MediaBrowserController.PlaybackLocation.Spotify
+                                PlaybackController.Spotify
                             )
                         }
                     }
@@ -360,7 +363,7 @@ class SpotifyInterfacerImpl(
                     }
 
                     if (dispatchControl && !data.isPaused)
-                        invokeEvent { it.onControlDispatched(MediaBrowserController.PlaybackLocation.Spotify) }
+                        invokeEvent { it.onControlDispatched(PlaybackController.Spotify) }
                 }
             }
         }

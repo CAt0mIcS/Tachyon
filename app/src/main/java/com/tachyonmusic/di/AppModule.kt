@@ -9,7 +9,6 @@ import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
@@ -24,6 +23,7 @@ import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.AudioEffectController
+import com.tachyonmusic.media.domain.SpotifyInterfacer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.playback_layers.domain.*
@@ -290,23 +290,4 @@ object AppRepositoryModule {
     @Singleton
     fun provideApplicationCoroutineScope(app: Application) =
         (app as TachyonApplication).coroutineScope
-
-    @Provides
-    @Singleton
-    fun provideSpotifyInterfacer(
-        application: Application,
-        songRepository: SongRepository,
-        playlistRepository: PlaylistRepository,
-        settingsRepository: SettingsRepository,
-        dataRepository: DataRepository,
-        logger: Logger
-    ): SpotifyInterfacer =
-        SpotifyInterfacerImpl(
-            application as TachyonApplication,
-            songRepository,
-            playlistRepository,
-            settingsRepository,
-            dataRepository,
-            logger
-        )
 }

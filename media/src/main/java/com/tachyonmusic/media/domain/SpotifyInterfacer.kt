@@ -1,15 +1,16 @@
-package com.tachyonmusic.domain.repository
+package com.tachyonmusic.media.domain
 
 import android.app.Activity
 import android.content.Intent
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.playback.SpotifyPlaylist
 import com.tachyonmusic.core.data.playback.SpotifySong
+import com.tachyonmusic.media.domain.model.MediaSyncEventListener
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import kotlinx.coroutines.flow.StateFlow
 
-interface SpotifyInterfacer : IListenable<MediaBrowserController.EventListener> {
+interface SpotifyInterfacer : IListenable<MediaSyncEventListener> {
     fun authorize(activity: Activity)
     fun onAuthorization(requestCode: Int, resultCode: Int, intent: Intent?)
 

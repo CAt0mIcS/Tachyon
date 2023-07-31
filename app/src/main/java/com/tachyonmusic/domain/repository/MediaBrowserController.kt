@@ -8,18 +8,14 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.media.domain.model.MediaSyncEventListener
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import kotlinx.coroutines.flow.StateFlow
 
 
 interface MediaBrowserController : DefaultLifecycleObserver,
-    IListenable<MediaBrowserController.EventListener> {
-
-    enum class PlaybackLocation {
-        Local,
-        Spotify
-    }
+    IListenable<MediaSyncEventListener> {
 
     /**
      * Binds a lifecycle object to the [MediaBrowserController]
@@ -69,11 +65,4 @@ interface MediaBrowserController : DefaultLifecycleObserver,
 
     fun seekToNext()
     fun seekToPrevious()
-
-    interface EventListener {
-        fun onConnected() {}
-        fun onAudioSessionIdChanged(audioSessionId: Int) {}
-        fun onControlDispatched(playbackLocation: PlaybackLocation) {}
-        fun onMediaItemTransition(playback: SinglePlayback?, source: PlaybackLocation) {}
-    }
 }

@@ -1,7 +1,7 @@
 package com.tachyonmusic.domain.use_case.search
 
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.domain.repository.SpotifyInterfacer
+import com.tachyonmusic.media.domain.SpotifyInterfacer
 
 class SearchSpotify(
     private val spotifyInterfacer: SpotifyInterfacer

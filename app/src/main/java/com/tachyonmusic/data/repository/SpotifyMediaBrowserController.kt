@@ -5,8 +5,8 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.SpotifyInterfacer
+import com.tachyonmusic.media.domain.SpotifyInterfacer
+import com.tachyonmusic.media.domain.model.MediaSyncEventListener
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.update
 // TODO: Handle case where client is not authorized to use Spotify
 class SpotifyMediaBrowserController(
     private val api: SpotifyInterfacer
-) : IListenable<MediaBrowserController.EventListener> by Listenable() {
+) : IListenable<MediaSyncEventListener> by Listenable() {
 
     private val _currentPlaylist = MutableStateFlow<Playlist?>(null)
     val currentPlaylist: StateFlow<Playlist?> = _currentPlaylist.asStateFlow()
@@ -31,11 +31,11 @@ class SpotifyMediaBrowserController(
 
     private var repeatModeOnceAuthorized: RepeatMode? = null
 
-    override fun registerEventListener(listener: MediaBrowserController.EventListener) {
+    override fun registerEventListener(listener: MediaSyncEventListener) {
         api.registerEventListener(listener)
     }
 
-    override fun unregisterEventListener(listener: MediaBrowserController.EventListener) {
+    override fun unregisterEventListener(listener: MediaSyncEventListener) {
         api.unregisterEventListener(listener)
     }
 
