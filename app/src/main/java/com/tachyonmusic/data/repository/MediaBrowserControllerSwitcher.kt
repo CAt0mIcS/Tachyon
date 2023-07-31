@@ -51,7 +51,7 @@ class MediaBrowserControllerSwitcher(
 
         combine(playbackController, spotifyBrowser.isPlaying) { playbackController, isPlaying ->
             if (playbackController == PlaybackController.Spotify && !isPlaying) {
-                val playback = currentPlayback.value ?: return@combine
+                val playback = spotifyBrowser.currentPlayback.value ?: return@combine
                 saveRecentlyPlayed(
                     RecentlyPlayed(
                         playback.mediaId,
