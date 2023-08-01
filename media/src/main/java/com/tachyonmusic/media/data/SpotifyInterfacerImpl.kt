@@ -403,7 +403,8 @@ private fun Track.toSpotifySong(userCountry: String): SpotifySong =
             entity.isHidden
         ).let {
             it.isPlayable = true
-            it.artwork = RemoteArtwork(URI(entity.artworkUrl))
+            it.artwork = if (entity.artworkType == ArtworkType.REMOTE)
+                RemoteArtwork(URI(entity.artworkUrl)) else null
             it
         }
     }
