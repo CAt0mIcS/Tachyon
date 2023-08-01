@@ -1,5 +1,6 @@
 package com.tachyonmusic.domain.use_case
 
+import com.tachyonmusic.core.data.playback.SpotifySong
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
@@ -30,7 +31,9 @@ class PlayPlayback(
             is SinglePlayback -> {
                 if (playbackLocation == PlaybackLocation.CUSTOM_PLAYLIST)
                     browser.seekTo(playback.mediaId, position)
-                else
+                else if (playback is SpotifySong && browser.currentPlayback.value == playback) {
+                    browser.seekTo(position)
+                } else
                     invokeOnNewPlaylist(playback, position)
             }
 

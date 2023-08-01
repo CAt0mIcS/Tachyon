@@ -16,6 +16,7 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.model.MediaSyncEventListener
 import com.tachyonmusic.media.domain.model.PlaybackController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
@@ -29,6 +30,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -39,7 +41,8 @@ class MediaBrowserControllerSwitcher(
     private val spotifyBrowser: SpotifyMediaBrowserController,
     application: TachyonApplication,
     saveRecentlyPlayed: SaveRecentlyPlayed,
-    private val addNewPlaybackToHistory: AddNewPlaybackToHistory
+    private val addNewPlaybackToHistory: AddNewPlaybackToHistory,
+    private val log: Logger
 ) : MediaBrowserController, MediaSyncEventListener,
     IListenable<MediaSyncEventListener> by Listenable() {
 
@@ -48,6 +51,10 @@ class MediaBrowserControllerSwitcher(
 
     init {
         registerEventListener(this)
+
+        playbackController.onEach {
+            log.debug("Setting playback controller to ${it.name}")
+        }.launchIn(ioScope)
 
         combine(playbackController, spotifyBrowser.isPlaying) { playbackController, isPlaying ->
             if (playbackController == PlaybackController.Spotify && !isPlaying) {
