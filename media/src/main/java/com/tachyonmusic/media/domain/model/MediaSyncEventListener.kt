@@ -6,6 +6,5 @@ interface MediaSyncEventListener {
     fun onConnected() {}
     fun onAudioSessionIdChanged(audioSessionId: Int) {}
 
-    fun onControlDispatched(controller: PlaybackController) {}
     fun onMediaItemTransition(playback: SinglePlayback?, source: PlaybackController) {}
 }

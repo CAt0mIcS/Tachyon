@@ -24,6 +24,7 @@ import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.SpotifyInterfacer
+import com.tachyonmusic.media.domain.SynchronizedState
 import com.tachyonmusic.media.domain.model.MediaSyncEventListener
 import com.tachyonmusic.media.domain.model.PlaybackController
 import com.tachyonmusic.playback_layers.toSpotifySong
@@ -55,6 +56,7 @@ class SpotifyInterfacerImpl(
     private val playlistRepository: PlaylistRepository,
     private val settingsRepository: SettingsRepository,
     private val dataRepository: DataRepository,
+    private val synchronizedState: SynchronizedState,
     private val log: Logger
 ) : SpotifyInterfacer, IListenable<MediaSyncEventListener> by Listenable() {
     private var spotifyAppRemote: SpotifyAppRemote? = null
@@ -155,8 +157,9 @@ class SpotifyInterfacerImpl(
         }
 
         ioScope.launch {
-            awaitingPlaybackStart?.invokeOnCompletion {
-                spotifyAppRemote?.playerApi?.skipToIndex(uri, index ?: return@invokeOnCompletion)
+            awaitingPlaybackStart?.invokeOnCompletionOrNull {
+                synchronizedState.playbackController.update { PlaybackController.Spotify }
+                spotifyAppRemote?.playerApi?.skipToIndex(uri, index ?: return@invokeOnCompletionOrNull)
             }
         }
     }
@@ -363,7 +366,7 @@ class SpotifyInterfacerImpl(
                     }
 
                     if (dispatchControl && !data.isPaused)
-                        invokeEvent { it.onControlDispatched(PlaybackController.Spotify) }
+                        synchronizedState.playbackController.update { PlaybackController.Spotify }
                 }
             }
         }

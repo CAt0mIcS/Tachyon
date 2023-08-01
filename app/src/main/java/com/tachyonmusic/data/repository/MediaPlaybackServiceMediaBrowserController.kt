@@ -30,6 +30,7 @@ import com.tachyonmusic.media.core.StateUpdateEvent
 import com.tachyonmusic.media.core.TimingDataUpdatedEvent
 import com.tachyonmusic.media.core.dispatchMediaEvent
 import com.tachyonmusic.media.core.toMediaSessionEvent
+import com.tachyonmusic.media.domain.SynchronizedState
 import com.tachyonmusic.media.domain.model.MediaSyncEventListener
 import com.tachyonmusic.media.domain.model.PlaybackController
 import com.tachyonmusic.media.service.MediaPlaybackService
@@ -60,6 +61,7 @@ import kotlinx.coroutines.launch
 class MediaPlaybackServiceMediaBrowserController(
     private val getPlaylistForPlayback: GetPlaylistForPlayback,
     private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
+    private val synchronizedState: SynchronizedState,
     private val log: Logger
 ) : MediaBrowserController, Player.Listener,
     MediaBrowser.Listener, IListenable<MediaSyncEventListener> by Listenable() {
@@ -252,9 +254,11 @@ class MediaPlaybackServiceMediaBrowserController(
 
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
-            _currentPlayback.update { mediaItem?.mediaMetadata?.playback }
-        invokeEvent { it.onControlDispatched(PlaybackController.Local) }
+        if(MediaId.deserializeIfValid(mediaItem?.mediaId)?.isSpotify != true) {
+            if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
+                _currentPlayback.update { mediaItem?.mediaMetadata?.playback }
+            synchronizedState.playbackController.update { PlaybackController.Local }
+        }
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {

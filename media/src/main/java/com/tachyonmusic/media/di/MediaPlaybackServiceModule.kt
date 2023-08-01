@@ -14,9 +14,11 @@ import com.tachyonmusic.media.data.AndroidAudioEffectController
 import com.tachyonmusic.media.data.BrowserTree
 import com.tachyonmusic.media.data.CastWebServerControllerImpl
 import com.tachyonmusic.media.data.SpotifyInterfacerImpl
+import com.tachyonmusic.media.data.SynchronizedStateImpl
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.domain.SpotifyInterfacer
+import com.tachyonmusic.media.domain.SynchronizedState
 import com.tachyonmusic.media.domain.use_case.*
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import dagger.Module
@@ -87,6 +89,7 @@ class MediaPlaybackRepositoryModule {
         playlistRepository: PlaylistRepository,
         settingsRepository: SettingsRepository,
         dataRepository: DataRepository,
+        synchronizedState: SynchronizedState,
         logger: Logger
     ): SpotifyInterfacer =
         SpotifyInterfacerImpl(
@@ -96,8 +99,13 @@ class MediaPlaybackRepositoryModule {
             playlistRepository,
             settingsRepository,
             dataRepository,
+            synchronizedState,
             logger
         )
+
+    @Provides
+    @Singleton
+    fun provideSynchronizedState(): SynchronizedState = SynchronizedStateImpl()
 }
 
 

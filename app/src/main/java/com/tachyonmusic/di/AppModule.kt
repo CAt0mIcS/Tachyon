@@ -24,6 +24,7 @@ import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.SpotifyInterfacer
+import com.tachyonmusic.media.domain.SynchronizedState
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.playback_layers.domain.*
@@ -265,11 +266,14 @@ object AppRepositoryModule {
         application: Application,
         saveRecentlyPlayed: SaveRecentlyPlayed,
         addNewPlaybackToHistory: AddNewPlaybackToHistory,
+        synchronizedState: SynchronizedState
     ): MediaBrowserController =
         MediaBrowserControllerSwitcher(
+            synchronizedState,
             MediaPlaybackServiceMediaBrowserController(
                 getPlaylistForPlayback,
                 predefinedPlaylistsRepository,
+                synchronizedState,
                 logger
             ),
             SpotifyMediaBrowserController(spotifyInterfacer),

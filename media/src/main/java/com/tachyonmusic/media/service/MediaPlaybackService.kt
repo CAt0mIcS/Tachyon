@@ -6,6 +6,9 @@ import androidx.media3.cast.CastPlayer
 import androidx.media3.cast.SessionAvailabilityListener
 import androidx.media3.common.*
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.exoplayer.upstream.DefaultLoadErrorHandlingPolicy
+import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.session.*
 import com.google.android.gms.cast.framework.CastContext
@@ -18,9 +21,11 @@ import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.playback.LocalPlaylist
+import com.tachyonmusic.core.data.playback.SpotifySong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.CustomizedSong
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
@@ -32,6 +37,9 @@ import com.tachyonmusic.media.data.*
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.domain.CustomPlayer
+import com.tachyonmusic.media.domain.SpotifyInterfacer
+import com.tachyonmusic.media.domain.SynchronizedState
+import com.tachyonmusic.media.domain.model.PlaybackController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.media.util.*
@@ -93,6 +101,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     lateinit var playlistRepository: PlaylistRepository
+
+    @Inject
+    lateinit var spotifyInterfacer: SpotifyInterfacer
+
+    @Inject
+    lateinit var synchronizedState: SynchronizedState
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -358,6 +372,10 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val playback = mediaItem?.mediaMetadata?.playback ?: return
 
+        if (handleMediaControllerTransition(playback)) {
+            return
+        }
+
         when (playback) {
             is CustomizedSong -> {
                 if (playback.bassBoostEnabled) {
@@ -482,6 +500,20 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     /**************************************************************************
      ********** HELPER FUNCTIONS
      *************************************************************************/
+    private fun handleMediaControllerTransition(playback: SinglePlayback): Boolean {
+        if (synchronizedState.playbackController.value == PlaybackController.Local) {
+            if (playback is SpotifySong) {
+                spotifyInterfacer.play(playback.mediaId.uri!!.toString())
+                ioScope.launch {
+                    addNewPlaybackToHistory(playback)
+                }
+            }
+            return true
+        }
+
+        return false
+    }
+
     private fun buildExoPlayer(handleAudioFocus: Boolean): ExoPlayer =
         ExoPlayer.Builder(this).apply {
             setAudioAttributes(
@@ -492,6 +524,13 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 handleAudioFocus
             )
             setHandleAudioBecomingNoisy(true)
+            setMediaSourceFactory(DefaultMediaSourceFactory(this@MediaPlaybackService).apply {
+                /**
+                 * We get a [DataSourceException] when trying to load spotify songs with exoplayer.
+                 * We'll automatically switch to the external spotify player in [SpotifyLoadErrorHandlingPolicy]
+                 */
+                setLoadErrorHandlingPolicy(SpotifyLoadErrorHandlingPolicy())
+            })
         }.build().apply {
             // TODO: Debug only
             addAnalyticsListener(EventLogger())
@@ -540,6 +579,15 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     private inner class CustomPlayerEventListener : CustomPlayer.Listener {
         override fun onTimingDataUpdated(controller: TimingDataController?) {
             mediaSession.dispatchMediaEvent(TimingDataUpdatedEvent(controller))
+        }
+    }
+
+
+    private inner class SpotifyLoadErrorHandlingPolicy : DefaultLoadErrorHandlingPolicy() {
+        override fun getRetryDelayMsFor(loadErrorInfo: LoadErrorHandlingPolicy.LoadErrorInfo): Long {
+            if (MediaId(loadErrorInfo.loadEventInfo.uri.toString()).isSpotify)
+                return C.TIME_UNSET
+            return super.getRetryDelayMsFor(loadErrorInfo)
         }
     }
 }
