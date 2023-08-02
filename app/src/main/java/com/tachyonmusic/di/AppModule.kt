@@ -9,7 +9,6 @@ import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
@@ -17,7 +16,6 @@ import com.tachyonmusic.domain.use_case.home.*
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
-import com.tachyonmusic.domain.use_case.search.SearchSpotify
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.data.ConsoleLogger
@@ -106,11 +104,6 @@ object AppUseCaseModule {
         predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
         playbackRepository: PlaybackRepository
     ) = SearchStoredPlaybacks(predefinedPlaylistsRepository, playbackRepository)
-
-    @Provides
-    @Singleton
-    fun provideSearchSpotifyUseCase(spotifyInterfacer: SpotifyInterfacer) =
-        SearchSpotify(spotifyInterfacer)
 
 
     @Provides
@@ -258,18 +251,12 @@ object AppRepositoryModule {
     fun provideMediaBrowserController(
         getPlaylistForPlayback: GetPlaylistForPlayback,
         predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
-        logger: Logger,
-        spotifyInterfacer: SpotifyInterfacer,
-        application: Application
+        logger: Logger
     ): MediaBrowserController =
-        MediaBrowserControllerSwitcher(
-            MediaPlaybackServiceMediaBrowserController(
-                getPlaylistForPlayback,
-                predefinedPlaylistsRepository,
-                logger
-            ),
-            SpotifyMediaBrowserController(spotifyInterfacer),
-            application as TachyonApplication
+        MediaPlaybackServiceMediaBrowserController(
+            getPlaylistForPlayback,
+            predefinedPlaylistsRepository,
+            logger
         )
 
     @Provides
@@ -285,23 +272,4 @@ object AppRepositoryModule {
     @Singleton
     fun provideApplicationCoroutineScope(app: Application) =
         (app as TachyonApplication).coroutineScope
-
-    @Provides
-    @Singleton
-    fun provideSpotifyInterfacer(
-        application: Application,
-        songRepository: SongRepository,
-        playlistRepository: PlaylistRepository,
-        settingsRepository: SettingsRepository,
-        dataRepository: DataRepository,
-        logger: Logger
-    ): SpotifyInterfacer =
-        SpotifyInterfacerImpl(
-            application as TachyonApplication,
-            songRepository,
-            playlistRepository,
-            settingsRepository,
-            dataRepository,
-            logger
-        )
 }

@@ -18,7 +18,5 @@ data class DataEntity(
 
     var repeatMode: RepeatMode = RepeatMode.All,
 
-    var spotifyAccessToken: String = "",
-
     @PrimaryKey val id: Int = 0
 )

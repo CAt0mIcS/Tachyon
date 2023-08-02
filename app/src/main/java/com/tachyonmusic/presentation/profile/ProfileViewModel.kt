@@ -1,12 +1,9 @@
 package com.tachyonmusic.presentation.profile
 
-import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.repository.SpotifyInterfacer
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
@@ -22,9 +19,7 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     observeSettings: ObserveSettings,
     private val writeSettings: WriteSettings,
-    private val registerNewUriPermission: RegisterNewUriPermission,
-    private val spotifyInterfacer: SpotifyInterfacer,
-    private val application: Application
+    private val registerNewUriPermission: RegisterNewUriPermission
 ) : ViewModel() {
 
     val settings = observeSettings().stateIn(
@@ -105,9 +100,5 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             registerNewUriPermission(uri)
         }
-    }
-
-    fun connectToSpotify() {
-        spotifyInterfacer.authorize((application as TachyonApplication).mainActivity!!)
     }
 }

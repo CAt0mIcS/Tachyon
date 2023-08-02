@@ -15,7 +15,6 @@ import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.player.SetRepeatMode
 import com.tachyonmusic.domain.use_case.search.SearchLocation
-import com.tachyonmusic.domain.use_case.search.SearchSpotify
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
@@ -25,7 +24,14 @@ import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
@@ -49,8 +55,7 @@ class HomeViewModel @Inject constructor(
 
     private val songRepository: SongRepository,
     private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
-    private val searchStoredPlaybacks: SearchStoredPlaybacks,
-    private val searchSpotify: SearchSpotify,
+    private val searchStoredPlaybacks: SearchStoredPlaybacks
 ) : ViewModel() {
 
     private val historyArtworkLoadingRange = MutableStateFlow(0..0)
@@ -134,7 +139,6 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val results = when (searchLocation) {
                 is SearchLocation.Local -> searchStoredPlaybacks(searchText)
-                is SearchLocation.Spotify -> searchSpotify(searchText)
             }
             // TODO: Paging for search
             val loadedArtworkResults = loadArtworkForPlayback(results, 0..results.size + 1).map {

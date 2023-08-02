@@ -42,7 +42,4 @@ interface DataDao {
 
     @Query("UPDATE DataEntity SET repeatMode=:repeatMode")
     suspend fun setRepeatMode(repeatMode: RepeatMode)
-
-    @Query("UPDATE DataEntity SET spotifyAccessToken=:spotifyAccessToken")
-    suspend fun setSpotifyAccessToken(spotifyAccessToken: String)
 }
