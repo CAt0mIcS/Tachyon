@@ -8,6 +8,7 @@ import androidx.media3.session.SessionCommand
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.media.util.parcelable
 
@@ -97,21 +98,27 @@ data class TimingDataUpdatedEvent(
 
 data class StateUpdateEvent(
     val currentPlayback: SinglePlayback?,
-    val playWhenReady: Boolean
+    val currentPlaylist: Playlist?,
+    val playWhenReady: Boolean,
+    val repeatMode: RepeatMode
 ) : MediaSessionEvent {
     override val command: SessionCommand
         get() = Companion.command
 
     override fun toBundle() = Bundle().apply {
         putParcelable(MetadataKeys.Playback, currentPlayback)
+        putParcelable(MetadataKeys.Playlist, currentPlaylist)
         putBoolean(MetadataKeys.IsPlaying, playWhenReady)
+        putInt(MetadataKeys.RepeatMode, repeatMode.id)
     }
 
     companion object {
         fun fromBundle(bundle: Bundle) =
             StateUpdateEvent(
                 bundle.parcelable(MetadataKeys.Playback),
-                bundle.getBoolean(MetadataKeys.IsPlaying)
+                bundle.parcelable(MetadataKeys.Playlist),
+                bundle.getBoolean(MetadataKeys.IsPlaying),
+                RepeatMode.fromId(bundle.getInt(MetadataKeys.RepeatMode))
             )
 
         val command = SessionCommand("${actionPrefix}STATE_UPDATE_COMMAND", Bundle.EMPTY)

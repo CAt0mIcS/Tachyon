@@ -3,6 +3,7 @@ package com.tachyonmusic.data.repository
 import android.app.Activity
 import android.content.ComponentName
 import android.os.Bundle
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
@@ -25,8 +26,8 @@ import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.toMediaItems
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
-import com.tachyonmusic.predefinedCustomizedSongPlaylistMediaId
-import com.tachyonmusic.predefinedSongPlaylistMediaId
+import com.tachyonmusic.playback_layers.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.*
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +45,9 @@ class MediaPlaybackServiceMediaBrowserController(
 
     private var browser: MediaBrowser? = null
 
+    override fun registerLifecycle(lifecycle: Lifecycle) {
+        lifecycle.addObserver(this)
+    }
 
     override fun onCreate(owner: LifecycleOwner) {
         // TODO: Does this need to be done in onStart/onResume?
@@ -186,6 +190,10 @@ class MediaPlaybackServiceMediaBrowserController(
     override fun stop() {
         browser?.stop()
         browser?.clearMediaItems()
+
+        _currentPlayback.update { null }
+        _currentPlaylist.update { null }
+        _isPlaying.update { false }
     }
 
     override fun seekTo(pos: Duration?) {
@@ -208,10 +216,19 @@ class MediaPlaybackServiceMediaBrowserController(
         }
     }
 
+    override fun seekToNext() {
+        browser?.seekToNext()
+    }
+
+    override fun seekToPrevious() {
+        browser?.seekToPrevious()
+    }
+
 
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
             _currentPlayback.update { mediaItem?.mediaMetadata?.playback }
+        invokeEvent { it.onMediaItemTransition(mediaItem?.mediaMetadata?.playback) }
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
@@ -225,7 +242,7 @@ class MediaPlaybackServiceMediaBrowserController(
     }
 
     override fun onRepeatModeChanged(repeatMode: Int) {
-        if(repeatMode == 0)
+        if (repeatMode == 0)
             return // TODO: Handle repeat mode for cast player
 
         _repeatMode.update {
@@ -269,11 +286,8 @@ class MediaPlaybackServiceMediaBrowserController(
                 log.info("Received state update event with ${event.currentPlayback}, playWhenReady=${event.playWhenReady}")
                 _currentPlayback.update { event.currentPlayback }
                 _isPlaying.update { event.playWhenReady }
-
-                if (event.playWhenReady)
-                    _currentPlaylist.update {
-                        it ?: getPlaylistForPlayback(event.currentPlayback)
-                    }
+                _currentPlaylist.update { event.currentPlaylist }
+                _repeatMode.update { event.repeatMode }
             }
 
             is AudioSessionIdChangedEvent -> {

@@ -31,7 +31,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = Version.JVM_TARGET
     }
 
     namespace = "com.tachyonmusic.util"

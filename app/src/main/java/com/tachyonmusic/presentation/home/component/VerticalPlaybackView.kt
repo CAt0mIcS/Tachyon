@@ -3,8 +3,10 @@ package com.tachyonmusic.presentation.home.component
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -13,17 +15,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.presentation.core_components.AnimatedText
+import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.util.displaySubtitle
-import com.tachyonmusic.presentation.util.displayTitle
 
 @Composable
 fun VerticalPlaybackView(
-    playback: SinglePlayback,
+    playback: PlaybackUiEntity,
     artwork: Artwork,
-    isArtworkLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -33,22 +32,13 @@ fun VerticalPlaybackView(
             .background(Theme.colors.secondary, shape = Theme.shapes.medium)
             .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
     ) {
-        if (isArtworkLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .width(100.dp)
-                    .height(100.dp)
-                    .clip(Theme.shapes.medium)
-            )
-        } else
-            artwork.Image(
-                contentDescription = "Album Artwork",
-                modifier = Modifier
-                    .padding(Theme.padding.extraSmall)
-                    .size(100.dp, 100.dp)
-                    .clip(Theme.shapes.medium)
-            )
+        artwork.Image(
+            contentDescription = "Album Artwork",
+            modifier = Modifier
+                .padding(Theme.padding.extraSmall)
+                .size(100.dp, 100.dp)
+                .clip(Theme.shapes.medium)
+        )
 
         AnimatedText(
             modifier = Modifier

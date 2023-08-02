@@ -1,21 +1,19 @@
 package com.tachyonmusic.presentation.player
 
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.core.data.playback.LocalSongImpl
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
-import com.tachyonmusic.domain.use_case.GetRepositoryStates
-import com.tachyonmusic.domain.use_case.ObserveSettings
-import com.tachyonmusic.domain.use_case.PlayPlayback
+import com.tachyonmusic.domain.LoadArtworkForPlayback
+import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.player.*
-import com.tachyonmusic.isPredefined
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
+import com.tachyonmusic.playback_layers.isPredefined
+import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
+import com.tachyonmusic.presentation.core_components.model.toUiEntity
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.player.data.SeekIncrements
 import com.tachyonmusic.util.Duration
@@ -32,7 +30,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     getRepositoryStates: GetRepositoryStates,
-    playbackRepository: PlaybackRepository,
+    private val playbackRepository: PlaybackRepository,
+    loadArtworkForPlayback: LoadArtworkForPlayback,
 
     observeSettings: ObserveSettings,
 
@@ -40,6 +39,7 @@ class PlayerViewModel @Inject constructor(
     private val seekToPosition: SeekToPosition,
     private val getRecentlyPlayed: GetRecentlyPlayed,
     private val setRepeatMode: SetRepeatMode,
+    private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
     private val pauseResumePlayback: PauseResumePlayback,
     private val playPlayback: PlayPlayback,
 
@@ -58,11 +58,11 @@ class PlayerViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val playback = _playback.map {
-        it!!
+        loadArtworkForPlayback(it!!).toUiEntity()
     }.stateIn(
         viewModelScope + Dispatchers.IO,
         SharingStarted.Lazily,
-        LocalSongImpl(Uri.EMPTY, MediaId.EMPTY, "", "", 0.ms)
+        PlaybackUiEntity("", "", 0.ms, MediaId.EMPTY, PlaybackType.Song.Local(), null, false)
     )
 
     val shouldShowPlayer = _playback.map {
@@ -129,9 +129,28 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun play(playback: SinglePlayback) {
+    fun play(entity: PlaybackUiEntity, playbackLocation: PlaybackLocation? = null) {
         viewModelScope.launch {
-            playPlayback(playback)
+            val playback = when (playbackType.value) {
+                is PlaybackType.Playlist -> // Currently playing a custom playlist (not predefined)
+                    currentPlaylist.value?.playbacks
+                        ?.find { it.mediaId == entity.mediaId }
+                else -> { // Playing predefined playlist
+                    when (repeatMode.value) {
+                        is RepeatMode.One -> _playback.value
+                        else -> when (entity.playbackType) {
+                            is PlaybackType.Song ->
+                                predefinedPlaylistsRepository.songPlaylist.value
+                                    .find { it.mediaId == entity.mediaId }
+                            is PlaybackType.CustomizedSong ->
+                                predefinedPlaylistsRepository.customizedSongPlaylist.value
+                                    .find { it.mediaId == entity.mediaId }
+                            else -> TODO("Can't have playlists inside playlists yet")
+                        }
+                    }
+                }
+            }
+            playPlayback(playback, playbackLocation = playbackLocation)
         }
     }
 
@@ -152,12 +171,15 @@ class PlayerViewModel @Inject constructor(
         _playback,
         currentPlaylist,
         repeatMode,
-        playbackType
+        playbackType,
     ) { playback, playlist, repeatMode, playbackType ->
         getPlaybackChildren(
             if (playbackType is PlaybackType.Playlist) playlist else playback,
-            repeatMode
-        )
+            repeatMode,
+            playlist?.mediaId
+        ).map {
+            loadArtworkForPlayback(it).toUiEntity()
+        }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
@@ -177,9 +199,9 @@ class PlayerViewModel @Inject constructor(
     fun editPlaylist(i: Int, shouldAdd: Boolean) {
         viewModelScope.launch {
             if (shouldAdd)
-                savePlaybackToPlaylist(playback.value, i)
+                savePlaybackToPlaylist(_playback.value, i)
             else
-                removePlaybackFromPlaylist(playback.value, i)
+                removePlaybackFromPlaylist(_playback.value, i)
         }
     }
 
@@ -189,10 +211,12 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun removeFromCurrentPlaylist(toRemove: SinglePlayback) {
-//        viewModelScope.launch {
-//            removePlaybackFromPlaylist(toRemove, associatedPlaylist.value)
-//            playPlayback(associatedPlaylist.value)
-//        }
+    fun removeFromCurrentPlaylist(toRemove: PlaybackUiEntity) {
+        viewModelScope.launch {
+            removePlaybackFromPlaylist(
+                currentPlaylist.value?.playbacks?.find { it.mediaId == toRemove.mediaId },
+                currentPlaylist.value
+            )
+        }
     }
 }

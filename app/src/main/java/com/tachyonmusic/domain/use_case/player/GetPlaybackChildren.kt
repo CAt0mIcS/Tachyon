@@ -1,10 +1,13 @@
 package com.tachyonmusic.domain.use_case.player
 
 import com.tachyonmusic.core.RepeatMode
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.*
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
+import com.tachyonmusic.playback_layers.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.cycle
 import com.tachyonmusic.util.indexOf
 
@@ -13,7 +16,11 @@ class GetPlaybackChildren(
     private val predefinedPlaylists: PredefinedPlaylistsRepository,
     private val log: Logger
 ) {
-    operator fun invoke(playback: Playback?, repeatMode: RepeatMode): List<SinglePlayback> {
+    operator fun invoke(
+        playback: Playback?,
+        repeatMode: RepeatMode,
+        currentPlaylistMediaId: MediaId?
+    ): List<SinglePlayback> {
         log.debug("Getting children for $playback with $repeatMode")
 
         if (playback == null)
@@ -25,6 +32,7 @@ class GetPlaybackChildren(
                     is RepeatMode.One -> listOf(playback)
                     is RepeatMode.All -> getPlaylistAll(playback)
                     is RepeatMode.Shuffle -> getPlaylistShuffle()
+                    is RepeatMode.Off -> getPlaylistOff(playback, currentPlaylistMediaId)
                 }
             }
 
@@ -47,10 +55,28 @@ class GetPlaybackChildren(
                         ?: return emptyList()
                 listOfNotNull(predefinedPlaylists.customizedSongPlaylist.value.cycle(idx + 1))
             }
-            else -> emptyList()
+            else -> TODO("Invalid playback type ${playback.javaClass.name}")
         }
     }
 
     private fun getPlaylistShuffle() =
         if (browser.nextPlayback != null) listOf(browser.nextPlayback!!) else emptyList()
+
+    private fun getPlaylistOff(
+        playback: SinglePlayback,
+        currentPlaylistMediaId: MediaId?
+    ): List<SinglePlayback> {
+        when (currentPlaylistMediaId) {
+            predefinedSongPlaylistMediaId -> {
+                if (predefinedPlaylists.songPlaylist.value.lastOrNull()?.mediaId == playback.mediaId)
+                    return emptyList()
+            }
+            predefinedCustomizedSongPlaylistMediaId -> {
+                if (predefinedPlaylists.customizedSongPlaylist.value.lastOrNull()?.mediaId == playback.mediaId)
+                    return emptyList()
+            }
+        }
+
+        return getPlaylistAll(playback)
+    }
 }

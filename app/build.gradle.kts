@@ -4,7 +4,6 @@ plugins {
 
     id("kotlin-kapt")
     id("kotlin-android")
-    id("kotlin-android-extensions")
     id("com.google.dagger.hilt.android")
     id("dagger.hilt.android.plugin")
 }
@@ -36,6 +35,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        manifestPlaceholders["redirectSchemeName"] = "spotify-sdk"
+        manifestPlaceholders["redirectHostName"] = "auth"
     }
 
     buildTypes {
@@ -57,7 +59,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = Version.JVM_TARGET
     }
 
     buildFeatures {
@@ -68,7 +70,7 @@ android {
     namespace = "com.tachyonmusic.app"
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.3.0"
+        kotlinCompilerExtensionVersion = Version.COMPOSE_COMPILER
     }
 
     packagingOptions {
@@ -95,14 +97,12 @@ dependencies {
     implementation(Dependency.Media3.CAST)
     implementation(Dependency.Compose.COIL)
 
+    implementation(Dependency.GSON.GSON)
 
     projectCore()
     projectMedia()
     projectPlaybackLayers()
     projectPlaybackLayerDatabase()
-    projectPlaybackLayerPermission()
-    projectPlaybackLayerSort()
-    projectPlaybackLayerArtwork()
     projectUtil()
     projectLogger()
 

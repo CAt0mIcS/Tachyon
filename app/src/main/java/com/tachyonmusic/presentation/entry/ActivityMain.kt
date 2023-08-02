@@ -7,12 +7,15 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.tachyonmusic.app.R
+import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.permission.domain.UriPermissionRepository
+import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+
+// https://developer.spotify.com/documentation/android/tutorials/getting-started#introduction
 
 @AndroidEntryPoint
 class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
@@ -26,7 +29,11 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     @Inject
     lateinit var uriPermissionRepository: UriPermissionRepository
 
+    @Inject
+    lateinit var dataRepository: DataRepository
+
     private var castContext: CastContext? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +50,7 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
         super.onResume()
         uriPermissionRepository.dispatchUpdate()
     }
+
 
     override fun onConnected() {
         setupUi()

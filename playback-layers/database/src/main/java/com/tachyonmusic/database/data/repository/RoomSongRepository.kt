@@ -29,10 +29,12 @@ class RoomSongRepository(
 
     // TODO: Bad performance? Should be changed to have less db queries
     override suspend fun removeIf(pred: (SongEntity) -> Boolean) {
+        val toDelete = mutableListOf<MediaId>()
         getSongs().forEach {
             if (pred(it))
-                dao.delete(it.mediaId)
+                toDelete += it.mediaId
         }
+        dao.deleteAll(toDelete)
     }
 
     override suspend fun addAll(songs: List<SongEntity>): Resource<Unit> {
@@ -46,6 +48,10 @@ class RoomSongRepository(
 
     override suspend fun updateArtwork(song: MediaId, artworkType: String, artworkUrl: String?) {
         dao.updateArtwork(song, artworkType, artworkUrl)
+    }
+
+    override suspend fun updateIsHidden(song: MediaId, isHidden: Boolean) {
+        dao.updateIsHidden(song, isHidden)
     }
 
     override suspend fun getSongsWithArtworkTypes(vararg artworkTypes: String) =

@@ -17,5 +17,6 @@ data class DataEntity(
     var recentlyPlayedArtworkUrl: String? = null,
 
     var repeatMode: RepeatMode = RepeatMode.All,
+
     @PrimaryKey val id: Int = 0
 )

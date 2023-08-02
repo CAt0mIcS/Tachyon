@@ -16,7 +16,6 @@ import com.tachyonmusic.media.data.CastWebServerControllerImpl
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.domain.use_case.*
-import com.tachyonmusic.permission.domain.PermissionMapperRepository
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import dagger.Module
 import dagger.Provides
@@ -39,10 +38,8 @@ class MediaPlaybackServiceRepositoryModule {
 
     @Provides
     @ServiceScoped
-    fun provideBrowserTree(
-        playbackRepository: PlaybackRepository,
-        permissionMapperRepository: PermissionMapperRepository
-    ): BrowserTree = BrowserTree(playbackRepository, permissionMapperRepository)
+    fun provideBrowserTree(playbackRepository: PlaybackRepository): BrowserTree =
+        BrowserTree(playbackRepository)
 
     @Provides
     @ServiceScoped
@@ -68,11 +65,6 @@ class MediaPlaybackUseCaseModule {
     @Singleton
     fun provideSaveRecentlyPlayedUseCase(dataRepository: DataRepository) =
         SaveRecentlyPlayed(dataRepository)
-
-    @Provides
-    @Singleton
-    fun provideGetSettingsUseCase(settingsRepository: SettingsRepository) =
-        GetSettings(settingsRepository)
 }
 
 @Module

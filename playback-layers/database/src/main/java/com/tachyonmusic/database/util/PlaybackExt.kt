@@ -25,6 +25,7 @@ fun Song.toEntity(): SongEntity {
         title,
         artist,
         duration,
+        isHidden,
         artworkType,
         if (artwork is RemoteArtwork)
             (artwork as RemoteArtwork).uri.toURL().toString()
@@ -45,6 +46,7 @@ fun CustomizedSong.toEntity(): CustomizedSongEntity {
 }
 
 fun Playlist.toEntity() = PlaylistEntity(
+    name,
     mediaId,
     playbacks.map { it.mediaId },
     currentPlaylistIndex

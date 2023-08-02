@@ -1,7 +1,7 @@
 package com.tachyonmusic.domain.use_case.player
 
-import com.tachyonmusic.core.data.playback.LocalSongImpl
-import com.tachyonmusic.core.data.playback.LocalCustomizedSongImpl
+import com.tachyonmusic.core.data.playback.LocalSong
+import com.tachyonmusic.core.data.playback.LocalCustomizedSong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.TimingData
@@ -102,7 +102,7 @@ internal class CreateAndSaveNewCustomizedSongTest {
 
     @Test
     fun invalidTimingDataReturnsError() = runTest {
-        every { browser.playback } returns LocalSongImpl(
+        every { browser.playback } returns LocalSong(
             MediaId("*0*DoesntExist.mp3"),
             "Title",
             "Artist",
@@ -147,7 +147,7 @@ internal class CreateAndSaveNewCustomizedSongTest {
 
     @Test
     fun invalidSongReturnsError() = runTest {
-        every { browser.playback } returns LocalSongImpl(
+        every { browser.playback } returns LocalSong(
             MediaId("*0*DoesntExist.mp3"),
             "Title",
             "Artist",
@@ -201,7 +201,7 @@ internal class CreateAndSaveNewCustomizedSongTest {
         // TODO: Check if artwork is correct
     }
 
-    private fun getSong() = LocalSongImpl(
+    private fun getSong() = LocalSong(
         MediaId.ofLocalSong(
             fileRepository.getFilesInDirectoriesWithExtensions(
                 File(""),
@@ -210,9 +210,9 @@ internal class CreateAndSaveNewCustomizedSongTest {
         ), "Title", "Artist", 10000.ms
     )
 
-    private fun getCustomizedSong(): LocalCustomizedSongImpl {
+    private fun getCustomizedSong(): LocalCustomizedSong {
         val song = getSong()
-        return LocalCustomizedSongImpl(
+        return LocalCustomizedSong(
             MediaId.ofLocalCustomizedSong(name + "2", song.mediaId),
             name + "2",
             TimingDataController(listOf(TimingData(323.ms, 3233.ms))),

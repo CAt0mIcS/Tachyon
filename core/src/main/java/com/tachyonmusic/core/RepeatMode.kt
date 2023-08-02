@@ -25,12 +25,21 @@ sealed class RepeatMode(val id: Int) {
     }
 
     object Shuffle : RepeatMode(2) {
-        override val next = One
+        override val next = Off
 
         @DrawableRes
         override val icon = R.drawable.ic_shuffle
 
         override fun toString() = "RepeatMode.Shuffle"
+    }
+
+    object Off : RepeatMode(3) {
+        override val next = One
+
+        @DrawableRes
+        override val icon = R.drawable.ic_repeat_off
+
+        override fun toString() = "RepeatMode.Off"
     }
 
     companion object {
@@ -39,7 +48,15 @@ sealed class RepeatMode(val id: Int) {
                 0 -> One
                 1 -> All
                 2 -> Shuffle
+                3 -> Off
                 else -> TODO("Invalid repeat mode id $id")
             }
+    }
+
+    override fun toString() = when (this) {
+        is One -> "One"
+        is All -> "All"
+        is Shuffle -> "Shuffle"
+        is Off -> "Off"
     }
 }

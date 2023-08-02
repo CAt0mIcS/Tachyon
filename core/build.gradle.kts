@@ -33,7 +33,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.3.0"
+        kotlinCompilerExtensionVersion = Version.COMPOSE_COMPILER
     }
 
     compileOptions {
@@ -42,7 +42,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = Version.JVM_TARGET
     }
     namespace = "com.tachyonmusic.core"
 }

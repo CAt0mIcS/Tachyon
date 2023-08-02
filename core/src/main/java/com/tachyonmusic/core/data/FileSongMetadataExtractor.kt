@@ -38,7 +38,7 @@ class FileSongMetadataExtractor(
         )
     }
 
-    override fun loadBitmap(uri: Uri): Bitmap? {
+    override fun loadBitmap(uri: Uri, quality: Int): Bitmap? {
         val metaRetriever = MediaMetadataRetriever()
         try {
             val fd = contentResolver.openFileDescriptor(uri, "r")
@@ -54,7 +54,11 @@ class FileSongMetadataExtractor(
 
         val art: ByteArray? = metaRetriever.embeddedPicture
         if (art != null) {
-            return BitmapFactory.decodeByteArray(art, 0, art.size)
+            val uncompressed = BitmapFactory.decodeByteArray(art, 0, art.size)
+            return uncompressed
+//            val stream = ByteArrayOutputStream()
+//            uncompressed.compress(Bitmap.CompressFormat.JPEG, quality, stream)
+//            return BitmapFactory.decodeByteArray(stream.toByteArray(), 0, stream.size())
         }
         return null
     }

@@ -7,14 +7,12 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.media.util.getItemsOnPageWithPageSize
 import com.tachyonmusic.media.util.toMediaItems
-import com.tachyonmusic.permission.domain.PermissionMapperRepository
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import kotlinx.coroutines.*
 
 
 class BrowserTree(
     private val playbackRepository: PlaybackRepository,
-    private val playbackPermissionRepository: PermissionMapperRepository
 ) {
     companion object {
         /**
@@ -83,8 +81,8 @@ class BrowserTree(
                      */
                     val mediaId = MediaId.deserializeIfValid(parentId)
                     if (mediaId != null) {
-                        val playback = playbackPermissionRepository.getPlaylists()
-                            .find { it.mediaId == mediaId } // TODO: Artwork not included
+                        val playback =
+                            playbackRepository.getPlaylists().find { it.mediaId == mediaId }
                         if (playback != null)
                             return@withContext constraintItems(
                                 playback.playbacks.toMediaItems(),

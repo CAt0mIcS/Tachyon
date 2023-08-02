@@ -25,6 +25,7 @@ import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
@@ -32,12 +33,9 @@ import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
-import com.tachyonmusic.presentation.player.data.TimingDataEditor
+import com.tachyonmusic.presentation.player.component.TimingDataEditor
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.util.currentFraction
-import com.tachyonmusic.presentation.util.displaySubtitle
-import com.tachyonmusic.presentation.util.displayTitle
-import com.tachyonmusic.presentation.util.isEnabled
+import com.tachyonmusic.presentation.util.*
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
@@ -47,6 +45,7 @@ import com.tachyonmusic.util.toReadableString
 fun PlayerScreen(
     sheetState: BottomSheetState,
     miniPlayerHeight: Dp,
+    sheetFraction: Float,
     navController: NavController,
     viewModel: PlayerViewModel = hiltViewModel()
 ) {
@@ -91,8 +90,8 @@ fun PlayerScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = miniPlayerHeight * (1f - sheetState.currentFraction))
-            .graphicsLayer(alpha = sheetState.currentFraction + .25f),
+            .padding(top = miniPlayerHeight * (1f - sheetFraction))
+            .graphicsLayer(alpha = sheetFraction + .25f),
         contentPadding = PaddingValues(bottom = Theme.padding.small)
     ) {
         item {
@@ -102,11 +101,8 @@ fun PlayerScreen(
                 .aspectRatio(1f)
                 .shadow(Theme.shadow.small, shape = Theme.shapes.large)
 
-            if (playback.isArtworkLoading)
-                CircularProgressIndicator(modifier = artworkModifier)
-            else
-                playback.artwork?.Image(modifier = artworkModifier, contentDescription = null)
-                    ?: PlaceholderArtwork(modifier = artworkModifier, contentDescription = null)
+            playback.artwork?.Image(modifier = artworkModifier, contentDescription = null)
+                ?: PlaceholderArtwork(modifier = artworkModifier, contentDescription = null)
         }
 
         item {
@@ -328,7 +324,7 @@ fun PlayerScreen(
             }
         }
 
-        if(isEditingEqualizer) {
+        if (isEditingEqualizer) {
             item {
                 EqualizerEditor(modifier = Modifier.fillMaxWidth())
             }
@@ -350,49 +346,35 @@ fun PlayerScreen(
             }
 
             items(subPlaybackItems, key = { it.mediaId.toString() }) { playback ->
+                val updatedPlayback by rememberUpdatedState(playback)
 
-                val content = @Composable {
-                    HorizontalPlaybackView(
-                        playback,
-                        playback.artwork ?: PlaceholderArtwork,
-                        playback.isArtworkLoading,
-                        onClick = { if (playback.isPlayable) viewModel.play(playback) }
-                    )
-                }
-
-                val modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = Theme.padding.medium,
-                        end = Theme.padding.medium,
-                        bottom = Theme.padding.extraSmall
-                    )
-                    .isEnabled(playback.isPlayable)
-
-
-                if (playbackType is PlaybackType.Playlist) {
-                    val updatedPlayback by rememberUpdatedState(playback)
-                    val dismissState = rememberDismissState {
-                        if (it == DismissValue.DismissedToStart) {
-                            viewModel.removeFromCurrentPlaylist(updatedPlayback)
-                            true
-                        } else false
-                    }
-
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = Theme.padding.medium,
+                            end = Theme.padding.medium,
+                            bottom = Theme.padding.extraSmall
+                        )
+                        .isEnabled(playback.isPlayable)
+                ) {
                     SwipeDelete(
-                        dismissState,
                         shape = Theme.shapes.medium,
-                        modifier = modifier
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { viewModel.removeFromCurrentPlaylist(updatedPlayback) }
                     ) {
-                        content()
-                    }
-
-                } else {
-                    Box(modifier = modifier) {
-                        content()
+                        HorizontalPlaybackView(
+                            playback,
+                            playback.artwork ?: PlaceholderArtwork,
+                            onClick = {
+                                if (playback.isPlayable) viewModel.play(
+                                    playback,
+                                    PlaybackLocation.CUSTOM_PLAYLIST
+                                )
+                            }
+                        )
                     }
                 }
-
             }
         }
     }

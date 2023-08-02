@@ -50,7 +50,7 @@ data class TimingDataController(
         for (i in timingData.indices) {
             val distance =
                 (timingData[i].startTime - position).inWholeMilliseconds.toInt()
-            if (distance > 0 && distance < closestApproach) {
+            if (distance in 1 until closestApproach) {
                 closestApproach = distance
                 closestApproachIndex = i
             }
@@ -100,6 +100,8 @@ data class TimingDataController(
     fun isNotEmpty() = timingData.isNotEmpty()
     val size get() = timingData.size
     val indices get() = timingData.indices
+    fun first() = timingData.first()
+    fun last() = timingData.last()
     operator fun get(index: Int) = timingData[index]
 
     override fun equals(other: Any?): Boolean {

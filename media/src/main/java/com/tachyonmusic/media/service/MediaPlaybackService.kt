@@ -17,10 +17,12 @@ import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
+import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.database.domain.repository.DataRepository
+import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.logger.domain.Logger
@@ -35,6 +37,9 @@ import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.media.util.*
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
+import com.tachyonmusic.playback_layers.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -82,6 +87,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     lateinit var log: Logger
+
+    @Inject
+    lateinit var predefinedPlaylistsRepository: PredefinedPlaylistsRepository
+
+    @Inject
+    lateinit var playlistRepository: PlaylistRepository
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -148,8 +159,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 //            switchPlayer(exoPlayer, buildExoPlayer(!it.ignoreAudioFocus))
 //        }.launchIn(ioScope)
 
-        setMediaNotificationProvider(MediaNotificationProvider(this))
-
         exoPlayer.addListener(this)
         castPlayer?.addListener(this)
 
@@ -179,11 +188,14 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
             val playback = currentPlayer.mediaMetadata.playback
-            log.info("Dispatching StateUpdateEvent with $playback and playWhenReady=${currentPlayer.playWhenReady}")
+
+            log.info("Dispatching StateUpdateEvent with $playback, playWhenReady=${currentPlayer.playWhenReady}, and repeatMode=${currentPlayer.coreRepeatMode}")
             mediaSession.dispatchMediaEvent(
                 StateUpdateEvent(
                     playback,
-                    currentPlayer.playWhenReady
+                    getCurrentPlaylist(),
+                    currentPlayer.playWhenReady,
+                    currentPlayer.coreRepeatMode
                 )
             )
 
@@ -191,10 +203,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
             mediaSession.setCustomLayout(
                 controller,
-                buildCustomNotificationLayout(
-                    if (currentPlayer.repeatMode == Player.REPEAT_MODE_OFF) RepeatMode.All
-                    else currentPlayer.coreRepeatMode
-                )
+                buildCustomNotificationLayout(currentPlayer.coreRepeatMode)
             )
         }
 
@@ -272,6 +281,11 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             startPositionMs: Long
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
             return if (mediaItems.size == 1 && startIndex == C.INDEX_UNSET) {
+                /**
+                 * When clicking on any item in Android Auto the clicked item will be the only
+                 * item in [mediaItems]. So if we click on a playlist in Android Auto the playlist
+                 * media id will be [mediaItems.first().mediaId] and [mediaItems.size] will be 1
+                 */
                 future(Dispatchers.IO) {
                     val mediaId = MediaId.deserializeIfValid(mediaItems.first().mediaId)
                     val playlist = if (mediaId?.isLocalPlaylist == true) {
@@ -284,14 +298,17 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         startPositionMs
                     )
 
-                    val playlistMediaItems = playlist.playbacks.toMediaItems()
+                    launch {
+                        addNewPlaybackToHistory(playlist.current)
+                    }
                     runOnUiThread {
-                        currentPlayer.setMediaItems(playlistMediaItems)
-                        currentPlayer.prepare()
+                        handleSetRepeatModeEvent(SetRepeatModeEvent(dataRepository.getData().repeatMode))
                     }
 
                     MediaSession.MediaItemsWithStartPosition(
-                        playlistMediaItems, playlist.currentPlaylistIndex, startPositionMs
+                        playlist.playbacks.toMediaItems(),
+                        playlist.currentPlaylistIndex,
+                        startPositionMs
                     )
                 }
 
@@ -308,6 +325,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         private fun handleSetRepeatModeEvent(event: SetRepeatModeEvent) {
             exoPlayer.coreRepeatMode = event.repeatMode
             // castPlayer?.coreRepeatMode = event.repeatMode // TODO: Set repeat mode for cast player
+            runBlocking {
+                dataRepository.update(repeatMode = event.repeatMode)
+            }
             mediaSession.setCustomLayout(buildCustomNotificationLayout(event.repeatMode))
         }
 
@@ -338,7 +358,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val playback = mediaItem?.mediaMetadata?.playback ?: return
 
-        // TODO: Update equalizer
         when (playback) {
             is CustomizedSong -> {
                 if (playback.bassBoostEnabled) {
@@ -440,6 +459,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     }
 
     override fun onPlayerError(error: PlaybackException) {
+        // Local player will also try to transition to [SpotifySong], ignoring exception as it's
+        // handled in the [MediaBrowserControllerSwitcher] (Local player paused, Spotify player started)
+        if (error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED &&
+            MediaId.deserializeIfValid(currentPlayer.currentMediaItem?.mediaId)?.isSpotify == true
+        ) return
+
         var message = R.string.generic_error
         log.error("Player error: ${error.errorCodeName} (${error.errorCode}): ${error.message}")
         if (error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
@@ -485,6 +510,31 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             setEnabled(true)
         }.build()
     )
+
+    private fun getCurrentPlaylist(): LocalPlaylist? {
+        val items = currentPlayer.mediaItems
+        if (items.isEmpty())
+            return null
+
+        val mediaId =
+            when (val mediaIds = items.map { MediaId.deserialize(it.mediaId) }) {
+                predefinedPlaylistsRepository.songPlaylist.value.map { it.mediaId } ->
+                    predefinedSongPlaylistMediaId
+                predefinedPlaylistsRepository.customizedSongPlaylist.value.map { it.mediaId } ->
+                    predefinedCustomizedSongPlaylistMediaId
+                else -> findPlaylistWithPlaybacks(mediaIds)
+            } ?: return null
+
+        return LocalPlaylist(
+            mediaId,
+            items.mapNotNull { it.mediaMetadata.playback }.toMutableList(),
+            currentPlayer.currentMediaItemIndex
+        )
+    }
+
+    private fun findPlaylistWithPlaybacks(mediaIds: List<MediaId>): MediaId? = runBlocking {
+        playlistRepository.getPlaylists().find { it.items == mediaIds }?.mediaId
+    }
 
     private inner class CustomPlayerEventListener : CustomPlayer.Listener {
         override fun onTimingDataUpdated(controller: TimingDataController?) {

@@ -1,7 +1,6 @@
 package com.tachyonmusic.domain.use_case.home
 
-import com.tachyonmusic.artwork.domain.ArtworkCodex
-import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.model.SettingsEntity
@@ -9,51 +8,62 @@ import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.util.removeFirst
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 
 /**
- * Checks if every song that is not excluded is saved in the database. If a song was removed by the
- * user or a new song was added, it removes/adds the song to the database.
+ * Checks if every song in all added directories are also saved in the database and adds missing ones
  */
 class UpdateSongDatabase(
     private val songRepo: SongRepository,
     private val fileRepository: FileRepository,
     private val metadataExtractor: SongMetadataExtractor,
     private val artworkCodex: ArtworkCodex,
-    private val artworkMapperRepository: ArtworkMapperRepository,
     private val log: Logger
 ) {
     suspend operator fun invoke(settings: SettingsEntity) = withContext(Dispatchers.IO) {
         // TODO: Support more extensions
 
-        val paths = fileRepository.getFilesInDirectoriesWithExtensions(
+        val songsToAddToDatabase = fileRepository.getFilesInDirectoriesWithExtensions(
             settings.musicDirectories,
             listOf("mp3")
-        ).filter { !settings.excludedSongFiles.contains(it.uri) }.toMutableList()
+        ).toMutableList()
 
         /**
          * Remove all invalid or excluded paths in the [songRepo]
          * Update [paths] to only contain new songs that we need to add to [songRepo]
          *
-         * TODO
-         *  Make sure all parts of the UI are updated if we remove a uri permission
+         * If we remove a song from the [SongRepository] items in history or other playbacks that
+         * contain the song will automatically exclude it
          */
         songRepo.removeIf { song ->
             val uri = song.mediaId.uri
             if (uri != null) {
-                paths.removeFirst { it.uri == uri }
-                settings.excludedSongFiles.contains(uri)
+                /**
+                 * If it can't find the song to remove it means that the file was deleted
+                 * Remove because song does not exist anymore
+                 */
+                val shouldRemoveFromDatabase = !songsToAddToDatabase.removeFirst { it.uri == uri }
+                shouldRemoveFromDatabase
             } else TODO("Invalid path null")
         }
 
+        /**
+         * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
+         */
+        songRepo.getSongs().filter { it.isHidden }.forEach {
+            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
+                songRepo.updateIsHidden(it.mediaId, false)
+        }
+
         // TODO: Better async song loading?
-        if (paths.isNotEmpty()) {
-            log.debug("Loading ${paths.size} songs...")
+        if (songsToAddToDatabase.isNotEmpty()) {
+            log.debug("Loading ${songsToAddToDatabase.size} songs...")
             val songs = mutableListOf<Deferred<SongEntity?>>()
-            for (path in paths) {
+            for (path in songsToAddToDatabase) {
                 songs += async(Dispatchers.IO) {
                     val metadata = metadataExtractor.loadMetadata(
                         path.uri,
@@ -73,22 +83,24 @@ class UpdateSongDatabase(
                 }
             }
 
-            log.debug("Loaded ${paths.size} songs")
+            log.debug("Loaded ${songsToAddToDatabase.size} songs")
 
             // TODO: Warn user of null playback
             songRepo.addAll(songs.awaitAll().filterNotNull())
         }
 
-        /**************************************************************************
-         ********** Load and update artwork
-         *************************************************************************/
-        val songs = songRepo.getSongs()
-        val jobs = List(songs.size) { i ->
+
+        /**
+         * FIND MISSING ARTWORK
+         */
+        songRepo.getSongs().filter { it.artworkType == ArtworkType.UNKNOWN }.forEach { entity ->
             launch {
-                artworkCodex.awaitOrLoad(songs[i] /*TODO: fetchOnline*/).onEach {
+                /**
+                 * Load new artwork for newly found [entity]
+                 */
+                artworkCodex.awaitOrLoad(entity).onEach {
                     val entityToUpdate = it.data?.entityToUpdate
                     if (entityToUpdate != null) {
-                        log.info("Updating entity: ${entityToUpdate.title} - ${entityToUpdate.artist} with ${entityToUpdate.artworkType}")
                         songRepo.updateArtwork(
                             entityToUpdate.mediaId,
                             entityToUpdate.artworkType,
@@ -103,8 +115,5 @@ class UpdateSongDatabase(
                 }.collect()
             }
         }
-
-        jobs.joinAll()
-        artworkMapperRepository.triggerPlaybackReload()
     }
 }

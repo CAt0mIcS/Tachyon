@@ -34,7 +34,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = Version.JVM_TARGET
     }
 
     packagingOptions {
@@ -60,8 +60,6 @@ dependencies {
     projectCore()
     projectPlaybackLayerDatabase()
     projectPlaybackLayers()
-    projectPlaybackLayerPermission()
-    projectPlaybackLayerArtwork()
     projectUtil()
     projectLogger()
     projectArtworkFetcher()

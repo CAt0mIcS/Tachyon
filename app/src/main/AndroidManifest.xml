@@ -15,13 +15,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.DayNight">
 
-<!--        Android Auto support-->
-        <meta-data android:name="com.google.android.gms.car.application"
-            android:resource="@xml/automotive_app_desc"/>
+        <!--        Android Auto support-->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
 
-<!--        Cast support-->
-        <meta-data android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
-            android:value="com.tachyonmusic.data.repository.CastOptionsProvider"/>
+        <!--        Cast support-->
+        <meta-data
+            android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+            android:value="com.tachyonmusic.data.repository.CastOptionsProvider" />
 
         <activity
             android:name="com.tachyonmusic.presentation.entry.ActivityMain"

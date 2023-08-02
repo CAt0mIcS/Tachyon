@@ -13,7 +13,6 @@ import androidx.compose.ui.window.DialogProperties
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.theme.Theme
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SaveToPlaylistDialog(
     playlists: List<PlaylistInfo>,

@@ -4,11 +4,11 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.isPredefined
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.runOnUiThread
 
 enum class PlaybackLocation {
     PREDEFINED_PLAYLIST,
@@ -25,10 +25,13 @@ class PlayPlayback(
         playback: Playback?,
         position: Duration? = null,
         playbackLocation: PlaybackLocation? = null
-    ) {
+    ) = runOnUiThread {
         when (playback) {
             is SinglePlayback -> {
-                invokeOnNewPlaylist(playback, position)
+                if (playbackLocation == PlaybackLocation.CUSTOM_PLAYLIST)
+                    browser.seekTo(playback.mediaId)
+                else
+                    invokeOnNewPlaylist(playback, position)
 //                if (browser.canPrepare) {
 //                    browser.prepare()
 //                    browser.seekTo(playback.mediaId, position)
@@ -74,7 +77,7 @@ class PlayPlayback(
                 addNewPlaybackToHistory(playback.current)
             }
 
-            null -> return
+            null -> return@runOnUiThread
             else -> TODO("Invalid playback type ${playback::class.java.name}")
         }
         browser.play()
@@ -84,9 +87,4 @@ class PlayPlayback(
         val playlist = getPlaylistForPlayback(playback) ?: return
         invoke(playlist, position)
     }
-
-    private fun playbackLocationMatches(playbackLocation: PlaybackLocation?) =
-        playbackLocation == null ||
-                playbackLocation == PlaybackLocation.PREDEFINED_PLAYLIST && browser.currentPlaylist.value?.isPredefined == true ||
-                playbackLocation == PlaybackLocation.CUSTOM_PLAYLIST && browser.currentPlaylist.value?.isPredefined != true
 }

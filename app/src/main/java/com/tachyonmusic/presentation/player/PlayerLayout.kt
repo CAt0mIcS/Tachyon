@@ -1,14 +1,13 @@
 package com.tachyonmusic.presentation.player
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.material.*
+import androidx.compose.material.BottomSheetState
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavController
 import com.tachyonmusic.presentation.player.component.MiniPlayer
-import com.tachyonmusic.presentation.util.isAtBottom
-import com.tachyonmusic.presentation.util.isAtTop
 import kotlinx.coroutines.launch
 
 
@@ -18,7 +17,9 @@ fun PlayerLayout(
     navController: NavController,
     sheetState: BottomSheetState,
     onMiniPlayerHeight: (Dp) -> Unit,
-    miniPlayerHeight: Dp
+    miniPlayerHeight: Dp,
+    onTargetSheetFraction: (Float) -> Unit,
+    sheetFraction: Float
 ) {
     val scope = rememberCoroutineScope()
 
@@ -28,8 +29,8 @@ fun PlayerLayout(
      * If the bottom sheet is collapsed we show the MiniPlayer in the HomeScreen through
      * the bottom sheet peak height.
      */
-    if (!sheetState.isAtTop) {
-        MiniPlayerScreen(sheetState, onMiniPlayerHeight = onMiniPlayerHeight)
+    if (sheetFraction < 1f) {
+        MiniPlayerScreen(sheetState, onMiniPlayerHeight, sheetFraction, onTargetSheetFraction)
     }
 
     /**
@@ -37,13 +38,14 @@ fun PlayerLayout(
      * the LazyColumn to be the [miniPlayerHeight] and animate it with the current fraction of the
      * bottom sheet swipe
      */
-    if (!sheetState.isAtBottom) {
+    if (sheetFraction > 0f) {
         BackHandler {
             scope.launch {
                 sheetState.collapse()
             }
+            onTargetSheetFraction(0f)
         }
 
-        PlayerScreen(sheetState, miniPlayerHeight, navController)
+        PlayerScreen(sheetState, miniPlayerHeight, sheetFraction, navController)
     }
 }

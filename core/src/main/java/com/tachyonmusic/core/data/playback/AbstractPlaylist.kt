@@ -2,7 +2,6 @@ package com.tachyonmusic.core.data.playback
 
 import android.net.Uri
 import android.os.Bundle
-import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import com.tachyonmusic.core.data.constants.MetadataKeys
@@ -67,12 +66,6 @@ abstract class AbstractPlaylist(
     }
 
     operator fun get(i: Int): SinglePlayback = playbacks[i]
-
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(name)
-        parcel.writeParcelableArray(playbacks.toTypedArray(), flags)
-        parcel.writeInt(currentPlaylistIndex)
-    }
 
     override fun toString() = mediaId.toString()
 

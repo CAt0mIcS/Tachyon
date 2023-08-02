@@ -30,7 +30,7 @@ object Dependency {
 
         object Accompanist {
             const val NAVIGATION_ANIMATION =
-                "com.google.accompanist:accompanist-navigation-animation:0.28.0"
+                "com.google.accompanist:accompanist-navigation-animation:0.31.3-beta"
         }
     }
 
@@ -105,6 +105,12 @@ object Dependency {
         const val COMPILER = "androidx.room:room-compiler:${Version.ROOM}"
         const val COROUTINES = "androidx.room:room-ktx:${Version.ROOM}"
         const val PAGING = "androidx.room:room-paging:${Version.ROOM}"
+    }
+
+    object Spotify {
+        // TODO: Relative path
+        const val AAR =
+            "D:\\dev\\Android\\Projects\\Tachyon\\lib\\Spotify\\spotify-app-remote-release-0.7.2.aar"
     }
 }
 
@@ -235,18 +241,6 @@ fun DependencyHandler.projectPlaybackLayers() {
 
 fun DependencyHandler.projectPlaybackLayerDatabase() {
     implementation(project(":playback-layers:database"))
-}
-
-fun DependencyHandler.projectPlaybackLayerPermission() {
-    implementation(project(":playback-layers:permission"))
-}
-
-fun DependencyHandler.projectPlaybackLayerSort() {
-    implementation(project(":playback-layers:sort"))
-}
-
-fun DependencyHandler.projectPlaybackLayerArtwork() {
-    implementation(project(":playback-layers:artwork"))
 }
 
 

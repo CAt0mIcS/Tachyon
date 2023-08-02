@@ -7,6 +7,7 @@ fun RepeatMode.Companion.fromMedia(@Player.RepeatMode repeatMode: Int, shuffleEn
     when (repeatMode) {
         Player.REPEAT_MODE_ALL -> if (shuffleEnabled) RepeatMode.Shuffle else RepeatMode.All
         Player.REPEAT_MODE_ONE -> RepeatMode.One
+        Player.REPEAT_MODE_OFF -> RepeatMode.Off
         else -> error("Invalid media repeat mode $repeatMode with shuffle enabled: $shuffleEnabled")
     }
 
@@ -30,6 +31,9 @@ var Player.coreRepeatMode: RepeatMode
                 shuffleModeEnabled = true
             }
 
-            null -> TODO("Null not allowed")
+            RepeatMode.Off -> {
+                repeatMode = Player.REPEAT_MODE_OFF
+                shuffleModeEnabled = false
+            }
         }
     }

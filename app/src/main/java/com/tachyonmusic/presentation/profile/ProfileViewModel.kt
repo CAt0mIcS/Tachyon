@@ -51,6 +51,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             writeSettings(ignoreAudioFocus = ignore)
         }
+        // TODO: Audio in Android Auto won't play if audio focus is not requested
     }
 
     fun autoDownloadAlbumArtworkChanged(autoDownload: Boolean) {
@@ -80,6 +81,12 @@ class ProfileViewModel @Inject constructor(
     fun audioUpdateIntervalChanged(interval: Duration) {
         viewModelScope.launch(Dispatchers.IO) {
             writeSettings(audioUpdateInterval = interval)
+        }
+    }
+
+    fun playNewlyCreatedCustomizedSong(playNewly: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            writeSettings(playNewlyCreatedCustomizedSong = playNewly)
         }
     }
 

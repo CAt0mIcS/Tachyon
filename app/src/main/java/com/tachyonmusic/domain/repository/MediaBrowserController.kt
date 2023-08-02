@@ -19,9 +19,7 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     /**
      * Binds a lifecycle object to the [MediaBrowserController]
      */
-    fun registerLifecycle(lifecycle: Lifecycle) {
-        lifecycle.addObserver(this)
-    }
+    fun registerLifecycle(lifecycle: Lifecycle)
 
     val currentPlaylist: StateFlow<Playlist?>
     val currentPlayback: StateFlow<SinglePlayback?>
@@ -64,8 +62,12 @@ interface MediaBrowserController : DefaultLifecycleObserver,
      */
     fun seekTo(index: Int, pos: Duration? = null)
 
+    fun seekToNext()
+    fun seekToPrevious()
+
     interface EventListener {
         fun onConnected() {}
         fun onAudioSessionIdChanged(audioSessionId: Int) {}
+        fun onMediaItemTransition(playback: SinglePlayback?) {}
     }
 }

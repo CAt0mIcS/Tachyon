@@ -20,6 +20,7 @@ class WriteSettings(
         seekBackIncrement: Duration? = null,
         animateText: Boolean? = null,
         shouldMillisecondsBeShown: Boolean? = null,
+        playNewlyCreatedCustomizedSong: Boolean? = null,
         excludedSongFiles: List<Uri>? = null,
         musicDirectories: List<Uri>? = null
     ) = withContext(Dispatchers.IO) {
@@ -34,8 +35,9 @@ class WriteSettings(
             seekBackIncrement,
             animateText,
             shouldMillisecondsBeShown,
-            excludedSongFiles,
-            musicDirectories
+            playNewlyCreatedCustomizedSong,
+            excludedSongFiles = excludedSongFiles,
+            musicDirectories = musicDirectories
         )
     }
 }

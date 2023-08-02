@@ -3,16 +3,12 @@ package com.tachyonmusic.di
 import android.app.Application
 import android.content.Context
 import com.tachyonmusic.TachyonApplication
-import com.tachyonmusic.artwork.domain.ArtworkCodex
-import com.tachyonmusic.artwork.domain.ArtworkMapperRepository
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.data.repository.FileRepositoryImpl
-import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
-import com.tachyonmusic.playback_layers.data.PredefinedPlaylistsRepositoryImpl
+import com.tachyonmusic.data.repository.*
 import com.tachyonmusic.database.domain.repository.*
+import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
@@ -27,10 +23,7 @@ import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
-import com.tachyonmusic.permission.domain.UriPermissionRepository
-import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
-import com.tachyonmusic.playback_layers.domain.PlaybackRepository
-import com.tachyonmusic.sort.domain.SortedPlaybackRepository
+import com.tachyonmusic.playback_layers.domain.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,14 +50,12 @@ object AppUseCaseModule {
         fileRepository: FileRepository,
         metadataExtractor: SongMetadataExtractor,
         artworkCodex: ArtworkCodex,
-        artworkMapperRepository: ArtworkMapperRepository,
         logger: Logger
     ) = UpdateSongDatabase(
         songRepository,
         fileRepository,
         metadataExtractor,
         artworkCodex,
-        artworkMapperRepository,
         logger
     )
 
@@ -102,26 +93,26 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideObserveHistoryUseCase(playbackRepository: PlaybackRepository) =
-        ObserveHistory(playbackRepository)
+    fun provideLoadArtworkForPlaybackUseCase(
+        metadataExtractor: SongMetadataExtractor,
+        logger: Logger
+    ) = LoadArtworkForPlayback(metadataExtractor, logger)
 
     @Provides
     @Singleton
     fun provideSearchStoredPlaybacksUseCase(
-        songRepository: SongRepository,
-        customizedSongRepository: CustomizedSongRepository,
-        playlistRepository: PlaylistRepository
-    ) = SearchStoredPlaybacks(songRepository, customizedSongRepository, playlistRepository)
+        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
+        playbackRepository: PlaybackRepository
+    ) = SearchStoredPlaybacks(predefinedPlaylistsRepository, playbackRepository)
+
 
     @Provides
     @Singleton
     fun provideCreateNewCustomizedSongUseCase(
-        songRepository: SongRepository,
         customizedSongRepository: CustomizedSongRepository,
         browser: MediaBrowserController,
         audioEffectController: AudioEffectController
     ) = CreateAndSaveNewCustomizedSong(
-        songRepository,
         customizedSongRepository,
         browser,
         audioEffectController
@@ -175,19 +166,8 @@ object AppUseCaseModule {
     @Singleton
     fun provideAddSongToExcludedSongsUseCase(
         settingsRepository: SettingsRepository,
-        songRepository: SongRepository,
-        historyRepository: HistoryRepository,
-        customizedSongRepository: CustomizedSongRepository,
-        playbackRepository: PlaybackRepository,
-        playlistRepository: PlaylistRepository
-    ) = AddSongToExcludedSongs(
-        settingsRepository,
-        songRepository,
-        historyRepository,
-        customizedSongRepository,
-        playbackRepository,
-        playlistRepository
-    )
+        songRepository: SongRepository
+    ) = AddSongToExcludedSongs(settingsRepository, songRepository)
 
     @Provides
     @Singleton
@@ -229,15 +209,12 @@ object AppUseCaseModule {
     @Singleton
     fun provideGetRepositoryStatesUseCase(
         browser: MediaBrowserController,
-        sortedPlaybackRepository: SortedPlaybackRepository
-    ) = GetRepositoryStates(browser, sortedPlaybackRepository)
+        playbackRepository: PlaybackRepository
+    ) = GetRepositoryStates(browser, playbackRepository)
 
     @Provides
     @Singleton
-    fun provideSetRepeatModeUseCase(
-        browser: MediaBrowserController,
-        dataRepository: DataRepository
-    ) = SetRepeatMode(browser, dataRepository)
+    fun provideSetRepeatModeUseCase(browser: MediaBrowserController) = SetRepeatMode(browser)
 
     @Provides
     @Singleton
@@ -293,15 +270,6 @@ object AppRepositoryModule {
 
     @Provides
     @Singleton
-    fun providePredefinedPlaylistsRepository(
-        playbackRepository: PlaybackRepository,
-        settingsRepository: SettingsRepository,
-        app: Application
-    ): PredefinedPlaylistsRepository =
-        PredefinedPlaylistsRepositoryImpl(
-            playbackRepository,
-            settingsRepository,
-            (app as TachyonApplication).coroutineScope
-        )
-
+    fun provideApplicationCoroutineScope(app: Application) =
+        (app as TachyonApplication).coroutineScope
 }

@@ -54,6 +54,9 @@ interface SettingsDao {
     @Query("UPDATE SettingsEntity SET shouldMillisecondsBeShown=:value")
     suspend fun setShouldMillisecondsBeShown(value: Boolean)
 
+    @Query("UPDATE SettingsEntity SET playNewlyCreatedCustomizedSong=:value")
+    suspend fun setPlayNewlyCreatedCustomizedSong(value: Boolean)
+
     @Query("UPDATE SettingsEntity SET excludedSongFiles=:excludedFiles")
     suspend fun setExcludedSongFiles(excludedFiles: List<Uri>)
 
