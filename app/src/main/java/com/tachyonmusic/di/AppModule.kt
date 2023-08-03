@@ -14,6 +14,8 @@ import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.home.*
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
+import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
+import com.tachyonmusic.domain.use_case.library.QueryArtworkForPlayback
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
@@ -50,12 +52,14 @@ object AppUseCaseModule {
         fileRepository: FileRepository,
         metadataExtractor: SongMetadataExtractor,
         artworkCodex: ArtworkCodex,
+        assignArtworkToPlayback: AssignArtworkToPlayback,
         logger: Logger
     ) = UpdateSongDatabase(
         songRepository,
         fileRepository,
         metadataExtractor,
         artworkCodex,
+        assignArtworkToPlayback,
         logger
     )
 
@@ -88,8 +92,9 @@ object AppUseCaseModule {
     @Provides
     @Singleton
     fun provideUnloadArtworksUseCase(
-        songRepository: SongRepository
-    ) = UnloadArtworks(songRepository)
+        songRepository: SongRepository,
+        assignArtworkToPlayback: AssignArtworkToPlayback
+    ) = UnloadArtworks(songRepository, assignArtworkToPlayback)
 
     @Provides
     @Singleton
@@ -235,6 +240,15 @@ object AppUseCaseModule {
         settingsRepository: SettingsRepository
     ) = RegisterNewUriPermission(uriPermissionRepository, settingsRepository)
 
+    @Provides
+    @Singleton
+    fun provideQueryArtworkForPlayback(artworkLoader: ArtworkLoader) =
+        QueryArtworkForPlayback(artworkLoader)
+
+    @Provides
+    @Singleton
+    fun provideAssignArtworkToPlayback(songRepository: SongRepository) =
+        AssignArtworkToPlayback(songRepository)
 }
 
 

@@ -11,6 +11,8 @@ import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
 
 data class PlaybackUiEntity(
+    val title: String,
+    val artist: String,
     val displayTitle: String,
     val displaySubtitle: String,
     val duration: Duration,
@@ -24,6 +26,8 @@ fun Playback.toUiEntity() = when (this) {
     is Song -> PlaybackUiEntity(
         title,
         artist,
+        title,
+        artist,
         duration,
         mediaId,
         playbackType,
@@ -31,6 +35,8 @@ fun Playback.toUiEntity() = when (this) {
         isPlayable
     )
     is CustomizedSong -> PlaybackUiEntity(
+        title,
+        artist,
         name,
         if(isPlayable) "$title by $artist" else "Missing: ${mediaId.uri}",
         duration,
@@ -40,6 +46,8 @@ fun Playback.toUiEntity() = when (this) {
         isPlayable
     )
     is Playlist -> PlaybackUiEntity(
+        playbacks.first().title,
+        playbacks.first().artist,
         name,
         "${playbacks.size} Item(s)",
         0.ms,

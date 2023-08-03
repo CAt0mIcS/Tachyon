@@ -17,7 +17,7 @@ abstract class ArtworkSource {
         val GSON: Gson = GsonBuilder().create()
     }
 
-    fun search(title: String, artist: String, imageSize: Int): Resource<String> {
+    fun search(title: String, artist: String, imageSize: Int, pageSize: Int): Resource<String> {
         val url = getSearchUrl(title, artist)
         if (url is Resource.Error)
             return url
@@ -30,7 +30,7 @@ abstract class ArtworkSource {
             )
 
         return try {
-            executeSearch(url.data!!, imageSize)
+            executeSearch(url.data!!, imageSize, pageSize)
         } catch (e: FileNotFoundException) {
             requestFailed(e, url.data)
         } catch (e: UnknownHostException) {
@@ -47,7 +47,7 @@ abstract class ArtworkSource {
     }
 
     abstract fun getSearchUrl(title: String, artist: String): Resource<String>
-    abstract fun executeSearch(url: String, imageSize: Int): Resource<String>
+    abstract fun executeSearch(url: String, imageSize: Int, pageSize: Int): Resource<String>
 
     private fun requestFailed(e: Exception, url: String?) =
         Resource.Error<String>(

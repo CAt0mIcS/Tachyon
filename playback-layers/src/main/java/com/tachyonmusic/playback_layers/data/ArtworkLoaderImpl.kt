@@ -1,10 +1,12 @@
 package com.tachyonmusic.playback_layers.data
 
+import android.net.Uri
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.Artwork
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
@@ -13,6 +15,7 @@ import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.playback_layers.domain.ArtworkLoader
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import java.net.URI
@@ -112,11 +115,27 @@ internal class ArtworkLoaderImpl(
         }
     }
 
+    override fun findAllArtwork(
+        mediaId: MediaId,
+        title: String,
+        artist: String,
+        pageSize: Int
+    ) = channelFlow {
+        send(tryFindEmbeddedArtwork(mediaId.uri))
+
+        artworkFetcher.query(title, artist, 1000, pageSize).onEach { res ->
+            if (res is Resource.Success)
+                send(Resource.Success<Artwork>(RemoteArtwork(URI(res.data))))
+            else if (res is Resource.Error)
+                send(Resource.Error(res))
+        }.collect()
+    }
+
     private suspend fun tryFindArtwork(
         entity: SongEntity,
         fetchOnline: Boolean
-    ): Resource<Artwork?> {
-        var res = tryFindEmbeddedArtwork(entity)
+    ): Resource<Artwork> {
+        var res = tryFindEmbeddedArtwork(entity.mediaId.uri)
         if (!fetchOnline || res is Resource.Success) // TODO: Return error message from embedded artwork loading too
             return res
 
@@ -127,14 +146,15 @@ internal class ArtworkLoaderImpl(
 
     private suspend fun tryFindRemoteArtwork(
         entity: SongEntity,
-    ): Resource<Artwork?> {
-        var ret: Resource<Artwork?> =
+    ): Resource<Artwork> {
+        var ret: Resource<Artwork> =
             Resource.Error(UiText.StringResource(R.string.unknown_error))
 
         artworkFetcher.query(entity.title, entity.artist, 1000)
             .onEach { res ->
                 if (res is Resource.Success) {
                     ret = Resource.Success(RemoteArtwork(URI(res.data!!)))
+                    return@onEach
                 } else if (res is Resource.Error) {
                     ret = Resource.Error(
                         message = res.message ?: UiText.StringResource(R.string.unknown_error),
@@ -146,9 +166,9 @@ internal class ArtworkLoaderImpl(
         return ret
     }
 
-    private fun tryFindEmbeddedArtwork(entity: SongEntity): Resource<Artwork?> {
-        val uri = entity.mediaId.uri
-            ?: return Resource.Error(UiText.StringResource(R.string.invalid_uri, "null"))
+    private fun tryFindEmbeddedArtwork(uri: Uri?): Resource<Artwork> {
+        if (uri == null)
+            return Resource.Error(UiText.StringResource(R.string.invalid_uri, "null"))
 
         val bitmap = EmbeddedArtwork.load(uri, metadataExtractor) ?: return Resource.Error(
             UiText.StringResource(

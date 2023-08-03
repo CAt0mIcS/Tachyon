@@ -15,7 +15,7 @@ class ArtworkFetcher(
     )
 ) {
 
-    suspend fun query(title: String, artist: String, imageSize: Int) = flow {
+    suspend fun query(title: String, artist: String, imageSize: Int, pageSize: Int = 1) = flow {
         emit(Resource.Loading())
 
         if (imageSize <= 0) {
@@ -44,10 +44,8 @@ class ArtworkFetcher(
         }
 
         for (source in sources) {
-            val result = source.search(title, artist, imageSize)
+            val result = source.search(title, artist, imageSize, pageSize)
             emit(result)
-            if (result is Resource.Success)
-                break
         }
     }
 }

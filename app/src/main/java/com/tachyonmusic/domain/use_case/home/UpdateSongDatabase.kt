@@ -7,6 +7,7 @@ import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
+import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.util.removeFirst
@@ -22,6 +23,7 @@ class UpdateSongDatabase(
     private val fileRepository: FileRepository,
     private val metadataExtractor: SongMetadataExtractor,
     private val artworkCodex: ArtworkCodex,
+    private val assignArtworkToPlayback: AssignArtworkToPlayback,
     private val log: Logger
 ) {
     suspend operator fun invoke(settings: SettingsEntity) = withContext(Dispatchers.IO) {
@@ -101,7 +103,7 @@ class UpdateSongDatabase(
                 artworkCodex.awaitOrLoad(entity).onEach {
                     val entityToUpdate = it.data?.entityToUpdate
                     if (entityToUpdate != null) {
-                        songRepo.updateArtwork(
+                        assignArtworkToPlayback(
                             entityToUpdate.mediaId,
                             entityToUpdate.artworkType,
                             entityToUpdate.artworkUrl

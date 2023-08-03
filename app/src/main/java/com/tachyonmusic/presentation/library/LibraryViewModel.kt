@@ -3,6 +3,7 @@ package com.tachyonmusic.presentation.library
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -11,13 +12,26 @@ import com.tachyonmusic.domain.use_case.GetRepositoryStates
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
+import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
+import com.tachyonmusic.domain.use_case.library.QueryArtworkForPlayback
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.core_components.model.toUiEntity
+import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.copy
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
@@ -34,7 +48,9 @@ class LibraryViewModel @Inject constructor(
     private val browser: MediaBrowserController,
     private val deletePlayback: DeletePlayback,
 
-    private val loadArtworkForPlayback: LoadArtworkForPlayback
+    private val loadArtworkForPlayback: LoadArtworkForPlayback,
+    private val queryArtworkForPlayback: QueryArtworkForPlayback,
+    private val assignArtworkToPlayback: AssignArtworkToPlayback
 ) : ViewModel() {
 
     val sortParams = getRepositoryStates.sortPrefs()
@@ -58,6 +74,12 @@ class LibraryViewModel @Inject constructor(
     private var _filterType = MutableStateFlow<PlaybackType>(PlaybackType.Song.Local())
     val filterType = _filterType.asStateFlow()
 
+    private var _queriedArtwork = MutableStateFlow(emptyList<Artwork>())
+    val queriedArtwork = _queriedArtwork.asStateFlow()
+
+    private var _artworkLoadingError = MutableStateFlow<UiText?>(null)
+    val artworkLoadingError = _artworkLoadingError.asStateFlow()
+
     private val artworkLoadingRange = MutableStateFlow(0..10)
 
     val items =
@@ -73,6 +95,7 @@ class LibraryViewModel @Inject constructor(
                 is PlaybackType.Song -> loadArtworkForPlayback(songs, itemsToLoad, quality).map {
                     it.toUiEntity()
                 }
+
                 is PlaybackType.CustomizedSong -> loadArtworkForPlayback(
                     customizedSongs,
                     itemsToLoad,
@@ -80,6 +103,7 @@ class LibraryViewModel @Inject constructor(
                 ).map {
                     it.toUiEntity()
                 }
+
                 is PlaybackType.Playlist -> loadArtworkForPlayback(
                     playlists,
                     itemsToLoad,
@@ -139,6 +163,25 @@ class LibraryViewModel @Inject constructor(
 
     fun loadArtwork(range: IntRange) {
         artworkLoadingRange.update { range }
+    }
+
+    /**
+     * Starts loading all artwork we can find for [playback] into [queriedArtwork]
+     */
+    fun queryArtwork(playback: PlaybackUiEntity) {
+        _queriedArtwork.update { emptyList() }
+        queryArtworkForPlayback(playback.mediaId, playback.title, playback.artist).onEach { res ->
+            if (res is Resource.Success)
+                _queriedArtwork.update { (it + res.data!!).copy() }
+            else if (res is Resource.Error)
+                _artworkLoadingError.update { res.message!! }
+        }.launchIn(viewModelScope + Dispatchers.IO)
+    }
+
+    fun assignArtworkToPlayback(artwork: Artwork, playback: PlaybackUiEntity) {
+        viewModelScope.launch {
+            assignArtworkToPlayback(playback.mediaId, artwork)
+        }
     }
 
     private fun PlaybackUiEntity.toPlayback() = when (playbackType) {

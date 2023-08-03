@@ -148,7 +148,7 @@ private fun MarqueeTextInternal(
         val placeable = subcompose(0) {
             createText(Modifier)
         }.first().measure(infiniteWidthConstraints)
-        gradientHeight = if (placeable.width > constraints.maxWidth) {
+        gradientHeight = if (placeable.width >= constraints.maxWidth) {
             // requires gradient
             placeable.height.toDp()
         } else null

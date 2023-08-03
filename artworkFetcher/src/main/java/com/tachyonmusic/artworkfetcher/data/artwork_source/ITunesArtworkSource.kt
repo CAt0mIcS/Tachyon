@@ -28,7 +28,7 @@ class ITunesArtworkSource(
         return urlEncoder.encode(SEARCH_URL, urlParams)
     }
 
-    override fun executeSearch(url: String, imageSize: Int): Resource<String> {
+    override fun executeSearch(url: String, imageSize: Int, pageSize: Int): Resource<String> {
         // TODO: Maybe replace [URL.readText] with something better?
         val response = URL(url).readText()
         val obj = GSON.fromJson(response, JsonObject::class.java)

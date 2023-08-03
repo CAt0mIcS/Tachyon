@@ -6,15 +6,20 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
@@ -51,7 +56,7 @@ object LibraryScreen :
 
 
         val listState = rememberLazyListState()
-        LaunchedEffect(listState.firstVisibleItemIndex) {
+        LaunchedEffect(remember { derivedStateOf { listState.firstVisibleItemIndex } }) {// TODO: derived state or not
             /**
              * If [listState.firstVisibleItemIndex] changes the coroutine will get cancelled and
              * relaunched. If it changes too fast we don't want to always load artwork, waiting for
@@ -165,6 +170,8 @@ object LibraryScreen :
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
 
                 val updatedPlayback by rememberUpdatedState(playback)
+                var showArtworkSelectionDialog by remember { mutableStateOf(false) }
+                var showDropDownMenu by remember { mutableStateOf(false)}
 
                 SwipeDelete(
                     shape = Theme.shapes.medium,
@@ -179,6 +186,19 @@ object LibraryScreen :
                         playback,
                         playback.artwork ?: PlaceholderArtwork,
                         modifier = Modifier.isEnabled(playback.isPlayable),
+                        showDropDownMenu,
+                        onOptionsMenuClicked = {
+                            showDropDownMenu = !showDropDownMenu
+                        },
+                        dropDownMenuContent = {
+                            Button(onClick = {
+                                viewModel.queryArtwork(playback)
+                                showArtworkSelectionDialog = true
+                                showDropDownMenu = false
+                            }) {
+                                Text("Select Artwork")
+                            }
+                        },
                         onClick = {
                             if (playback.isPlayable) {
                                 viewModel.onItemClicked(playback)
@@ -188,6 +208,48 @@ object LibraryScreen :
                                 onSheetStateFraction(1f)
                             }
                         })
+                }
+
+                if (showArtworkSelectionDialog) {
+                    Dialog(
+                        onDismissRequest = { showArtworkSelectionDialog = false }
+                    ) {
+                        val artworks by viewModel.queriedArtwork.collectAsState()
+                        val error by viewModel.artworkLoadingError.collectAsState()
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(Theme.shapes.extraLarge)
+                        ) {
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                Text(
+                                    "Select artwork to assign to playback",
+                                    modifier = Modifier.padding(Theme.padding.medium)
+                                )
+
+                                if (error != null) {
+                                    Text(
+                                        error?.asString() ?: "Unknown error occurred",
+                                        modifier = Modifier.padding(Theme.padding.medium)
+                                    )
+                                }
+
+                                LazyVerticalGrid(
+                                    modifier = Modifier.padding(Theme.padding.medium),
+                                    columns = GridCells.Adaptive(100.dp),
+                                    contentPadding = PaddingValues(Theme.padding.small)
+                                ) {
+                                    items(artworks) { artwork ->
+                                        artwork(null, Modifier.size(100.dp).clickable {
+                                            showArtworkSelectionDialog = false
+                                            viewModel.assignArtworkToPlayback(artwork, playback)
+                                        })
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
