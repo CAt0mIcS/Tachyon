@@ -35,6 +35,7 @@ import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.sec
 import kotlinx.coroutines.launch
 
 object LibraryScreen :
@@ -234,10 +235,20 @@ object LibraryScreen :
                                 .clip(Theme.shapes.extraLarge)
                         ) {
                             Column(modifier = Modifier.fillMaxSize()) {
+                                var searchQuery by remember { mutableStateOf("${playback.artist} ${playback.title}") }
+
+                                LaunchedEffect(searchQuery) {
+                                    delay(1.sec)
+                                    viewModel.queryArtwork(playback, searchQuery)
+                                }
+
                                 Text(
                                     "Select artwork to assign to playback",
                                     modifier = Modifier.padding(Theme.padding.medium)
                                 )
+
+                                Text("Search Query")
+                                TextField(value = searchQuery, onValueChange = { searchQuery = it })
 
                                 if (error != null) {
                                     Text(
@@ -299,6 +310,7 @@ object LibraryScreen :
 
                                 Button(
                                     onClick = {
+                                        showMetadataDialog = false
                                         viewModel.updateMetadata(playback, title, artist, name)
                                     }
                                 ) {

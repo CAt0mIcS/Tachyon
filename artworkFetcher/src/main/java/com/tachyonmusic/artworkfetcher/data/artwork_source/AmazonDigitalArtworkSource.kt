@@ -19,9 +19,9 @@ class AmazonDigitalArtworkSource(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:107.0) Gecko/20100101 Firefox/107.0"
     }
 
-    override fun getSearchUrl(title: String, artist: String): Resource<String> {
+    override fun getSearchUrl(query: String): Resource<String> {
         val urlParams = mapOf(
-            "k" to "$artist $title",
+            "k" to query,
             "i" to "digital-music",
             "s" to "relevancerank"
         )

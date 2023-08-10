@@ -17,17 +17,12 @@ abstract class ArtworkSource {
         val GSON: Gson = GsonBuilder().create()
     }
 
-    fun search(title: String, artist: String, imageSize: Int, pageSize: Int): Resource<String> {
-        val url = getSearchUrl(title, artist)
+    fun search(query: String, imageSize: Int, pageSize: Int): Resource<String> {
+        val url = getSearchUrl(query)
         if (url is Resource.Error)
             return url
         if (url.data == null)
-            return Resource.Error(
-                UiText.StringResource(
-                    R.string.unknown_encoder_error,
-                    "$title, $artist"
-                )
-            )
+            return Resource.Error(UiText.StringResource(R.string.unknown_encoder_error, query))
 
         return try {
             executeSearch(url.data!!, imageSize, pageSize)
@@ -46,7 +41,7 @@ abstract class ArtworkSource {
         }
     }
 
-    abstract fun getSearchUrl(title: String, artist: String): Resource<String>
+    abstract fun getSearchUrl(query: String): Resource<String>
     abstract fun executeSearch(url: String, imageSize: Int, pageSize: Int): Resource<String>
 
     private fun requestFailed(e: Exception, url: String?) =

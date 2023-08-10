@@ -117,13 +117,12 @@ internal class ArtworkLoaderImpl(
 
     override fun findAllArtwork(
         mediaId: MediaId,
-        title: String,
-        artist: String,
+        query: String,
         pageSize: Int
     ) = channelFlow {
         send(tryFindEmbeddedArtwork(mediaId.uri))
 
-        artworkFetcher.query(title, artist, 1000, pageSize).onEach { res ->
+        artworkFetcher.query(query, 1000, pageSize).onEach { res ->
             if (res is Resource.Success)
                 send(Resource.Success<Artwork>(RemoteArtwork(URI(res.data))))
             else if (res is Resource.Error)
@@ -150,7 +149,7 @@ internal class ArtworkLoaderImpl(
         var ret: Resource<Artwork> =
             Resource.Error(UiText.StringResource(R.string.unknown_error))
 
-        artworkFetcher.query(entity.title, entity.artist, 1000)
+        artworkFetcher.query("${entity.artist} ${entity.title}", 1000)
             .onEach { res ->
                 if (res is Resource.Success) {
                     ret = Resource.Success(RemoteArtwork(URI(res.data!!)))

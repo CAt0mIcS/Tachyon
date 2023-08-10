@@ -19,11 +19,11 @@ class ITunesArtworkSource(
         const val DEFAULT_RESOLUTION_URL = "${DEFAULT_RESOLUTION}x$DEFAULT_RESOLUTION"
     }
 
-    override fun getSearchUrl(title: String, artist: String): Resource<String> {
+    override fun getSearchUrl(query: String): Resource<String> {
         val urlParams = mapOf(
             "media" to "music",
             "entity" to "album",
-            "term" to "$artist $title"
+            "term" to query
         )
         return urlEncoder.encode(SEARCH_URL, urlParams)
     }

@@ -15,7 +15,7 @@ class ArtworkFetcher(
     )
 ) {
 
-    suspend fun query(title: String, artist: String, imageSize: Int, pageSize: Int = 1) = flow {
+    suspend fun query(query: String, imageSize: Int, pageSize: Int = 1) = flow {
         emit(Resource.Loading())
 
         if (imageSize <= 0) {
@@ -30,21 +30,13 @@ class ArtworkFetcher(
             return@flow
         }
 
-        if (title.isBlank() || artist.isBlank()) {
-            emit(
-                Resource.Error(
-                    UiText.StringResource(
-                        R.string.invalid_media_metadata,
-                        title,
-                        artist
-                    )
-                )
-            )
+        if (query.isBlank()) {
+            emit(Resource.Error(UiText.StringResource(R.string.invalid_media_metadata, query)))
             return@flow
         }
 
         for (source in sources) {
-            val result = source.search(title, artist, imageSize, pageSize)
+            val result = source.search(query, imageSize, pageSize)
             emit(result)
         }
     }

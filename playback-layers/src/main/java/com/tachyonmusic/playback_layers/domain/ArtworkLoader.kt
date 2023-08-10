@@ -14,8 +14,7 @@ interface ArtworkLoader {
 
     fun findAllArtwork(
         mediaId: MediaId,
-        title: String,
-        artist: String,
+        query: String,
         pageSize: Int
     ): Flow<Resource<Artwork>>
 }

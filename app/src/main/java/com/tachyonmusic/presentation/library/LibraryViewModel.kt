@@ -171,9 +171,9 @@ class LibraryViewModel @Inject constructor(
     /**
      * Starts loading all artwork we can find for [playback] into [queriedArtwork]
      */
-    fun queryArtwork(playback: PlaybackUiEntity) {
+    fun queryArtwork(playback: PlaybackUiEntity, searchQuery: String? = null) {
         _queriedArtwork.update { emptyList() }
-        queryArtworkForPlayback(playback.mediaId, playback.title, playback.artist).onEach { res ->
+        queryArtworkForPlayback(playback, searchQuery).onEach { res ->
             if (res is Resource.Success)
                 _queriedArtwork.update { (it + res.data!!).copy() }
             else if (res is Resource.Error)
