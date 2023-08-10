@@ -34,4 +34,7 @@ interface PlaylistDao {
 
     @Query("DELETE FROM PlaylistEntity WHERE mediaId=:mediaId")
     suspend fun delete(mediaId: MediaId)
+
+    @Query("UPDATE PlaylistEntity SET name=:name, mediaId=:newMediaId WHERE mediaId=:mediaId")
+    suspend fun updateMetadata(mediaId: MediaId, name: String, newMediaId: MediaId)
 }

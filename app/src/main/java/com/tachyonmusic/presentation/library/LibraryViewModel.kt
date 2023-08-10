@@ -14,6 +14,7 @@ import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.domain.use_case.library.QueryArtworkForPlayback
+import com.tachyonmusic.domain.use_case.library.UpdatePlaybackMetadata
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
@@ -50,7 +51,9 @@ class LibraryViewModel @Inject constructor(
 
     private val loadArtworkForPlayback: LoadArtworkForPlayback,
     private val queryArtworkForPlayback: QueryArtworkForPlayback,
-    private val assignArtworkToPlayback: AssignArtworkToPlayback
+    private val assignArtworkToPlayback: AssignArtworkToPlayback,
+
+    private val updatePlaybackMetadata: UpdatePlaybackMetadata
 ) : ViewModel() {
 
     val sortParams = getRepositoryStates.sortPrefs()
@@ -181,6 +184,12 @@ class LibraryViewModel @Inject constructor(
     fun assignArtworkToPlayback(artwork: Artwork, playback: PlaybackUiEntity) {
         viewModelScope.launch {
             assignArtworkToPlayback(playback.mediaId, artwork)
+        }
+    }
+
+    fun updateMetadata(playback: PlaybackUiEntity, title: String?, artist: String?, name: String?) {
+        viewModelScope.launch {
+            updatePlaybackMetadata(playback.mediaId, title, artist, name)
         }
     }
 

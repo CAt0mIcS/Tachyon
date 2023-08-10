@@ -58,29 +58,12 @@ data class MediaId(
     val isLocalPlaylist: Boolean
         get() = source.contains(PlaybackType.Playlist.Local().toString())
 
-    val isSpotifySong: Boolean
-        get() = source.startsWith("spotify:track:")
-
-    val isSpotifyEpisode: Boolean
-        get() = source.startsWith("spotify:episode:")
-
-    val isSpotifyPlaylist: Boolean
-        get() = source.startsWith("spotify:playlist:")
-
-    val isSpotifyAd: Boolean
-        get() = source.startsWith("spotify:ad:")
-
-    val isSpotify: Boolean
-        get() = source.startsWith("spotify:")
-
     val uri: Uri?
         get() {
             if (isLocalSong)
                 return Uri.parse(
                     source.replaceFirst(PlaybackType.Song.Local().toString(), "")
                 )
-            else if (isSpotify)
-                return Uri.parse(source)
             return underlyingMediaId?.uri
         }
 

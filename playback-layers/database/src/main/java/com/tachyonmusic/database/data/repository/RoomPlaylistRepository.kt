@@ -56,4 +56,8 @@ class RoomPlaylistRepository(
 
     override suspend fun findByMediaId(mediaId: MediaId): PlaylistEntity? =
         dao.getPlaylistWithMediaId(mediaId)
+
+    override suspend fun updateMetadata(song: MediaId, name: String, newMediaId: MediaId) {
+        dao.updateMetadata(song, name, newMediaId)
+    }
 }

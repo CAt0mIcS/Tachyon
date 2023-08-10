@@ -1,12 +1,13 @@
 package com.tachyonmusic.core.data.constants
 
-import com.tachyonmusic.core.data.playback.*
+import com.tachyonmusic.core.data.playback.LocalCustomizedSong
+import com.tachyonmusic.core.data.playback.LocalPlaylist
+import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.domain.playback.Playback
 
 sealed class PlaybackType(val value: Int) {
     sealed class Song(value: Int) : PlaybackType(value) {
         class Local : Song(0)
-        class Spotify : Song(4)
     }
 
     sealed class CustomizedSong(value: Int) : PlaybackType(value) {
@@ -15,7 +16,6 @@ sealed class PlaybackType(val value: Int) {
 
     sealed class Playlist(value: Int) : PlaybackType(value) {
         class Local : Playlist(2)
-        class Spotify : Playlist(3)
     }
 
     companion object {
@@ -24,8 +24,6 @@ sealed class PlaybackType(val value: Int) {
                 "*0*" -> Song.Local()
                 "*1*" -> CustomizedSong.Local()
                 "*2*" -> Playlist.Local()
-                "*3*" -> Playlist.Spotify()
-                "*4*" -> Song.Spotify()
                 else -> TODO("Unsupported value $value for playback type")
             }
         }
@@ -35,8 +33,6 @@ sealed class PlaybackType(val value: Int) {
                 is LocalSong? -> Song.Local()
                 is LocalCustomizedSong? -> CustomizedSong.Local()
                 is LocalPlaylist? -> Playlist.Local()
-                is SpotifyPlaylist? -> Playlist.Spotify()
-                is SpotifySong? -> Song.Spotify()
                 else -> TODO("Unknown playback type ${playback?.javaClass?.name}")
             }
         }

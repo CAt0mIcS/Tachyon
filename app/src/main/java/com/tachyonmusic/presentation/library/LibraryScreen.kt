@@ -51,7 +51,7 @@ object LibraryScreen :
 
         val scope = rememberCoroutineScope()
 
-        val playbackType by viewModel.filterType.collectAsState()
+        val filterPlaybackType by viewModel.filterType.collectAsState()
         val playbackItems by viewModel.items.collectAsState()
 
 
@@ -96,20 +96,20 @@ object LibraryScreen :
                             bottom = Theme.padding.extraSmall
                         ), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    FilterItem(R.string.songs, playbackType is PlaybackType.Song) {
+                    FilterItem(R.string.songs, filterPlaybackType is PlaybackType.Song) {
                         viewModel.onFilterSongs()
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
                     FilterItem(
                         R.string.customized_songs,
-                        playbackType is PlaybackType.CustomizedSong
+                        filterPlaybackType is PlaybackType.CustomizedSong
                     ) {
                         viewModel.onFilterCustomizedSongs()
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
-                    FilterItem(R.string.playlists, playbackType is PlaybackType.Playlist) {
+                    FilterItem(R.string.playlists, filterPlaybackType is PlaybackType.Playlist) {
                         viewModel.onFilterPlaylists()
                     }
                 }
@@ -171,7 +171,8 @@ object LibraryScreen :
 
                 val updatedPlayback by rememberUpdatedState(playback)
                 var showArtworkSelectionDialog by remember { mutableStateOf(false) }
-                var showDropDownMenu by remember { mutableStateOf(false)}
+                var showMetadataDialog by remember { mutableStateOf(false) }
+                var showDropDownMenu by remember { mutableStateOf(false) }
 
                 SwipeDelete(
                     shape = Theme.shapes.medium,
@@ -191,11 +192,21 @@ object LibraryScreen :
                             showDropDownMenu = !showDropDownMenu
                         },
                         dropDownMenuContent = {
-                            Button(onClick = {
-                                viewModel.queryArtwork(playback)
-                                showArtworkSelectionDialog = true
-                                showDropDownMenu = false
-                            }) {
+                            Button(
+                                onClick = {
+                                    showMetadataDialog = true
+                                    showDropDownMenu = false
+                                }
+                            ) {
+                                Text("Set Metadata")
+                            }
+                            Button(
+                                onClick = {
+                                    viewModel.queryArtwork(playback)
+                                    showArtworkSelectionDialog = true
+                                    showDropDownMenu = false
+                                }
+                            ) {
                                 Text("Select Artwork")
                             }
                         },
@@ -241,11 +252,57 @@ object LibraryScreen :
                                     contentPadding = PaddingValues(Theme.padding.small)
                                 ) {
                                     items(artworks) { artwork ->
-                                        artwork(null, Modifier.size(100.dp).clickable {
-                                            showArtworkSelectionDialog = false
-                                            viewModel.assignArtworkToPlayback(artwork, playback)
-                                        })
+                                        artwork(null,
+                                            Modifier
+                                                .size(100.dp)
+                                                .clickable {
+                                                    showArtworkSelectionDialog = false
+                                                    viewModel.assignArtworkToPlayback(
+                                                        artwork,
+                                                        playback
+                                                    )
+                                                })
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (showMetadataDialog) {
+                    Dialog(
+                        onDismissRequest = { showMetadataDialog = false }
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(Theme.shapes.extraLarge)
+                        ) {
+                            Column(modifier = Modifier.fillMaxSize()) {
+                                var title by remember { mutableStateOf(playback.title) }
+                                var artist by remember { mutableStateOf(playback.artist) }
+                                var name by remember { mutableStateOf(playback.displayTitle) }
+
+                                val playbackType = playback.mediaId.playbackType
+
+                                if (playbackType !is PlaybackType.Playlist) {
+                                    Text("Title")
+                                    TextField(value = title, onValueChange = { title = it })
+
+                                    Text("Artist")
+                                    TextField(value = artist, onValueChange = { artist = it })
+                                }
+                                if (playbackType is PlaybackType.CustomizedSong || playbackType is PlaybackType.Playlist) {
+                                    Text("Name")
+                                    TextField(value = name, onValueChange = { name = it })
+                                }
+
+                                Button(
+                                    onClick = {
+                                        viewModel.updateMetadata(playback, title, artist, name)
+                                    }
+                                ) {
+                                    Text("Confirm")
                                 }
                             }
                         }

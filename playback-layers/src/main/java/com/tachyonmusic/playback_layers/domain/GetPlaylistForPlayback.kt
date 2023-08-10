@@ -24,7 +24,7 @@ class GetPlaylistForPlayback(
         if (mediaId == null)
             return@withContext null
 
-        if (mediaId.isLocalSong || mediaId.isSpotifySong)
+        if (mediaId.isLocalSong)
             getSongPlaylist(mediaId)
         else if (mediaId.isLocalCustomizedSong)
             getCustomizedSongPlaylist(mediaId)

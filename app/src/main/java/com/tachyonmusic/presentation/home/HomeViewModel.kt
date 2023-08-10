@@ -2,9 +2,7 @@ package com.tachyonmusic.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.util.toEntity
 import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.PlayPlayback
@@ -20,8 +18,6 @@ import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.core_components.model.toUiEntity
-import com.tachyonmusic.util.delay
-import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -114,16 +110,6 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val playback = _history.value.find { it.mediaId == entity.mediaId }
                 ?: return@launch
-
-            if (playback.mediaId.isSpotifySong &&
-                !predefinedPlaylistsRepository.songPlaylist.value.contains(playback)
-            ) {
-                val prevSize = predefinedPlaylistsRepository.songPlaylist.value.size
-                songRepository.addAll(listOf((playback as Song).toEntity()))
-
-                while (predefinedPlaylistsRepository.songPlaylist.value.size == prevSize)
-                    delay(10.ms)
-            }
 
             playPlayback(playback, playbackLocation = PlaybackLocation.PREDEFINED_PLAYLIST)
         }

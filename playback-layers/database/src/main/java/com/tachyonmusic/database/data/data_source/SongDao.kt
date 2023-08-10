@@ -50,4 +50,7 @@ interface SongDao {
 
     @Query("UPDATE SongEntity SET isHidden=:isHidden WHERE mediaId=:mediaId")
     suspend fun updateIsHidden(mediaId: MediaId, isHidden: Boolean)
+
+    @Query("UPDATE SongEntity SET title=:title, artist=:artist WHERE mediaId=:mediaId")
+    suspend fun updateMetadata(mediaId: MediaId, title: String, artist: String)
 }

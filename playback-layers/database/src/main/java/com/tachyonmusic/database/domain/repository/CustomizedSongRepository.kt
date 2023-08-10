@@ -18,4 +18,6 @@ interface CustomizedSongRepository {
 
     suspend fun findBySong(songTitle: String, songArtist: String, songDuration: Duration): CustomizedSongEntity?
     suspend fun findByMediaId(mediaId: MediaId): CustomizedSongEntity?
+
+    suspend fun updateMetadata(song: MediaId, newMediaId: MediaId)
 }

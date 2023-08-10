@@ -23,4 +23,6 @@ interface PlaylistRepository {
     )
 
     suspend fun findByMediaId(mediaId: MediaId): PlaylistEntity?
+
+    suspend fun updateMetadata(song: MediaId, name: String, newMediaId: MediaId)
 }

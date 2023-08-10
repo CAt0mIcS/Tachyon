@@ -54,4 +54,8 @@ class RoomCustomizedSongRepository(
     ): CustomizedSongEntity? = dao.findBySong(songTitle, songArtist, songDuration)
 
     override suspend fun findByMediaId(mediaId: MediaId): CustomizedSongEntity? = dao.findByMediaId(mediaId)
+
+    override suspend fun updateMetadata(song: MediaId, newMediaId: MediaId) {
+        dao.updateMetadata(song, newMediaId)
+    }
 }

@@ -16,6 +16,7 @@ import com.tachyonmusic.domain.use_case.home.*
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.domain.use_case.library.QueryArtworkForPlayback
+import com.tachyonmusic.domain.use_case.library.UpdatePlaybackMetadata
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
@@ -62,6 +63,14 @@ object AppUseCaseModule {
         assignArtworkToPlayback,
         logger
     )
+
+    @Provides
+    @Singleton
+    fun provideUpdatePlaybackMetadataUseCase(
+        songRepository: SongRepository,
+        customizedSongRepository: CustomizedSongRepository,
+        playlistRepository: PlaylistRepository
+    ) = UpdatePlaybackMetadata(songRepository, customizedSongRepository, playlistRepository)
 
     @Provides
     @Singleton

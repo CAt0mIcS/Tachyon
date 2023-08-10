@@ -39,4 +39,7 @@ interface CustomizedSongDao {
 
     @Query("DELETE FROM CustomizedSongEntity WHERE mediaId=:mediaId")
     suspend fun delete(mediaId: MediaId)
+
+    @Query("UPDATE CustomizedSongEntity SET mediaId=:newMediaId WHERE mediaId=:mediaId")
+    suspend fun updateMetadata(mediaId: MediaId, newMediaId: MediaId)
 }

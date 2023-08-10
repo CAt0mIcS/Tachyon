@@ -439,12 +439,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     
 
     override fun onPlayerError(error: PlaybackException) {
-        // Local player will also try to transition to [SpotifySong], ignoring exception as it's
-        // handled in the [MediaBrowserControllerSwitcher] (Local player paused, Spotify player started)
-        if (error.errorCode == PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED &&
-            MediaId.deserializeIfValid(currentPlayer.currentMediaItem?.mediaId)?.isSpotify == true
-        ) return
-
         var message = R.string.generic_error
         log.error("Player error: ${error.errorCodeName} (${error.errorCode}): ${error.message}")
         if (error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS

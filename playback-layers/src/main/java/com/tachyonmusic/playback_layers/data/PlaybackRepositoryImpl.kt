@@ -5,8 +5,6 @@ import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.playback.LocalPlaylist
-import com.tachyonmusic.core.data.playback.SpotifyPlaylist
-import com.tachyonmusic.core.data.playback.SpotifySong
 import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.model.CustomizedSongEntity
@@ -17,8 +15,12 @@ import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.playback_layers.*
+import com.tachyonmusic.playback_layers.SortingPreferences
+import com.tachyonmusic.playback_layers.checkIfPlayable
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.sortedBy
+import com.tachyonmusic.playback_layers.toCustomizedSong
+import com.tachyonmusic.playback_layers.toLocalSong
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
@@ -104,8 +106,7 @@ class PlaybackRepositoryImpl(
                     },
                     entity.checkIfPlayable(context)
                 )
-            } else if (entity.mediaId.isSpotifySong)
-                entity.toSpotifySong()
+            }
             else
                 TODO("Invalid media id ${entity.mediaId}")
         }.sortedBy(sorting)
@@ -127,7 +128,7 @@ class PlaybackRepositoryImpl(
     ) = entities.map { entity ->
         // TODO: Somehow display deleted songs and customized songs
         val items = entity.items.mapNotNull { playlistItem ->
-            if (playlistItem.isLocalSong || playlistItem.isSpotify) {
+            if (playlistItem.isLocalSong) {
                 songs.find { playlistItem == it.mediaId }
             } else if (playlistItem.isLocalCustomizedSong) {
                 customizedSongs.find { playlistItem == it.mediaId }
@@ -136,14 +137,7 @@ class PlaybackRepositoryImpl(
             }
         }
 
-        if (entity.mediaId.isSpotifyPlaylist) {
-            SpotifyPlaylist(
-                entity.name,
-                entity.mediaId,
-                items.map { it as SpotifySong }.toMutableList(),
-                entity.currentItemIndex
-            )
-        } else if (entity.mediaId.isLocalPlaylist)
+        if (entity.mediaId.isLocalPlaylist)
             LocalPlaylist.build(entity.mediaId, items.toMutableList(), entity.currentItemIndex)
         else
             TODO("Invalid playlist conversion media id ${entity.mediaId}")
