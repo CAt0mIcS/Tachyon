@@ -436,27 +436,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             }
         }
     }
-
-    override fun onPositionDiscontinuity(
-        oldPosition: Player.PositionInfo,
-        newPosition: Player.PositionInfo,
-        reason: Int
-    ) {
-        if (reason == Player.DISCONTINUITY_REASON_SEEK || reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT) {
-            ioScope.launch {
-                val data = dataRepository.getData()
-                dataRepository.update(
-                    recentlyPlayed = RecentlyPlayed(
-                        mediaId = data.recentlyPlayedMediaId ?: return@launch,
-                        position = newPosition.contentPositionMs.ms,
-                        duration = data.recentlyPlayedDuration,
-                        artworkType = data.recentlyPlayedArtworkType,
-                        artworkUrl = data.recentlyPlayedArtworkUrl
-                    )
-                )
-            }
-        }
-    }
+    
 
     override fun onPlayerError(error: PlaybackException) {
         // Local player will also try to transition to [SpotifySong], ignoring exception as it's
