@@ -36,8 +36,19 @@ class ArtworkFetcher(
         }
 
         for (source in sources) {
-            val result = source.search(query, imageSize, pageSize)
-            emit(result)
+            try {
+                val result = source.search(query, imageSize, pageSize)
+                emit(result)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emit(
+                    Resource.Error(
+                        UiText.build(
+                            e.localizedMessage ?: R.string.unknown_encoder_error
+                        )
+                    )
+                ) // TODO: No arg for unknown_encoder_error provided
+            }
         }
     }
 }
