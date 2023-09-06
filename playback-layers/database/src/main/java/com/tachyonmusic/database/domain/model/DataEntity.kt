@@ -8,7 +8,9 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
 
-@Entity
+const val DATA_DATABASE_TABLE_NAME = "Data"
+
+@Entity(tableName = DATA_DATABASE_TABLE_NAME)
 data class DataEntity(
     var recentlyPlayedMediaId: MediaId? = null,
     var currentPositionInRecentlyPlayedPlayback: Duration = 0.ms,

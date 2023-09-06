@@ -5,6 +5,7 @@ import android.content.Context
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.*
+import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.repository.FileRepository
@@ -18,14 +19,16 @@ import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.domain.use_case.library.QueryArtworkForPlayback
 import com.tachyonmusic.domain.use_case.library.UpdatePlaybackMetadata
 import com.tachyonmusic.domain.use_case.player.*
+import com.tachyonmusic.domain.use_case.profile.ExportDatabase
+import com.tachyonmusic.domain.use_case.profile.ImportDatabase
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
-import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
+import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.*
 import dagger.Module
 import dagger.Provides
@@ -88,6 +91,16 @@ object AppUseCaseModule {
     @Singleton
     fun provideWriteSettingsUseCase(settingsRepository: SettingsRepository) =
         WriteSettings(settingsRepository)
+
+    @Provides
+    @Singleton
+    fun provideExportDatabaseUseCase(database: Database, @ApplicationContext context: Context) =
+        ExportDatabase(database, context)
+
+    @Provides
+    @Singleton
+    fun provideImportDatabaseUseCase(database: Database, @ApplicationContext context: Context) =
+        ImportDatabase(database, context)
 
     @Provides
     @Singleton

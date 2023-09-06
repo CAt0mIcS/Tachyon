@@ -24,8 +24,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
+import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.UriPermissionDialog
+import com.tachyonmusic.presentation.profile.component.CreateFileDialog
+import com.tachyonmusic.presentation.profile.component.OpenDocumentDialog
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.sec
@@ -38,9 +41,26 @@ object ProfileScreen :
         viewModel: ProfileViewModel = hiltViewModel()
     ) {
         var showUriPermissionDialog by remember { mutableStateOf(false) }
+        var showCreateFileDialog by remember { mutableStateOf(false) }
+        var showSelectFileDialog by remember { mutableStateOf(false) }
+
         UriPermissionDialog(showUriPermissionDialog) {
             viewModel.onUriPermissionResult(it)
             showUriPermissionDialog = false
+        }
+
+        CreateFileDialog(
+            showCreateFileDialog,
+            Database.ZIP_MIME_TYPE,
+            Database.BACKUP_FILE_NAME
+        ) {
+            viewModel.onExportDatabase(it)
+            showCreateFileDialog = false
+        }
+
+        OpenDocumentDialog(showSelectFileDialog, Database.ZIP_MIME_TYPE) {
+            viewModel.onImportDatabase(it)
+            showSelectFileDialog = false
         }
 
         Column(
@@ -150,6 +170,14 @@ object ProfileScreen :
                 Button(onClick = { showUriPermissionDialog = true }) {
                     Text("Select")
                 }
+            }
+
+            Button(onClick = { showCreateFileDialog = true }) {
+                Text("Export Database")
+            }
+
+            Button(onClick = { showSelectFileDialog = true }) {
+                Text("Import Database")
             }
         }
     }

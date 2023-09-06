@@ -16,7 +16,7 @@ import com.tachyonmusic.database.domain.model.*
         DataEntity::class
     ],
     version = 1,
-    exportSchema = false
+    exportSchema = false,
 )
 @TypeConverters(Converters::class)
 abstract class RoomDatabase : androidx.room.RoomDatabase(), Database {
@@ -30,4 +30,13 @@ abstract class RoomDatabase : androidx.room.RoomDatabase(), Database {
     override fun clearAllTables() {
         TODO()
     }
+
+    override fun checkpoint() {
+        val db = openHelper.writableDatabase
+        db.query("PRAGMA wal_checkpoint(FULL);", null)
+        db.query("PRAGMA wal_checkpoint(TRUNCATE);", null)
+    }
+
+    override val readableDatabasePath: String
+        get() = openHelper.readableDatabase.path
 }

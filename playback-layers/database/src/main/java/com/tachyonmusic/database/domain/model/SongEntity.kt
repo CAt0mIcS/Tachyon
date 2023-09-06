@@ -5,7 +5,9 @@ import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.util.Duration
 
-@Entity
+const val SONG_DATABASE_TABLE_NAME = "Songs"
+
+@Entity(tableName = SONG_DATABASE_TABLE_NAME)
 class SongEntity(
     mediaId: MediaId,
     title: String,

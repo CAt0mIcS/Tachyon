@@ -9,7 +9,9 @@ import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.util.Duration
 
-@Entity
+const val CUSTOMIZED_SONG_DATABASE_TABLE_NAME = "CustomizedSongs"
+
+@Entity(tableName = CUSTOMIZED_SONG_DATABASE_TABLE_NAME)
 class CustomizedSongEntity(
     mediaId: MediaId,
     val songTitle: String,

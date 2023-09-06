@@ -10,7 +10,6 @@ import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
-import com.tachyonmusic.util.removeFirst
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
@@ -41,17 +40,17 @@ class UpdateSongDatabase(
          * If we remove a song from the [SongRepository] items in history or other playbacks that
          * contain the song will automatically exclude it
          */
-        songRepo.removeIf { song ->
-            val uri = song.mediaId.uri
-            if (uri != null) {
-                /**
-                 * If it can't find the song to remove it means that the file was deleted
-                 * Remove because song does not exist anymore
-                 */
-                val shouldRemoveFromDatabase = !songsToAddToDatabase.removeFirst { it.uri == uri }
-                shouldRemoveFromDatabase
-            } else TODO("Invalid path null")
-        }
+//        songRepo.removeIf { song ->
+//            val uri = song.mediaId.uri
+//            if (uri != null) {
+//                /**
+//                 * If it can't find the song to remove it means that the file was deleted
+//                 * Remove because song does not exist anymore
+//                 */
+//                val shouldRemoveFromDatabase = !songsToAddToDatabase.removeFirst { it.uri == uri }
+//                shouldRemoveFromDatabase
+//            } else TODO("Invalid path null")
+//        }
 
         /**
          * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]

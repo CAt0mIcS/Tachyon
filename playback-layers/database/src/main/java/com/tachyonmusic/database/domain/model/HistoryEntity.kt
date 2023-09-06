@@ -4,7 +4,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.tachyonmusic.core.domain.MediaId
 
-@Entity
+const val HISTORY_DATABASE_TABLE_NAME = "History"
+
+@Entity(tableName = HISTORY_DATABASE_TABLE_NAME)
 data class HistoryEntity(
     @PrimaryKey
     var mediaId: MediaId,

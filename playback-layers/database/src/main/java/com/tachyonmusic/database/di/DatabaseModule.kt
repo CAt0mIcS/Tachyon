@@ -20,7 +20,7 @@ object DatabaseModule {
     fun provideDatabase(app: Application): Database = Room.databaseBuilder(
         app,
         RoomDatabase::class.java,
-        RoomDatabase::class.java.name
+        Database.NAME
     ).build()
 }
 

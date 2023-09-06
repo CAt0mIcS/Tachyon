@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
+import com.tachyonmusic.domain.use_case.profile.ExportDatabase
+import com.tachyonmusic.domain.use_case.profile.ImportDatabase
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.util.Duration
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +21,9 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     observeSettings: ObserveSettings,
     private val writeSettings: WriteSettings,
-    private val registerNewUriPermission: RegisterNewUriPermission
+    private val registerNewUriPermission: RegisterNewUriPermission,
+    private val exportDatabase: ExportDatabase,
+    private val importDatabase: ImportDatabase
 ) : ViewModel() {
 
     val settings = observeSettings().stateIn(
@@ -100,5 +104,13 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             registerNewUriPermission(uri)
         }
+    }
+
+    fun onExportDatabase(uri: Uri?) {
+        exportDatabase(uri)
+    }
+
+    fun onImportDatabase(uri: Uri?) {
+        importDatabase(uri)
     }
 }

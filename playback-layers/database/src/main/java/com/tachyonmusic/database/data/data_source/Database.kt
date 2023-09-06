@@ -9,4 +9,16 @@ interface Database {
     val dataDao: DataDao
 
     fun clearAllTables()
+
+    fun checkpoint()
+    val readableDatabasePath: String
+
+    companion object {
+        const val NAME = "TachyonDatabase"
+        const val SQLITE_WALFILE_SUFFIX = "-wal"
+        const val SQLITE_SHMFILE_SUFFIX = "-shm"
+
+        const val ZIP_MIME_TYPE = "application/zip"
+        const val BACKUP_FILE_NAME = NAME + "Backup.zip"
+    }
 }

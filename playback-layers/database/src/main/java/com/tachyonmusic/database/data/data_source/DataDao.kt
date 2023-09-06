@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.database.domain.model.DATA_DATABASE_TABLE_NAME
 import com.tachyonmusic.database.domain.model.DataEntity
 import com.tachyonmusic.util.Duration
 import kotlinx.coroutines.flow.Flow
@@ -15,17 +16,17 @@ interface DataDao {
     /**
      * Selects the first row in the data table. We can only have one [DataEntity] in the table
      */
-    @Query("SELECT * FROM DataEntity ORDER BY ROWID ASC LIMIT 1")
+    @Query("SELECT * FROM $DATA_DATABASE_TABLE_NAME ORDER BY ROWID ASC LIMIT 1")
     suspend fun getData(): DataEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun setData(data: DataEntity)
 
-    @Query("SELECT * FROM DataEntity ORDER BY ROWID ASC LIMIT 1")
+    @Query("SELECT * FROM $DATA_DATABASE_TABLE_NAME ORDER BY ROWID ASC LIMIT 1")
     fun observe(): Flow<DataEntity?>
 
     @Query(
-        "UPDATE DataEntity SET " +
+        "UPDATE $DATA_DATABASE_TABLE_NAME SET " +
                 "recentlyPlayedMediaId=:mediaId, " +
                 "currentPositionInRecentlyPlayedPlayback=:position, " +
                 "recentlyPlayedDuration=:duration, " +
@@ -40,6 +41,6 @@ interface DataDao {
         artworkUrl: String? = null
     )
 
-    @Query("UPDATE DataEntity SET repeatMode=:repeatMode")
+    @Query("UPDATE $DATA_DATABASE_TABLE_NAME SET repeatMode=:repeatMode")
     suspend fun setRepeatMode(repeatMode: RepeatMode)
 }

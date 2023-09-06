@@ -7,7 +7,9 @@ import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.sec
 
-@Entity
+const val SETTINGS_DATABASE_TABLE_NAME = "Settings"
+
+@Entity(tableName = SETTINGS_DATABASE_TABLE_NAME)
 data class SettingsEntity(
     val ignoreAudioFocus: Boolean = false,
     val autoDownloadAlbumArtwork: Boolean = true,

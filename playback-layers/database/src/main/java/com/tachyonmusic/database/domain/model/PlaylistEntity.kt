@@ -3,7 +3,9 @@ package com.tachyonmusic.database.domain.model
 import androidx.room.Entity
 import com.tachyonmusic.core.domain.MediaId
 
-@Entity
+const val PLAYLIST_DATABASE_TABLE_NAME = "Playlists"
+
+@Entity(tableName = PLAYLIST_DATABASE_TABLE_NAME)
 class PlaylistEntity(
     val name: String,
     mediaId: MediaId,
