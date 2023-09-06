@@ -1,6 +1,8 @@
 package com.tachyonmusic.media.service
 
+import android.app.PendingIntent
 import android.os.Bundle
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.media3.cast.CastPlayer
 import androidx.media3.cast.SessionAvailabilityListener
@@ -34,6 +36,7 @@ import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
+import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
 import com.tachyonmusic.media.util.*
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
@@ -45,6 +48,7 @@ import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
+import java.lang.Integer.max
 import javax.inject.Inject
 
 /**
@@ -93,6 +97,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     lateinit var playlistRepository: PlaylistRepository
+
+    @Inject
+    lateinit var searchStoredPlaybacks: SearchStoredPlaybacks
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -162,8 +169,22 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         exoPlayer.addListener(this)
         castPlayer?.addListener(this)
 
-        mediaSession =
-            MediaLibrarySession.Builder(this, currentPlayer, MediaLibrarySessionCallback()).build()
+        mediaSession = with(
+            MediaLibrarySession.Builder(this, currentPlayer, MediaLibrarySessionCallback())
+        ) {
+            setId(packageName)
+            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
+                setSessionActivity(
+                    PendingIntent.getActivity(
+                        this@MediaPlaybackService,
+                        0,
+                        sessionIntent,
+                        PendingIntent.FLAG_IMMUTABLE
+                    )
+                )
+            }
+            build()
+        }
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession =
@@ -222,6 +243,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
              */
             val extras = LibraryParams.Builder().apply {
                 setExtras(Bundle().apply {
+                    putBoolean("android.media.browse.SEARCH_SUPPORTED", true)
                 })
 
                 setOffline(true)
@@ -245,6 +267,31 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             if (items != null)
                 return@future LibraryResult.ofItemList(items, null)
             LibraryResult.ofError(LibraryResult.RESULT_ERROR_BAD_VALUE)
+        }
+
+        override fun onSearch(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            query: String,
+            params: LibraryParams?
+        ): ListenableFuture<LibraryResult<Void>> = future(Dispatchers.IO) {
+            val items = executeSearch(query, params?.extras ?: Bundle())
+            mediaSession.notifySearchResultChanged(browser, query, items.size, params)
+            LibraryResult.ofVoid()
+        }
+
+        override fun onGetSearchResult(
+            session: MediaLibrarySession,
+            browser: MediaSession.ControllerInfo,
+            query: String,
+            page: Int,
+            pageSize: Int,
+            params: LibraryParams?
+        ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = future(Dispatchers.IO) {
+            val items = executeSearch(query, params?.extras ?: Bundle())
+            val fromIndex = max((page - 1) * pageSize, items.size - 1)
+            val toIndex = max(fromIndex + pageSize, items.size)
+            LibraryResult.ofItemList(items.subList(fromIndex, toIndex), params)
         }
 
         override fun onAddMediaItems(
@@ -397,6 +444,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     audioEffectController.reverb = playback.reverb
                 }
             }
+
             else -> {
                 audioEffectController.bass = null
                 audioEffectController.virtualizerStrength = null
@@ -436,7 +484,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             }
         }
     }
-    
+
 
     override fun onPlayerError(error: PlaybackException) {
         var message = R.string.generic_error
@@ -494,8 +542,10 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             when (val mediaIds = items.map { MediaId.deserialize(it.mediaId) }) {
                 predefinedPlaylistsRepository.songPlaylist.value.map { it.mediaId } ->
                     predefinedSongPlaylistMediaId
+
                 predefinedPlaylistsRepository.customizedSongPlaylist.value.map { it.mediaId } ->
                     predefinedCustomizedSongPlaylistMediaId
+
                 else -> findPlaylistWithPlaybacks(mediaIds)
             } ?: return null
 
@@ -508,6 +558,26 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     private fun findPlaylistWithPlaybacks(mediaIds: List<MediaId>): MediaId? = runBlocking {
         playlistRepository.getPlaylists().find { it.items == mediaIds }?.mediaId
+    }
+
+    private suspend fun executeSearch(query: String, extras: Bundle): List<MediaItem> {
+        return when (extras.getString(MediaStore.EXTRA_MEDIA_FOCUS)) {
+            MediaStore.Audio.Playlists.ENTRY_CONTENT_TYPE -> {
+                val playlist = extras.getString(MediaStore.EXTRA_MEDIA_ALBUM)
+                searchStoredPlaybacks.byPlaylist(playlist).map { it.toMediaItem() }
+            }
+
+            MediaStore.Audio.Media.ENTRY_CONTENT_TYPE -> {
+                val title = extras.getString(MediaStore.EXTRA_MEDIA_TITLE)
+                val artist = extras.getString(MediaStore.EXTRA_MEDIA_ARTIST)
+                searchStoredPlaybacks.byTitleArtist(title, artist).map { it.toMediaItem() }
+            }
+
+            else -> {
+                // if query is blank search will return all playbacks (for commands like "play some music")
+                searchStoredPlaybacks(query).map { it.toMediaItem() }
+            }
+        }
     }
 
     private inner class CustomPlayerEventListener : CustomPlayer.Listener {

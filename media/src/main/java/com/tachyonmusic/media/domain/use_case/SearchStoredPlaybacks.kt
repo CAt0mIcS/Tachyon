@@ -1,10 +1,11 @@
-package com.tachyonmusic.domain.use_case.search
+package com.tachyonmusic.media.domain.use_case
 
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
-import java.util.*
+import java.util.Arrays
 
 /**
  * Searches through all playbacks that don't come from Spotify/Soundcloud/...
@@ -32,6 +33,28 @@ class SearchStoredPlaybacks(
             coefficientMap[1.0 - coefficient] = playback
         }
         return coefficientMap.toSortedMap().values.toList()
+    }
+
+    fun byTitleArtist(title: String?, artist: String?): List<SinglePlayback> {
+        val items =
+            predefinedPlaylistsRepository.songPlaylist.value.filter { it.mediaId.isLocalSong } +
+                    predefinedPlaylistsRepository.customizedSongPlaylist.value
+
+        if (title.isNullOrBlank() || artist.isNullOrBlank())
+            return items
+
+        return items.filter {
+            it.title.lowercase() == title.lowercase() && it.artist.lowercase() == artist.lowercase()
+        }
+    }
+
+    suspend fun byPlaylist(playlistName: String?): List<Playlist> {
+        if (playlistName.isNullOrBlank())
+            return playbackRepository.getPlaylists()
+
+        return playbackRepository.getPlaylists().filter {
+            it.name.lowercase() == playlistName.lowercase()
+        }
     }
 }
 

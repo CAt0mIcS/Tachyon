@@ -13,7 +13,7 @@ import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.player.SetRepeatMode
 import com.tachyonmusic.domain.use_case.search.SearchLocation
-import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
+import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity

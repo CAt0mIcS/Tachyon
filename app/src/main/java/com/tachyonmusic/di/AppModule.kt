@@ -19,7 +19,7 @@ import com.tachyonmusic.domain.use_case.library.QueryArtworkForPlayback
 import com.tachyonmusic.domain.use_case.library.UpdatePlaybackMetadata
 import com.tachyonmusic.domain.use_case.player.*
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
-import com.tachyonmusic.domain.use_case.search.SearchStoredPlaybacks
+import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.data.ConsoleUiTextLogger
