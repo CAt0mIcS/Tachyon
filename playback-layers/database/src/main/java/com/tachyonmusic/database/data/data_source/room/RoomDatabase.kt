@@ -33,10 +33,10 @@ abstract class RoomDatabase : androidx.room.RoomDatabase(), Database {
 
     override fun checkpoint() {
         val db = openHelper.writableDatabase
-        db.query("PRAGMA wal_checkpoint(FULL);", null)
-        db.query("PRAGMA wal_checkpoint(TRUNCATE);", null)
+        db.query("PRAGMA wal_checkpoint(FULL);", emptyArray())
+        db.query("PRAGMA wal_checkpoint(TRUNCATE);", emptyArray())
     }
 
     override val readableDatabasePath: String
-        get() = openHelper.readableDatabase.path
+        get() = openHelper.readableDatabase.path!!
 }

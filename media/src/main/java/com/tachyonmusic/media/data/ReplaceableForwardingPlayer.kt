@@ -151,6 +151,22 @@ abstract class ReplaceableForwardingPlayer(player: Player) : CustomPlayer {
         playlist.addAll(min(newIndex, playlist.size), removedItems)
     }
 
+    override fun replaceMediaItem(index: Int, mediaItem: MediaItem) {
+        player.replaceMediaItem(index, mediaItem)
+    }
+
+    override fun setAudioAttributes(audioAttributes: AudioAttributes, handleAudioFocus: Boolean) {
+        player.setAudioAttributes(audioAttributes, handleAudioFocus)
+    }
+
+    override fun replaceMediaItems(
+        fromIndex: Int,
+        toIndex: Int,
+        mediaItems: MutableList<MediaItem>
+    ) {
+        player.replaceMediaItems(fromIndex, toIndex, mediaItems)
+    }
+
     override fun removeMediaItem(index: Int) {
         player.removeMediaItem(index)
         playlist.removeAt(index)
@@ -418,19 +434,6 @@ abstract class ReplaceableForwardingPlayer(player: Player) : CustomPlayer {
 
     override fun stop() {
         player.stop()
-    }
-
-    /** Calls [Player.stop] on the delegate.  */
-    @Deprecated(
-        """Use {@link #stop()} and {@link #clearMediaItems()} (if {@code reset} is true) or
-        just {@link #stop()} (if {@code reset} is false). Any player error will be cleared when
-        {@link #prepare() re-preparing} the player."""
-    )
-    override fun stop(reset: Boolean) {
-        player.stop(reset)
-        if (reset) {
-            playlist.clear()
-        }
     }
 
     override fun release() {
@@ -738,9 +741,17 @@ abstract class ReplaceableForwardingPlayer(player: Player) : CustomPlayer {
         player.deviceVolume = volume
     }
 
+    override fun setDeviceVolume(volume: Int, flags: Int) {
+        player.setDeviceVolume(volume, flags)
+    }
+
     /** Calls [Player.increaseDeviceVolume] on the delegate.  */
     override fun increaseDeviceVolume() {
         player.increaseDeviceVolume()
+    }
+
+    override fun increaseDeviceVolume(flags: Int) {
+        player.increaseDeviceVolume(flags)
     }
 
     /** Calls [Player.decreaseDeviceVolume] on the delegate.  */
@@ -748,9 +759,17 @@ abstract class ReplaceableForwardingPlayer(player: Player) : CustomPlayer {
         player.decreaseDeviceVolume()
     }
 
+    override fun decreaseDeviceVolume(flags: Int) {
+        player.decreaseDeviceVolume(flags)
+    }
+
     /** Calls [Player.setDeviceMuted] on the delegate.  */
     override fun setDeviceMuted(muted: Boolean) {
         player.isDeviceMuted = muted
+    }
+
+    override fun setDeviceMuted(muted: Boolean, flags: Int) {
+        player.setDeviceMuted(muted, flags)
     }
 
 

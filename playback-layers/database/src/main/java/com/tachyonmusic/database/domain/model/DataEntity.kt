@@ -20,5 +20,5 @@ data class DataEntity(
 
     var repeatMode: RepeatMode = RepeatMode.All,
 
-    @PrimaryKey val id: Int = 0
+    @PrimaryKey var id: Int = 0
 )

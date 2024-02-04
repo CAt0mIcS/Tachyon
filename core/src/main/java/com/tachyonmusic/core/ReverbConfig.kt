@@ -5,16 +5,16 @@ import android.os.Parcelable
 
 // TODO: Define proper defaults
 data class ReverbConfig(
-    val roomLevel: Int = 0,
-    val roomHFLevel: Int = 0,
-    val decayTime: Int = 100,
-    val decayHFRatio: Int = 1000,
-    val reflectionsLevel: Int = 0,
-    val reflectionsDelay: Int = 0,
-    val reverbLevel: Int = 0,
-    val reverbDelay: Int = 0,
-    val diffusion: Int = 0,
-    val density: Int = 0
+    var roomLevel: Int = 0,
+    var roomHFLevel: Int = 0,
+    var decayTime: Int = 100,
+    var decayHFRatio: Int = 1000,
+    var reflectionsLevel: Int = 0,
+    var reflectionsDelay: Int = 0,
+    var reverbLevel: Int = 0,
+    var reverbDelay: Int = 0,
+    var diffusion: Int = 0,
+    var density: Int = 0
 ): Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readInt(),

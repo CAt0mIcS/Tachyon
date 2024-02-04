@@ -51,8 +51,8 @@ object Dependency {
 
     object DaggerHilt {
         const val NAVIGATION_COMPOSE = "androidx.hilt:hilt-navigation-compose:1.0.0"
-        const val HILT_ANDROID = "com.google.dagger:hilt-android:2.43.2"
-        const val COMPILER = "com.google.dagger:hilt-compiler:2.43.2"
+        const val HILT_ANDROID = "com.google.dagger:hilt-android:2.50"
+        const val COMPILER = "com.google.dagger:hilt-compiler:2.50"
     }
 
     object Cast {
