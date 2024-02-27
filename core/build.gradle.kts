@@ -7,12 +7,13 @@ plugins {
 }
 
 android {
-    compileSdk = Version.COMPILE_SDK
+    compileSdk = Index.COMPILE_SDK
 
     defaultConfig {
-        minSdk = Version.MIN_SDK
-        targetSdk = Version.TARGET_SDK
+        minSdk = Index.MIN_SDK
+        targetSdk = Index.TARGET_SDK
 
+        ndk.debugSymbolLevel = Index.DEBUG_SYMBOL_LEVEL
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -33,16 +34,16 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = Version.COMPOSE_COMPILER
+        kotlinCompilerExtensionVersion = Index.COMPOSE_COMPILER
     }
 
     compileOptions {
-        sourceCompatibility = Version.JAVA
-        targetCompatibility = Version.JAVA
+        sourceCompatibility = Index.JAVA
+        targetCompatibility = Index.JAVA
     }
 
     kotlinOptions {
-        jvmTarget = Version.JVM_TARGET
+        jvmTarget = Index.JVM_TARGET
     }
     namespace = "com.tachyonmusic.core"
 }

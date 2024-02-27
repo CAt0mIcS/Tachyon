@@ -18,7 +18,7 @@ buildscript {
 plugins {
     id("com.android.application") version "8.1.0" apply false
     id("com.android.library") version "8.1.0" apply false
-    id("org.jetbrains.kotlin.android") version Version.KOTLIN apply false
+    id("org.jetbrains.kotlin.android") version Index.KOTLIN apply false
 }
 
 tasks.register("clean", Delete::class) {

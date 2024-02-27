@@ -21,15 +21,16 @@ kotlin {
 }
 
 android {
-    compileSdk = Version.COMPILE_SDK
+    compileSdk = Index.COMPILE_SDK
 
     defaultConfig {
         applicationId = "com.tachyonmusic"
-        minSdk = Version.MIN_SDK
-        targetSdk = Version.TARGET_SDK
-        versionCode = Version.APP
-        versionName = Version.APP_NAME
+        minSdk = Index.MIN_SDK
+        targetSdk = Index.TARGET_SDK
+        versionCode = Index.APP
+        versionName = Index.APP_NAME
 
+        ndk.debugSymbolLevel = Index.DEBUG_SYMBOL_LEVEL
         testInstrumentationRunner = "com.tachyonmusic.testutils.HiltTestRunner"
 
         vectorDrawables {
@@ -54,12 +55,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = Version.JAVA
-        targetCompatibility = Version.JAVA
+        sourceCompatibility = Index.JAVA
+        targetCompatibility = Index.JAVA
     }
 
     kotlinOptions {
-        jvmTarget = Version.JVM_TARGET
+        jvmTarget = Index.JVM_TARGET
     }
 
     buildFeatures {
@@ -70,7 +71,7 @@ android {
     namespace = "com.tachyonmusic.app"
 
     composeOptions {
-        kotlinCompilerExtensionVersion = Version.COMPOSE_COMPILER
+        kotlinCompilerExtensionVersion = Index.COMPOSE_COMPILER
     }
 
     packagingOptions {

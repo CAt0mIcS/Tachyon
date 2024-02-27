@@ -14,17 +14,17 @@ object Dependency {
     }
 
     object Compose {
-        const val FOUNDATION = "androidx.compose.foundation:foundation:${Version.COMPOSE}"
+        const val FOUNDATION = "androidx.compose.foundation:foundation:${Index.COMPOSE}"
         const val APP_COMPAT = "androidx.appcompat:appcompat:1.5.1"
         const val ANDROID_MATERIAL = "com.google.android.material:material:1.7.0"
         const val COMPOSE_SLIDERS = "com.github.krottv:compose-sliders:0.1.4"
-        const val UI = "androidx.compose.ui:ui:${Version.COMPOSE}"
-        const val COMPOSE_MATERIAL = "androidx.compose.material:material:${Version.COMPOSE}"
-        const val UI_TOOLING_PREVIEW = "androidx.compose.ui:ui-tooling-preview:${Version.COMPOSE}"
+        const val UI = "androidx.compose.ui:ui:${Index.COMPOSE}"
+        const val COMPOSE_MATERIAL = "androidx.compose.material:material:${Index.COMPOSE}"
+        const val UI_TOOLING_PREVIEW = "androidx.compose.ui:ui-tooling-preview:${Index.COMPOSE}"
         const val NAVIGATION = "androidx.navigation:navigation-compose:2.5.3"
-        const val LIVEDATA = "androidx.compose.runtime:runtime-livedata:${Version.COMPOSE}"
+        const val LIVEDATA = "androidx.compose.runtime:runtime-livedata:${Index.COMPOSE}"
         const val ACTIVITY = "androidx.activity:activity-compose:1.6.1"
-        const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Version.COMPOSE}"
+        const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Index.COMPOSE}"
         const val COIL = "io.coil-kt:coil-compose:2.2.2"
         const val PAGING = "androidx.paging:paging-compose:1.0.0-alpha17"
 
@@ -35,7 +35,7 @@ object Dependency {
     }
 
     object Paging {
-        const val PAGING = "androidx.paging:paging-runtime:${Version.PAGING}"
+        const val PAGING = "androidx.paging:paging-runtime:${Index.PAGING}"
         const val COMPOSE = Compose.PAGING
     }
 
@@ -77,34 +77,34 @@ object Dependency {
         const val ARCH_CORE_TESTING = "androidx.arch.core:core-testing:2.1.0"
         const val COROUTINES_TEST = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
 
-        const val COMPOSE_TEST = "androidx.compose.ui:ui-test-junit4:${Version.COMPOSE}"
-        const val TEST_MANIFEST = "androidx.compose.ui:ui-test-manifest:${Version.COMPOSE}"
+        const val COMPOSE_TEST = "androidx.compose.ui:ui-test-junit4:${Index.COMPOSE}"
+        const val TEST_MANIFEST = "androidx.compose.ui:ui-test-manifest:${Index.COMPOSE}"
 
         const val DAGGER_TEST = "com.google.dagger:hilt-android-testing:2.37"
         const val DAGGER_TEST_COMPILER = "com.google.dagger:hilt-android-compiler:2.37"
         const val JUNIT_EXT = "androidx.test.ext:junit:1.1.3"
         const val TEST_RUNNER = "androidx.test:runner:1.4.0"
 
-        const val MOCKK = "io.mockk:mockk:${Version.MOCKK}"
-        const val MOCKK_ANDROID = "io.mockk:mockk-android:${Version.MOCKK}"
+        const val MOCKK = "io.mockk:mockk:${Index.MOCKK}"
+        const val MOCKK_ANDROID = "io.mockk:mockk-android:${Index.MOCKK}"
 
     }
 
     object Media3 {
-        const val EXOPLAYER = "androidx.media3:media3-exoplayer:${Version.MEDIA3}"
-        const val MEDIA_SESSION = "androidx.media3:media3-session:${Version.MEDIA3}"
-        const val CAST = "androidx.media3:media3-cast:${Version.MEDIA3}"
-        const val EXTRACTOR = "androidx.media3:media3-extractor:${Version.MEDIA3}"
-        const val TRANSFORMER = "androidx.media3:media3-transformer:${Version.MEDIA3}"
-        const val COMMON = "androidx.media3:media3-common:${Version.MEDIA3}"
-        const val EFFECT = "androidx.media3:media3-effect:${Version.MEDIA3}"
+        const val EXOPLAYER = "androidx.media3:media3-exoplayer:${Index.MEDIA3}"
+        const val MEDIA_SESSION = "androidx.media3:media3-session:${Index.MEDIA3}"
+        const val CAST = "androidx.media3:media3-cast:${Index.MEDIA3}"
+        const val EXTRACTOR = "androidx.media3:media3-extractor:${Index.MEDIA3}"
+        const val TRANSFORMER = "androidx.media3:media3-transformer:${Index.MEDIA3}"
+        const val COMMON = "androidx.media3:media3-common:${Index.MEDIA3}"
+        const val EFFECT = "androidx.media3:media3-effect:${Index.MEDIA3}"
     }
 
     object Room {
-        const val RUNTIME = "androidx.room:room-runtime:${Version.ROOM}"
-        const val COMPILER = "androidx.room:room-compiler:${Version.ROOM}"
-        const val COROUTINES = "androidx.room:room-ktx:${Version.ROOM}"
-        const val PAGING = "androidx.room:room-paging:${Version.ROOM}"
+        const val RUNTIME = "androidx.room:room-runtime:${Index.ROOM}"
+        const val COMPILER = "androidx.room:room-compiler:${Index.ROOM}"
+        const val COROUTINES = "androidx.room:room-ktx:${Index.ROOM}"
+        const val PAGING = "androidx.room:room-paging:${Index.ROOM}"
     }
 
     object Spotify {
