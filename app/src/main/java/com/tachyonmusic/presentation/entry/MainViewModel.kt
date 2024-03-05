@@ -40,6 +40,8 @@ class MainViewModel @Inject constructor(
     }
 
     fun onImportDatabase(uri: Uri?) {
-        importDatabase(uri)
+        viewModelScope.launch {
+            importDatabase(uri)
+        }
     }
 }

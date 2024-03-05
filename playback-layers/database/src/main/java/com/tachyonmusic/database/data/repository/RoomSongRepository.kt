@@ -27,7 +27,6 @@ class RoomSongRepository(
         dao.delete(mediaId)
     }
 
-    // TODO: Bad performance? Should be changed to have less db queries
     override suspend fun removeIf(pred: (SongEntity) -> Boolean) {
         val toDelete = mutableListOf<MediaId>()
         getSongs().forEach {

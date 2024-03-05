@@ -47,6 +47,7 @@ fun MainScreen(
 
     var showUriPermissionDialog by remember { mutableStateOf(false) }
     var showImportDbDialog by remember { mutableStateOf(false) }
+    var databaseImported by remember { mutableStateOf(false) }
 
     TachyonTheme(settings = settings) {
 
@@ -62,9 +63,11 @@ fun MainScreen(
                 Button(onClick = { showUriPermissionDialog = true }) {
                     Text("Select...")
                 }
-                Button(onClick = { showImportDbDialog = true }) {
-                    Text("Import Database")
-                }
+
+                if (!databaseImported) // TODO: Ask user to import all required directories
+                    Button(onClick = { showImportDbDialog = true }) {
+                        Text("Import Database")
+                    }
             }
 
             UriPermissionDialog(showUriPermissionDialog) {
@@ -74,6 +77,7 @@ fun MainScreen(
 
             OpenDocumentDialog(showImportDbDialog, Database.ZIP_MIME_TYPE) {
                 viewModel.onImportDatabase(it)
+                databaseImported = true
                 showImportDbDialog = false
             }
 

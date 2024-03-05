@@ -36,7 +36,7 @@ interface SongDao {
     @Throws(SQLiteException::class)
     suspend fun add(song: SongEntity)
 
-    @Insert(onConflict = OnConflictStrategy.ABORT)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     @Throws(SQLiteException::class)
     suspend fun addAll(songs: List<SongEntity>)
 

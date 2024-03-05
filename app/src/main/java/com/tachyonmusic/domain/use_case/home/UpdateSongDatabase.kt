@@ -33,6 +33,9 @@ class UpdateSongDatabase(
             listOf("mp3")
         ).toMutableList()
 
+        val uriMap = songsToAddToDatabase.map { it.name }
+        println(uriMap)
+
         /**
          * Remove all invalid or excluded paths in the [songRepo]
          * Update [paths] to only contain new songs that we need to add to [songRepo]
@@ -55,9 +58,18 @@ class UpdateSongDatabase(
         /**
          * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
          */
-        songRepo.getSongs().filter { it.isHidden }.forEach {
+        val songsInRepository = songRepo.getSongs()
+        songsInRepository.filter { it.isHidden }.forEach {
             if (!settings.excludedSongFiles.contains(it.mediaId.uri))
                 songRepo.updateIsHidden(it.mediaId, false)
+        }
+
+        /**
+         * Filter songs that are already in database
+         */
+        val mediaIdsInSongRepository = songsInRepository.map { it.mediaId }
+        songsToAddToDatabase.removeAll {
+            mediaIdsInSongRepository.contains(MediaId.ofLocalSong(it.uri))
         }
 
         // TODO: Better async song loading?

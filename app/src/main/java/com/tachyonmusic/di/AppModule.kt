@@ -99,8 +99,11 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideImportDatabaseUseCase(database: Database, @ApplicationContext context: Context) =
-        ImportDatabase(database, context)
+    fun provideImportDatabaseUseCase(
+        database: Database,
+        @ApplicationContext context: Context,
+        settingsRepository: SettingsRepository
+    ) = ImportDatabase(database, context, settingsRepository)
 
     @Provides
     @Singleton
