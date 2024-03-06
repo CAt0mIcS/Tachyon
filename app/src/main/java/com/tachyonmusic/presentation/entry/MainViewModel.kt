@@ -54,17 +54,22 @@ class MainViewModel @Inject constructor(
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), false)
 
     init {
-        stateRepository.finishLoadingTask(STATE_LOADING_TASK_STARTUP)
-
         viewModelScope.launch(Dispatchers.IO) {
             cachedMusicDirectories = settingsRepository.getSettings().musicDirectories
             updateSettingsDatabase()
 
             settingsRepository.observe().onEach {
-                if (it.musicDirectories.isNotEmpty() && cachedMusicDirectories != it.musicDirectories) {
+                val loadingTaskRunning =
+                    stateRepository.isLoadingTaskRunning(STATE_LOADING_TASK_STARTUP)
+                if (loadingTaskRunning ||
+                    (it.musicDirectories.isNotEmpty() && cachedMusicDirectories != it.musicDirectories)
+                ) {
                     log.info("Starting song database update due to new music directory or reload")
                     updateSongDatabase(it)
                     cachedMusicDirectories = it.musicDirectories
+
+                    if (loadingTaskRunning)
+                        stateRepository.finishLoadingTask(STATE_LOADING_TASK_STARTUP)
                 }
             }.collect()
         }

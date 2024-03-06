@@ -25,4 +25,6 @@ interface StateRepository {
      * @param timeout timeout before finishing the task to allow other tasks to start
      */
     suspend fun finishLoadingTask(name: String, timeout: Duration): Boolean
+
+    fun isLoadingTaskRunning(name: String): Boolean
 }

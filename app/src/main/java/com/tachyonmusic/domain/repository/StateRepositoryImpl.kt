@@ -70,4 +70,8 @@ class StateRepositoryImpl(
             log.debug("Timeout is set, returning from function and letting next thread do the rest...")
             true // TODO
         }
+
+    override fun isLoadingTaskRunning(name: String) = synchronized(taskLock) {
+        tasks.contains(name)
+    }
 }
