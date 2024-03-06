@@ -64,7 +64,6 @@ fun MainScreen(
         Surface(
             modifier = Modifier.fillMaxSize()
         ) {
-            println("Tachyon-isLoading: $isLoading")
             if (isLoading) {
                 Dialog(
                     onDismissRequest = { },

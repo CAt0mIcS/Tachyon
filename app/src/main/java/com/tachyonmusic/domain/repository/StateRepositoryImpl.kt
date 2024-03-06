@@ -43,7 +43,7 @@ class StateRepositoryImpl(
     }
 
     override fun finishLoadingTask(name: String): Boolean {
-        log.debug("Finishing task $name... with isLoading = ${isLoading.value}")
+        log.debug("Finishing task $name with isLoading = ${isLoading.value}...")
         val ret = synchronized(taskLock) {
             if (!tasks.remove(name)) {
                 log.debug("Task $name does not exist")
@@ -62,7 +62,7 @@ class StateRepositoryImpl(
 
     override suspend fun finishLoadingTask(name: String, timeout: Duration) =
         withContext(Dispatchers.IO) {
-            log.debug("Finishing task $name... with isLoading = ${isLoading.value} and timeout = $timeout")
+            log.debug("Finishing task $name with isLoading = ${isLoading.value} and timeout = $timeout...")
             launch {
                 delay(timeout)
                 finishLoadingTask(name)

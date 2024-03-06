@@ -1,5 +1,6 @@
 package com.tachyonmusic.domain.use_case.home
 
+import androidx.documentfile.provider.DocumentFile
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
@@ -58,36 +59,25 @@ class UpdateSongDatabase(
         }
 
         // TODO: Better async song loading?
+        // TODO: Is chunked loading faster than creating a lot of async tasks
         if (songsToAddToDatabase.isNotEmpty()) {
             log.debug("Loading ${songsToAddToDatabase.size} songs...")
 
             stateRepository.queueLoadingTask("UpdateSongDatabase::loadingNewSongs")
 
-            val songs = mutableListOf<Deferred<SongEntity?>>()
-            for (path in songsToAddToDatabase) {
+            val songs = mutableListOf<Deferred<List<SongEntity?>>>()
+            val chunkSize = (songsToAddToDatabase.size * .05f).toInt()
+            for (pathChunks in songsToAddToDatabase.chunked(chunkSize)) {
                 songs += async(Dispatchers.IO) {
-                    val metadata = metadataExtractor.loadMetadata(
-                        path.uri,
-                        path.name ?: "Unknown Title"
-                    )
-
-                    if (metadata == null)
-                        null
-                    else {
-                        SongEntity(
-                            MediaId.ofLocalSong(path.uri),
-                            metadata.title,
-                            metadata.artist,
-                            metadata.duration
-                        )
+                    pathChunks.map { path ->
+                        loadMetadata(path)
                     }
                 }
             }
 
-            log.debug("Loaded ${songsToAddToDatabase.size} songs")
-
             // TODO: Warn user of null playback
-            songRepo.addAll(songs.awaitAll().filterNotNull())
+            songRepo.addAll(songs.awaitAll().flatten().filterNotNull())
+            log.debug("Loaded ${songsToAddToDatabase.size} songs")
         }
 
 
@@ -96,33 +86,71 @@ class UpdateSongDatabase(
          */
         val songsWithUnknownArtwork =
             songRepo.getSongs().filter { it.artworkType == ArtworkType.UNKNOWN }
+        log.debug("Trying to find artwork for ${songsWithUnknownArtwork.size} unknowns...")
         if (songsWithUnknownArtwork.isEmpty())
             stateRepository.finishLoadingTask("UpdateSongDatabase::loadingNewSongs")
         else {
-            songsWithUnknownArtwork.map { entity ->
+            /**
+             * Load new artwork for newly found [entity]
+             */
+
+            val chunkSize = (songsWithUnknownArtwork.size * .05f).toInt()
+            songsWithUnknownArtwork.chunked(chunkSize).map { entityChunk ->
                 async {
-                    /**
-                     * Load new artwork for newly found [entity]
-                     */
-                    artworkCodex.awaitOrLoad(entity).onEach {
-                        val entityToUpdate = it.data?.entityToUpdate
-                        if (entityToUpdate != null) {
+                    entityChunk.map { entity ->
+                        loadArtworkForEntity(entity) { entityToUpdate ->
                             assignArtworkToPlayback(
                                 entityToUpdate.mediaId,
                                 entityToUpdate.artworkType,
                                 entityToUpdate.artworkUrl
                             )
                         }
-
-                        log.warning(
-                            prefix = "ArtworkLoader error on ${entityToUpdate?.title} - ${entityToUpdate?.artist}: ",
-                            message = it.message ?: return@onEach
-                        )
-                    }.collect()
+                    }
                 }
             }.awaitAll()
 
             stateRepository.finishLoadingTask("UpdateSongDatabase::loadingNewSongs")
         }
+    }
+
+    private suspend fun loadMetadata(path: DocumentFile) = withContext(Dispatchers.IO) {
+        val metadata = metadataExtractor.loadMetadata(
+            path.uri,
+            path.name ?: "Unknown Title"
+        )
+
+        if (metadata == null)
+            null
+        else {
+            val entity = SongEntity(
+                MediaId.ofLocalSong(path.uri),
+                metadata.title,
+                metadata.artist,
+                metadata.duration
+            )
+
+            loadArtworkForEntity(entity) { toUpdate ->
+                entity.artworkType = toUpdate.artworkType
+                entity.artworkUrl = toUpdate.artworkUrl
+            }
+            entity
+        }
+    }
+
+    private suspend fun loadArtworkForEntity(
+        entity: SongEntity,
+        onArtworkUpdate: suspend (SongEntity) -> Unit
+    ) = withContext(Dispatchers.IO) {
+        artworkCodex.awaitOrLoad(entity).onEach {
+            val entityToUpdate = it.data?.entityToUpdate
+            if (entityToUpdate != null) {
+                onArtworkUpdate(entityToUpdate)
+            }
+
+            log.warning(
+                prefix = "ArtworkLoader error on ${entityToUpdate?.title} - ${entityToUpdate?.artist}: ",
+                message = it.message ?: return@onEach
+            )
+        }.collect()
     }
 }
