@@ -2,7 +2,7 @@ import org.gradle.api.JavaVersion
 
 object Index {
     const val COMPILE_SDK = 34
-    const val MIN_SDK = 23
+    const val MIN_SDK = 21
     const val TARGET_SDK = COMPILE_SDK
 
     const val APP = 82
