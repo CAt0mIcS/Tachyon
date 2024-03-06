@@ -3,9 +3,12 @@ package com.tachyonmusic.presentation.profile
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tachyonmusic.data.repository.StateRepository
 import com.tachyonmusic.database.domain.model.SettingsEntity
+import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
+import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.profile.ExportDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
@@ -22,8 +25,11 @@ class ProfileViewModel @Inject constructor(
     observeSettings: ObserveSettings,
     private val writeSettings: WriteSettings,
     private val registerNewUriPermission: RegisterNewUriPermission,
+    private val stateRepository: StateRepository,
     private val exportDatabase: ExportDatabase,
-    private val importDatabase: ImportDatabase
+    private val importDatabase: ImportDatabase,
+    private val updateSongDatabase: UpdateSongDatabase,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     val settings = observeSettings().stateIn(
@@ -111,8 +117,12 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun onImportDatabase(uri: Uri?) {
-        viewModelScope.launch {
-            importDatabase(uri)
+        viewModelScope.launch(Dispatchers.IO) {
+            stateRepository.queueLoadingTask("ProfileViewModel::importDatabase")
+            if(importDatabase(uri) == true) {
+                updateSongDatabase(settingsRepository.getSettings())
+            }
+            stateRepository.finishLoadingTask("ProfileViewModel::importDatabase")
         }
     }
 }

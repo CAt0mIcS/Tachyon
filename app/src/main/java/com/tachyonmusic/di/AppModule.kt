@@ -105,8 +105,9 @@ object AppUseCaseModule {
     fun provideImportDatabaseUseCase(
         database: Database,
         @ApplicationContext context: Context,
-        settingsRepository: SettingsRepository
-    ) = ImportDatabase(database, context, settingsRepository)
+        settingsRepository: SettingsRepository,
+        uriPermissionRepository: UriPermissionRepository
+    ) = ImportDatabase(database, context, settingsRepository, uriPermissionRepository)
 
     @Provides
     @Singleton

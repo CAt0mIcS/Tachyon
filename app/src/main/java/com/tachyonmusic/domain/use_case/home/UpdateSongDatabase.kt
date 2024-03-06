@@ -19,6 +19,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
+import kotlin.math.ceil
 
 /**
  * Checks if every song in all added directories are also saved in the database and adds missing ones
@@ -65,7 +66,7 @@ class UpdateSongDatabase(
             log.debug("Loading ${songsToAddToDatabase.size} songs...")
 
             val songs = mutableListOf<Deferred<List<SongEntity?>>>()
-            val chunkSize = (songsToAddToDatabase.size * .05f).toInt()
+            val chunkSize = ceil(songsToAddToDatabase.size * .05f).toInt()
             for (pathChunks in songsToAddToDatabase.chunked(chunkSize)) {
                 songs += async(Dispatchers.IO) {
                     pathChunks.map { path ->
@@ -93,7 +94,7 @@ class UpdateSongDatabase(
              * Load new artwork for newly found [entity]
              */
 
-            val chunkSize = (songsWithUnknownArtwork.size * .05f).toInt()
+            val chunkSize = ceil(songsWithUnknownArtwork.size * .05f).toInt()
             songsWithUnknownArtwork.chunked(chunkSize).map { entityChunk ->
                 async {
                     entityChunk.map { entity ->

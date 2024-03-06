@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.database.domain.repository.SettingsRepository
+import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedOutputStream
@@ -15,12 +16,18 @@ import java.util.zip.ZipFile
 class ImportDatabase(
     private val database: Database,
     private val context: Context,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val permissionRepository: UriPermissionRepository
 ) {
+    /**
+     * @return true if the database was imported successfully and if all the permissions to access
+     * the imported songs already exist, false if it was imported successfully but the permissions don't
+     * exist and null if there was an error
+     */
     suspend operator fun invoke(source: Uri?, restart: Boolean = true) =
         withContext(Dispatchers.IO) {
             if (source == null)
-                return@withContext
+                return@withContext null
 
             val dbFile = File(database.readableDatabasePath)
             val bkpFile = File(dbFile.path + "-bkp.zip")
@@ -29,18 +36,23 @@ class ImportDatabase(
 
                 val outputStream = BufferedOutputStream(FileOutputStream(bkpFile))
                 val inputStream =
-                    context.contentResolver.openInputStream(source) ?: return@withContext
+                    context.contentResolver.openInputStream(source) ?: return@withContext null
                 inputStream.copyTo(outputStream)
                 inputStream.close()
 
-                val delete = !unzip(bkpFile, dbFile.parent ?: return@withContext)
+                val delete = !unzip(bkpFile, dbFile.parent ?: return@withContext null)
                 outputStream.close()
                 database.checkpoint()
 
                 if (bkpFile.exists() && delete) bkpFile.delete()
 
                 // Make sure we don't save music directories to which we don't have access to
-                settingsRepository.update(musicDirectories = emptyList())
+                val settings = settingsRepository.getSettings()
+                if (settings.musicDirectories.any { !permissionRepository.hasPermission(it) }) {
+                    settingsRepository.update(musicDirectories = emptyList())
+                    return@withContext false
+                }
+                return@withContext true
 
                 // TODO: Move somewhere else; TODO: Required?
 //            if (restart) {
@@ -52,6 +64,7 @@ class ImportDatabase(
             } catch (e: IOException) {
                 e.printStackTrace()
             }
+            null
         }
 
     private fun unzip(source: File, outputDirectory: String): Boolean {
