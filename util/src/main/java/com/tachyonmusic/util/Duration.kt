@@ -49,18 +49,18 @@ inline val Double.ms get() = Duration(toLong())
 
 inline val Int.sec get() = Duration(toLong() * 1000L)
 inline val Long.sec get() = Duration(this * 1000L)
-inline val Float.sec get() = Duration(toLong() * 1000L)
-inline val Double.sec get() = Duration(toLong() * 1000L)
+inline val Float.sec get() = Duration((this * 1000).toLong())
+inline val Double.sec get() = Duration((this * 1000).toLong())
 
 inline val Int.min get() = Duration(toLong() * 1000L * 60L)
 inline val Long.min get() = Duration(this * 1000L * 60L)
-inline val Float.min get() = Duration(toLong() * 1000L * 60L)
-inline val Double.min get() = Duration(toLong() * 1000L * 60L)
+inline val Float.min get() = Duration((this * 1000 * 60).toLong())
+inline val Double.min get() = Duration((this * 1000 * 60).toLong())
 
 inline val Int.h get() = Duration(toLong() * 1000L * 60L * 60L)
 inline val Long.h get() = Duration(this * 1000L * 60L * 60L)
-inline val Float.h get() = Duration(toLong() * 1000L * 60L * 60L)
-inline val Double.h get() = Duration(toLong() * 1000L * 60L * 60L)
+inline val Float.h get() = Duration((this * 1000 * 60 * 60).toLong())
+inline val Double.h get() = Duration((this * 1000 * 60 * 60).toLong())
 
 
 suspend fun delay(duration: Duration) = kotlinx.coroutines.delay(duration.inWholeMilliseconds)

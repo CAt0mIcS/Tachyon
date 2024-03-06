@@ -56,9 +56,6 @@ class HomeViewModel @Inject constructor(
 
     private val historyArtworkLoadingRange = MutableStateFlow(0..0)
 
-    private val historyLoading = MutableStateFlow(true)
-    private val databaseUpdating = MutableStateFlow(true)
-
     private val _history = playbackRepository.historyFlow.stateIn(
         viewModelScope + Dispatchers.IO,
         SharingStarted.Lazily,
@@ -71,8 +68,6 @@ class HomeViewModel @Inject constructor(
     ) { history, artworkLoadingRange ->
         loadArtworkForPlayback(history, artworkLoadingRange).map {
             it.toUiEntity()
-        }.apply {
-            historyLoading.update { false }
         }
     }.stateIn(
         viewModelScope + Dispatchers.IO,
@@ -82,10 +77,6 @@ class HomeViewModel @Inject constructor(
 
     private val _searchResults = MutableStateFlow<List<PlaybackUiEntity>>(emptyList())
     val searchResults = _searchResults.asStateFlow()
-
-    val isLoading = combine(databaseUpdating, historyLoading) { databaseUpdating, historyLoading ->
-        databaseUpdating || historyLoading
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), true)
 
     init {
         viewModelScope.launch {
@@ -98,9 +89,7 @@ class HomeViewModel @Inject constructor(
 
             observeSettings().onEach {
                 if (it.musicDirectories.isNotEmpty()) {
-                    databaseUpdating.update { true }
                     updateSongDatabase(it)
-                    databaseUpdating.update { false }
                 }
             }.collect()
         }

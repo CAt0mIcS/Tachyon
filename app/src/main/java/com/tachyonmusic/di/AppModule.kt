@@ -10,6 +10,7 @@ import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.repository.StateRepositoryImpl
 import com.tachyonmusic.domain.use_case.*
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
@@ -57,6 +58,7 @@ object AppUseCaseModule {
         metadataExtractor: SongMetadataExtractor,
         artworkCodex: ArtworkCodex,
         assignArtworkToPlayback: AssignArtworkToPlayback,
+        stateRepository: StateRepository,
         logger: Logger
     ) = UpdateSongDatabase(
         songRepository,
@@ -64,6 +66,7 @@ object AppUseCaseModule {
         metadataExtractor,
         artworkCodex,
         assignArtworkToPlayback,
+        stateRepository,
         logger
     )
 
@@ -284,6 +287,10 @@ object AppRepositoryModule {
     @Singleton
     fun provideFileRepository(@ApplicationContext context: Context): FileRepository =
         FileRepositoryImpl(context)
+
+    @Provides
+    @Singleton
+    fun provideStateRepository(logger: Logger): StateRepository = StateRepositoryImpl(logger)
 
     @Provides
     @Singleton

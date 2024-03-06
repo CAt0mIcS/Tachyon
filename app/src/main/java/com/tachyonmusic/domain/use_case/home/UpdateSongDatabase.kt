@@ -3,6 +3,7 @@ package com.tachyonmusic.domain.use_case.home
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
+import com.tachyonmusic.data.repository.StateRepository
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SongRepository
@@ -10,9 +11,13 @@ import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.withContext
 
 /**
  * Checks if every song in all added directories are also saved in the database and adds missing ones
@@ -23,6 +28,7 @@ class UpdateSongDatabase(
     private val metadataExtractor: SongMetadataExtractor,
     private val artworkCodex: ArtworkCodex,
     private val assignArtworkToPlayback: AssignArtworkToPlayback,
+    private val stateRepository: StateRepository,
     private val log: Logger
 ) {
     suspend operator fun invoke(settings: SettingsEntity) = withContext(Dispatchers.IO) {
@@ -33,27 +39,6 @@ class UpdateSongDatabase(
             listOf("mp3")
         ).toMutableList()
 
-        val uriMap = songsToAddToDatabase.map { it.name }
-        println(uriMap)
-
-        /**
-         * Remove all invalid or excluded paths in the [songRepo]
-         * Update [paths] to only contain new songs that we need to add to [songRepo]
-         *
-         * If we remove a song from the [SongRepository] items in history or other playbacks that
-         * contain the song will automatically exclude it
-         */
-//        songRepo.removeIf { song ->
-//            val uri = song.mediaId.uri
-//            if (uri != null) {
-//                /**
-//                 * If it can't find the song to remove it means that the file was deleted
-//                 * Remove because song does not exist anymore
-//                 */
-//                val shouldRemoveFromDatabase = !songsToAddToDatabase.removeFirst { it.uri == uri }
-//                shouldRemoveFromDatabase
-//            } else TODO("Invalid path null")
-//        }
 
         /**
          * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
@@ -75,6 +60,9 @@ class UpdateSongDatabase(
         // TODO: Better async song loading?
         if (songsToAddToDatabase.isNotEmpty()) {
             log.debug("Loading ${songsToAddToDatabase.size} songs...")
+
+            stateRepository.queueLoadingTask("UpdateSongDatabase::loadingNewSongs")
+
             val songs = mutableListOf<Deferred<SongEntity?>>()
             for (path in songsToAddToDatabase) {
                 songs += async(Dispatchers.IO) {
@@ -106,27 +94,35 @@ class UpdateSongDatabase(
         /**
          * FIND MISSING ARTWORK
          */
-        songRepo.getSongs().filter { it.artworkType == ArtworkType.UNKNOWN }.forEach { entity ->
-            launch {
-                /**
-                 * Load new artwork for newly found [entity]
-                 */
-                artworkCodex.awaitOrLoad(entity).onEach {
-                    val entityToUpdate = it.data?.entityToUpdate
-                    if (entityToUpdate != null) {
-                        assignArtworkToPlayback(
-                            entityToUpdate.mediaId,
-                            entityToUpdate.artworkType,
-                            entityToUpdate.artworkUrl
-                        )
-                    }
+        val songsWithUnknownArtwork =
+            songRepo.getSongs().filter { it.artworkType == ArtworkType.UNKNOWN }
+        if (songsWithUnknownArtwork.isEmpty())
+            stateRepository.finishLoadingTask("UpdateSongDatabase::loadingNewSongs")
+        else {
+            songsWithUnknownArtwork.map { entity ->
+                async {
+                    /**
+                     * Load new artwork for newly found [entity]
+                     */
+                    artworkCodex.awaitOrLoad(entity).onEach {
+                        val entityToUpdate = it.data?.entityToUpdate
+                        if (entityToUpdate != null) {
+                            assignArtworkToPlayback(
+                                entityToUpdate.mediaId,
+                                entityToUpdate.artworkType,
+                                entityToUpdate.artworkUrl
+                            )
+                        }
 
-                    log.warning(
-                        prefix = "ArtworkLoader error on ${entityToUpdate?.title} - ${entityToUpdate?.artist}: ",
-                        message = it.message ?: return@onEach
-                    )
-                }.collect()
-            }
+                        log.warning(
+                            prefix = "ArtworkLoader error on ${entityToUpdate?.title} - ${entityToUpdate?.artist}: ",
+                            message = it.message ?: return@onEach
+                        )
+                    }.collect()
+                }
+            }.awaitAll()
+
+            stateRepository.finishLoadingTask("UpdateSongDatabase::loadingNewSongs")
         }
     }
 }

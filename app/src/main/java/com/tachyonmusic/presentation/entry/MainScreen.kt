@@ -6,6 +6,9 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,20 +17,26 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomSheetScaffold
 import androidx.compose.material.BottomSheetValue
 import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.rememberBottomSheetScaffoldState
 import androidx.compose.material.rememberBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.database.data.data_source.Database
@@ -44,6 +53,7 @@ fun MainScreen(
 ) {
     val settings by viewModel.composeSettings.collectAsState()
     val requiresMusicPathSelection by viewModel.requiresMusicPathSelection.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     var showUriPermissionDialog by remember { mutableStateOf(false) }
     var showImportDbDialog by remember { mutableStateOf(false) }
@@ -51,103 +61,146 @@ fun MainScreen(
 
     TachyonTheme(settings = settings) {
 
-        if (requiresMusicPathSelection) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(Theme.padding.medium),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Please select a directory with all your music to continue")
-                Button(onClick = { showUriPermissionDialog = true }) {
-                    Text("Select...")
-                }
-
-                if (!databaseImported) // TODO: Ask user to import all required directories
-                    Button(onClick = { showImportDbDialog = true }) {
-                        Text("Import Database")
-                    }
-            }
-
-            UriPermissionDialog(showUriPermissionDialog) {
-                viewModel.setNewMusicDirectory(it)
-                showUriPermissionDialog = false
-            }
-
-            OpenDocumentDialog(showImportDbDialog, Database.ZIP_MIME_TYPE) {
-                viewModel.onImportDatabase(it)
-                databaseImported = true
-                showImportDbDialog = false
-            }
-
-            return@TachyonTheme
-        }
-
-        val sheetAnimationSpec = tween<Float>(
-            durationMillis = Theme.animation.medium, easing = LinearEasing
-        )
-        val sheetState = rememberBottomSheetState(
-            initialValue = BottomSheetValue.Collapsed,
-            animationSpec = sheetAnimationSpec,
-        )
-
-        var targetSheetFraction by remember { mutableStateOf(0f) }
-        val sheetFraction by animateFloatAsState(
-            targetValue = targetSheetFraction,
-            animationSpec = sheetAnimationSpec
-        )
-
-        val scaffoldState =
-            rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
-
-        val miniPlayerHeight = remember { mutableStateOf(0.dp) }
-        val navController = rememberAnimatedNavController()
-
-        Scaffold(
-            bottomBar = {
-                BottomNavigation(
-                    navController,
-                    sheetState,
-                    onSheetStateFraction = { targetSheetFraction = it })
-            }
-        ) { innerPaddingScaffold ->
-
-            BottomSheetScaffold(
-                modifier = Modifier.padding(innerPaddingScaffold),
-                scaffoldState = scaffoldState,
-                sheetContent = {
+        Surface(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            println("Tachyon-isLoading: $isLoading")
+            if (isLoading) {
+                Dialog(
+                    onDismissRequest = { },
+                    DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
+                ) {
                     Box(
+                        contentAlignment = Alignment.Center,
                         modifier = Modifier
-                            .fillMaxSize(),
+                            .background(Theme.colors.primary, Theme.shapes.large)
+                            .border(
+                                BorderStroke(2.dp, Theme.colors.partialOrange2),
+                                Theme.shapes.large
+                            )
                     ) {
-                        PlayerLayout(
-                            navController,
-                            sheetState,
-                            onMiniPlayerHeight = { miniPlayerHeight.value = it },
-                            miniPlayerHeight = miniPlayerHeight.value,
-                            onTargetSheetFraction = { targetSheetFraction = it },
-                            sheetFraction = sheetFraction
-                        )
+                        Column {
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .padding(Theme.padding.medium)
+                                    .align(Alignment.CenterHorizontally),
+                                color = Theme.colors.contrastHigh
+                            )
+
+                            Text(
+                                "Loading",
+                                modifier = Modifier
+                                    .padding(
+                                        start = 80.dp,
+                                        end = 80.dp,
+                                        bottom = Theme.padding.medium
+                                    ),
+                                textAlign = TextAlign.Center,
+                                color = Theme.colors.contrastHigh
+                            )
+                        }
                     }
-                },
-                sheetPeekHeight = miniPlayerHeight.value,
-                sheetBackgroundColor = Theme.colors.primary,
-                sheetGesturesEnabled = false
-            ) { innerPaddingSheet ->
-                Box(
+                }
+            }
+
+            if (requiresMusicPathSelection) {
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPaddingSheet)
+                        .padding(Theme.padding.medium),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    NavigationGraph(
+                    Text("Please select a directory with all your music to continue")
+                    Button(onClick = { showUriPermissionDialog = true }) {
+                        Text("Select...")
+                    }
+
+                    if (!databaseImported) // TODO: Ask user to import all required directories
+                        Button(onClick = { showImportDbDialog = true }) {
+                            Text("Import Database")
+                        }
+                }
+
+                UriPermissionDialog(showUriPermissionDialog) {
+                    viewModel.setNewMusicDirectory(it)
+                    showUriPermissionDialog = false
+                }
+
+                OpenDocumentDialog(showImportDbDialog, Database.ZIP_MIME_TYPE) {
+                    viewModel.onImportDatabase(it)
+                    databaseImported = it != null
+                    showImportDbDialog = false
+                }
+
+                return@Surface
+            }
+
+            val sheetAnimationSpec = tween<Float>(
+                durationMillis = Theme.animation.medium, easing = LinearEasing
+            )
+            val sheetState = rememberBottomSheetState(
+                initialValue = BottomSheetValue.Collapsed,
+                animationSpec = sheetAnimationSpec,
+            )
+
+            var targetSheetFraction by remember { mutableFloatStateOf(0f) }
+            val sheetFraction by animateFloatAsState(
+                targetValue = targetSheetFraction,
+                animationSpec = sheetAnimationSpec
+            )
+
+            val scaffoldState =
+                rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
+
+            val miniPlayerHeight = remember { mutableStateOf(0.dp) }
+            val navController = rememberAnimatedNavController()
+
+            Scaffold(
+                bottomBar = {
+                    BottomNavigation(
                         navController,
                         sheetState,
-                        miniPlayerHeight.value,
-                        onTargetSheetFraction = {
-                            targetSheetFraction = it
+                        onSheetStateFraction = { targetSheetFraction = it })
+                }
+            ) { innerPaddingScaffold ->
+
+                BottomSheetScaffold(
+                    modifier = Modifier.padding(innerPaddingScaffold),
+                    scaffoldState = scaffoldState,
+                    sheetContent = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                        ) {
+                            PlayerLayout(
+                                navController,
+                                sheetState,
+                                onMiniPlayerHeight = { miniPlayerHeight.value = it },
+                                miniPlayerHeight = miniPlayerHeight.value,
+                                onTargetSheetFraction = { targetSheetFraction = it },
+                                sheetFraction = sheetFraction
+                            )
                         }
-                    )
+                    },
+                    sheetPeekHeight = miniPlayerHeight.value,
+                    sheetBackgroundColor = Theme.colors.primary,
+                    sheetGesturesEnabled = false
+                ) { innerPaddingSheet ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPaddingSheet)
+                    ) {
+                        NavigationGraph(
+                            navController,
+                            sheetState,
+                            miniPlayerHeight.value,
+                            onTargetSheetFraction = {
+                                targetSheetFraction = it
+                            }
+                        )
+                    }
                 }
             }
         }
