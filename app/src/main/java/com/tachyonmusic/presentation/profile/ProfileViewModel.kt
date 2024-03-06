@@ -13,6 +13,7 @@ import com.tachyonmusic.domain.use_case.profile.ExportDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.sec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -108,18 +109,27 @@ class ProfileViewModel @Inject constructor(
 
     fun onUriPermissionResult(uri: Uri?) {
         viewModelScope.launch {
+            stateRepository.queueLoadingTask("ProfileViewModel::registerNewUriPermission")
             registerNewUriPermission(uri)
+            stateRepository.finishLoadingTask(
+                "ProfileViewModel::registerNewUriPermission",
+                timeout = .5.sec
+            )
         }
     }
 
     fun onExportDatabase(uri: Uri?) {
-        exportDatabase(uri)
+        viewModelScope.launch(Dispatchers.IO) {
+            stateRepository.queueLoadingTask("ProfileViewModel::exportDatabase")
+            exportDatabase(uri)
+            stateRepository.finishLoadingTask("ProfileViewModel::exportDatabase")
+        }
     }
 
     fun onImportDatabase(uri: Uri?) {
         viewModelScope.launch(Dispatchers.IO) {
             stateRepository.queueLoadingTask("ProfileViewModel::importDatabase")
-            if(importDatabase(uri) == true) {
+            if (importDatabase(uri) == true) {
                 updateSongDatabase(settingsRepository.getSettings())
             }
             stateRepository.finishLoadingTask("ProfileViewModel::importDatabase")

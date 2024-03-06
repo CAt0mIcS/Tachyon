@@ -3,6 +3,8 @@ package com.tachyonmusic.domain.use_case.profile
 import android.content.Context
 import android.net.Uri
 import com.tachyonmusic.database.data.data_source.Database
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
@@ -16,9 +18,9 @@ class ExportDatabase(
     private val database: Database,
     private val context: Context
 ) {
-    operator fun invoke(destination: Uri?) {
+    suspend operator fun invoke(destination: Uri?) = withContext(Dispatchers.IO) {
         if (destination == null)
-            return
+            return@withContext
 
         val dbFile =
             context.getDatabasePath(Database.NAME)
@@ -29,7 +31,8 @@ class ExportDatabase(
         database.checkpoint()
         try {
             zip(bkpFile.path, listOf(dbFile, dbWalFile, dbShmFile))
-            val outputStream = context.contentResolver.openOutputStream(destination) ?: return
+            val outputStream =
+                context.contentResolver.openOutputStream(destination) ?: return@withContext
             outputStream.write(bkpFile.readBytes())
             outputStream.close()
         } catch (e: IOException) {
