@@ -2,10 +2,10 @@ package com.tachyonmusic.presentation.library.component
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Text
 import androidx.compose.material.ripple.LocalRippleTheme
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -30,8 +30,8 @@ fun FilterItem(textId: Int, selected: Boolean = false, onClick: () -> Unit) {
     CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
         Button(
             shape = Theme.shapes.medium,
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = color,
+            colors = ButtonDefaults.buttonColors().copy(
+                containerColor = color,
                 contentColor = Theme.colors.contrastHigh
             ),
             onClick = onClick

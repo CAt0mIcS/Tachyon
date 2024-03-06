@@ -1,10 +1,11 @@
 package com.tachyonmusic.presentation.entry
 
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.BottomSheetState
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
 import androidx.compose.material.ripple.LocalRippleTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -22,11 +23,11 @@ import com.tachyonmusic.presentation.theme.NoRippleTheme
 import com.tachyonmusic.presentation.theme.Theme
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomNavigation(
     navController: NavController,
-    sheetState: BottomSheetState,
+    sheetState: SheetState,
     onSheetStateFraction: (Float) -> Unit
 ) {
     val items = listOf(
@@ -38,14 +39,14 @@ fun BottomNavigation(
     val scope = rememberCoroutineScope()
 
     CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
-        androidx.compose.material.BottomNavigation(backgroundColor = Theme.colors.secondary) {
+        androidx.compose.material3.NavigationBar(containerColor = Theme.colors.secondary) {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
             for (item in items) {
                 val selected = currentRoute == item.route
 
-                BottomNavigationItem(
+                NavigationBarItem(
                     icon = {
                         Icon(
                             painterResource(item.icon),
@@ -53,13 +54,14 @@ fun BottomNavigation(
                             modifier = Modifier.scale(1.6f) // TODO: Good practice? What happens if icons overlap?
                         )
                     },
-                    selectedContentColor = Theme.colors.contrastHigh,
-                    unselectedContentColor = Theme.colors.contrastLow,
+                    colors = NavigationBarItemDefaults.colors().copy(selectedIconColor = Theme.colors.contrastHigh, unselectedIconColor = Theme.colors.contrastLow),
+//                    selectedContentColor = Theme.colors.contrastHigh, // TODO MAT3 ^
+//                    unselectedContentColor = Theme.colors.contrastLow, // TODO MAT3 ^
                     selected = selected,
                     onClick = {
-                        if (sheetState.isExpanded) {
+                        if (sheetState.hasExpandedState) {
                             scope.launch {
-                                sheetState.collapse()
+                                sheetState.partialExpand()
                             }
                             onSheetStateFraction(0f)
                         }

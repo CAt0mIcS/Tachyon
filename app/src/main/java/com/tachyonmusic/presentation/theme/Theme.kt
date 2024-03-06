@@ -1,38 +1,20 @@
 package com.tachyonmusic.presentation.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-private val DarkColorPalette = darkColors(
-    primary = DarkPrimary,
-    primaryVariant = DarkSecondary,
-    secondary = DarkTertiary,
+private val DarkColorPalette = darkColorScheme()
 
-    background = DarkPrimary,
-    surface = DarkSecondary,
-    onPrimary = DarkContrastHigh,
-    onSecondary = DarkBlue,
-    onBackground = DarkContrastLow,
-    onSurface = DarkContrastHigh,
-)
-
-private val LightColorPalette = lightColors(
-    primary = LightPrimary,
-    primaryVariant = LightSecondary,
-    secondary = LightTertiary,
-
-    background = Color.White,
-    surface = LightSecondary,
-    onPrimary = LightContrastHigh,
-    onSecondary = LightBlue,
-    onBackground = LightContrastLow,
-    onSurface = LightContrastHigh,
-)
+private val LightColorPalette = lightColorScheme()
 
 private val DarkCustomColorPalette = Colors(
     primary = DarkPrimary,
@@ -80,7 +62,7 @@ fun TachyonTheme(
         LocalSettings provides settings
     ) {
         MaterialTheme(
-            colors = colors,
+            colorScheme = colors,
             typography = Typography,
             shapes = Shapes,
             content = content

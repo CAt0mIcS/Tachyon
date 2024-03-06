@@ -20,12 +20,12 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.BottomSheetState
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -68,11 +68,11 @@ import kotlinx.coroutines.launch
 object HomeScreen :
     BottomNavigationItem(R.string.btmNav_home, R.drawable.ic_home, "home") {
 
-    @OptIn(ExperimentalMaterialApi::class)
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
         navController: NavController,
-        sheetState: BottomSheetState,
+        sheetState: SheetState,
         onSheetStateFraction: (Float) -> Unit,
         miniPlayerHeight: Dp,
         viewModel: HomeViewModel = hiltViewModel()
@@ -167,8 +167,9 @@ object HomeScreen :
                         singleLine = true,
                         enabled = true,
                         isError = false,
-                        colors = TextFieldDefaults.textFieldColors(
-                            backgroundColor = Theme.colors.secondary,
+                        colors = TextFieldDefaults.colors().copy(
+                            unfocusedContainerColor = Theme.colors.secondary, // TODO: background color?
+                            focusedContainerColor = Theme.colors.secondary, // TODO: background color?
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
                             cursorColor = Theme.colors.contrastLow

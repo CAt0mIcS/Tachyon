@@ -11,7 +11,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,10 +41,10 @@ import kotlinx.coroutines.launch
 object LibraryScreen :
     BottomNavigationItem(R.string.btmNav_library, R.drawable.ic_library, "library") {
 
-    @OptIn(ExperimentalMaterialApi::class)
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        sheetState: BottomSheetState,
+        sheetState: SheetState,
         onSheetStateFraction: (Float) -> Unit,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
@@ -144,13 +144,14 @@ object LibraryScreen :
                             onDismissRequest = { sortOptionsExpanded = false }) {
                             SortType.values().forEach {
                                 DropdownMenuItem(
+                                    text = {
+                                        Text(it.asString())
+                                    },
                                     onClick = {
                                         viewModel.onSortTypeChanged(it)
                                         sortOptionsExpanded = false
                                     }
-                                ) {
-                                    Text(it.asString())
-                                }
+                                )
                             }
                         }
                     }

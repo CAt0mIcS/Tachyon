@@ -1,8 +1,8 @@
 package com.tachyonmusic.presentation.entry
 
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.material.BottomSheetState
-import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavHostController
@@ -14,11 +14,11 @@ import com.tachyonmusic.presentation.home.HomeScreen
 import com.tachyonmusic.presentation.library.LibraryScreen
 import com.tachyonmusic.presentation.profile.ProfileScreen
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun NavigationGraph(
     navController: NavHostController,
-    sheetState: BottomSheetState,
+    sheetState: SheetState,
     miniPlayerHeight: Dp,
     onTargetSheetFraction: (Float) -> Unit
 ) {

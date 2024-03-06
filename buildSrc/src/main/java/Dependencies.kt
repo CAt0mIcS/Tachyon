@@ -137,8 +137,9 @@ fun DependencyHandler.compose() {
     implementation(Dependency.Compose.PAGING)
 
     implementation(Dependency.Compose.UI)
-    implementation(Dependency.Compose.COMPOSE_MATERIAL)
+//    implementation(Dependency.Compose.COMPOSE_MATERIAL)
     implementation(Dependency.Compose.UI_TOOLING_PREVIEW)
+    implementation(Dependency.Compose.MATERIAL3)
 
     implementation(Dependency.Compose.NAVIGATION)
 

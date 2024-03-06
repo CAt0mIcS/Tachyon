@@ -10,19 +10,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.systemGestureExclusion
-import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
-import androidx.compose.material.CheckboxColors
-import androidx.compose.material.CheckboxDefaults
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.ExposedDropdownMenuDefaults
-import androidx.compose.material.Slider
-import androidx.compose.material.SliderDefaults
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,7 +41,7 @@ import com.tachyonmusic.core.domain.model.mDb
 import com.tachyonmusic.presentation.player.EqualizerViewModel
 import com.tachyonmusic.presentation.theme.Theme
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EqualizerEditor(
     modifier: Modifier = Modifier,
@@ -150,12 +150,10 @@ fun EqualizerEditor(
                     onDismissRequest = { isSelectingEqualizerPreset = false }
                 ) {
                     for (preset in equalizer.presets) {
-                        DropdownMenuItem(onClick = {
+                        DropdownMenuItem(text = { Text(preset) }, onClick = {
                             isSelectingEqualizerPreset = false
                             viewModel.setEqualizerPreset(preset)
-                        }) {
-                            Text(preset)
-                        }
+                        })
                     }
                 }
             }
@@ -527,18 +525,19 @@ private fun CheckboxText(
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    colors: CheckboxColors = CheckboxDefaults.colors()
+    colors: CheckboxColors = CheckboxDefaults.colors(),
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
 ) {
     Row(modifier = modifier) {
-        Checkbox(checked, onCheckedChange, Modifier, enabled, interactionSource, colors)
+        Checkbox(checked, onCheckedChange, Modifier, enabled, colors, interactionSource)
         Text(text)
     }
 }
 
 @Composable
 private fun ReverbPresetDropdownMenuItem(@StringRes name: Int, onClick: () -> Unit) {
-    DropdownMenuItem(onClick = onClick) {
-        Text(stringResource(name), color = Theme.colors.contrastHigh)
-    }
+    DropdownMenuItem(
+        text = { Text(stringResource(name), color = Theme.colors.contrastHigh) },
+        onClick = onClick
+    )
 }

@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 
 package com.tachyonmusic.presentation.entry
 
@@ -14,16 +14,18 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.BottomSheetScaffold
-import androidx.compose.material.BottomSheetValue
-import androidx.compose.material.Button
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.material.rememberBottomSheetScaffoldState
-import androidx.compose.material.rememberBottomSheetState
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,7 +48,6 @@ import com.tachyonmusic.presentation.profile.component.OpenDocumentDialog
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
@@ -138,9 +139,9 @@ fun MainScreen(
             val sheetAnimationSpec = tween<Float>(
                 durationMillis = Theme.animation.medium, easing = LinearEasing
             )
-            val sheetState = rememberBottomSheetState(
-                initialValue = BottomSheetValue.Collapsed,
-                animationSpec = sheetAnimationSpec,
+            val sheetState = rememberStandardBottomSheetState(
+                initialValue = SheetValue.PartiallyExpanded,
+//                animationSpec = sheetAnimationSpec, TODO MAT3
             )
 
             var targetSheetFraction by remember { mutableFloatStateOf(0f) }
@@ -183,8 +184,8 @@ fun MainScreen(
                         }
                     },
                     sheetPeekHeight = miniPlayerHeight.value,
-                    sheetBackgroundColor = Theme.colors.primary,
-                    sheetGesturesEnabled = false
+                    containerColor = Theme.colors.primary,
+//                    sheetGesturesEnabled = false TODO MAT3
                 ) { innerPaddingSheet ->
                     Box(
                         modifier = Modifier
