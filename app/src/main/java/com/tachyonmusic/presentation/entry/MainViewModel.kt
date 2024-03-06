@@ -37,11 +37,10 @@ class MainViewModel @Inject constructor(
 
     val requiresMusicPathSelection = observeSettings().map {
         it.musicDirectories.isEmpty()
-    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), true)
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), false)
 
     init {
-        if (requiresMusicPathSelection.value)
-            stateRepository.finishLoadingTask(STATE_LOADING_TASK_STARTUP)
+        stateRepository.finishLoadingTask(STATE_LOADING_TASK_STARTUP)
     }
 
     fun setNewMusicDirectory(uri: Uri?) {

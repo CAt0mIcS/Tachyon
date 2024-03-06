@@ -34,6 +34,7 @@ class UpdateSongDatabase(
 ) {
     suspend operator fun invoke(settings: SettingsEntity) = withContext(Dispatchers.IO) {
         // TODO: Support more extensions
+        stateRepository.queueLoadingTask("UpdateSongDatabase::loadingNewSongs")
 
         val songsToAddToDatabase = fileRepository.getFilesInDirectoriesWithExtensions(
             settings.musicDirectories,
@@ -62,8 +63,6 @@ class UpdateSongDatabase(
         // TODO: Is chunked loading faster than creating a lot of async tasks
         if (songsToAddToDatabase.isNotEmpty()) {
             log.debug("Loading ${songsToAddToDatabase.size} songs...")
-
-            stateRepository.queueLoadingTask("UpdateSongDatabase::loadingNewSongs")
 
             val songs = mutableListOf<Deferred<List<SongEntity?>>>()
             val chunkSize = (songsToAddToDatabase.size * .05f).toInt()

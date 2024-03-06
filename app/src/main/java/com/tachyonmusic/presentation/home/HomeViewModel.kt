@@ -1,10 +1,10 @@
 package com.tachyonmusic.presentation.home
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.domain.LoadArtworkForPlayback
-import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.domain.use_case.home.GetSavedData
@@ -13,9 +13,9 @@ import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.player.SetRepeatMode
 import com.tachyonmusic.domain.use_case.search.SearchLocation
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
-import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.core_components.model.toUiEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,7 +41,7 @@ class HomeViewModel @Inject constructor(
 
     setRepeatMode: SetRepeatMode,
     getSavedData: GetSavedData,
-    observeSettings: ObserveSettings,
+    settingsRepository: SettingsRepository,
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
 
@@ -49,12 +49,13 @@ class HomeViewModel @Inject constructor(
 
     private val unloadArtworks: UnloadArtworks,
 
-    private val songRepository: SongRepository,
-    private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
-    private val searchStoredPlaybacks: SearchStoredPlaybacks
+    private val searchStoredPlaybacks: SearchStoredPlaybacks,
+
+    private val log: Logger
 ) : ViewModel() {
 
     private val historyArtworkLoadingRange = MutableStateFlow(0..0)
+    private var cachedMusicDirectories = emptyList<Uri>()
 
     private val _history = playbackRepository.historyFlow.stateIn(
         viewModelScope + Dispatchers.IO,
@@ -85,11 +86,14 @@ class HomeViewModel @Inject constructor(
         }
 
         viewModelScope.launch(Dispatchers.IO) {
+            cachedMusicDirectories = settingsRepository.getSettings().musicDirectories
             updateSettingsDatabase()
 
-            observeSettings().onEach {
-                if (it.musicDirectories.isNotEmpty()) {
+            settingsRepository.observe().onEach {
+                if (it.musicDirectories.isNotEmpty() && cachedMusicDirectories != it.musicDirectories) {
+                    log.info("Starting song database update due to new music directory or reload")
                     updateSongDatabase(it)
+                    cachedMusicDirectories = it.musicDirectories
                 }
             }.collect()
         }
