@@ -1,9 +1,17 @@
 package com.tachyonmusic.media.data
 
-import android.media.audiofx.*
+import android.media.audiofx.BassBoost
+import android.media.audiofx.EnvironmentalReverb
+import android.media.audiofx.Equalizer
+import android.media.audiofx.LoudnessEnhancer
+import android.media.audiofx.Virtualizer
 import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
-import com.tachyonmusic.core.domain.model.*
+import com.tachyonmusic.core.domain.model.EqualizerBand
+import com.tachyonmusic.core.domain.model.SoundFrequency
+import com.tachyonmusic.core.domain.model.SoundLevel
+import com.tachyonmusic.core.domain.model.mDb
+import com.tachyonmusic.core.domain.model.mHz
 import com.tachyonmusic.media.domain.AudioEffectController
 
 class AndroidAudioEffectController : AudioEffectController {
@@ -129,20 +137,20 @@ class AndroidAudioEffectController : AudioEffectController {
         }.filterNotNull()
 
     /**************************************************************************
-     ********** Reverb | TODO: Choose appropriate default values for null case
+     ********** Reverb |
      *************************************************************************/
     override var reverb: ReverbConfig?
-        get() = if (!reverbEnabled) null else ReverbConfig(
-            environmentalReverb?.roomLevel?.toInt() ?: 0,
-            environmentalReverb?.roomHFLevel?.toInt() ?: 0,
-            environmentalReverb?.decayTime ?: 100,
-            environmentalReverb?.decayHFRatio?.toInt() ?: 1000,
-            environmentalReverb?.reflectionsLevel?.toInt() ?: 0,
-            environmentalReverb?.reflectionsDelay ?: 0,
-            environmentalReverb?.reverbLevel?.toInt() ?: 0,
-            environmentalReverb?.reverbDelay ?: 0,
-            environmentalReverb?.diffusion?.toInt() ?: 0,
-            environmentalReverb?.density?.toInt() ?: 0
+        get() = if (!reverbEnabled || environmentalReverb == null) null else ReverbConfig(
+            environmentalReverb!!.roomLevel,
+            environmentalReverb!!.roomHFLevel,
+            environmentalReverb!!.decayTime,
+            environmentalReverb!!.decayHFRatio,
+            environmentalReverb!!.reflectionsLevel,
+            environmentalReverb!!.reflectionsDelay,
+            environmentalReverb!!.reverbLevel,
+            environmentalReverb!!.reverbDelay,
+            environmentalReverb!!.diffusion,
+            environmentalReverb!!.density
         )
         set(value) {
             if (value == null) {
@@ -150,16 +158,16 @@ class AndroidAudioEffectController : AudioEffectController {
                 return
             }
 
-            environmentalReverb?.roomLevel = value.roomLevel.toShort()
-            environmentalReverb?.roomHFLevel = value.roomHFLevel.toShort()
+            environmentalReverb?.roomLevel = value.roomLevel
+            environmentalReverb?.roomHFLevel = value.roomHFLevel
             environmentalReverb?.decayTime = value.decayTime
-            environmentalReverb?.decayHFRatio = value.decayHFRatio.toShort()
-            environmentalReverb?.reflectionsLevel = value.reflectionsLevel.toShort()
+            environmentalReverb?.decayHFRatio = value.decayHFRatio
+            environmentalReverb?.reflectionsLevel = value.reflectionsLevel
             environmentalReverb?.reflectionsDelay = value.reflectionsDelay
-            environmentalReverb?.reverbLevel = value.reverbLevel.toShort()
+            environmentalReverb?.reverbLevel = value.reverbLevel
             environmentalReverb?.reverbDelay = value.reverbDelay
-            environmentalReverb?.diffusion = value.diffusion.toShort()
-            environmentalReverb?.density = value.density.toShort()
+            environmentalReverb?.diffusion = value.diffusion
+            environmentalReverb?.density = value.density
         }
 
 

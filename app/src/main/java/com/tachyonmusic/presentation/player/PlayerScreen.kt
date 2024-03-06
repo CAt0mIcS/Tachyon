@@ -320,13 +320,21 @@ fun PlayerScreen(
 
         if (isEditingTimingData) {
             item {
-                TimingDataEditor(modifier = Modifier.fillMaxWidth())
+                TimingDataEditor(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Theme.padding.medium)
+                )
             }
         }
 
         if (isEditingEqualizer) {
             item {
-                EqualizerEditor(modifier = Modifier.fillMaxWidth())
+                EqualizerEditor(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = Theme.padding.medium)
+                )
             }
         }
 

@@ -27,6 +27,7 @@ object Dependency {
         const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Index.COMPOSE}"
         const val COIL = "io.coil-kt:coil-compose:2.2.2"
         const val PAGING = "androidx.paging:paging-compose:1.0.0-alpha17"
+        const val MATERIAL3 = "androidx.compose.material3:material3:1.2.0"
 
         object Accompanist {
             const val NAVIGATION_ANIMATION =
