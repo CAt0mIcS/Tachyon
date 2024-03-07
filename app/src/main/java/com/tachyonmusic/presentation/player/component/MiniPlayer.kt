@@ -50,7 +50,7 @@ fun MiniPlayer(
         Row {
             val artworkModifier = Modifier
                 .padding(Theme.padding.extraSmall)
-                .size(48.dp, 48.dp)
+                .size(48.dp) // TODO Dynamic
                 .clip(Theme.shapes.medium)
 
 
@@ -85,7 +85,8 @@ fun MiniPlayer(
                 IconButton(
                     modifier = Modifier
                         .padding(start = Theme.padding.medium, end = Theme.padding.medium)
-                        .scale(1.4f),
+                        .align(Alignment.CenterVertically)
+                        .scale(1.6f), // TODO dynamic
                     onClick = onPlayPauseClicked
                 ) {
                     Icon(

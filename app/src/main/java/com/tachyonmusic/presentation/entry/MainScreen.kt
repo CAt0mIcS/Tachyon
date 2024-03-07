@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.Scaffold
+import androidx.compose.material.SwipeProgress
+import androidx.compose.material.SwipeableState
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material.swipeable
 import androidx.compose.material3.Button
@@ -56,13 +58,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.presentation.core_components.UriPermissionDialog
-import com.tachyonmusic.presentation.player.PlayerScreenMat3
+import com.tachyonmusic.presentation.player.PlayerLayout
 import com.tachyonmusic.presentation.profile.component.OpenDocumentDialog
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
+import java.lang.IllegalArgumentException
 import java.util.EnumSet
 
-private enum class SwipingStates {
+enum class SwipingStates {
     EXPANDED,
     COLLAPSED
 }
@@ -152,11 +155,11 @@ fun MainScreen(
             }
 
 
-            val miniPlayerHeight = remember { mutableStateOf(0.dp) }
+            var miniPlayerHeight by remember { mutableStateOf(0.dp) }
             val navController = rememberAnimatedNavController()
 
             // https://www.strv.com/blog/collapsing-toolbar-using-jetpack-compose-motion-layout-engineering
-            val swipingState = rememberSwipeableState(initialValue = SwipingStates.EXPANDED)
+            val swipingState = rememberSwipeableState(initialValue = SwipingStates.COLLAPSED)
 
 
             Scaffold(
@@ -215,29 +218,30 @@ fun MainScreen(
                                 orientation = Orientation.Vertical,
                                 anchors = mapOf(
                                     // Maps anchor points (in px) to states
-                                    0f to SwipingStates.COLLAPSED,
-                                    heightInPx to SwipingStates.EXPANDED,
+                                    0f to SwipingStates.EXPANDED,
+                                    heightInPx to SwipingStates.COLLAPSED,
                                 )
                             )
                             .nestedScroll(connection)
                     ) {
                         Column {
                             MotionLayoutHeader(
-                                progress = if (swipingState.progress.to == SwipingStates.COLLAPSED)
+                                progress = if (swipingState.progress.to == SwipingStates.EXPANDED)
                                     swipingState.progress.fraction else 1f - swipingState.progress.fraction,
                                 mainContent = { modifier ->
                                     Box(modifier = modifier.fillMaxHeight(.9f)) {
-                                        NavigationGraph(navController, miniPlayerHeight.value)
+                                        NavigationGraph(navController, miniPlayerHeight)
                                     }
                                 },
                                 scrollableBody = {
-                                    PlayerScreenMat3()
+                                    // TODO: Animate properly: Image moving from left corner to big screen, text moving, ...
 
-//                                    PlayerLayout(
-//                                        navController,
-//                                        onMiniPlayerHeight = { miniPlayerHeight.value = it },
-//                                        miniPlayerHeight = miniPlayerHeight.value
-//                                    )
+                                    PlayerLayout(
+                                        navController,
+                                        miniPlayerHeight,
+                                        { miniPlayerHeight = it },
+                                        swipingState,
+                                    )
                                 }
                             )
                         }
@@ -253,14 +257,13 @@ fun MainScreen(
 private fun MotionLayoutHeader(
     progress: Float,
     mainContent: @Composable (Modifier) -> Unit,
-    scrollableBody: @Composable MotionLayoutScope.() -> Unit
+    scrollableBody: @Composable () -> Unit
 ) {
     MotionLayout(
         start = jsonConstraintSetStart(),
         end = jsonConstraintSetEnd(),
         progress = progress,
         modifier = Modifier.fillMaxWidth(),
-        debug = EnumSet.of(MotionLayoutDebugFlags.SHOW_ALL)
     ) {
         mainContent(
             Modifier
@@ -272,12 +275,29 @@ private fun MotionLayoutHeader(
             Modifier
                 .layoutId("content")
         ) {
-
+            Box(modifier = Modifier.fillMaxSize()) {
+                scrollableBody()
+            }
         }
-
-        scrollableBody()
     }
 }
+
+
+val SwipeableState<SwipingStates>.absoluteFraction: Float
+    get() {
+        // not moving
+        if (progress == SwipeProgress(currentValue, currentValue, 1f) &&
+            (progress.fraction == 1f || progress.fraction == 0f)
+        ) {
+            return if (currentValue == SwipingStates.EXPANDED) 1f else 0f
+        } else if (direction == 1f) { // moving from top to bottom
+            return 1f - progress.fraction
+        } else if (direction == -1f) { // moving from bottom to top
+            return progress.fraction
+        }
+
+        throw IllegalArgumentException("fraction: ${progress.fraction}, direction: $direction")
+    }
 
 
 private fun jsonConstraintSetStart() = ConstraintSet(
@@ -292,43 +312,8 @@ private fun jsonConstraintSetStart() = ConstraintSet(
 		width: "spread",
 		start: ['parent', 'start', 0],
 		end: ['parent', 'end', 0],
-		top: ['homeScreen', 'bottom', 16],
-	},
-
-    ${LayoutId.PrimaryArtwork}: {
-        width: 48,
-        height: 48,
-        start: ['content', 'start', 8],
-        top: ['content', 'top', 8],
-        bottom: ['content', 'bottom', 8]
-    },
-    ${LayoutId.PrimaryTitle}: {
-        width: "spread",
-        height: "spread",
-        top: ['content', 'top', 8],
-        start: ['${LayoutId.PrimaryArtwork}', 'end', 8],
-        end: ['${LayoutId.PlayPauseButton}', 'start', 8],
-        custom: {
-            fontSize: 14
-        }
-    },
-    ${LayoutId.PrimarySubtitle}: {
-        width: "spread",
-        height: "spread",
-        top: ['${LayoutId.PrimaryTitle}', 'bottom', 4],
-        start: ['${LayoutId.PrimaryArtwork}', 'end', 16],
-        end: ['${LayoutId.PlayPauseButton}', 'start', 8],
-        custom: {
-            fontSize: 12
-        }
-    },
-    ${LayoutId.PlayPauseButton}: {
-        width: 48,
-        height: 48,
-        end: ['content', 'end', 8],
-        top: ['content', 'top', 8],
-        bottom: ['content', 'bottom', 8]
-    }
+		top: ['homeScreen', 'bottom', 24],
+	}
 } """
 )
 
@@ -346,49 +331,7 @@ private fun jsonConstraintSetEnd() = ConstraintSet(
 		start: ['parent', 'start', 0],
 		end: ['parent', 'end', 0],
 		top: ['homeScreen', 'bottom', 0],
-	},
-
-    ${LayoutId.PrimaryArtwork}: {
-            width: "spread",
-            start: ['content', 'start', 16],
-            end: ['content', 'end', 16],
-            top: ['content', 'top', 16]
-    },
-    ${LayoutId.PrimaryTitle}: {
-        width: "spread",
-        height: "wrap",
-        start: ['content', 'start', 16],
-        end: ['content', 'end', 16],
-        top: ['${LayoutId.PrimaryArtwork}', 'bottom', 16],
-        custom: {
-            fontSize: 24
-        }
-    },
-    ${LayoutId.PrimarySubtitle}: {
-        width: "spread",
-        height: "wrap",
-        start: ['content', 'start', 32],
-        end: ['content', 'end', 16],
-        top: ['${LayoutId.PrimaryTitle}', 'bottom', 16],
-        custom: {
-            fontSize: 18
-        }
-    },
-    ${LayoutId.PlayPauseButton}: {
-        width: 48,
-        height: 48,
-        end: ['content', 'end', 8],
-        top: ['content', 'top', 8],
-        bottom: ['content', 'bottom', 8]
-    }     
+	}  
 } """
 )
-
-
-object LayoutId {
-    const val PrimaryArtwork = "PrimaryArtwork"
-    const val PrimaryTitle = "PrimaryTitle"
-    const val PrimarySubtitle = "PrimarySubtitle"
-    const val PlayPauseButton = "MediaControlPlayPause"
-}
 

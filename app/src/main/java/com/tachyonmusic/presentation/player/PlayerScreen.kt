@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.systemGestureExclusion
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SwipeableState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +31,8 @@ import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
+import com.tachyonmusic.presentation.entry.SwipingStates
+import com.tachyonmusic.presentation.entry.absoluteFraction
 import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
@@ -40,12 +44,11 @@ import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PlayerScreen(
-    sheetState: SheetState,
+    swipe: SwipeableState<SwipingStates>,
     miniPlayerHeight: Dp,
-    sheetFraction: Float,
     navController: NavController,
     viewModel: PlayerViewModel = hiltViewModel()
 ) {
@@ -90,8 +93,8 @@ fun PlayerScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = miniPlayerHeight * (1f - sheetFraction))
-            .graphicsLayer(alpha = sheetFraction + .25f),
+            .padding(top = miniPlayerHeight * (1f - swipe.absoluteFraction))
+            .graphicsLayer(alpha = swipe.absoluteFraction + .25f),
         contentPadding = PaddingValues(bottom = Theme.padding.small)
     ) {
         item {
