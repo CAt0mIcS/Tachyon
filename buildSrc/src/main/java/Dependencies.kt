@@ -27,7 +27,7 @@ object Dependency {
         const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Index.COMPOSE}"
         const val COIL = "io.coil-kt:coil-compose:2.2.2"
         const val PAGING = "androidx.paging:paging-compose:1.0.0-alpha17"
-        const val MATERIAL3 = "androidx.compose.material3:material3:1.2.0"
+        const val COMPOSE_MATERIAL3 = "androidx.compose.material3:material3:1.2.0"
 
         object Accompanist {
             const val NAVIGATION_ANIMATION =
@@ -137,9 +137,10 @@ fun DependencyHandler.compose() {
     implementation(Dependency.Compose.PAGING)
 
     implementation(Dependency.Compose.UI)
-//    implementation(Dependency.Compose.COMPOSE_MATERIAL)
+    implementation(Dependency.Compose.COMPOSE_MATERIAL)
     implementation(Dependency.Compose.UI_TOOLING_PREVIEW)
-    implementation(Dependency.Compose.MATERIAL3)
+    implementation(Dependency.Compose.COMPOSE_MATERIAL3)
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
 
     implementation(Dependency.Compose.NAVIGATION)
 

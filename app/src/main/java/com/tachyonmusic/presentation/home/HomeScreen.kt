@@ -1,7 +1,6 @@
 package com.tachyonmusic.presentation.home
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -36,14 +35,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
@@ -72,8 +70,6 @@ object HomeScreen :
     @Composable
     operator fun invoke(
         navController: NavController,
-        sheetState: SheetState,
-        onSheetStateFraction: (Float) -> Unit,
         miniPlayerHeight: Dp,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
@@ -114,7 +110,7 @@ object HomeScreen :
                             top = Theme.padding.medium
                         )
                         .shadow(Theme.shadow.medium, shape = Theme.shapes.medium)
-                        .background(Theme.colors.secondary, shape = Theme.shapes.medium)
+                        .clip(Theme.shapes.medium)
                         .defaultMinSize(
                             minWidth = TextFieldDefaults.MinWidth,
                             minHeight = TextFieldDefaults.MinHeight
@@ -125,18 +121,22 @@ object HomeScreen :
                         isSearching = true
                         viewModel.search(it, searchLocation)
                     },
-
-                    textStyle = TextStyle.Default.copy(
-                        fontSize = 22.sp,
-                        color = Theme.colors.contrastLow
-                    ),
                     singleLine = true,
-                    cursorBrush = SolidColor(Theme.colors.contrastLow)
                 ) { innerTextField ->
-                    TextFieldDefaults.TextFieldDecorationBox(
+                    TextFieldDefaults.DecorationBox(
                         value = searchText,
                         innerTextField = innerTextField,
-                        placeholder = { //
+                        enabled = true,
+                        singleLine = true,
+                        visualTransformation = VisualTransformation.None,
+                        interactionSource = interactionSource,
+                        isError = false,
+                        colors = TextFieldDefaults.colors().copy(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
+                        ),
+                        placeholder = {
                             Text(
                                 text = stringResource(androidx.appcompat.R.string.search_menu_title),
                                 fontSize = 22.sp
@@ -155,6 +155,7 @@ object HomeScreen :
                                 contentDescription = "Change search location",
                                 modifier = Modifier
                                     .scale(.9f)
+                                    .clip(Theme.shapes.extraLarge)
                                     .clickable {
                                         searchLocation = searchLocation.next
                                         if (isSearching)
@@ -162,19 +163,7 @@ object HomeScreen :
                                     }
                             )
                         },
-                        interactionSource = interactionSource,
-                        visualTransformation = VisualTransformation.None,
-                        singleLine = true,
-                        enabled = true,
-                        isError = false,
-                        colors = TextFieldDefaults.colors().copy(
-                            unfocusedContainerColor = Theme.colors.secondary, // TODO: background color?
-                            focusedContainerColor = Theme.colors.secondary, // TODO: background color?
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            cursorColor = Theme.colors.contrastLow
-                        ),
-                        contentPadding = PaddingValues(0.dp)
+                        contentPadding = PaddingValues(0.dp),
                     )
                 }
             }
@@ -194,10 +183,6 @@ object HomeScreen :
                             isSearching = false
                             searchText = ""
                             focusManager.clearFocus()
-                            scope.launch {
-                                sheetState.expand()
-                            }
-                            onSheetStateFraction(1f)
                         }
                     )
                 }
@@ -264,10 +249,7 @@ object HomeScreen :
                     ) {
                         playbacksView(history) {
                             viewModel.onItemClicked(it)
-                            scope.launch {
-                                sheetState.expand()
-                            }
-                            onSheetStateFraction(1f)
+                            //TODO MAT3 ("Expand bottomsheet")
                         }
                     }
                 }

@@ -1,13 +1,21 @@
 package com.tachyonmusic.presentation.core_components
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
 import com.tachyonmusic.presentation.theme.Theme
 
 /**
@@ -27,10 +35,12 @@ fun SwipeDelete(
 ) {
     var freezeOffset by remember { mutableStateOf(false) }
     // TODO MAt3
-//    val state = rememberSwipeToDismissBoxState {
-//        freezeOffset = it == DismissValue.DismissedToStart
-//    }
-//
+    val state = rememberSwipeToDismissBoxState(
+        initialValue = SwipeToDismissBoxValue.Settled,
+        confirmValueChange = { false },
+        positionalThreshold = { 128f }
+    )
+
 //    val animatedAlpha by animateFloatAsState(
 //        if (state.isDismissed(DismissDirection.EndToStart)
 //            || state.isDismissed(DismissDirection.StartToEnd)
@@ -39,53 +49,48 @@ fun SwipeDelete(
 //        tween(Theme.animation.short)
 //    )
 
-//    SwipeToDismiss(
-//        state = state,
-//        modifier = modifier,
-//        directions = setOf(
-//            DismissDirection.EndToStart
-//        ),
-//        dismissThreshold = .25f,
-//        freezeOffset = freezeOffset,
-//        background = {
-//            state.dismissDirection ?: return@SwipeToDismiss
-//
-//            val color by animateColorAsState(
-//                when (state.targetValue) {
-//                    DismissValue.Default -> primaryBackgroundColor
-//                    else -> Color.Red
-//                },
-//                animationSpec = tween(Theme.animation.long)
-//            )
-//
-//            val scale by animateFloatAsState(
-//                if (state.targetValue == DismissValue.Default) 1f else 1.4f,
-//                tween(Theme.animation.long)
-//            )
-//
-//            Box(
-//                Modifier
-//                    .fillMaxSize()
-//                    .background(color, shape)
-//                    .padding(horizontal = Dp(15f)),
-//                contentAlignment = Alignment.CenterEnd
-//            ) {
-//                IconButton(onClick = onClick) {
-//                    Icon(
-//                        Icons.Default.Delete,
-//                        contentDescription = "Delete Icon",
-//                        modifier = Modifier.scale(scale)
-//                    )
-//                }
-//            }
-//        },
-//        dismissContent = {
-//            val scope = this
-//            Box(modifier = Modifier.graphicsLayer { alpha = animatedAlpha }) {
-//                scope.content()
-//            }
-//        }
-//    )
+    SwipeToDismissBox(
+        state = state,
+        modifier = modifier,
+        backgroundContent = {
+            DeleteBackground(state, shape) {}
+        }
+    ) {
+        content()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DeleteBackground(state: SwipeToDismissBoxState, shape: Shape, onClick: () -> Unit) {
+    val color by animateColorAsState(
+        when (state.targetValue) {
+            SwipeToDismissBoxValue.EndToStart -> Color.Red
+            else -> Theme.colors.primary // TODO MAT3: Use new color system
+        },
+        animationSpec = tween(Theme.animation.long)
+    )
+
+    val scale by animateFloatAsState(
+        if (state.targetValue == SwipeToDismissBoxValue.Settled) 1f else 1.4f,
+        tween(Theme.animation.long)
+    )
+
+    Box(
+        Modifier
+            .fillMaxSize()
+            .background(color, shape)
+            .padding(horizontal = Dp(15f)),
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        IconButton(onClick = onClick) {
+            Icon(
+                Icons.Default.Delete,
+                contentDescription = "Delete Icon",
+                modifier = Modifier.scale(scale)
+            )
+        }
+    }
 }
 
 /**

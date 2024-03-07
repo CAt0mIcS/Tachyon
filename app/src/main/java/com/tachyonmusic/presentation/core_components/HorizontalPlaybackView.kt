@@ -10,11 +10,11 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,8 +64,8 @@ fun HorizontalPlaybackView(
                     modifier = Modifier
                         .padding(top = Theme.padding.small),
                     text = playback.displayTitle,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
                     gradientEdgeColor = Theme.colors.secondary
                 )
 
@@ -76,7 +76,7 @@ fun HorizontalPlaybackView(
                             bottom = Theme.padding.small
                         ),
                     text = playback.displaySubtitle,
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     gradientEdgeColor = Theme.colors.secondary
                 )
             }

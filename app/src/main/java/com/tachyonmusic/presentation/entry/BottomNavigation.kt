@@ -1,11 +1,10 @@
 package com.tachyonmusic.presentation.entry
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -21,14 +20,11 @@ import com.tachyonmusic.presentation.library.LibraryScreen
 import com.tachyonmusic.presentation.profile.ProfileScreen
 import com.tachyonmusic.presentation.theme.NoRippleTheme
 import com.tachyonmusic.presentation.theme.Theme
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomNavigation(
-    navController: NavController,
-    sheetState: SheetState,
-    onSheetStateFraction: (Float) -> Unit
+    navController: NavController
 ) {
     val items = listOf(
         HomeScreen,
@@ -39,7 +35,7 @@ fun BottomNavigation(
     val scope = rememberCoroutineScope()
 
     CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
-        androidx.compose.material3.NavigationBar(containerColor = Theme.colors.secondary) {
+        androidx.compose.material3.NavigationBar {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
@@ -51,21 +47,13 @@ fun BottomNavigation(
                         Icon(
                             painterResource(item.icon),
                             contentDescription = stringResource(item.title),
-                            modifier = Modifier.scale(1.6f) // TODO: Good practice? What happens if icons overlap?
+                            modifier = Modifier
+                                .scale(1.6f) // TODO: Good practice? What happens if icons overlap?
+                                .padding(Theme.padding.small)
                         )
                     },
-                    colors = NavigationBarItemDefaults.colors().copy(selectedIconColor = Theme.colors.contrastHigh, unselectedIconColor = Theme.colors.contrastLow),
-//                    selectedContentColor = Theme.colors.contrastHigh, // TODO MAT3 ^
-//                    unselectedContentColor = Theme.colors.contrastLow, // TODO MAT3 ^
                     selected = selected,
                     onClick = {
-                        if (sheetState.hasExpandedState) {
-                            scope.launch {
-                                sheetState.partialExpand()
-                            }
-                            onSheetStateFraction(0f)
-                        }
-
                         navController.navigate(item.route) {
 
                             navController.graph.startDestinationRoute?.let { screenRoute ->

@@ -60,7 +60,7 @@ dependencies {
 
     implementation(Dependency.Media3.MEDIA_SESSION)
     implementation(Dependency.Compose.FOUNDATION)
-    implementation(Dependency.Compose.MATERIAL3)
+    implementation(Dependency.Compose.COMPOSE_MATERIAL3)
 
     unitTest()
     androidTest()

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
 import com.tachyonmusic.core.data.constants.ArtworkLoadingIndicator
@@ -23,7 +24,7 @@ class RemoteArtwork(
     override val isLoaded = true
 
     @Composable
-    override fun Image(contentDescription: String?, modifier: Modifier) {
+    override fun Image(contentDescription: String?, modifier: Modifier, contentScale: ContentScale) {
         val url = try {
             uri.toURL().toString()
         } catch (e: java.lang.IllegalArgumentException) {
@@ -35,10 +36,11 @@ class RemoteArtwork(
                 modifier = Modifier.fillMaxSize(),
                 imageModel = { url },
                 imageOptions = ImageOptions(
-                    contentDescription = contentDescription
+                    contentDescription = contentDescription,
+                    contentScale = contentScale
                 ),
                 failure = {
-                    PlaceholderArtwork(contentDescription, modifier)
+                    PlaceholderArtwork(contentDescription, modifier, contentScale)
                 },
                 loading = {
                     ArtworkLoadingIndicator(modifier)

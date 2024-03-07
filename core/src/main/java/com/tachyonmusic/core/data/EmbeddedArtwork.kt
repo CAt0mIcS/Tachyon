@@ -7,6 +7,7 @@ import android.os.Parcelable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.SongMetadataExtractor
@@ -24,15 +25,16 @@ class EmbeddedArtwork(
         get() = bitmap != null
 
     @Composable
-    override fun Image(contentDescription: String?, modifier: Modifier) {
+    override fun Image(contentDescription: String?, modifier: Modifier, contentScale: ContentScale) {
         if (bitmap != null)
             androidx.compose.foundation.Image(
                 bitmap = bitmap.asImageBitmap(),
                 contentDescription = contentDescription,
-                modifier = modifier
+                modifier = modifier,
+                contentScale = contentScale
             )
         else
-            PlaceholderArtwork(contentDescription, modifier)
+            PlaceholderArtwork(contentDescription, modifier, contentScale)
     }
 
     override fun equals(other: Any?) =

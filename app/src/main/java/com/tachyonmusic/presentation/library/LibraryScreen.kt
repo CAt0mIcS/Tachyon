@@ -44,8 +44,6 @@ object LibraryScreen :
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     operator fun invoke(
-        sheetState: SheetState,
-        onSheetStateFraction: (Float) -> Unit,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
         var sortOptionsExpanded by remember { mutableStateOf(false) }
@@ -89,7 +87,7 @@ object LibraryScreen :
                         .fillMaxWidth()
                         .shadow(Theme.shadow.small, shape = Theme.shapes.extraLarge)
                         .horizontalScroll(rememberScrollState())
-                        .background(Theme.colors.secondary, shape = Theme.shapes.extraLarge)
+                        .clip(Theme.shapes.extraLarge)
                         .padding(
                             start = Theme.padding.medium,
                             top = Theme.padding.extraSmall,
@@ -165,8 +163,6 @@ object LibraryScreen :
                         color = iconAndTextColor
                     )
                 }
-
-
             }
 
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
@@ -213,13 +209,7 @@ object LibraryScreen :
                             }
                         },
                         onClick = {
-                            if (playback.isPlayable) {
-                                viewModel.onItemClicked(playback)
-                                scope.launch {
-                                    sheetState.expand()
-                                }
-                                onSheetStateFraction(1f)
-                            }
+                            TODO("Expand bottomsheet")
                         })
                 }
 

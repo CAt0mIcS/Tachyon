@@ -1,7 +1,6 @@
 package com.tachyonmusic.presentation.home.component
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -29,7 +28,7 @@ fun VerticalPlaybackView(
         modifier = modifier
             .width(Theme.padding.extraSmall * 2 + 100.dp)
             .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
-            .background(Theme.colors.secondary, shape = Theme.shapes.medium)
+            .clip(Theme.shapes.medium)
             .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
     ) {
         artwork.Image(
@@ -45,7 +44,7 @@ fun VerticalPlaybackView(
                 .padding(start = Theme.padding.small, end = Theme.padding.small),
             text = playback.displayTitle,
             fontWeight = FontWeight.Bold,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             gradientEdgeColor = Theme.colors.secondary
         )
 
@@ -57,7 +56,7 @@ fun VerticalPlaybackView(
                     end = Theme.padding.small
                 ),
             text = playback.displaySubtitle,
-            fontSize = 10.sp,
+            fontSize = 12.sp,
             gradientEdgeColor = Theme.colors.secondary
         )
     }

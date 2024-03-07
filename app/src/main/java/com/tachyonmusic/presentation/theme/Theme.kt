@@ -11,6 +11,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.tachyonmusic.app.R
 
 private val DarkColorPalette = darkColorScheme()
 
@@ -51,8 +57,32 @@ fun TachyonTheme(
     settings: ComposeSettings = ComposeSettings(),
     content: @Composable () -> Unit
 ) {
-    val colors = if (darkTheme) DarkColorPalette else LightColorPalette
-    val customColors = if (darkTheme) DarkCustomColorPalette else LightCustomColorPalette
+//    val colors = if (darkTheme) DarkColorPalette else LightColorPalette TODO MAT3
+    val colors = DarkColorPalette
+//    val customColors = if (darkTheme) DarkCustomColorPalette else LightCustomColorPalette
+    val customColors = DarkCustomColorPalette
+
+    val typography = Typography(
+        displayMedium = TextStyle(
+            fontFamily = FontFamily(
+                Font(R.font.microsoft_yahei),
+            ),
+            fontWeight = FontWeight.Normal,
+            fontSize = 16.sp
+        )
+        /* Other default text styles to override
+        button = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.W500,
+            fontSize = 14.sp
+        ),
+        caption = TextStyle(
+            fontFamily = FontFamily.Default,
+            fontWeight = FontWeight.Normal,
+            fontSize = 12.sp
+        )
+        */
+    )
 
     CompositionLocalProvider(
         LocalPadding provides Padding(),
@@ -63,7 +93,7 @@ fun TachyonTheme(
     ) {
         MaterialTheme(
             colorScheme = colors,
-            typography = Typography,
+            typography = typography,
             shapes = Shapes,
             content = content
         )
