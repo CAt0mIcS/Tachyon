@@ -6,9 +6,15 @@
 package com.tachyonmusic.presentation.entry
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -39,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -70,6 +77,7 @@ enum class SwipingStates {
     COLLAPSED
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
@@ -158,9 +166,6 @@ fun MainScreen(
             var miniPlayerHeight by remember { mutableStateOf(0.dp) }
             val navController = rememberAnimatedNavController()
 
-            // https://www.strv.com/blog/collapsing-toolbar-using-jetpack-compose-motion-layout-engineering
-            val swipingState = rememberSwipeableState(initialValue = SwipingStates.COLLAPSED)
-
 
             Scaffold(
                 bottomBar = {
@@ -175,77 +180,69 @@ fun MainScreen(
                 ) {
                     val heightInPx =
                         with(LocalDensity.current) { maxHeight.toPx() } // Get height of screen
-                    val connection = remember {
-                        object : NestedScrollConnection {
-                            override fun onPreScroll(
-                                available: Offset,
-                                source: NestedScrollSource
-                            ): Offset {
-                                val delta = available.y
-                                return if (delta < 0) {
-                                    swipingState.performDrag(delta).toOffset()
-                                } else
-                                    Offset.Zero
-                            }
 
-                            override fun onPostScroll(
-                                consumed: Offset,
-                                available: Offset,
-                                source: NestedScrollSource
-                            ): Offset {
-                                val delta = available.y
-                                return swipingState.performDrag(delta).toOffset()
-                            }
+                    // https://www.strv.com/blog/collapsing-toolbar-using-jetpack-compose-motion-layout-engineering
+                    // https://medium.com/@AungThiha3/jetpack-compose-anchored-draggable-item-in-motionlayout-part-1-8d5a1cde880f
 
-                            override suspend fun onPostFling(
-                                consumed: Velocity,
-                                available: Velocity
-                            ): Velocity {
-                                swipingState.performFling(velocity = available.y)
-                                return super.onPostFling(consumed, available)
-                            }
-
-                            private fun Float.toOffset() = Offset(0f, this)
-                        }
+                    val anchors = DraggableAnchors {
+                        SwipingStates.COLLAPSED at heightInPx
+                        SwipingStates.EXPANDED at 0f
                     }
+                    val density = LocalDensity.current
+                    val anchoredDraggableState = remember {
+                        AnchoredDraggableState(
+                            initialValue = SwipingStates.COLLAPSED,
+                            anchors = anchors,
+                            positionalThreshold = { distance: Float -> distance * 0.5f },
+                            velocityThreshold = { with(density) { 100.dp.toPx() } },
+                            animationSpec = tween(),
+                        )
+                    }
+                    val offset =
+                        if (anchoredDraggableState.offset.isNaN()) 0f else anchoredDraggableState.offset
+                    val progress = (1 - (offset / heightInPx)).coerceIn(0f, 1f)
 
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .swipeable(
-                                state = swipingState,
-                                thresholds = { _, _ -> FractionalThreshold(0.5f) },
-                                orientation = Orientation.Vertical,
-                                anchors = mapOf(
-                                    // Maps anchor points (in px) to states
-                                    0f to SwipingStates.EXPANDED,
-                                    heightInPx to SwipingStates.COLLAPSED,
-                                )
-                            )
-                            .nestedScroll(connection)
                     ) {
                         Column {
                             MotionLayoutHeader(
-                                progress = if (swipingState.progress.to == SwipingStates.EXPANDED)
-                                    swipingState.progress.fraction else 1f - swipingState.progress.fraction,
+                                progress = progress,
                                 mainContent = { modifier ->
-                                    Box(modifier = modifier.fillMaxHeight(.9f)) {
-                                        NavigationGraph(navController, miniPlayerHeight)
+                                    // TODO: This fraction currently controls how much of the motion layout is visible
+                                    //          so how much of the miniplayer can be seen at the bottom and how far up it is
+                                    Box(modifier = modifier.fillMaxHeight(.918f)) {
+                                        NavigationGraph(
+                                            navController,
+                                            miniPlayerHeight,
+                                            anchoredDraggableState
+                                        )
                                     }
                                 },
                                 scrollableBody = {
                                     // TODO: Animate properly: Image moving from left corner to big screen, text moving, ...
 
-                                    PlayerLayout(
-                                        navController,
-                                        miniPlayerHeight,
-                                        { miniPlayerHeight = it },
-                                        swipingState,
-                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .anchoredDraggable(
+                                                anchoredDraggableState,
+                                                Orientation.Vertical
+                                            )
+                                            .padding(top = Theme.padding.extraSmall)
+                                    ) {
+                                        PlayerLayout(
+                                            navController,
+                                            miniPlayerHeight,
+                                            { miniPlayerHeight = it },
+                                            anchoredDraggableState,
+                                            progress,
+                                        )
+                                    }
                                 }
                             )
                         }
-
                     }
                 }
             }
@@ -271,33 +268,17 @@ private fun MotionLayoutHeader(
                 .fillMaxWidth()
         )
 
-        Box(
-            Modifier
-                .layoutId("content")
-        ) {
-            Box(modifier = Modifier.fillMaxSize()) {
+        Box(Modifier.layoutId("content")) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(Theme.shapes.large)
+            ) {
                 scrollableBody()
             }
         }
     }
 }
-
-
-val SwipeableState<SwipingStates>.absoluteFraction: Float
-    get() {
-        // not moving
-        if (progress == SwipeProgress(currentValue, currentValue, 1f) &&
-            (progress.fraction == 1f || progress.fraction == 0f)
-        ) {
-            return if (currentValue == SwipingStates.EXPANDED) 1f else 0f
-        } else if (direction == 1f) { // moving from top to bottom
-            return 1f - progress.fraction
-        } else if (direction == -1f) { // moving from bottom to top
-            return progress.fraction
-        }
-
-        throw IllegalArgumentException("fraction: ${progress.fraction}, direction: $direction")
-    }
 
 
 private fun jsonConstraintSetStart() = ConstraintSet(
@@ -312,7 +293,7 @@ private fun jsonConstraintSetStart() = ConstraintSet(
 		width: "spread",
 		start: ['parent', 'start', 0],
 		end: ['parent', 'end', 0],
-		top: ['homeScreen', 'bottom', 24],
+		top: ['homeScreen', 'bottom', 0],
 	}
 } """
 )

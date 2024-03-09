@@ -1,11 +1,13 @@
 package com.tachyonmusic.presentation.home.component
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +32,7 @@ fun VerticalPlaybackView(
             .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
             .clip(Theme.shapes.medium)
             .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surfaceContainer, Theme.shapes.medium)
     ) {
         artwork.Image(
             contentDescription = "Album Artwork",

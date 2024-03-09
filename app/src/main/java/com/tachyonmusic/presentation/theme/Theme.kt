@@ -18,9 +18,67 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.app.R
 
-private val DarkColorPalette = darkColorScheme()
+private val LightColorPalette = lightColorScheme(
+    primary = LightPrimary,
+    onPrimary = LightContrastHigh,
+    primaryContainer = LightSecondary,
+    onPrimaryContainer = LightContrastHigh,
+    inversePrimary = LightPrimary.inverse(),
 
-private val LightColorPalette = lightColorScheme()
+    secondary = LightSecondary,
+    onSecondary = LightContrastHigh,
+    secondaryContainer = LightSecondary,
+    onSecondaryContainer = LightContrastHigh,
+
+    tertiary = LightTertiary,
+    onTertiary = LightContrastExtreme,
+    tertiaryContainer = LightTertiary,
+    onTertiaryContainer = LightContrastExtreme,
+
+    surface = LightSecondary,
+    onSurface = LightContrastHigh,
+    onSurfaceVariant = LightContrastLow,
+
+    surfaceContainerLowest = LightSurfaceContainerLowest,
+    surfaceContainerLow = LightSurfaceContainerLow,
+    surfaceContainer = LightSurfaceContainer,
+    surfaceContainerHigh = LightSurfaceContainerHigh,
+    surfaceContainerHighest = LightSurfaceContainerHighest,
+
+    background = LightPrimary,
+    onBackground = LightContrastLow
+)
+
+private val DarkColorPalette = darkColorScheme(
+    primary = LightColorPalette.primary.inverse(),
+    onPrimary = LightColorPalette.onPrimary.inverse(),
+    primaryContainer = LightColorPalette.primaryContainer.inverse(),
+    onPrimaryContainer = LightColorPalette.onPrimaryContainer.inverse(),
+    inversePrimary = LightColorPalette.inversePrimary.inverse(),
+
+    secondary = LightColorPalette.secondary.inverse(),
+    onSecondary = LightColorPalette.onSecondary.inverse(),
+    secondaryContainer = LightColorPalette.secondaryContainer.inverse(),
+    onSecondaryContainer = LightColorPalette.onSecondaryContainer.inverse(),
+
+    tertiary = LightColorPalette.tertiary.inverse(),
+    onTertiary = LightColorPalette.onTertiary.inverse(),
+    tertiaryContainer = LightColorPalette.tertiaryContainer.inverse(),
+    onTertiaryContainer = LightColorPalette.onTertiaryContainer.inverse(),
+
+    surface = LightColorPalette.surface.inverse(),
+    onSurface = LightColorPalette.onSurface.inverse(),
+    onSurfaceVariant = LightColorPalette.onSurfaceVariant.inverse(),
+
+    surfaceContainerLowest = LightColorPalette.surfaceContainerLowest.inverse(),
+    surfaceContainerLow = LightColorPalette.surfaceContainerLow.inverse(),
+    surfaceContainer = LightColorPalette.surfaceContainer.inverse(),
+    surfaceContainerHigh = LightColorPalette.surfaceContainerHigh.inverse(),
+    surfaceContainerHighest = LightColorPalette.surfaceContainerHighest.inverse(),
+
+    background = LightColorPalette.background.inverse(),
+    onBackground = LightColorPalette.onBackground.inverse()
+)
 
 private val DarkCustomColorPalette = Colors(
     primary = DarkPrimary,
@@ -57,10 +115,8 @@ fun TachyonTheme(
     settings: ComposeSettings = ComposeSettings(),
     content: @Composable () -> Unit
 ) {
-//    val colors = if (darkTheme) DarkColorPalette else LightColorPalette TODO MAT3
-    val colors = DarkColorPalette
-//    val customColors = if (darkTheme) DarkCustomColorPalette else LightCustomColorPalette
-    val customColors = DarkCustomColorPalette
+    val colors = if (darkTheme) DarkColorPalette else LightColorPalette
+    val customColors = if (darkTheme) DarkCustomColorPalette else LightCustomColorPalette
 
     val typography = Typography(
         displayMedium = TextStyle(

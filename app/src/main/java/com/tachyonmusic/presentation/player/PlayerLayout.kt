@@ -1,25 +1,30 @@
 package com.tachyonmusic.presentation.player
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.SwipeableState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavController
 import com.tachyonmusic.presentation.entry.SwipingStates
-import com.tachyonmusic.presentation.entry.absoluteFraction
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    ExperimentalFoundationApi::class
+)
 @Composable
 fun PlayerLayout(
     navController: NavController,
     miniPlayerHeight: Dp,
     onMiniPlayerHeight: (Dp) -> Unit,
-    swipe: SwipeableState<SwipingStates>
+    draggable: AnchoredDraggableState<SwipingStates>,
+    motionLayoutProgress: Float
 ) {
     val scope = rememberCoroutineScope()
 
@@ -29,9 +34,8 @@ fun PlayerLayout(
      * If the bottom sheet is collapsed we show the MiniPlayer in the HomeScreen through
      * the bottom sheet peak height.
      */
-    if (swipe.absoluteFraction < 1f) {
-        println("PLL: Should show miniplayer")
-        MiniPlayerScreen(swipe, onMiniPlayerHeight)
+    if (motionLayoutProgress < 1f) {
+        MiniPlayerScreen(draggable, motionLayoutProgress, onMiniPlayerHeight)
     }
 
     /**
@@ -39,14 +43,13 @@ fun PlayerLayout(
      * the LazyColumn to be the [miniPlayerHeight] and animate it with the current fraction of the
      * bottom sheet swipe
      */
-    if (swipe.absoluteFraction > 0f) {
+    if (motionLayoutProgress > 0f) {
         BackHandler {
             scope.launch {
-                swipe.animateTo(SwipingStates.COLLAPSED)
+                draggable.animateTo(SwipingStates.COLLAPSED)
             }
         }
 
-        PlayerScreen(swipe, miniPlayerHeight, navController)
-        println("PLL: Should show player")
+        PlayerScreen(motionLayoutProgress, miniPlayerHeight, navController)
     }
 }

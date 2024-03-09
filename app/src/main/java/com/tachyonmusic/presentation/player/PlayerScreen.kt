@@ -32,7 +32,6 @@ import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.entry.SwipingStates
-import com.tachyonmusic.presentation.entry.absoluteFraction
 import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
@@ -47,7 +46,7 @@ import com.tachyonmusic.util.toReadableString
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PlayerScreen(
-    swipe: SwipeableState<SwipingStates>,
+    motionLayoutProgress: Float,
     miniPlayerHeight: Dp,
     navController: NavController,
     viewModel: PlayerViewModel = hiltViewModel()
@@ -93,8 +92,8 @@ fun PlayerScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = miniPlayerHeight * (1f - swipe.absoluteFraction))
-            .graphicsLayer(alpha = swipe.absoluteFraction + .25f),
+            .padding(top = miniPlayerHeight * (1f - motionLayoutProgress))
+            .graphicsLayer(alpha = motionLayoutProgress + .25f),
         contentPadding = PaddingValues(bottom = Theme.padding.small)
     ) {
         item {
@@ -146,7 +145,6 @@ fun PlayerScreen(
                     Icon(
                         painterResource(R.drawable.ic_add_circle),
                         null,
-                        tint = Theme.colors.contrastHigh.copy(alpha = .8f),
                         modifier = Modifier.scale(1.7f)
                     )
                 }

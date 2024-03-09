@@ -1,7 +1,10 @@
 package com.tachyonmusic.presentation.home
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,9 +22,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -55,6 +58,7 @@ import com.tachyonmusic.domain.use_case.search.SearchLocation
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
+import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.home.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.isEnabled
@@ -66,11 +70,14 @@ import kotlinx.coroutines.launch
 object HomeScreen :
     BottomNavigationItem(R.string.btmNav_home, R.drawable.ic_home, "home") {
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+        ExperimentalFoundationApi::class
+    )
     @Composable
     operator fun invoke(
         navController: NavController,
         miniPlayerHeight: Dp,
+        draggable: AnchoredDraggableState<SwipingStates>,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var isSearching by remember { mutableStateOf(false) }
@@ -248,8 +255,10 @@ object HomeScreen :
                             .padding(start = Theme.padding.small, top = Theme.padding.extraSmall),
                     ) {
                         playbacksView(history) {
+                            scope.launch {
+                                draggable.animateTo(SwipingStates.EXPANDED)
+                            }
                             viewModel.onItemClicked(it)
-                            //TODO MAT3 ("Expand bottomsheet")
                         }
                     }
                 }

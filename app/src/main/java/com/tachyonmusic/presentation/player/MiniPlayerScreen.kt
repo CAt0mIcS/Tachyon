@@ -1,7 +1,9 @@
 package com.tachyonmusic.presentation.player
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.SwipeableState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,15 +21,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.presentation.entry.SwipingStates
-import com.tachyonmusic.presentation.entry.absoluteFraction
 import com.tachyonmusic.presentation.player.component.MiniPlayer
 import com.tachyonmusic.util.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    ExperimentalFoundationApi::class
+)
 @Composable
 fun MiniPlayerScreen(
-    swipe: SwipeableState<SwipingStates>,
+    draggable: AnchoredDraggableState<SwipingStates>,
+    motionLayoutProgress: Float,
     onMiniPlayerHeight: (Dp) -> Unit,
     viewModel: MiniPlayerViewModel = hiltViewModel()
 ) {
@@ -57,7 +61,7 @@ fun MiniPlayerScreen(
      *   ProgressIndicator line
      */
     Layout(
-        modifier = Modifier.graphicsLayer(alpha = 1f - swipe.absoluteFraction),
+        modifier = Modifier.graphicsLayer(alpha = 1f - motionLayoutProgress),
         content = {
             MiniPlayer(
                 playback = playback,
@@ -67,7 +71,7 @@ fun MiniPlayerScreen(
                 onPlayPauseClicked = viewModel::pauseResume,
                 onClick = {
                     scope.launch {
-                        swipe.animateTo(SwipingStates.EXPANDED)
+                        draggable.animateTo(SwipingStates.EXPANDED)
                     }
                 }
             )
