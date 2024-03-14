@@ -39,10 +39,13 @@ val DarkOrange = LightOrange
 val DarkOrangePartial1 = LightOrangePartial1
 val DarkOrangePartial2 = LightOrangePartial2
 
+val DarkContrastExtreme = Color.White
 val DarkContrastHigh = Color(0xFFBDBDBD)
 val DarkContrastLow = LightContrastLow.inverse()
 
 val DarkBorderColor = LightBorderColor.inverse()
+
+val DarkSurfaceContainerLow = Color(0xFF181818)
 
 
 internal fun Color.inverse() = Color(

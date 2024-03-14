@@ -279,6 +279,7 @@ private fun MotionLayoutHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(Theme.shapes.large)
+                    .background(MaterialTheme.colorScheme.surfaceContainer, Theme.shapes.large)
             ) {
                 scrollableBody()
             }

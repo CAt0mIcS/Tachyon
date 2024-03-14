@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.player
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -369,7 +370,12 @@ fun PlayerScreen(
                 ) {
                     SwipeDelete(
                         shape = Theme.shapes.medium,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colorScheme.tertiaryContainer,
+                                Theme.shapes.medium
+                            ),
                         onClick = { viewModel.removeFromCurrentPlaylist(updatedPlayback) }
                     ) {
                         HorizontalPlaybackView(

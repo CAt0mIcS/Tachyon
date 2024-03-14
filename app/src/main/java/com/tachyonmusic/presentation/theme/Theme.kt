@@ -50,34 +50,34 @@ private val LightColorPalette = lightColorScheme(
 )
 
 private val DarkColorPalette = darkColorScheme(
-    primary = LightColorPalette.primary.inverse(),
-    onPrimary = LightColorPalette.onPrimary.inverse(),
-    primaryContainer = LightColorPalette.primaryContainer.inverse(),
-    onPrimaryContainer = LightColorPalette.onPrimaryContainer.inverse(),
-    inversePrimary = LightColorPalette.inversePrimary.inverse(),
+    primary = DarkPrimary,
+    onPrimary = DarkContrastHigh,
+    primaryContainer = DarkSecondary,
+    onPrimaryContainer = DarkContrastHigh,
+    inversePrimary = DarkPrimary.inverse(),
 
-    secondary = LightColorPalette.secondary.inverse(),
-    onSecondary = LightColorPalette.onSecondary.inverse(),
-    secondaryContainer = LightColorPalette.secondaryContainer.inverse(),
-    onSecondaryContainer = LightColorPalette.onSecondaryContainer.inverse(),
+    secondary = DarkSecondary,
+    onSecondary = DarkContrastHigh,
+    secondaryContainer = DarkSecondary,
+    onSecondaryContainer = DarkContrastHigh,
 
-    tertiary = LightColorPalette.tertiary.inverse(),
-    onTertiary = LightColorPalette.onTertiary.inverse(),
-    tertiaryContainer = LightColorPalette.tertiaryContainer.inverse(),
-    onTertiaryContainer = LightColorPalette.onTertiaryContainer.inverse(),
+    tertiary = DarkTertiary,
+    onTertiary = DarkContrastExtreme,
+    tertiaryContainer = DarkTertiary,
+    onTertiaryContainer = DarkContrastExtreme,
 
-    surface = LightColorPalette.surface.inverse(),
-    onSurface = LightColorPalette.onSurface.inverse(),
-    onSurfaceVariant = LightColorPalette.onSurfaceVariant.inverse(),
+    surface = DarkSecondary,
+    onSurface = DarkContrastHigh,
+    onSurfaceVariant = DarkContrastLow,
 
     surfaceContainerLowest = LightColorPalette.surfaceContainerLowest.inverse(),
-    surfaceContainerLow = LightColorPalette.surfaceContainerLow.inverse(),
+    surfaceContainerLow = DarkSurfaceContainerLow,
     surfaceContainer = LightColorPalette.surfaceContainer.inverse(),
     surfaceContainerHigh = LightColorPalette.surfaceContainerHigh.inverse(),
     surfaceContainerHighest = LightColorPalette.surfaceContainerHighest.inverse(),
 
-    background = LightColorPalette.background.inverse(),
-    onBackground = LightColorPalette.onBackground.inverse()
+    background = DarkPrimary,
+    onBackground = DarkContrastLow
 )
 
 private val DarkCustomColorPalette = Colors(
