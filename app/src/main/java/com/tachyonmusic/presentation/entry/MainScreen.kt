@@ -1,6 +1,6 @@
 @file:OptIn(
     ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class,
-    ExperimentalMotionApi::class, ExperimentalMaterialApi::class
+    ExperimentalMotionApi::class, ExperimentalMaterialApi::class, ExperimentalFoundationApi::class
 )
 
 package com.tachyonmusic.presentation.entry
@@ -33,6 +33,7 @@ import androidx.compose.material.swipeable
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,6 +53,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -180,12 +182,14 @@ fun MainScreen(
                 ) {
                     val heightInPx =
                         with(LocalDensity.current) { maxHeight.toPx() } // Get height of screen
+                    val miniPlayerHeightInPx =
+                        with(LocalDensity.current) { if (miniPlayerHeight <= 0.dp) 70.dp.toPx() else miniPlayerHeight.toPx() }
 
                     // https://www.strv.com/blog/collapsing-toolbar-using-jetpack-compose-motion-layout-engineering
                     // https://medium.com/@AungThiha3/jetpack-compose-anchored-draggable-item-in-motionlayout-part-1-8d5a1cde880f
 
                     val anchors = DraggableAnchors {
-                        SwipingStates.COLLAPSED at heightInPx
+                        SwipingStates.COLLAPSED at heightInPx - miniPlayerHeightInPx
                         SwipingStates.EXPANDED at 0f
                     }
                     val density = LocalDensity.current
@@ -205,14 +209,14 @@ fun MainScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
                     ) {
                         Column {
                             MotionLayoutHeader(
-                                progress = progress,
+                                progress,
+                                anchoredDraggableState,
                                 mainContent = { modifier ->
-                                    // TODO: This fraction currently controls how much of the motion layout is visible
-                                    //          so how much of the miniplayer can be seen at the bottom and how far up it is
-                                    Box(modifier = modifier.fillMaxHeight(.918f)) {
+                                    Box(modifier = modifier.fillMaxHeight()) {
                                         NavigationGraph(
                                             navController,
                                             miniPlayerHeight,
@@ -250,9 +254,11 @@ fun MainScreen(
     }
 }
 
+@OptIn(ExperimentalMotionApi::class)
 @Composable
 private fun MotionLayoutHeader(
     progress: Float,
+    draggableState: AnchoredDraggableState<SwipingStates>,
     mainContent: @Composable (Modifier) -> Unit,
     scrollableBody: @Composable () -> Unit
 ) {
@@ -260,7 +266,7 @@ private fun MotionLayoutHeader(
         start = jsonConstraintSetStart(),
         end = jsonConstraintSetEnd(),
         progress = progress,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth()
     ) {
         mainContent(
             Modifier
@@ -271,7 +277,7 @@ private fun MotionLayoutHeader(
         Box(Modifier.layoutId("content")) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .clip(Theme.shapes.large)
             ) {
                 scrollableBody()

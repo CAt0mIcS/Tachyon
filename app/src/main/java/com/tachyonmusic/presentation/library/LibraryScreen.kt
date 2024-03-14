@@ -4,6 +4,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -38,6 +39,7 @@ import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.sec
+import kotlinx.coroutines.launch
 
 object LibraryScreen :
     BottomNavigationItem(R.string.btmNav_library, R.drawable.ic_library, "library") {
@@ -211,7 +213,10 @@ object LibraryScreen :
                             }
                         },
                         onClick = {
-                            TODO("Expand bottomsheet")
+                            viewModel.onItemClicked(playback)
+                            scope.launch {
+                                draggable.animateTo(SwipingStates.EXPANDED)
+                            }
                         })
                 }
 
