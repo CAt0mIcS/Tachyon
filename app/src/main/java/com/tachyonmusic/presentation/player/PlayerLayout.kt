@@ -23,6 +23,8 @@ fun PlayerLayout(
 ) {
     val scope = rememberCoroutineScope()
 
+    println("PRG INLAYOUT: $motionLayoutProgress")
+
     // TODO: Different layout in landscape mode
 
     /**
@@ -38,7 +40,7 @@ fun PlayerLayout(
      * the LazyColumn to be the [miniPlayerHeight] and animate it with the current fraction of the
      * bottom sheet swipe
      */
-    if (motionLayoutProgress > 0.1f) {
+    if (motionLayoutProgress > 0f) {
         BackHandler {
             scope.launch {
                 draggable.animateTo(SwipingStates.COLLAPSED)

@@ -111,7 +111,7 @@ fun MiniPlayer(
                 .padding(start = Theme.padding.medium, end = Theme.padding.medium),
             color = MaterialTheme.colorScheme.primary,
             backgroundColor = MaterialTheme.colorScheme.primary.interpolate(MaterialTheme.colorScheme.onPrimaryContainer)
-                .copy(alpha = .4f) // TODO MAT3
+                .interpolate(MaterialTheme.colorScheme.background)
         )
     }
 }

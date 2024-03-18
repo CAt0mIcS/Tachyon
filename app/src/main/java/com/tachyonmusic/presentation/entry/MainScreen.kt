@@ -204,7 +204,16 @@ fun MainScreen(
                     }
                     val offset =
                         if (anchoredDraggableState.offset.isNaN()) 0f else anchoredDraggableState.offset
-                    val progress = (1 - (offset / heightInPx)).coerceIn(0f, 1f)
+                    val progress =
+                        (1 - (offset / heightInPx)).coerceIn(0f, 1f)
+
+                    println(
+                        "PRG: $progress OFF: $offset HEIGHTINPX: $heightInPx MPH: $miniPlayerHeightInPx 1dp=${
+                            with(
+                                LocalDensity.current
+                            ) { 1.dp.toPx() }
+                        }"
+                    )
 
                     Box(
                         modifier = Modifier
@@ -236,12 +245,24 @@ fun MainScreen(
                                             )
                                             .padding(top = Theme.padding.extraSmall)
                                     ) {
+                                        // TODO: When MiniPlayer is collapsed [progress] is still something like 0.079...
+                                        //      we're correcting it here and it seems to be missing [miniPlayerHeight]
+                                        //      and extra small padding to make it 0 when collapsed and 1 when expanded.
+                                        //      This may not be true for all devices and densities and paddings and size and ...
+                                        val extraSmallPaddingInPx = with(LocalDensity.current) {
+                                            Theme.padding.extraSmall.toPx()
+                                        }
+
+                                        val correctedProgress =
+                                            (1 - (offset / (heightInPx - miniPlayerHeightInPx - extraSmallPaddingInPx)))
+                                                .coerceIn(0f, 1f)
+
                                         PlayerLayout(
                                             navController,
                                             miniPlayerHeight,
                                             { miniPlayerHeight = it },
                                             anchoredDraggableState,
-                                            progress,
+                                            correctedProgress,
                                         )
                                     }
                                 }
