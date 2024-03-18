@@ -138,7 +138,7 @@ fun PlayerScreen(
                             ),
                         text = playback.displayTitle,
                         fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.Bold
                     )
 
                     AnimatedText(
@@ -148,7 +148,7 @@ fun PlayerScreen(
                                 end = Theme.padding.medium
                             ),
                         text = playback.displaySubtitle,
-                        fontSize = 18.sp,
+                        fontSize = 18.sp
                     )
                 }
 

@@ -37,7 +37,7 @@ import com.tachyonmusic.presentation.theme.Theme
 fun AnimatedText(
     text: String,
     modifier: Modifier = Modifier,
-    gradientEdgeColor: Color = MaterialTheme.colorScheme.primary,
+    gradientEdgeColor: Color = MaterialTheme.colorScheme.background,
     gradientWidth: Dp = 12.dp,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
