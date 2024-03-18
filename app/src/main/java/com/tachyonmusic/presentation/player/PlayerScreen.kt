@@ -349,7 +349,7 @@ fun PlayerScreen(
                 EqualizerEditor(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = Theme.padding.medium)
+                        .padding(horizontal = Theme.padding.large)
                 )
             }
         }

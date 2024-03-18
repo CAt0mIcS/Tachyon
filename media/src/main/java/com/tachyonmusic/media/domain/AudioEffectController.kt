@@ -23,8 +23,8 @@ interface AudioEffectController {
     val numBands: Int
     val maxBandLevel: SoundLevel
     val minBandLevel: SoundLevel
-    val bands: List<EqualizerBand>?
     val presets: List<String>
+    val bands: List<EqualizerBand>?
 
     var reverb: ReverbConfig?
 

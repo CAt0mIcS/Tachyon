@@ -129,7 +129,6 @@ fun EqualizerEditor(
         )
 
         if (equalizer.bands != null) {
-
             if (equalizer.presets.isNotEmpty()) {
                 var isSelectingEqualizerPreset by remember { mutableStateOf(false) }
 
@@ -148,6 +147,41 @@ fun EqualizerEditor(
                         })
                     }
                 }
+
+//
+//                var isSelectingEqualizerPreset by remember { mutableStateOf(false) }
+//
+//                ExposedDropdownMenuBox(
+//                    modifier = Modifier.height(200.dp),
+//                    expanded = isSelectingEqualizerPreset,
+//                    onExpandedChange = { isSelectingEqualizerPreset = it }
+//                ) {
+//                    TextField(
+//                        value = equalizer.currentPreset ?: "Custom",
+//                        onValueChange = {},
+//                        readOnly = true,
+//                        trailingIcon = {
+//                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = isSelectingEqualizerPreset)
+//                        },
+//                        placeholder = {
+//                            Text(text = "Reverb Preset")
+//                        },
+//                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
+//                        modifier = Modifier.menuAnchor()
+//                    )
+//
+//                    ExposedDropdownMenu(
+//                        expanded = isSelectingEqualizerPreset,
+//                        onDismissRequest = { isSelectingEqualizerPreset = false }
+//                    ) {
+//                        for (preset in equalizer.presets) {
+//                            DropdownMenuItem(text = { Text(preset) }, onClick = {
+//                                isSelectingEqualizerPreset = false
+//                                viewModel.setEqualizerPreset(preset)
+//                            })
+//                        }
+//                    }
+//                }
             }
 
             for (bandNumber in equalizer.bands!!.indices) {
@@ -192,11 +226,7 @@ fun EqualizerEditor(
 
             ExposedDropdownMenuBox(
                 expanded = reverbPresetMenuExpanded,
-                onExpandedChange = { reverbPresetMenuExpanded = !reverbPresetMenuExpanded },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(Theme.padding.medium)
-                    .height(250.dp)
+                onExpandedChange = { reverbPresetMenuExpanded = it },
             ) {
 
                 TextField(
@@ -209,190 +239,191 @@ fun EqualizerEditor(
 
                 ExposedDropdownMenu(
                     expanded = reverbPresetMenuExpanded,
-                    onDismissRequest = { reverbPresetMenuExpanded = false }) {
-                }
+                    onDismissRequest = { reverbPresetMenuExpanded = false }
+                ) {
+                    val applyReverb = { reverb: ReverbConfig ->
+                        viewModel.setReverb(reverb)
+                        reverbPresetMenuExpanded = false
 
-                val applyReverb = { reverb: ReverbConfig ->
-                    viewModel.setReverb(reverb)
-
-                    selectedReverbText = when (reverb) {
-                        ReverbConfig.PRESET_GENERIC -> R.string.reverb_generic_name
-                        ReverbConfig.PRESET_PADDEDCELL -> R.string.reverb_paddedcell_name
-                        ReverbConfig.PRESET_ROOM -> R.string.reverb_room_name
-                        ReverbConfig.PRESET_BATHROOM -> R.string.reverb_bathroom_name
-                        ReverbConfig.PRESET_LIVINGROOM -> R.string.reverb_livingroom_name
-                        ReverbConfig.PRESET_STONEROOM -> R.string.reverb_stoneroom_name
-                        ReverbConfig.PRESET_AUDITORIUM -> R.string.reverb_auditorium_name
-                        ReverbConfig.PRESET_CONCERTHALL -> R.string.reverb_concerthall_name
-                        ReverbConfig.PRESET_CAVE -> R.string.reverb_cave_name
-                        ReverbConfig.PRESET_ARENA -> R.string.reverb_arena_name
-                        ReverbConfig.PRESET_HANGAR -> R.string.reverb_hangar_name
-                        ReverbConfig.PRESET_CARPETEDHALLWAY -> R.string.reverb_carpetedhallway_name
-                        ReverbConfig.PRESET_HALLWAY -> R.string.reverb_hallway_name
-                        ReverbConfig.PRESET_STONECORRIDOR -> R.string.reverb_stonecorridor_name
-                        ReverbConfig.PRESET_ALLEY -> R.string.reverb_alley_name
-                        ReverbConfig.PRESET_FOREST -> R.string.reverb_forest_name
-                        ReverbConfig.PRESET_CITY -> R.string.reverb_city_name
-                        ReverbConfig.PRESET_MOUNTAINS -> R.string.reverb_mountains_name
-                        ReverbConfig.PRESET_QUARRY -> R.string.reverb_quarry_name
-                        ReverbConfig.PRESET_PLAIN -> R.string.reverb_plain_name
-                        ReverbConfig.PRESET_PARKINGLOT -> R.string.reverb_parkinglot_name
-                        ReverbConfig.PRESET_SEWERPIPE -> R.string.reverb_sewerpipe_name
-                        ReverbConfig.PRESET_UNDERWATER -> R.string.reverb_underwater_name
-                        ReverbConfig.PRESET_SMALLROOM -> R.string.reverb_smallroom_name
-                        ReverbConfig.PRESET_MEDIUMROOM -> R.string.reverb_mediumroom_name
-                        ReverbConfig.PRESET_LARGEROOM -> R.string.reverb_largeroom_name
-                        ReverbConfig.PRESET_MEDIUMHALL -> R.string.reverb_mediumhall_name
-                        ReverbConfig.PRESET_LARGEHALL -> R.string.reverb_largehall_name
-                        ReverbConfig.PRESET_PLATE -> R.string.reverb_plate_name
-                        else -> R.string.reverb_generic_name
+                        selectedReverbText = when (reverb) {
+                            ReverbConfig.PRESET_GENERIC -> R.string.reverb_generic_name
+                            ReverbConfig.PRESET_PADDEDCELL -> R.string.reverb_paddedcell_name
+                            ReverbConfig.PRESET_ROOM -> R.string.reverb_room_name
+                            ReverbConfig.PRESET_BATHROOM -> R.string.reverb_bathroom_name
+                            ReverbConfig.PRESET_LIVINGROOM -> R.string.reverb_livingroom_name
+                            ReverbConfig.PRESET_STONEROOM -> R.string.reverb_stoneroom_name
+                            ReverbConfig.PRESET_AUDITORIUM -> R.string.reverb_auditorium_name
+                            ReverbConfig.PRESET_CONCERTHALL -> R.string.reverb_concerthall_name
+                            ReverbConfig.PRESET_CAVE -> R.string.reverb_cave_name
+                            ReverbConfig.PRESET_ARENA -> R.string.reverb_arena_name
+                            ReverbConfig.PRESET_HANGAR -> R.string.reverb_hangar_name
+                            ReverbConfig.PRESET_CARPETEDHALLWAY -> R.string.reverb_carpetedhallway_name
+                            ReverbConfig.PRESET_HALLWAY -> R.string.reverb_hallway_name
+                            ReverbConfig.PRESET_STONECORRIDOR -> R.string.reverb_stonecorridor_name
+                            ReverbConfig.PRESET_ALLEY -> R.string.reverb_alley_name
+                            ReverbConfig.PRESET_FOREST -> R.string.reverb_forest_name
+                            ReverbConfig.PRESET_CITY -> R.string.reverb_city_name
+                            ReverbConfig.PRESET_MOUNTAINS -> R.string.reverb_mountains_name
+                            ReverbConfig.PRESET_QUARRY -> R.string.reverb_quarry_name
+                            ReverbConfig.PRESET_PLAIN -> R.string.reverb_plain_name
+                            ReverbConfig.PRESET_PARKINGLOT -> R.string.reverb_parkinglot_name
+                            ReverbConfig.PRESET_SEWERPIPE -> R.string.reverb_sewerpipe_name
+                            ReverbConfig.PRESET_UNDERWATER -> R.string.reverb_underwater_name
+                            ReverbConfig.PRESET_SMALLROOM -> R.string.reverb_smallroom_name
+                            ReverbConfig.PRESET_MEDIUMROOM -> R.string.reverb_mediumroom_name
+                            ReverbConfig.PRESET_LARGEROOM -> R.string.reverb_largeroom_name
+                            ReverbConfig.PRESET_MEDIUMHALL -> R.string.reverb_mediumhall_name
+                            ReverbConfig.PRESET_LARGEHALL -> R.string.reverb_largehall_name
+                            ReverbConfig.PRESET_PLATE -> R.string.reverb_plate_name
+                            else -> R.string.reverb_generic_name
+                        }
                     }
-                }
 
-                ReverbPresetDropdownMenuItem(R.string.reverb_generic_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_GENERIC
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_paddedcell_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_PADDEDCELL
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_room_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_ROOM
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_bathroom_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_BATHROOM
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_livingroom_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_LIVINGROOM
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_stoneroom_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_STONEROOM
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_auditorium_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_AUDITORIUM
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_concerthall_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_CONCERTHALL
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_cave_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_CAVE
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_arena_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_ARENA
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_hangar_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_HANGAR
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_carpetedhallway_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_CARPETEDHALLWAY
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_hallway_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_HALLWAY
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_stonecorridor_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_STONECORRIDOR
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_alley_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_ALLEY
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_forest_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_FOREST
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_city_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_CITY
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_mountains_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_MOUNTAINS
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_quarry_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_QUARRY
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_plain_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_PLAIN
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_parkinglot_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_PARKINGLOT
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_sewerpipe_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_SEWERPIPE
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_underwater_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_UNDERWATER
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_smallroom_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_SMALLROOM
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_mediumroom_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_MEDIUMROOM
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_largeroom_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_LARGEROOM
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_mediumhall_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_MEDIUMHALL
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_largehall_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_LARGEHALL
-                    )
-                }
-                ReverbPresetDropdownMenuItem(R.string.reverb_plate_name) {
-                    applyReverb(
-                        ReverbConfig.PRESET_PLATE
-                    )
+                    ReverbPresetDropdownMenuItem(R.string.reverb_generic_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_GENERIC
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_paddedcell_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_PADDEDCELL
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_room_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_ROOM
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_bathroom_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_BATHROOM
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_livingroom_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_LIVINGROOM
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_stoneroom_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_STONEROOM
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_auditorium_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_AUDITORIUM
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_concerthall_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_CONCERTHALL
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_cave_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_CAVE
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_arena_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_ARENA
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_hangar_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_HANGAR
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_carpetedhallway_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_CARPETEDHALLWAY
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_hallway_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_HALLWAY
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_stonecorridor_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_STONECORRIDOR
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_alley_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_ALLEY
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_forest_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_FOREST
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_city_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_CITY
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_mountains_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_MOUNTAINS
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_quarry_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_QUARRY
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_plain_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_PLAIN
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_parkinglot_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_PARKINGLOT
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_sewerpipe_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_SEWERPIPE
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_underwater_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_UNDERWATER
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_smallroom_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_SMALLROOM
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_mediumroom_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_MEDIUMROOM
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_largeroom_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_LARGEROOM
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_mediumhall_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_MEDIUMHALL
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_largehall_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_LARGEHALL
+                        )
+                    }
+                    ReverbPresetDropdownMenuItem(R.string.reverb_plate_name) {
+                        applyReverb(
+                            ReverbConfig.PRESET_PLATE
+                        )
+                    }
                 }
             }
 

@@ -115,6 +115,11 @@ class AndroidAudioEffectController : AudioEffectController {
     override val maxBandLevel: SoundLevel
         get() = if (!equalizerEnabled) 0.mDb else equalizer?.bandLevelRange?.last()?.mDb ?: 0.mDb
 
+    override val presets: List<String>
+        get() = List(equalizer?.numberOfPresets?.toInt() ?: 0) {
+            equalizer?.getPresetName(it.toShort())
+        }.filterNotNull()
+
     override val bands: List<EqualizerBand>?
         get() {
             if (!equalizerEnabled)
@@ -130,11 +135,6 @@ class AndroidAudioEffectController : AudioEffectController {
                     )
                 }
         }
-
-    override val presets: List<String>
-        get() = List(equalizer?.numberOfPresets?.toInt() ?: 0) {
-            equalizer?.getPresetName(it.toShort())
-        }.filterNotNull()
 
     /**************************************************************************
      ********** Reverb |
