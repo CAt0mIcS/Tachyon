@@ -24,12 +24,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.Scaffold
-import androidx.compose.material.SwipeProgress
-import androidx.compose.material.SwipeableState
-import androidx.compose.material.rememberSwipeableState
-import androidx.compose.material.swipeable
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,24 +40,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
-import androidx.constraintlayout.compose.MotionLayoutDebugFlags
-import androidx.constraintlayout.compose.MotionLayoutScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.database.data.data_source.Database
@@ -71,8 +57,6 @@ import com.tachyonmusic.presentation.player.PlayerLayout
 import com.tachyonmusic.presentation.profile.component.OpenDocumentDialog
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
-import java.lang.IllegalArgumentException
-import java.util.EnumSet
 
 enum class SwipingStates {
     EXPANDED,
@@ -167,11 +151,21 @@ fun MainScreen(
 
             var miniPlayerHeight by remember { mutableStateOf(0.dp) }
             val navController = rememberAnimatedNavController()
+            val localDensity = LocalDensity.current
 
+            val anchoredDraggableState = remember {
+                AnchoredDraggableState(
+                    initialValue = SwipingStates.COLLAPSED,
+                    anchors = DraggableAnchors {},
+                    positionalThreshold = { distance: Float -> distance * 0.5f },
+                    velocityThreshold = { with(localDensity) { 100.dp.toPx() } },
+                    animationSpec = tween(),
+                )
+            }
 
             Scaffold(
                 bottomBar = {
-                    BottomNavigation(navController)
+                    BottomNavigation(anchoredDraggableState, navController)
                 }
             ) { innerPaddingScaffold ->
 
@@ -192,28 +186,12 @@ fun MainScreen(
                         SwipingStates.COLLAPSED at heightInPx - miniPlayerHeightInPx
                         SwipingStates.EXPANDED at 0f
                     }
-                    val density = LocalDensity.current
-                    val anchoredDraggableState = remember {
-                        AnchoredDraggableState(
-                            initialValue = SwipingStates.COLLAPSED,
-                            anchors = anchors,
-                            positionalThreshold = { distance: Float -> distance * 0.5f },
-                            velocityThreshold = { with(density) { 100.dp.toPx() } },
-                            animationSpec = tween(),
-                        )
-                    }
+
+                    anchoredDraggableState.updateAnchors(anchors)
                     val offset =
                         if (anchoredDraggableState.offset.isNaN()) 0f else anchoredDraggableState.offset
                     val progress =
                         (1 - (offset / heightInPx)).coerceIn(0f, 1f)
-
-                    println(
-                        "PRG: $progress OFF: $offset HEIGHTINPX: $heightInPx MPH: $miniPlayerHeightInPx 1dp=${
-                            with(
-                                LocalDensity.current
-                            ) { 1.dp.toPx() }
-                        }"
-                    )
 
                     Box(
                         modifier = Modifier
@@ -243,7 +221,6 @@ fun MainScreen(
                                                 anchoredDraggableState,
                                                 Orientation.Vertical
                                             )
-                                            .padding(top = Theme.padding.extraSmall)
                                     ) {
                                         // TODO: When MiniPlayer is collapsed [progress] is still something like 0.079...
                                         //      we're correcting it here and it seems to be missing [miniPlayerHeight]

@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BottomNavigation(
-//    swipe: AnchoredDraggableState<SwipingStates>,
+    swipe: AnchoredDraggableState<SwipingStates>?,
     navController: NavController
 ) {
     val items = listOf(
@@ -65,10 +65,9 @@ fun BottomNavigation(
                     colors = NavigationBarItemDefaults.colors()
                         .copy(selectedIndicatorColor = MaterialTheme.colorScheme.onPrimary),
                     onClick = {
-//                        scope.launch {
-//                            swipe.animateTo(SwipingStates.COLLAPSED)
-//                        }
-                        // TODO MAT3
+                        scope.launch {
+                            swipe?.animateTo(SwipingStates.COLLAPSED)
+                        }
 
                         navController.navigate(item.route) {
 
