@@ -315,6 +315,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             when (val event = customCommand.toMediaBrowserEvent(args)) {
                 is SetRepeatModeEvent -> handleSetRepeatModeEvent(event)
                 is SetTimingDataEvent -> handleSetTimingDataEvent(event)
+                is SeekToTimingDataIndexEvent -> handleSeekToTimingDataIndexEvent(event)
             }
 
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
@@ -380,6 +381,10 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
         private fun handleSetTimingDataEvent(event: SetTimingDataEvent) {
             currentPlayer.updateTimingDataOfCurrentPlayback(event.timingData)
+        }
+
+        private fun handleSeekToTimingDataIndexEvent(event: SeekToTimingDataIndexEvent) {
+            currentPlayer.seekToTimingDataIndex(event.index)
         }
     }
 

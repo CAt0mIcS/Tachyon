@@ -8,6 +8,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.isNullOrEmpty
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.util.timingData
@@ -175,6 +176,18 @@ class CustomPlayerImpl(
         invokeEvent { it.onTimingDataUpdated(newTimingData) }
     }
 
+    override fun seekToTimingDataIndex(i: Int) {
+        val timingData = currentMediaItem?.mediaMetadata?.timingData
+        if (timingData.isNullOrEmpty())
+            return
+
+        timingData.advanceToIndex(i)
+        postCustomizedSongMessage(timingData.next.startTime, timingData.current.endTime)
+        seekWithoutCallback(timingData.getOrNull(i)?.startTime?.inWholeMilliseconds ?: return)
+        currentMediaItem?.mediaMetadata?.timingData = timingData
+        invokeEvent { it.onTimingDataUpdated(timingData) }
+    }
+
     override fun stop() {
         if (currentMediaItem?.mediaMetadata?.timingData?.isNotEmpty() == true) {
             // already handled by timing data message
@@ -185,7 +198,7 @@ class CustomPlayerImpl(
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
-        if(playbackState == Player.STATE_ENDED) {
+        if (playbackState == Player.STATE_ENDED) {
             if (currentMediaItem?.mediaMetadata?.timingData?.isNotEmpty() == true) {
                 // already handled by timing data message
             } else

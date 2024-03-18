@@ -339,7 +339,7 @@ fun PlayerScreen(
                 TimingDataEditor(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = Theme.padding.medium)
+                        .padding(horizontal = Theme.padding.large)
                 )
             }
         }

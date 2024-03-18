@@ -12,4 +12,8 @@ class SetTimingData(
 
         browser.currentPlaybackTimingData = timingData
     }
+
+    fun seekToTimingDataIndex(index: Int) {
+        browser.seekToTimingDataIndex(index)
+    }
 }

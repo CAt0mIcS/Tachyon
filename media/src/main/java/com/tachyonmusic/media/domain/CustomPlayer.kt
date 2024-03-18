@@ -10,6 +10,7 @@ interface CustomPlayer : Player {
     var audioSessionId: Int
 
     fun updateTimingData(newTimingData: TimingDataController)
+    fun seekToTimingDataIndex(i: Int)
     fun setPlayer(player: Player)
 
     fun setAuxEffectInfo(info: AuxEffectInfo)

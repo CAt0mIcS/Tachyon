@@ -62,6 +62,11 @@ class TimingDataEditorViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+    fun playTimingDataAt(i: Int) {
+        setTimingData.seekToTimingDataIndex(i)
+        currentIndex = i
+    }
+
     fun updateTimingData(i: Int, startTime: Duration, endTime: Duration) {
         timingData.update {
             it[i].startTime = startTime

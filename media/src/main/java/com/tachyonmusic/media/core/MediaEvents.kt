@@ -42,6 +42,24 @@ data class SetTimingDataEvent(
     }
 }
 
+data class SeekToTimingDataIndexEvent(
+    val index: Int
+) : MediaBrowserEvent {
+    override val command: SessionCommand
+        get() = Companion.command
+
+    override fun toBundle() = Bundle().apply {
+        putInt(MetadataKeys.TimingData, index)
+    }
+
+    companion object {
+        fun fromBundle(bundle: Bundle) =
+            SeekToTimingDataIndexEvent(bundle.getInt(MetadataKeys.TimingData))
+
+        val command = SessionCommand("${actionPrefix}SEEK_TO_TIMING_DATA_INDEX", Bundle.EMPTY)
+    }
+}
+
 data class SetRepeatModeEvent(
     val repeatMode: RepeatMode
 ) : MediaBrowserEvent {
@@ -154,6 +172,7 @@ internal fun MediaSession.dispatchMediaEvent(event: MediaSessionEvent) {
 
 internal fun SessionCommand.toMediaBrowserEvent(bundle: Bundle): MediaBrowserEvent = when (this) {
     SetTimingDataEvent.command -> SetTimingDataEvent.fromBundle(bundle)
+    SeekToTimingDataIndexEvent.command -> SeekToTimingDataIndexEvent.fromBundle(bundle)
     SetRepeatModeEvent.command -> SetRepeatModeEvent.fromBundle(bundle)
     else -> TODO("Invalid session command $customAction")
 }

@@ -21,6 +21,11 @@ data class TimingDataController(
     fun coversDuration(start: Duration, end: Duration) =
         timingData.find { it.startTime == start && it.endTime == end } != null
 
+    fun advanceToIndex(i: Int) {
+        if (i < timingData.size && i >= 0)
+            currentIndex = i
+    }
+
     fun advanceToCurrentPosition(position: Duration) {
         currentIndex = getIndexOfCurrentPosition(position)
     }

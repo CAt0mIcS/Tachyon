@@ -170,6 +170,10 @@ class MediaPlaybackServiceMediaBrowserController(
         browser?.dispatchMediaEvent(SetRepeatModeEvent(repeatMode))
     }
 
+    override fun seekToTimingDataIndex(index: Int) {
+        browser?.dispatchMediaEvent(SeekToTimingDataIndexEvent(index))
+    }
+
     private var prepareJob: CompletableJob? = null
     override suspend fun prepare() {
         assert(currentPlaylist.value != null)

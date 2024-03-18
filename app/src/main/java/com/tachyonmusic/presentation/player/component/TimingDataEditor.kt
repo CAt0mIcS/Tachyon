@@ -1,7 +1,10 @@
 package com.tachyonmusic.presentation.player.component
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material3.BasicAlertDialog
@@ -37,9 +40,9 @@ fun TimingDataEditor(
 ) {
     val timingData = viewModel.timingData
 
-    Column(modifier = modifier.padding(start = Theme.padding.extraSmall)) {
+    Column(modifier = modifier) {
         IconButton(
-            modifier = modifier.padding(Theme.padding.small),
+            modifier = Modifier.padding(Theme.padding.small),
             onClick = { viewModel.addNewTimingData(timingData.size) }
         ) {
             Icon(
@@ -64,21 +67,36 @@ fun TimingDataEditor(
             val sliderColor =
                 if (i == viewModel.currentIndex) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
 
-            RangeSlider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = timingData[i].startTime.inWholeMilliseconds.toFloat()..timingData[i].endTime.inWholeMilliseconds.toFloat(),
-                onValueChange = {
-                    viewModel.updateTimingData(i, it.start.ms, it.endInclusive.ms)
-                },
-                onValueChangeFinished = viewModel::setNewTimingData,
-                valueRange = 0f..duration.inWholeMilliseconds.toFloat(),
-                colors = SliderDefaults.colors(
-                    thumbColor = sliderColor,
-                    activeTrackColor = sliderColor,
-                    inactiveTrackColor = if (i == viewModel.currentIndex)
-                        MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.onSecondary
+            Row(modifier = Modifier.fillMaxWidth()) {
+
+                IconButton(
+                    onClick = { viewModel.playTimingDataAt(i) },
+                    modifier = Modifier.fillMaxHeight()
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_play),
+                        contentDescription = "Seek to timing data"
+                    )
+                }
+
+                RangeSlider(
+                    modifier = Modifier.systemGestureExclusion(),
+                    value = timingData[i].startTime.inWholeMilliseconds.toFloat()..timingData[i].endTime.inWholeMilliseconds.toFloat(),
+                    onValueChange = {
+                        viewModel.updateTimingData(i, it.start.ms, it.endInclusive.ms)
+                    },
+                    onValueChangeFinished = viewModel::setNewTimingData,
+                    valueRange = 0f..duration.inWholeMilliseconds.toFloat(),
+                    colors = SliderDefaults.colors(
+                        thumbColor = sliderColor,
+                        activeTrackColor = sliderColor,
+                        inactiveTrackColor = if (i == viewModel.currentIndex)
+                            MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.onSecondary
+                    )
                 )
-            )
+            }
+
+
 
             Spacer(modifier = Modifier.padding(top = 6.dp))
         }

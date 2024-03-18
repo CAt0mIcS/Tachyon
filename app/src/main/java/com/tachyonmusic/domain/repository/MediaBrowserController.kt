@@ -25,7 +25,6 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     val currentPlayback: StateFlow<SinglePlayback?>
     val isPlaying: StateFlow<Boolean>
 
-
     fun setPlaylist(playlist: Playlist, position: Duration? = null)
 
     val currentPosition: Duration?
@@ -41,6 +40,7 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     val repeatMode: StateFlow<RepeatMode>
 
     fun setRepeatMode(repeatMode: RepeatMode)
+    fun seekToTimingDataIndex(index: Int)
 
     suspend fun prepare()
     fun play()

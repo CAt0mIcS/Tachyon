@@ -21,6 +21,7 @@ internal val supportedCommands = MediaSession.ConnectionResult.accept(
         ////////////////////////////////////////////////////////////////////////////////////////
         // CustomCommands
         add(SetTimingDataEvent.command)
+        add(SeekToTimingDataIndexEvent.command)
         add(SetRepeatModeEvent.command)
 
         add(TimingDataUpdatedEvent.command)
