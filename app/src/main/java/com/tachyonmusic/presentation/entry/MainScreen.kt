@@ -105,7 +105,7 @@ fun MainScreen(
                         modifier = Modifier
                             .clip(Theme.shapes.large)
                             .border(
-                                BorderStroke(2.dp, Theme.colors.partialOrange2),
+                                BorderStroke(2.dp, MaterialTheme.colorScheme.surfaceContainer),
                                 Theme.shapes.large
                             )
                     ) {
@@ -279,7 +279,7 @@ private fun MotionLayoutHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(Theme.shapes.large)
-                    .background(MaterialTheme.colorScheme.surfaceContainer, Theme.shapes.large)
+                    .background(MaterialTheme.colorScheme.background, Theme.shapes.large)
             ) {
                 scrollableBody()
             }

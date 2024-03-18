@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
@@ -92,6 +93,7 @@ object LibraryScreen :
                         .shadow(Theme.shadow.small, shape = Theme.shapes.extraLarge)
                         .horizontalScroll(rememberScrollState())
                         .clip(Theme.shapes.extraLarge)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                         .padding(
                             start = Theme.padding.medium,
                             top = Theme.padding.extraSmall,
@@ -128,7 +130,7 @@ object LibraryScreen :
                         sortOptionsExpanded = true
                     }) {
                     val iconAndTextColor by animateColorAsState(
-                        if (sortOptionsExpanded) Theme.colors.contrastHigh else Theme.colors.contrastLow,
+                        if (sortOptionsExpanded) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onBackground,
                         tween(Theme.animation.short)
                     )
 

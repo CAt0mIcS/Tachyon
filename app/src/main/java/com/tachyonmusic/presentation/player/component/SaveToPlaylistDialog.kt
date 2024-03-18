@@ -31,7 +31,7 @@ fun SaveToPlaylistDialog(
             shape = Theme.shapes.medium,
             modifier = Modifier
                 .fillMaxWidth(.95f)
-                .border(1.dp, Theme.colors.orange, Theme.shapes.medium)
+//                .border(1.dp, Theme.colors.orange, Theme.shapes.medium)
         ) {
             Column(
                 modifier = Modifier

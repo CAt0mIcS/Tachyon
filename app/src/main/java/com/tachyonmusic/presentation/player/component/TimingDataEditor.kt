@@ -9,6 +9,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
@@ -60,6 +61,9 @@ fun TimingDataEditor(
 
         for (i in timingData.indices) {
 
+            val sliderColor =
+                if (i == viewModel.currentIndex) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+
             RangeSlider(
                 modifier = Modifier.systemGestureExclusion(),
                 value = timingData[i].startTime.inWholeMilliseconds.toFloat()..timingData[i].endTime.inWholeMilliseconds.toFloat(),
@@ -69,9 +73,10 @@ fun TimingDataEditor(
                 onValueChangeFinished = viewModel::setNewTimingData,
                 valueRange = 0f..duration.inWholeMilliseconds.toFloat(),
                 colors = SliderDefaults.colors(
-                    thumbColor = if (i == viewModel.currentIndex) Theme.colors.orange else Theme.colors.contrastLow,
-                    activeTrackColor = Theme.colors.orange,
-                    inactiveTrackColor = Theme.colors.partialOrange1
+                    thumbColor = sliderColor,
+                    activeTrackColor = sliderColor,
+                    inactiveTrackColor = if (i == viewModel.currentIndex)
+                        MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.onSecondary
                 )
             )
 

@@ -1,7 +1,10 @@
 package com.tachyonmusic.presentation.home
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.animateTo
@@ -25,6 +28,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
@@ -128,7 +132,7 @@ object HomeScreen :
                         isSearching = true
                         viewModel.search(it, searchLocation)
                     },
-                    singleLine = true,
+                    singleLine = true
                 ) { innerTextField ->
                     TextFieldDefaults.DecorationBox(
                         value = searchText,
@@ -141,7 +145,10 @@ object HomeScreen :
                         colors = TextFieldDefaults.colors().copy(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
+                            disabledIndicatorColor = Color.Transparent,
+
+                            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
                         ),
                         placeholder = {
                             Text(
@@ -224,7 +231,7 @@ object HomeScreen :
                             ) {
                                 Text(
                                     "View All",
-                                    color = Theme.colors.blue,
+                                    color = MaterialTheme.colorScheme.tertiary,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -316,7 +323,11 @@ private fun LazyListScope.playbacksView(
                     if (playback.isPlayable)
                         onClick(playback)
                 }
-                .isEnabled(playback.isPlayable),
+                .isEnabled(playback.isPlayable)
+                .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
+                .clip(Theme.shapes.medium)
+                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceContainerHighest), shape = Theme.shapes.medium)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh, Theme.shapes.medium),
             playback = playback,
             artwork = playback.artwork ?: PlaceholderArtwork,
         )

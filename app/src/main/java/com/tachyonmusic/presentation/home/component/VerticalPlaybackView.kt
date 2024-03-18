@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,10 +30,6 @@ fun VerticalPlaybackView(
     Column(
         modifier = modifier
             .width(Theme.padding.extraSmall * 2 + 100.dp)
-            .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
-            .clip(Theme.shapes.medium)
-            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
-            .background(MaterialTheme.colorScheme.surfaceContainer, Theme.shapes.medium)
     ) {
         artwork.Image(
             contentDescription = "Album Artwork",
@@ -48,7 +45,7 @@ fun VerticalPlaybackView(
             text = playback.displayTitle,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
-            gradientEdgeColor = Theme.colors.secondary
+            gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainerHigh
         )
 
         AnimatedText(
@@ -60,7 +57,7 @@ fun VerticalPlaybackView(
                 ),
             text = playback.displaySubtitle,
             fontSize = 12.sp,
-            gradientEdgeColor = Theme.colors.secondary
+            gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainerHigh
         )
     }
 }

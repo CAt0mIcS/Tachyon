@@ -42,7 +42,7 @@ fun HorizontalPlaybackView(
         modifier = modifier
             .shadow(Theme.shadow.extraSmall, shape = Theme.shapes.medium)
             .background(MaterialTheme.colorScheme.surfaceContainer, shape = Theme.shapes.medium)
-            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
+//            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
             .clickable { onClick() },
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

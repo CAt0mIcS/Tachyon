@@ -3,9 +3,6 @@ package com.tachyonmusic.presentation.entry
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.AnchoredDraggableState
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.SwipeableState
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavHostController
@@ -17,9 +14,7 @@ import com.tachyonmusic.presentation.home.HomeScreen
 import com.tachyonmusic.presentation.library.LibraryScreen
 import com.tachyonmusic.presentation.profile.ProfileScreen
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialApi::class,
-    ExperimentalFoundationApi::class
-)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun NavigationGraph(
     navController: NavHostController,

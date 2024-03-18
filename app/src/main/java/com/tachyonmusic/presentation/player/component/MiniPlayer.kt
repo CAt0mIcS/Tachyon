@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,7 +20,10 @@ import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
+import com.tachyonmusic.presentation.theme.LightOnPrimaryContainer
+import com.tachyonmusic.presentation.theme.LightPrimary
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.theme.interpolate
 
 @Composable
 fun MiniPlayer(
@@ -42,7 +46,10 @@ fun MiniPlayer(
                 end = Theme.padding.extraSmall
             )
             .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
-            .background(Theme.colors.tertiary, shape = Theme.shapes.medium)
+            .background(
+                MaterialTheme.colorScheme.surfaceContainerHighest,
+                shape = Theme.shapes.medium
+            )
             .clickable {
                 onClick()
             }
@@ -70,7 +77,7 @@ fun MiniPlayer(
                         text = playback.displayTitle,
                         fontWeight = FontWeight.Bold,
                         fontSize = 14.sp,
-                        gradientEdgeColor = Theme.colors.tertiary
+                        gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainerHighest
                     )
 
                     AnimatedText(
@@ -78,7 +85,7 @@ fun MiniPlayer(
                             .padding(start = Theme.padding.small, bottom = Theme.padding.small),
                         text = playback.displaySubtitle,
                         fontSize = 12.sp,
-                        gradientEdgeColor = Theme.colors.tertiary
+                        gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainerHighest
                     )
                 }
 
@@ -102,8 +109,9 @@ fun MiniPlayer(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = Theme.padding.medium, end = Theme.padding.medium),
-            color = Theme.colors.orange,
-            backgroundColor = Theme.colors.partialOrange2
+            color = MaterialTheme.colorScheme.primary,
+            backgroundColor = MaterialTheme.colorScheme.primary.interpolate(MaterialTheme.colorScheme.onPrimaryContainer)
+                .copy(alpha = .4f) // TODO MAT3
         )
     }
 }

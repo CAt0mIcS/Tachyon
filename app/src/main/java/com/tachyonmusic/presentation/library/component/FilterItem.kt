@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -19,11 +20,16 @@ import com.tachyonmusic.presentation.theme.Theme
 @Composable
 fun FilterItem(textId: Int, selected: Boolean = false, onClick: () -> Unit) {
 
-    val selectedColor = Theme.colors.blue
-    val unselectedColor = Theme.colors.primary
+    val selectedBgColor = MaterialTheme.colorScheme.tertiary
+    val unselectedBgColor = MaterialTheme.colorScheme.background
 
-    val color by animateColorAsState(
-        if (selected) selectedColor else unselectedColor,
+    val backgroundColor by animateColorAsState(
+        if (selected) selectedBgColor else unselectedBgColor,
+        tween(Theme.animation.medium)
+    )
+
+    val contentColor by animateColorAsState(
+        if(selected) MaterialTheme.colorScheme.onTertiary else MaterialTheme.colorScheme.onBackground,
         tween(Theme.animation.medium)
     )
 
@@ -31,8 +37,8 @@ fun FilterItem(textId: Int, selected: Boolean = false, onClick: () -> Unit) {
         Button(
             shape = Theme.shapes.medium,
             colors = ButtonDefaults.buttonColors().copy(
-                containerColor = color,
-                contentColor = Theme.colors.contrastHigh
+                containerColor = backgroundColor,
+                contentColor = contentColor
             ),
             onClick = onClick
         ) {

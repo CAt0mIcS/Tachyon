@@ -4,8 +4,6 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.animateTo
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.Dp
@@ -14,10 +12,7 @@ import com.tachyonmusic.presentation.entry.SwipingStates
 import kotlinx.coroutines.launch
 
 
-@OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
-    ExperimentalFoundationApi::class
-)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlayerLayout(
     navController: NavController,
@@ -43,7 +38,7 @@ fun PlayerLayout(
      * the LazyColumn to be the [miniPlayerHeight] and animate it with the current fraction of the
      * bottom sheet swipe
      */
-    if (motionLayoutProgress > 0f) {
+    if (motionLayoutProgress > 0.1f) {
         BackHandler {
             scope.launch {
                 draggable.animateTo(SwipingStates.COLLAPSED)
