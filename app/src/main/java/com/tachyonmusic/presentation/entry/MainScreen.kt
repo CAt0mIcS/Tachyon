@@ -92,6 +92,7 @@ fun MainScreen(
                                 BorderStroke(2.dp, MaterialTheme.colorScheme.surfaceContainer),
                                 Theme.shapes.large
                             )
+                            .background(MaterialTheme.colorScheme.background, Theme.shapes.large)
                     ) {
                         Column {
                             CircularProgressIndicator(
