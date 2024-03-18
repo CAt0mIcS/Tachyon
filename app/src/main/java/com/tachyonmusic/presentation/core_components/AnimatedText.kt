@@ -5,8 +5,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.Text
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -36,7 +37,7 @@ import com.tachyonmusic.presentation.theme.Theme
 fun AnimatedText(
     text: String,
     modifier: Modifier = Modifier,
-    gradientEdgeColor: Color = Theme.colors.primary,
+    gradientEdgeColor: Color = MaterialTheme.colorScheme.background,
     gradientWidth: Dp = 12.dp,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,

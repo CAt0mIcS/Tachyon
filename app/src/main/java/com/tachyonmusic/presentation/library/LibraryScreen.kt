@@ -3,6 +3,8 @@ package com.tachyonmusic.presentation.library
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,12 +13,14 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
@@ -28,9 +32,9 @@ import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
+import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.theme.extraLarge
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
@@ -41,11 +45,10 @@ import kotlinx.coroutines.launch
 object LibraryScreen :
     BottomNavigationItem(R.string.btmNav_library, R.drawable.ic_library, "library") {
 
-    @OptIn(ExperimentalMaterialApi::class)
+    @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
-        sheetState: BottomSheetState,
-        onSheetStateFraction: (Float) -> Unit,
+        draggable: AnchoredDraggableState<SwipingStates>,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
         var sortOptionsExpanded by remember { mutableStateOf(false) }
@@ -89,7 +92,8 @@ object LibraryScreen :
                         .fillMaxWidth()
                         .shadow(Theme.shadow.small, shape = Theme.shapes.extraLarge)
                         .horizontalScroll(rememberScrollState())
-                        .background(Theme.colors.secondary, shape = Theme.shapes.extraLarge)
+                        .clip(Theme.shapes.extraLarge)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                         .padding(
                             start = Theme.padding.medium,
                             top = Theme.padding.extraSmall,
@@ -126,7 +130,7 @@ object LibraryScreen :
                         sortOptionsExpanded = true
                     }) {
                     val iconAndTextColor by animateColorAsState(
-                        if (sortOptionsExpanded) Theme.colors.contrastHigh else Theme.colors.contrastLow,
+                        if (sortOptionsExpanded) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onBackground,
                         tween(Theme.animation.short)
                     )
 
@@ -144,13 +148,14 @@ object LibraryScreen :
                             onDismissRequest = { sortOptionsExpanded = false }) {
                             SortType.values().forEach {
                                 DropdownMenuItem(
+                                    text = {
+                                        Text(it.asString())
+                                    },
                                     onClick = {
                                         viewModel.onSortTypeChanged(it)
                                         sortOptionsExpanded = false
                                     }
-                                ) {
-                                    Text(it.asString())
-                                }
+                                )
                             }
                         }
                     }
@@ -164,8 +169,6 @@ object LibraryScreen :
                         color = iconAndTextColor
                     )
                 }
-
-
             }
 
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
@@ -212,12 +215,9 @@ object LibraryScreen :
                             }
                         },
                         onClick = {
-                            if (playback.isPlayable) {
-                                viewModel.onItemClicked(playback)
-                                scope.launch {
-                                    sheetState.expand()
-                                }
-                                onSheetStateFraction(1f)
+                            viewModel.onItemClicked(playback)
+                            scope.launch {
+                                draggable.animateTo(SwipingStates.EXPANDED)
                             }
                         })
                 }

@@ -1,27 +1,29 @@
 package com.tachyonmusic.presentation.player
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.material.BottomSheetState
-import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.Dp
 import androidx.navigation.NavController
-import com.tachyonmusic.presentation.player.component.MiniPlayer
+import com.tachyonmusic.presentation.entry.SwipingStates
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlayerLayout(
     navController: NavController,
-    sheetState: BottomSheetState,
-    onMiniPlayerHeight: (Dp) -> Unit,
     miniPlayerHeight: Dp,
-    onTargetSheetFraction: (Float) -> Unit,
-    sheetFraction: Float
+    onMiniPlayerHeight: (Dp) -> Unit,
+    draggable: AnchoredDraggableState<SwipingStates>,
+    motionLayoutProgress: Float
 ) {
     val scope = rememberCoroutineScope()
+
+    println("PRG INLAYOUT: $motionLayoutProgress")
 
     // TODO: Different layout in landscape mode
 
@@ -29,8 +31,8 @@ fun PlayerLayout(
      * If the bottom sheet is collapsed we show the MiniPlayer in the HomeScreen through
      * the bottom sheet peak height.
      */
-    if (sheetFraction < 1f) {
-        MiniPlayerScreen(sheetState, onMiniPlayerHeight, sheetFraction, onTargetSheetFraction)
+    if (motionLayoutProgress < 1f) {
+        MiniPlayerScreen(draggable, motionLayoutProgress, onMiniPlayerHeight)
     }
 
     /**
@@ -38,14 +40,13 @@ fun PlayerLayout(
      * the LazyColumn to be the [miniPlayerHeight] and animate it with the current fraction of the
      * bottom sheet swipe
      */
-    if (sheetFraction > 0f) {
+    if (motionLayoutProgress > 0f) {
         BackHandler {
             scope.launch {
-                sheetState.collapse()
+                draggable.animateTo(SwipingStates.COLLAPSED)
             }
-            onTargetSheetFraction(0f)
         }
 
-        PlayerScreen(sheetState, miniPlayerHeight, sheetFraction, navController)
+        PlayerScreen(motionLayoutProgress, miniPlayerHeight, navController)
     }
 }

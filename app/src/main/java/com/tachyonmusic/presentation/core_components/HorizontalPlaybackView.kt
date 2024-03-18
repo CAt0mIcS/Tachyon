@@ -10,11 +10,12 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,8 +41,8 @@ fun HorizontalPlaybackView(
     Row(
         modifier = modifier
             .shadow(Theme.shadow.extraSmall, shape = Theme.shapes.medium)
-            .background(Theme.colors.secondary, shape = Theme.shapes.medium)
-            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surfaceContainer, shape = Theme.shapes.medium)
+//            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
             .clickable { onClick() },
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -64,9 +65,9 @@ fun HorizontalPlaybackView(
                     modifier = Modifier
                         .padding(top = Theme.padding.small),
                     text = playback.displayTitle,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    gradientEdgeColor = Theme.colors.secondary
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp,
+                    gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer
                 )
 
                 AnimatedText(
@@ -76,8 +77,8 @@ fun HorizontalPlaybackView(
                             bottom = Theme.padding.small
                         ),
                     text = playback.displaySubtitle,
-                    fontSize = 12.sp,
-                    gradientEdgeColor = Theme.colors.secondary
+                    fontSize = 14.sp,
+                    gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             }
         }

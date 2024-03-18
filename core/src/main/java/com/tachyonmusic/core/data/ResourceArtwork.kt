@@ -5,6 +5,7 @@ import android.os.Parcelable
 import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.tachyonmusic.core.domain.Artwork
 
@@ -14,11 +15,12 @@ open class ResourceArtwork(
     override val isLoaded = true
 
     @Composable
-    override fun Image(contentDescription: String?, modifier: Modifier) {
+    override fun Image(contentDescription: String?, modifier: Modifier, contentScale: ContentScale) {
         androidx.compose.foundation.Image(
             painter = painterResource(id),
             contentDescription = contentDescription,
-            modifier = modifier
+            modifier = modifier,
+            contentScale = contentScale
         )
     }
 

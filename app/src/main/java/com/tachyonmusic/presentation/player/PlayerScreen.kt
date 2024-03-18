@@ -1,11 +1,30 @@
 package com.tachyonmusic.presentation.player
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.systemGestureExclusion
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -35,17 +54,15 @@ import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
 import com.tachyonmusic.presentation.player.component.TimingDataEditor
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.util.*
+import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun PlayerScreen(
-    sheetState: BottomSheetState,
+    motionLayoutProgress: Float,
     miniPlayerHeight: Dp,
-    sheetFraction: Float,
     navController: NavController,
     viewModel: PlayerViewModel = hiltViewModel()
 ) {
@@ -90,8 +107,8 @@ fun PlayerScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = miniPlayerHeight * (1f - sheetFraction))
-            .graphicsLayer(alpha = sheetFraction + .25f),
+            .padding(top = miniPlayerHeight * (1f - motionLayoutProgress))
+            .graphicsLayer(alpha = motionLayoutProgress + .25f),
         contentPadding = PaddingValues(bottom = Theme.padding.small)
     ) {
         item {
@@ -121,7 +138,7 @@ fun PlayerScreen(
                             ),
                         text = playback.displayTitle,
                         fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.Bold
                     )
 
                     AnimatedText(
@@ -131,7 +148,7 @@ fun PlayerScreen(
                                 end = Theme.padding.medium
                             ),
                         text = playback.displaySubtitle,
-                        fontSize = 18.sp,
+                        fontSize = 18.sp
                     )
                 }
 
@@ -143,7 +160,6 @@ fun PlayerScreen(
                     Icon(
                         painterResource(R.drawable.ic_add_circle),
                         null,
-                        tint = Theme.colors.contrastHigh.copy(alpha = .8f),
                         modifier = Modifier.scale(1.7f)
                     )
                 }
@@ -199,8 +215,8 @@ fun PlayerScreen(
                         interactionSource,
                         tickFractions,
                         enabled,
-                        colorTrack = Theme.colors.partialOrange1,
-                        colorProgress = Theme.colors.orange
+                        colorTrack = MaterialTheme.colorScheme.surfaceVariant,
+                        colorProgress = MaterialTheme.colorScheme.primary
                     )
                 },
 
@@ -211,7 +227,7 @@ fun PlayerScreen(
                         interactionSource,
                         enabled,
                         thumbSize,
-                        color = Theme.colors.orange,
+                        color = MaterialTheme.colorScheme.primary,
                         scaleOnPress = 1.2f
                     )
                 }
@@ -368,7 +384,12 @@ fun PlayerScreen(
                 ) {
                     SwipeDelete(
                         shape = Theme.shapes.medium,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                MaterialTheme.colorScheme.tertiaryContainer,
+                                Theme.shapes.medium
+                            ),
                         onClick = { viewModel.removeFromCurrentPlaylist(updatedPlayback) }
                     ) {
                         HorizontalPlaybackView(

@@ -10,19 +10,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.systemGestureExclusion
-import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
-import androidx.compose.material.CheckboxColors
-import androidx.compose.material.CheckboxDefaults
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.ExposedDropdownMenuDefaults
-import androidx.compose.material.Slider
-import androidx.compose.material.SliderDefaults
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,7 +42,7 @@ import com.tachyonmusic.core.domain.model.mDb
 import com.tachyonmusic.presentation.player.EqualizerViewModel
 import com.tachyonmusic.presentation.theme.Theme
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EqualizerEditor(
     modifier: Modifier = Modifier,
@@ -76,12 +77,6 @@ fun EqualizerEditor(
             text = "Reverb"
         )
 
-        val sliderColors = SliderDefaults.colors(
-            thumbColor = Theme.colors.orange,
-            activeTrackColor = Theme.colors.orange,
-            inactiveTrackColor = Theme.colors.partialOrange1
-        )
-
         if (bass != null) {
             Text(text = "Bass")
             Slider(
@@ -89,7 +84,6 @@ fun EqualizerEditor(
                 value = bass!!.toFloat(),
                 onValueChange = { viewModel.setBass(it.toInt()) },
                 valueRange = 0f..1000f,
-                colors = sliderColors
             )
         }
 
@@ -100,7 +94,6 @@ fun EqualizerEditor(
                 value = virtualizer!!.toFloat(),
                 onValueChange = { viewModel.setVirtualizerStrength(it.toInt()) },
                 valueRange = 0f..1000f,
-                colors = sliderColors
             )
         }
 
@@ -133,7 +126,6 @@ fun EqualizerEditor(
             value = playbackParams.volume,
             onValueChange = viewModel::setVolume,
             valueRange = 0f..10f,
-            colors = sliderColors
         )
 
         if (equalizer.bands != null) {
@@ -150,12 +142,10 @@ fun EqualizerEditor(
                     onDismissRequest = { isSelectingEqualizerPreset = false }
                 ) {
                     for (preset in equalizer.presets) {
-                        DropdownMenuItem(onClick = {
+                        DropdownMenuItem(text = { Text(preset) }, onClick = {
                             isSelectingEqualizerPreset = false
                             viewModel.setEqualizerPreset(preset)
-                        }) {
-                            Text(preset)
-                        }
+                        })
                     }
                 }
             }
@@ -181,7 +171,6 @@ fun EqualizerEditor(
                                 viewModel.setBandLevel(bandNumber, it.toInt().mDb)
                             },
                             valueRange = equalizer.minBandLevel.inmDb.toFloat()..equalizer.maxBandLevel.inmDb.toFloat(),
-                            colors = sliderColors
                         )
                     }
 
@@ -415,7 +404,6 @@ fun EqualizerEditor(
                     viewModel.setReverb(reverb!!.copy(roomLevel = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.ROOM_LEVEL_MIN.toFloat()..ReverbConfig.ROOM_LEVEL_MAX.toFloat(),
-                colors = sliderColors
             )
 
             Text("roomHFLevel")
@@ -426,7 +414,6 @@ fun EqualizerEditor(
                     viewModel.setReverb(reverb!!.copy(roomHFLevel = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.ROOM_HF_LEVEL_MIN.toFloat()..ReverbConfig.ROOM_HF_LEVEL_MAX.toFloat(),
-                colors = sliderColors
             )
 
             Text("decayTime")
@@ -437,7 +424,6 @@ fun EqualizerEditor(
                     viewModel.setReverb(reverb!!.copy(decayTime = it.toInt()))
                 },
                 valueRange = ReverbConfig.DECAY_TIME_MIN.toFloat()..ReverbConfig.DECAY_TIME_MAX.toFloat(),
-                colors = sliderColors
             )
 
             Text("decayHFRatio")
@@ -448,7 +434,6 @@ fun EqualizerEditor(
                     viewModel.setReverb(reverb!!.copy(decayHFRatio = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.DECAY_HF_RATIO_MIN.toFloat()..ReverbConfig.DECAY_HF_RATIO_MAX.toFloat(),
-                colors = sliderColors
             )
 
             Text("reflectionsLevel")
@@ -459,7 +444,6 @@ fun EqualizerEditor(
                     viewModel.setReverb(reverb!!.copy(reflectionsLevel = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.REFLECTIONS_LEVEL_MIN.toFloat()..ReverbConfig.REFLECTIONS_LEVEL_MAX.toFloat(),
-                colors = sliderColors
             )
 
             Text("reflectionsDelay")
@@ -470,7 +454,6 @@ fun EqualizerEditor(
                     viewModel.setReverb(reverb!!.copy(reflectionsDelay = it.toInt()))
                 },
                 valueRange = ReverbConfig.REFLECTIONS_DELAY_MIN.toFloat()..ReverbConfig.REFLECTIONS_DELAY_MAX.toFloat(),
-                colors = sliderColors
             )
 
             Text("reverbLevel")
@@ -481,7 +464,6 @@ fun EqualizerEditor(
                     viewModel.setReverb(reverb!!.copy(reverbLevel = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.REVERB_LEVEL_MIN.toFloat()..ReverbConfig.REVERB_LEVEL_MAX.toFloat(),
-                colors = sliderColors
             )
 
             Text("reverbDelay")
@@ -492,7 +474,6 @@ fun EqualizerEditor(
                     viewModel.setReverb(reverb!!.copy(reverbDelay = it.toInt()))
                 },
                 valueRange = ReverbConfig.REVERB_DELAY_MIN.toFloat()..ReverbConfig.REVERB_DELAY_MAX.toFloat(),
-                colors = sliderColors
             )
 
             Text("diffusion")
@@ -503,7 +484,6 @@ fun EqualizerEditor(
                     viewModel.setReverb(reverb!!.copy(diffusion = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.DIFFUSION_MIN.toFloat()..ReverbConfig.DIFFUSION_MAX.toFloat(),
-                colors = sliderColors
             )
 
             Text("density")
@@ -514,7 +494,6 @@ fun EqualizerEditor(
                     viewModel.setReverb(reverb!!.copy(density = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.DENSITY_MIN.toFloat()..ReverbConfig.DENSITY_MAX.toFloat(),
-                colors = sliderColors
             )
         }
     }
@@ -527,18 +506,19 @@ private fun CheckboxText(
     onCheckedChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    colors: CheckboxColors = CheckboxDefaults.colors()
+    colors: CheckboxColors = CheckboxDefaults.colors(),
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
 ) {
     Row(modifier = modifier) {
-        Checkbox(checked, onCheckedChange, Modifier, enabled, interactionSource, colors)
+        Checkbox(checked, onCheckedChange, Modifier, enabled, colors, interactionSource)
         Text(text)
     }
 }
 
 @Composable
 private fun ReverbPresetDropdownMenuItem(@StringRes name: Int, onClick: () -> Unit) {
-    DropdownMenuItem(onClick = onClick) {
-        Text(stringResource(name), color = Theme.colors.contrastHigh)
-    }
+    DropdownMenuItem(
+        text = { Text(stringResource(name), color = MaterialTheme.colorScheme.onSurface) },
+        onClick = onClick
+    )
 }

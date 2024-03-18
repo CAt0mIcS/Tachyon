@@ -1,8 +1,13 @@
 package com.tachyonmusic.presentation.home
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,12 +25,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.BottomSheetState
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,14 +42,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
@@ -57,6 +62,7 @@ import com.tachyonmusic.domain.use_case.search.SearchLocation
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
+import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.home.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.isEnabled
@@ -68,13 +74,14 @@ import kotlinx.coroutines.launch
 object HomeScreen :
     BottomNavigationItem(R.string.btmNav_home, R.drawable.ic_home, "home") {
 
-    @OptIn(ExperimentalMaterialApi::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+        ExperimentalFoundationApi::class
+    )
     @Composable
     operator fun invoke(
         navController: NavController,
-        sheetState: BottomSheetState,
-        onSheetStateFraction: (Float) -> Unit,
         miniPlayerHeight: Dp,
+        draggable: AnchoredDraggableState<SwipingStates>,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
         var isSearching by remember { mutableStateOf(false) }
@@ -114,7 +121,7 @@ object HomeScreen :
                             top = Theme.padding.medium
                         )
                         .shadow(Theme.shadow.medium, shape = Theme.shapes.medium)
-                        .background(Theme.colors.secondary, shape = Theme.shapes.medium)
+                        .clip(Theme.shapes.medium)
                         .defaultMinSize(
                             minWidth = TextFieldDefaults.MinWidth,
                             minHeight = TextFieldDefaults.MinHeight
@@ -125,18 +132,25 @@ object HomeScreen :
                         isSearching = true
                         viewModel.search(it, searchLocation)
                     },
-
-                    textStyle = TextStyle.Default.copy(
-                        fontSize = 22.sp,
-                        color = Theme.colors.contrastLow
-                    ),
-                    singleLine = true,
-                    cursorBrush = SolidColor(Theme.colors.contrastLow)
+                    singleLine = true
                 ) { innerTextField ->
-                    TextFieldDefaults.TextFieldDecorationBox(
+                    TextFieldDefaults.DecorationBox(
                         value = searchText,
                         innerTextField = innerTextField,
-                        placeholder = { //
+                        enabled = true,
+                        singleLine = true,
+                        visualTransformation = VisualTransformation.None,
+                        interactionSource = interactionSource,
+                        isError = false,
+                        colors = TextFieldDefaults.colors().copy(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+
+                            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                        ),
+                        placeholder = {
                             Text(
                                 text = stringResource(androidx.appcompat.R.string.search_menu_title),
                                 fontSize = 22.sp
@@ -155,6 +169,7 @@ object HomeScreen :
                                 contentDescription = "Change search location",
                                 modifier = Modifier
                                     .scale(.9f)
+                                    .clip(Theme.shapes.extraLarge)
                                     .clickable {
                                         searchLocation = searchLocation.next
                                         if (isSearching)
@@ -162,18 +177,7 @@ object HomeScreen :
                                     }
                             )
                         },
-                        interactionSource = interactionSource,
-                        visualTransformation = VisualTransformation.None,
-                        singleLine = true,
-                        enabled = true,
-                        isError = false,
-                        colors = TextFieldDefaults.textFieldColors(
-                            backgroundColor = Theme.colors.secondary,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            cursorColor = Theme.colors.contrastLow
-                        ),
-                        contentPadding = PaddingValues(0.dp)
+                        contentPadding = PaddingValues(0.dp),
                     )
                 }
             }
@@ -193,10 +197,6 @@ object HomeScreen :
                             isSearching = false
                             searchText = ""
                             focusManager.clearFocus()
-                            scope.launch {
-                                sheetState.expand()
-                            }
-                            onSheetStateFraction(1f)
                         }
                     )
                 }
@@ -231,7 +231,7 @@ object HomeScreen :
                             ) {
                                 Text(
                                     "View All",
-                                    color = Theme.colors.blue,
+                                    color = MaterialTheme.colorScheme.tertiary,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -262,11 +262,10 @@ object HomeScreen :
                             .padding(start = Theme.padding.small, top = Theme.padding.extraSmall),
                     ) {
                         playbacksView(history) {
-                            viewModel.onItemClicked(it)
                             scope.launch {
-                                sheetState.expand()
+                                draggable.animateTo(SwipingStates.EXPANDED)
                             }
-                            onSheetStateFraction(1f)
+                            viewModel.onItemClicked(it)
                         }
                     }
                 }
@@ -324,7 +323,11 @@ private fun LazyListScope.playbacksView(
                     if (playback.isPlayable)
                         onClick(playback)
                 }
-                .isEnabled(playback.isPlayable),
+                .isEnabled(playback.isPlayable)
+                .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
+                .clip(Theme.shapes.medium)
+                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceContainerHighest), shape = Theme.shapes.medium)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh, Theme.shapes.medium),
             playback = playback,
             artwork = playback.artwork ?: PlaceholderArtwork,
         )

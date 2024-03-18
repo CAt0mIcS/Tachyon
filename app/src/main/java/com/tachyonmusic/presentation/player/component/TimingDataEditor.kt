@@ -4,8 +4,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.systemGestureExclusion
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RangeSlider
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -15,7 +29,7 @@ import com.tachyonmusic.presentation.player.TimingDataEditorViewModel
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.util.ms
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimingDataEditor(
     modifier: Modifier = Modifier,
@@ -47,6 +61,9 @@ fun TimingDataEditor(
 
         for (i in timingData.indices) {
 
+            val sliderColor =
+                if (i == viewModel.currentIndex) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
+
             RangeSlider(
                 modifier = Modifier.systemGestureExclusion(),
                 value = timingData[i].startTime.inWholeMilliseconds.toFloat()..timingData[i].endTime.inWholeMilliseconds.toFloat(),
@@ -56,9 +73,10 @@ fun TimingDataEditor(
                 onValueChangeFinished = viewModel::setNewTimingData,
                 valueRange = 0f..duration.inWholeMilliseconds.toFloat(),
                 colors = SliderDefaults.colors(
-                    thumbColor = if (i == viewModel.currentIndex) Theme.colors.orange else Theme.colors.contrastLow,
-                    activeTrackColor = Theme.colors.orange,
-                    inactiveTrackColor = Theme.colors.partialOrange1
+                    thumbColor = sliderColor,
+                    activeTrackColor = sliderColor,
+                    inactiveTrackColor = if (i == viewModel.currentIndex)
+                        MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.onSecondary
                 )
             )
 
@@ -78,12 +96,13 @@ fun TimingDataEditor(
             // TODO: Show error
             val error by viewModel.customizedSongError.collectAsState()
 
-            AlertDialog(
+            BasicAlertDialog(
                 onDismissRequest = { openAlertDialog = false },
-                text = {
-                    TextField(value = customizedSongName, onValueChange = { customizedSongName = it })
-                },
-                buttons = {
+            ) {
+                Column {
+                    TextField(
+                        value = customizedSongName,
+                        onValueChange = { customizedSongName = it })
                     Button(
                         onClick = {
                             viewModel.saveNewCustomizedSong(customizedSongName)
@@ -94,7 +113,7 @@ fun TimingDataEditor(
                         Text("Save")
                     }
                 }
-            )
+            }
         }
     }
 }

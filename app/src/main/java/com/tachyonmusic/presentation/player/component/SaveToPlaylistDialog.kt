@@ -3,9 +3,8 @@ package com.tachyonmusic.presentation.player.component
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -28,11 +27,11 @@ fun SaveToPlaylistDialog(
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Card(
-            elevation = 5.dp,
+            elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
             shape = Theme.shapes.medium,
             modifier = Modifier
                 .fillMaxWidth(.95f)
-                .border(1.dp, Theme.colors.orange, Theme.shapes.medium)
+//                .border(1.dp, Theme.colors.orange, Theme.shapes.medium)
         ) {
             Column(
                 modifier = Modifier
