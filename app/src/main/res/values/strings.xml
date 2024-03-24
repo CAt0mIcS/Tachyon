@@ -1,9 +1,16 @@
 <resources>
     <string name="app_name">Tachyon</string>
-    <string name="dialog_permission_title">Permission required</string>
-    <string name="dialog_permission_default_message">Permission is required to run requested operation</string>
-    <string name="dialog_permission_button_positive">OK</string>
-    <string name="storage_permission_rationale">We need to access your external storage to play your local device files. Denying this permission will disable local audio playback</string>
+
+    <string name="song_name_and_artist">%1$s by %2$s</string>
+    <string name="sorted_by_alphabetical_title">Alphabetical by Title %1$s</string>
+    <string name="sorted_by_alphabetical_artist">Alphabetical by Artist %1$s</string>
+    <string name="sorted_by_last_played_date">Date Last Played %1$s</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
+
+    <string name="songs">Songs</string>
+    <string name="customized_songs">Customized Songs</string>
+    <string name="playlists">Playlists</string>
 
     <string name="btmNav_home">Home</string>
     <string name="btmNav_library">Library</string>
@@ -18,4 +25,39 @@
     <string name="unknown_error">An unknown error occurred</string>
 
     <string name="invalid_search_query">Invalid search query %1$s</string>
+    <string name="invalid_name">Invalid name \"%1$s\" specified</string>
+    <string name="cannot_create_customized_song">Cannot create invalid custom song, Name: \"%1$s\"; Playback: \"%2$s\"; TimingData: \"%3$s\"</string>
+    <string name="song_not_found">Unable to find song \"%1$s\"</string>
+
+    <string name="playback_not_in_playlist">Trying to play playback \"%1$s\" but it doesn\'t exist in playlist \"%2$s\"</string>
+
+    <string name="reverb_generic_name">Generic</string>
+    <string name="reverb_paddedcell_name">Padded Cell</string>
+    <string name="reverb_room_name">Room</string>
+    <string name="reverb_bathroom_name">Bathroom</string>
+    <string name="reverb_livingroom_name">Living Room</string>
+    <string name="reverb_stoneroom_name">Stone Room</string>
+    <string name="reverb_auditorium_name">Auditorium</string>
+    <string name="reverb_concerthall_name">Concert Hall</string>
+    <string name="reverb_cave_name">Cave</string>
+    <string name="reverb_arena_name">Arena</string>
+    <string name="reverb_hangar_name">Hangar</string>
+    <string name="reverb_carpetedhallway_name">Carpeted Hallway</string>
+    <string name="reverb_hallway_name">Hallway</string>
+    <string name="reverb_stonecorridor_name">Stone Corridor</string>
+    <string name="reverb_alley_name">Alley</string>
+    <string name="reverb_forest_name">Forest</string>
+    <string name="reverb_city_name">City</string>
+    <string name="reverb_mountains_name">Mountains</string>
+    <string name="reverb_quarry_name">Quarry</string>
+    <string name="reverb_plain_name">Plain</string>
+    <string name="reverb_parkinglot_name">Parking Lot</string>
+    <string name="reverb_sewerpipe_name">Sewer Pipe</string>
+    <string name="reverb_underwater_name">Underwater</string>
+    <string name="reverb_smallroom_name">Small Room</string>
+    <string name="reverb_mediumroom_name">Medium Room</string>
+    <string name="reverb_largeroom_name">Large Room</string>
+    <string name="reverb_mediumhall_name">Medium Hall</string>
+    <string name="reverb_largehall_name">Large Hall</string>
+    <string name="reverb_plate_name">Plate</string>
 </resources>

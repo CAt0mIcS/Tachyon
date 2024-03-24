@@ -2,10 +2,8 @@ package com.tachyonmusic.core.data.playback
 
 import android.net.Uri
 import android.os.Bundle
-import android.os.Parcel
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
@@ -13,29 +11,24 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.core.data.ext.toByteArray
-import com.tachyonmusic.core.data.ext.toInt
-import com.tachyonmusic.util.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.tachyonmusic.util.Duration
 
 abstract class AbstractSong(
     final override val mediaId: MediaId,
     final override val title: String,
     final override val artist: String,
-    final override val duration: Long,
-) : Song, AbstractPlayback() {
+    final override val duration: Duration
+) : Song {
 
-    final override var timingData = TimingDataController(emptyList())
+    final override var timingData: TimingDataController? = null
 
     abstract override val playbackType: PlaybackType.Song
 
-    override val artwork = MutableStateFlow<Artwork?>(null)
-    override val isArtworkLoading = MutableStateFlow(false)
+    override var isPlayable: Boolean = false
 
-    override fun toHashMap(): HashMap<String, Any?> = hashMapOf(
-        "mediaId" to mediaId.toString()
-    )
+    override var artwork: Artwork? = null
+    override var isArtworkLoading = false
+
 
     override fun toMediaItem() = MediaItem.Builder().apply {
         setMediaId(mediaId.toString())
@@ -43,12 +36,12 @@ abstract class AbstractSong(
         setMediaMetadata(toMediaMetadata())
     }.build()
 
-    override fun toMediaMetadata() = MediaMetadata.Builder().apply {
+    private fun toMediaMetadata() = MediaMetadata.Builder().apply {
         setFolderType(MediaMetadata.FOLDER_TYPE_NONE)
-        setIsPlayable(true)
+        setIsPlayable(isPlayable)
 
         // EmbeddedArtwork automatically handled by media3
-        when (val artworkVal = artwork.value) {
+        when (val artworkVal = artwork) {
             null -> {}
             is RemoteArtwork -> setArtworkUri(Uri.parse(artworkVal.uri.toURL().toString()))
         }
@@ -56,7 +49,7 @@ abstract class AbstractSong(
         setTitle(title)
         setArtist(artist)
         setExtras(Bundle().apply {
-            putLong(MetadataKeys.Duration, duration)
+            putLong(MetadataKeys.Duration, duration.inWholeMilliseconds)
 
             // Empty here to allow custom setting of timing data
             putParcelable(MetadataKeys.TimingData, TimingDataController())
@@ -64,12 +57,14 @@ abstract class AbstractSong(
         })
     }.build()
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(mediaId.source)
-        parcel.writeString(title)
-        parcel.writeString(artist)
-        parcel.writeLong(duration)
-        parcel.writeParcelable(artwork.value, flags)
-        parcel.writeInt(isArtworkLoading.value.toInt())
-    }
+    override fun toString() = mediaId.toString()
+
+    override fun describeContents() = 0
+
+    override fun equals(other: Any?) =
+        other is AbstractSong && mediaId == other.mediaId && title == other.title &&
+                artist == other.artist && duration == other.duration &&
+                timingData == other.timingData && isPlayable == other.isPlayable &&
+                artwork == other.artwork && isArtworkLoading == other.isArtworkLoading &&
+                isHidden == other.isHidden
 }

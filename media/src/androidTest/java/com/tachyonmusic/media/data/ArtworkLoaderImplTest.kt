@@ -2,21 +2,22 @@ package com.tachyonmusic.media.data
 
 import android.graphics.Bitmap
 import com.tachyonmusic.artworkfetcher.ArtworkFetcher
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.database.domain.ArtworkType
-import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.playback_layers.data.ArtworkLoaderImpl
 import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.assertResource
 import com.tachyonmusic.util.File
 import com.tachyonmusic.util.Resource
+import com.tachyonmusic.util.ms
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
@@ -31,7 +32,8 @@ internal class ArtworkLoaderImplTest {
     private val artworkFetcher: ArtworkFetcher = mockk()
     private val mediaId: MediaId = mockk(relaxed = true)
     private val metadataExtractor: SongMetadataExtractor = mockk()
-    private val artworkLoader = ArtworkLoaderImpl(artworkFetcher, log, metadataExtractor)
+    private val artworkLoader =
+        ArtworkLoaderImpl(artworkFetcher, log, metadataExtractor)
 
     @Test
     fun NO_ARTWORK_ReturnsCorrectResource() = runTest {
@@ -43,7 +45,7 @@ internal class ArtworkLoaderImplTest {
 
     @Test
     fun EMBEDDED_ReturnsCorrectResource() = runTest {
-        every { mediaId.path } returns null
+        every { mediaId.uri } returns null
 
         var res = artworkLoader.requestLoad(getEntity(ArtworkType.EMBEDDED))
         assert(res is Resource.Error)
@@ -51,7 +53,7 @@ internal class ArtworkLoaderImplTest {
         assertEquals(res.data!!.entityToUpdate!!.artworkType, ArtworkType.UNKNOWN)
 
 
-        every { mediaId.path } returns File("SomePath.mp3")
+        every { mediaId.uri } returns File("SomePath.mp3")
         every { metadataExtractor.loadBitmap(any()) } returns null
 
         res = artworkLoader.requestLoad(getEntity(ArtworkType.EMBEDDED))
@@ -60,7 +62,7 @@ internal class ArtworkLoaderImplTest {
 
         val bitmap: Bitmap = mockk()
         val path = File("SomePath.mp3")
-        every { mediaId.path } returns path
+        every { mediaId.uri } returns path
         every { metadataExtractor.loadBitmap(any()) } returns bitmap
 
         res = artworkLoader.requestLoad(getEntity(ArtworkType.EMBEDDED))
@@ -91,7 +93,7 @@ internal class ArtworkLoaderImplTest {
         } returns flow {
             emit(Resource.Error())
         }
-        every { mediaId.path } returns null
+        every { mediaId.uri } returns null
 
         var res = artworkLoader.requestLoad(getEntity(ArtworkType.UNKNOWN))
         assert(res is Resource.Error)
@@ -101,7 +103,7 @@ internal class ArtworkLoaderImplTest {
 
         val bitmap: Bitmap = mockk()
         val file = File("SomeSong.mp3")
-        every { mediaId.path } returns file
+        every { mediaId.uri } returns file
         every { metadataExtractor.loadBitmap(any()) } returns bitmap
 
         res = artworkLoader.requestLoad(getEntity(ArtworkType.UNKNOWN))
@@ -111,7 +113,7 @@ internal class ArtworkLoaderImplTest {
 
 
         val url = "https://www.example.com/SomeImage.jpg"
-        every { mediaId.path } returns null
+        every { mediaId.uri } returns null
         coEvery {
             artworkFetcher.query(any(), any(), any())
         } returns flow {
@@ -125,11 +127,11 @@ internal class ArtworkLoaderImplTest {
     }
 
 
-    private fun getEntity(artworkType: String, artworkUrl: String? = null) = SinglePlaybackEntity(
+    private fun getEntity(artworkType: String, artworkUrl: String? = null) = SongEntity(
         mediaId,
         "SomeTitle",
         "SomeArtist",
-        duration = 10000L,
+        duration = 10000.ms,
         artworkType,
         artworkUrl
     )

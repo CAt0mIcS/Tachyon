@@ -14,27 +14,29 @@ object Dependency {
     }
 
     object Compose {
+        const val FOUNDATION = "androidx.compose.foundation:foundation:${Index.COMPOSE}"
         const val APP_COMPAT = "androidx.appcompat:appcompat:1.5.1"
         const val ANDROID_MATERIAL = "com.google.android.material:material:1.7.0"
-        const val COMPOSE_SLIDERS = "com.github.krottv:compose-sliders:0.1.14"
-        const val UI = "androidx.compose.ui:ui:${Version.COMPOSE}"
-        const val COMPOSE_MATERIAL = "androidx.compose.material:material:${Version.COMPOSE}"
-        const val UI_TOOLING_PREVIEW = "androidx.compose.ui:ui-tooling-preview:${Version.COMPOSE}"
+        const val COMPOSE_SLIDERS = "com.github.krottv:compose-sliders:0.1.4"
+        const val UI = "androidx.compose.ui:ui:${Index.COMPOSE}"
+        const val COMPOSE_MATERIAL = "androidx.compose.material:material:${Index.COMPOSE}"
+        const val UI_TOOLING_PREVIEW = "androidx.compose.ui:ui-tooling-preview:${Index.COMPOSE}"
         const val NAVIGATION = "androidx.navigation:navigation-compose:2.5.3"
-        const val LIVEDATA = "androidx.compose.runtime:runtime-livedata:${Version.COMPOSE}"
+        const val LIVEDATA = "androidx.compose.runtime:runtime-livedata:${Index.COMPOSE}"
         const val ACTIVITY = "androidx.activity:activity-compose:1.6.1"
-        const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Version.COMPOSE}"
+        const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Index.COMPOSE}"
         const val COIL = "io.coil-kt:coil-compose:2.2.2"
         const val PAGING = "androidx.paging:paging-compose:1.0.0-alpha17"
+        const val COMPOSE_MATERIAL3 = "androidx.compose.material3:material3:1.2.0"
 
         object Accompanist {
             const val NAVIGATION_ANIMATION =
-                "com.google.accompanist:accompanist-navigation-animation:0.28.0"
+                "com.google.accompanist:accompanist-navigation-animation:0.31.3-beta"
         }
     }
 
     object Paging {
-        const val PAGING = "androidx.paging:paging-runtime:${Version.PAGING}"
+        const val PAGING = "androidx.paging:paging-runtime:${Index.PAGING}"
         const val COMPOSE = Compose.PAGING
     }
 
@@ -50,8 +52,8 @@ object Dependency {
 
     object DaggerHilt {
         const val NAVIGATION_COMPOSE = "androidx.hilt:hilt-navigation-compose:1.0.0"
-        const val HILT_ANDROID = "com.google.dagger:hilt-android:2.43.2"
-        const val COMPILER = "com.google.dagger:hilt-compiler:2.43.2"
+        const val HILT_ANDROID = "com.google.dagger:hilt-android:2.50"
+        const val COMPILER = "com.google.dagger:hilt-compiler:2.50"
     }
 
     object Cast {
@@ -66,9 +68,8 @@ object Dependency {
         const val JSOUP = "org.jsoup:jsoup:1.15.3"
     }
 
-    object Glide {
-        const val GLIDE = "com.github.bumptech.glide:glide:4.14.2"
-        const val GLIDE_COMPOSE = "com.github.bumptech.glide:compose:1.0.0-alpha.1"
+    object Landscapist {
+        const val GLIDE = "com.github.skydoves:landscapist-glide:2.1.1"
     }
 
     object Test {
@@ -77,30 +78,40 @@ object Dependency {
         const val ARCH_CORE_TESTING = "androidx.arch.core:core-testing:2.1.0"
         const val COROUTINES_TEST = "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4"
 
-        const val COMPOSE_TEST = "androidx.compose.ui:ui-test-junit4:${Version.COMPOSE}"
-        const val TEST_MANIFEST = "androidx.compose.ui:ui-test-manifest:${Version.COMPOSE}"
+        const val COMPOSE_TEST = "androidx.compose.ui:ui-test-junit4:${Index.COMPOSE}"
+        const val TEST_MANIFEST = "androidx.compose.ui:ui-test-manifest:${Index.COMPOSE}"
 
         const val DAGGER_TEST = "com.google.dagger:hilt-android-testing:2.37"
         const val DAGGER_TEST_COMPILER = "com.google.dagger:hilt-android-compiler:2.37"
         const val JUNIT_EXT = "androidx.test.ext:junit:1.1.3"
         const val TEST_RUNNER = "androidx.test:runner:1.4.0"
 
-        const val MOCKK = "io.mockk:mockk:${Version.MOCKK}"
-        const val MOCKK_ANDROID = "io.mockk:mockk-android:${Version.MOCKK}"
+        const val MOCKK = "io.mockk:mockk:${Index.MOCKK}"
+        const val MOCKK_ANDROID = "io.mockk:mockk-android:${Index.MOCKK}"
 
     }
 
     object Media3 {
-        const val EXOPLAYER = "androidx.media3:media3-exoplayer:${Version.MEDIA3}"
-        const val MEDIA_SESSION = "androidx.media3:media3-session:${Version.MEDIA3}"
-        const val CAST = "androidx.media3:media3-cast:${Version.MEDIA3}"
+        const val EXOPLAYER = "androidx.media3:media3-exoplayer:${Index.MEDIA3}"
+        const val MEDIA_SESSION = "androidx.media3:media3-session:${Index.MEDIA3}"
+        const val CAST = "androidx.media3:media3-cast:${Index.MEDIA3}"
+        const val EXTRACTOR = "androidx.media3:media3-extractor:${Index.MEDIA3}"
+        const val TRANSFORMER = "androidx.media3:media3-transformer:${Index.MEDIA3}"
+        const val COMMON = "androidx.media3:media3-common:${Index.MEDIA3}"
+        const val EFFECT = "androidx.media3:media3-effect:${Index.MEDIA3}"
     }
 
     object Room {
-        const val RUNTIME = "androidx.room:room-runtime:${Version.ROOM}"
-        const val COMPILER = "androidx.room:room-compiler:${Version.ROOM}"
-        const val COROUTINES = "androidx.room:room-ktx:${Version.ROOM}"
-        const val PAGING = "androidx.room:room-paging:${Version.ROOM}"
+        const val RUNTIME = "androidx.room:room-runtime:${Index.ROOM}"
+        const val COMPILER = "androidx.room:room-compiler:${Index.ROOM}"
+        const val COROUTINES = "androidx.room:room-ktx:${Index.ROOM}"
+        const val PAGING = "androidx.room:room-paging:${Index.ROOM}"
+    }
+
+    object Spotify {
+        // TODO: Relative path
+        const val AAR =
+            "D:\\dev\\Android\\Projects\\Tachyon\\lib\\Spotify\\spotify-app-remote-release-0.7.2.aar"
     }
 }
 
@@ -118,6 +129,7 @@ fun DependencyHandler.firebaseAnalytics() {
 }
 
 fun DependencyHandler.compose() {
+    implementation(Dependency.Compose.FOUNDATION)
     implementation(Dependency.Compose.APP_COMPAT)
     implementation(Dependency.Compose.ANDROID_MATERIAL)
 
@@ -127,6 +139,8 @@ fun DependencyHandler.compose() {
     implementation(Dependency.Compose.UI)
     implementation(Dependency.Compose.COMPOSE_MATERIAL)
     implementation(Dependency.Compose.UI_TOOLING_PREVIEW)
+    implementation(Dependency.Compose.COMPOSE_MATERIAL3)
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
 
     implementation(Dependency.Compose.NAVIGATION)
 
@@ -200,9 +214,8 @@ fun DependencyHandler.jsoup() {
     implementation(Dependency.Jsoup.JSOUP)
 }
 
-fun DependencyHandler.glide() {
-    implementation(Dependency.Glide.GLIDE)
-    implementation(Dependency.Glide.GLIDE_COMPOSE)
+fun DependencyHandler.landscapist_glide() {
+    implementation(Dependency.Landscapist.GLIDE)
 }
 
 fun DependencyHandler.projectMedia() {
@@ -225,8 +238,12 @@ fun DependencyHandler.projectUtil() {
     implementation(project(":util"))
 }
 
-fun DependencyHandler.projectDatabase() {
-    implementation(project(":database"))
+fun DependencyHandler.projectPlaybackLayers() {
+    implementation(project(":playback-layers"))
+}
+
+fun DependencyHandler.projectPlaybackLayerDatabase() {
+    implementation(project(":playback-layers:database"))
 }
 
 
@@ -269,6 +286,10 @@ fun DependencyHandler.media3() {
     implementation(Dependency.Media3.EXOPLAYER)
     implementation(Dependency.Media3.MEDIA_SESSION)
     implementation(Dependency.Media3.CAST)
+    implementation(Dependency.Media3.EXTRACTOR)
+    implementation(Dependency.Media3.TRANSFORMER)
+    implementation(Dependency.Media3.COMMON)
+    implementation(Dependency.Media3.EFFECT)
 }
 
 fun DependencyHandler.implementation(depName: String) {

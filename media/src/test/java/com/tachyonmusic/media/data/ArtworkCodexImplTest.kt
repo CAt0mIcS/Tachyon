@@ -1,10 +1,11 @@
 package com.tachyonmusic.media.data
 
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.database.domain.ArtworkType
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.domain.ArtworkLoader
+import com.tachyonmusic.playback_layers.data.ArtworkCodexImpl
+import com.tachyonmusic.playback_layers.domain.ArtworkLoader
 import com.tachyonmusic.testutils.assertEquals
 import com.tachyonmusic.testutils.assertResource
 import com.tachyonmusic.util.Resource

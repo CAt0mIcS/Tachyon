@@ -7,12 +7,13 @@ plugins {
 }
 
 android {
-    compileSdk = Version.COMPILE_SDK
+    compileSdk = Index.COMPILE_SDK
 
     defaultConfig {
-        minSdk = Version.MIN_SDK
-        targetSdk = Version.TARGET_SDK
+        minSdk = Index.MIN_SDK
+        targetSdk = Index.TARGET_SDK
 
+        ndk.debugSymbolLevel = Index.DEBUG_SYMBOL_LEVEL
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -29,12 +30,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = Version.JAVA
-        targetCompatibility = Version.JAVA
+        sourceCompatibility = Index.JAVA
+        targetCompatibility = Index.JAVA
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = Index.JVM_TARGET
     }
 
     packagingOptions {
@@ -53,9 +54,13 @@ dependencies {
     media3()
     googleCast()
     dagger()
+    implementation("androidx.documentfile:documentfile:1.0.1")
+
+    implementation("org.nanohttpd:nanohttpd:2.3.1")
 
     projectCore()
-    projectDatabase()
+    projectPlaybackLayerDatabase()
+    projectPlaybackLayers()
     projectUtil()
     projectLogger()
     projectArtworkFetcher()

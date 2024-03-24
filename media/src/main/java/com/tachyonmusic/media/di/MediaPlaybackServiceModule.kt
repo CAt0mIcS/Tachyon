@@ -1,40 +1,29 @@
 package com.tachyonmusic.media.di
 
 import android.app.Service
-import androidx.media3.cast.CastPlayer
-import androidx.media3.common.AudioAttributes
-import androidx.media3.common.C
-import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.util.EventLogger
+import android.app.UiModeManager
+import android.content.Context
+import android.content.Context.UI_MODE_SERVICE
+import android.content.res.Configuration
 import com.google.android.gms.cast.framework.CastContext
-import com.tachyonmusic.artworkfetcher.ArtworkFetcher
-import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.database.domain.repository.DataRepository
-import com.tachyonmusic.database.domain.repository.HistoryRepository
-import com.tachyonmusic.database.domain.repository.LoopRepository
-import com.tachyonmusic.database.domain.repository.PlaylistRepository
-import com.tachyonmusic.database.domain.repository.SettingsRepository
-import com.tachyonmusic.database.domain.repository.SongRepository
-import com.tachyonmusic.database.domain.use_case.FindPlaybackByMediaId
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import com.tachyonmusic.database.domain.repository.*
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.CAST_PLAYER_NAME
-import com.tachyonmusic.media.EXO_PLAYER_NAME
-import com.tachyonmusic.media.data.ArtworkCodexImpl
-import com.tachyonmusic.media.data.ArtworkLoaderImpl
+import com.tachyonmusic.media.data.AndroidAudioEffectController
 import com.tachyonmusic.media.data.BrowserTree
-import com.tachyonmusic.media.data.CustomPlayerImpl
-import com.tachyonmusic.media.domain.ArtworkCodex
-import com.tachyonmusic.media.domain.ArtworkLoader
-import com.tachyonmusic.media.domain.CustomPlayer
+import com.tachyonmusic.media.data.CastWebServerControllerImpl
+import com.tachyonmusic.media.domain.AudioEffectController
+import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.domain.use_case.*
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ServiceComponent
 import dagger.hilt.android.scopes.ServiceScoped
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Named
+import javax.annotation.Nullable
 import javax.inject.Singleton
 
 @Module
@@ -43,93 +32,64 @@ class MediaPlaybackServiceRepositoryModule {
 
     @Provides
     @ServiceScoped
-    fun provideCastContext(service: Service): CastContext =
-        CastContext.getSharedInstance(service)
+    @Nullable
+    fun provideCastContext(service: Service): CastContext? =
+        if (isCastApiAvailable(service)) CastContext.getSharedInstance(service) else null
 
     @Provides
     @ServiceScoped
-    fun provideBrowserTree(
-        songRepository: SongRepository,
-        loopRepository: LoopRepository,
-        playlistRepository: PlaylistRepository
-    ): BrowserTree = BrowserTree(songRepository, loopRepository, playlistRepository)
+    fun provideBrowserTree(playbackRepository: PlaybackRepository): BrowserTree =
+        BrowserTree(playbackRepository)
 
     @Provides
     @ServiceScoped
-    @Named(EXO_PLAYER_NAME)
-    fun provideExoPlayer(service: Service): CustomPlayer =
-        CustomPlayerImpl(ExoPlayer.Builder(service).apply {
-            setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                    .setUsage(C.USAGE_MEDIA)
-                    .build(), true
-            )
-            setHandleAudioBecomingNoisy(true)
-        }.build().apply {
-            // TODO: Debug only
-            addAnalyticsListener(EventLogger())
-            repeatMode = Player.REPEAT_MODE_ONE
-        })
-
-    @Provides
-    @ServiceScoped
-    @Named(CAST_PLAYER_NAME)
-    fun provideCastPlayer(context: CastContext): CustomPlayer =
-        CustomPlayerImpl(CastPlayer(context))
-}
-
-
-@Module
-@InstallIn(ServiceComponent::class)
-class MediaPlaybackUseCaseModule {
-    @Provides
-    @ServiceScoped
-    fun provideServiceUseCases(
-        historyRepository: HistoryRepository,
-        settingsRepository: SettingsRepository,
-        @Named(EXO_PLAYER_NAME) player: CustomPlayer,
-        songRepository: SongRepository,
-        loopRepository: LoopRepository,
-        findPlaybackByMediaId: FindPlaybackByMediaId,
-        dataRepository: DataRepository,
-        getOrLoadArtwork: GetOrLoadArtwork
-    ) = ServiceUseCases(
-        LoadPlaylistForPlayback(
-            songRepository,
-            loopRepository,
-            settingsRepository,
-            getOrLoadArtwork
-        ),
-        ConfirmAddedMediaItems(songRepository, loopRepository, findPlaybackByMediaId),
-        PreparePlayer(player),
-        GetSupportedCommands(),
-        UpdateTimingDataOfCurrentPlayback(player),
-        AddNewPlaybackToHistory(historyRepository, settingsRepository),
-        SaveRecentlyPlayed(dataRepository)
-    )
+    fun provideCastWebServerController(
+        service: Service,
+        log: Logger
+    ): CastWebServerController = CastWebServerControllerImpl(service, log)
 }
 
 
 @Module
 @InstallIn(SingletonComponent::class)
-class MediaPlaybackSingletonRepositoryModule {
-    @Provides
-    @Singleton
-    fun provideArtworkFetcher() = ArtworkFetcher()
+class MediaPlaybackUseCaseModule {
 
     @Provides
     @Singleton
-    internal fun provideArtworkLoader(
-        artworkFetcher: ArtworkFetcher,
-        log: Logger,
-        metadataExtractor: SongMetadataExtractor
-    ): ArtworkLoader = ArtworkLoaderImpl(artworkFetcher, log, metadataExtractor)
+    fun provideAddNewPlaybackToHistoryUseCase(
+        historyRepository: HistoryRepository,
+        settingsRepository: SettingsRepository
+    ) = AddNewPlaybackToHistory(historyRepository, settingsRepository)
 
     @Provides
     @Singleton
-    fun provideArtworkCodex(
-        artworkLoader: ArtworkLoader,
-        log: Logger
-    ): ArtworkCodex = ArtworkCodexImpl(artworkLoader, log)
+    fun provideSaveRecentlyPlayedUseCase(dataRepository: DataRepository) =
+        SaveRecentlyPlayed(dataRepository)
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+class MediaPlaybackRepositoryModule {
+    @Provides
+    @Singleton
+    fun provideAudioEffectController(): AudioEffectController = AndroidAudioEffectController()
+}
+
+
+fun isCastApiAvailable(context: Context): Boolean {
+    val isCastApiAvailable = isCurrentDevicePhone(context)
+            && GoogleApiAvailability.getInstance()
+        .isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS
+    try {
+        CastContext.getSharedInstance(context)
+    } catch (e: Exception) {
+        // track non-fatal
+        return false
+    }
+    return isCastApiAvailable
+}
+
+fun isCurrentDevicePhone(context: Context): Boolean {
+    val uiModeManager = context.getSystemService(UI_MODE_SERVICE) as UiModeManager
+    return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_NORMAL
 }

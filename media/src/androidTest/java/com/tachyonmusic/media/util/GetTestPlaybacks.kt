@@ -2,10 +2,8 @@ package com.tachyonmusic.media.util
 
 import com.tachyonmusic.core.data.constants.Constants
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.media.domain.model.TestLoop
-import com.tachyonmusic.media.domain.model.TestPlaylist
-import com.tachyonmusic.media.domain.model.TestSong
 import com.tachyonmusic.util.File
+import com.tachyonmusic.util.ms
 
 internal fun getSongs() = MutableList(50) { i ->
     return@MutableList when {
@@ -17,13 +15,13 @@ internal fun getSongs() = MutableList(50) { i ->
 }
 
 
-internal fun getLoops() = MutableList(50) { i ->
-    val name = "Loop $i"
+internal fun getCustomizedSongs() = MutableList(50) { i ->
+    val name = "CustomizedSong $i"
     return@MutableList when {
-        i < 10 -> oneLoop(name, i, 0)
-        i < 20 -> oneLoop(name, i, 1)
-        i < 30 -> oneLoop(name, i, 2)
-        else -> oneLoop(name, i, 3)
+        i < 10 -> oneCustomizedSong(name, i, 0)
+        i < 20 -> oneCustomizedSong(name, i, 1)
+        i < 30 -> oneCustomizedSong(name, i, 2)
+        else -> oneCustomizedSong(name, i, 3)
     }
 }
 
@@ -40,22 +38,22 @@ private fun oneSong(i: Int, artistI: Int): TestSong {
         MediaId.ofLocalSong(File(Constants.EXTERNAL_STORAGE_DIRECTORY + title + artist)),
         title,
         artist,
-        i.toLong() * 1000L
+        (i.toLong() * 1000L).ms
     )
 }
 
-private fun oneLoop(name: String, i: Int, artistI: Int): TestLoop {
+private fun oneCustomizedSong(name: String, i: Int, artistI: Int): TestCustomizedSong {
     val song = oneSong(i, artistI)
-    return TestLoop(MediaId.ofRemoteLoop(name, song.mediaId), name, song)
+    return TestCustomizedSong(MediaId.ofLocalCustomizedSong(name, song.mediaId), name, song)
 }
 
 private fun onePlaylist(name: String): TestPlaylist {
-    return TestPlaylist(MediaId.ofRemotePlaylist(name), name, List(20) { i ->
+    return TestPlaylist(MediaId.ofLocalPlaylist(name), name, List(20) { i ->
         when {
             i < 5 -> oneSong(i, 0)
-            i < 10 -> oneLoop("Loop $i", i, 0)
+            i < 10 -> oneCustomizedSong("CustomizedSong $i", i, 0)
             i < 15 -> oneSong(i, 1)
-            else -> oneLoop("Loop $i", i, 1)
+            else -> oneCustomizedSong("CustomizedSong $i", i, 1)
         }
     }.toMutableList())
 }

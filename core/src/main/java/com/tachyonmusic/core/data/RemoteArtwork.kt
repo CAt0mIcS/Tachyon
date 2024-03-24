@@ -2,10 +2,15 @@ package com.tachyonmusic.core.data
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
+import androidx.compose.ui.layout.ContentScale
+import com.skydoves.landscapist.ImageOptions
+import com.skydoves.landscapist.glide.GlideImage
+import com.tachyonmusic.core.data.constants.ArtworkLoadingIndicator
+import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.domain.Artwork
 import java.net.URI
 
@@ -16,26 +21,35 @@ import java.net.URI
 class RemoteArtwork(
     val uri: URI
 ) : Artwork {
-    @OptIn(ExperimentalGlideComposeApi::class)
+    override val isLoaded = true
+
     @Composable
-    override fun Image(contentDescription: String?, modifier: Modifier) {
+    override fun Image(contentDescription: String?, modifier: Modifier, contentScale: ContentScale) {
         val url = try {
             uri.toURL().toString()
         } catch (e: java.lang.IllegalArgumentException) {
             TODO("Invalid URI: $uri: ${e.localizedMessage}")
         }
 
-        GlideImage(
-            model = url,
-            contentDescription = contentDescription,
-            modifier = modifier
-        )
-
+        Box(modifier) {
+            GlideImage(
+                modifier = Modifier.fillMaxSize(),
+                imageModel = { url },
+                imageOptions = ImageOptions(
+                    contentDescription = contentDescription,
+                    contentScale = contentScale
+                ),
+                failure = {
+                    PlaceholderArtwork(contentDescription, modifier, contentScale)
+                },
+                loading = {
+                    ArtworkLoadingIndicator(modifier)
+                }
+            )
+        }
     }
 
     override fun equals(other: Any?) = other is RemoteArtwork && other.uri == uri
-
-    // TODO: GlideLazyListPreloader
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(uri.toString())

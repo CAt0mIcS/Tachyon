@@ -8,21 +8,21 @@ import org.junit.Test
 internal class MediaIdTest {
 
     @Test
-    fun of_remote_loop_creates_correct_media_id() {
-        val name = "LoopNameHere"
+    fun of_remote_customizedSong_creates_correct_media_id() {
+        val name = "CustomizedSongNameHere"
         val songMediaId = MediaId("*0*/SomeSon|||g.mp3")
-        val mediaId = MediaId.ofRemoteLoop(name, songMediaId)
+        val mediaId = MediaId.ofLocalCustomizedSong(name, songMediaId)
         assertEquals(mediaId.source, "*1*$name")
         assertEquals(mediaId.underlyingMediaId, songMediaId)
-        assert(mediaId.isRemoteLoop)
+        assert(mediaId.isLocalCustomizedSong)
     }
 
     @Test
     fun of_remote_playlist_creates_correct_media_id() {
         val name = "PlaylistNameHere"
-        val mediaId = MediaId.ofRemotePlaylist(name)
+        val mediaId = MediaId.ofLocalPlaylist(name)
         assertEquals(mediaId.source, "*2*$name")
-        assert(mediaId.isRemotePlaylist)
+        assert(mediaId.isLocalPlaylist)
     }
 
     @Test

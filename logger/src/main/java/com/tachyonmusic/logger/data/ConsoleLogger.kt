@@ -4,7 +4,7 @@ import android.util.Log
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.logger.util.CallerClassName
 
-class ConsoleLogger : Logger {
+open class ConsoleLogger : Logger {
     override fun debug(message: String) {
         Log.d(CallerClassName(), message)
     }

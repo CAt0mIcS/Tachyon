@@ -3,25 +3,18 @@ package com.tachyonmusic.presentation.player
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.*
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.unit.dp
-import com.tachyonmusic.presentation.ActivityMain
+import com.tachyonmusic.presentation.entry.ActivityMain
 import com.tachyonmusic.presentation.library.LibraryScreen
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import kotlinx.coroutines.launch
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -35,7 +28,7 @@ internal class LibraryPlayerTest {
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<ActivityMain>()
 
-    @OptIn(ExperimentalMaterialApi::class)
+    @OptIn(ExperimentalMaterial3Api::class)
     @Before
     fun setUp() {
         hiltRule.inject()
@@ -49,7 +42,7 @@ internal class LibraryPlayerTest {
                 val scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState)
                 val scope = rememberCoroutineScope()
 
-                val miniPlayerHeight = remember { mutableStateOf(0.dp) }
+                var miniPlayerHeight by remember { mutableStateOf(0.dp) }
 
                 Scaffold(bottomBar = {
                     // Simulate [BottomNavigation] bar
@@ -69,16 +62,22 @@ internal class LibraryPlayerTest {
                                 modifier = Modifier
                                     .fillMaxSize(),
                             ) {
-                                Player(sheetState, miniPlayerHeight)
+                                PlayerLayout(
+                                    sheetState,
+                                    { miniPlayerHeight = it },
+                                    miniPlayerHeight
+                                )
                             }
                         },
-                        sheetPeekHeight = miniPlayerHeight.value,
+                        sheetPeekHeight = miniPlayerHeight,
                         sheetBackgroundColor = Theme.colors.primary
                     ) { innerPaddingSheet ->
 
-                        Box(modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPaddingSheet)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPaddingSheet)
+                        ) {
                             LibraryScreen(sheetState)
                         }
                     }

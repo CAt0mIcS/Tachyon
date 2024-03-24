@@ -3,7 +3,7 @@
     <string name="unknown_encoder_error">ArtworkFetcher: Unknown exception occurred while encoding url \"%1$s\"</string>
     <string name="artwork_api_invalid_json">ArtworkFetcher: Invalid JSON returned from Artwork API: \"%1$s\"</string>
     <string name="invalid_image_size">ArtworkFetcher: The provided image size (%1$s) is invalid</string>
-    <string name="invalid_media_metadata">ArtworkFetcher: The provided title (%1$s) or artist (%2$s) is invalid</string>
+    <string name="invalid_media_metadata">ArtworkFetcher: The provided query (%1$s) is invalid</string>
     <string name="request_to_url_failed">ArtworkFetcher: Request to URL \"%1$s\" failed.</string>
     <string name="no_artwork">ArtworkFetcher: No artwork found at URL \"%1$s\".</string>
     <string name="src_set_parsing_failed">ArtworkFetcher: Failed to parse source set \"%1$s\" loaded from URL \"%2$s\"".</string>

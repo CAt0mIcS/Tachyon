@@ -1,14 +1,16 @@
 package com.tachyonmusic.core.domain
 
+import android.net.Uri
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
-import com.tachyonmusic.core.data.constants.Constants
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.util.File
 
-class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
+data class MediaId(
+    val source: String,
+    val underlyingMediaId: MediaId? = null
+) {
 
     companion object {
         fun deserialize(value: String): MediaId {
@@ -26,49 +28,43 @@ class MediaId(val source: String, val underlyingMediaId: MediaId? = null) {
                 null
             }
 
-        fun ofLocalSong(path: File) =
-            MediaId(
-                PlaybackType.Song.Local().toString() + path.absolutePath.substring(
-                    path.absolutePath.indexOf(
-                        Constants.EXTERNAL_STORAGE_DIRECTORY
-                    ) + Constants.EXTERNAL_STORAGE_DIRECTORY.length
-                )
-            )
+        fun ofLocalSong(uri: Uri) =
+            MediaId(PlaybackType.Song.Local().toString() + uri.toString())
 
-        fun ofRemoteLoop(name: String, songMediaId: MediaId) =
-            MediaId(PlaybackType.Loop.Remote().toString() + name, songMediaId)
+        fun ofLocalCustomizedSong(name: String, songMediaId: MediaId) =
+            MediaId(PlaybackType.CustomizedSong.Local().toString() + name, songMediaId)
 
-        fun ofRemotePlaylist(name: String) =
-            MediaId(PlaybackType.Playlist.Remote().toString() + name)
+        fun ofLocalPlaylist(name: String) =
+            MediaId(PlaybackType.Playlist.Local().toString() + name)
+
+        val EMPTY = MediaId("")
     }
 
     val playbackType: PlaybackType
         get() =
             if (isLocalSong) PlaybackType.Song.Local()
-            else if (isRemoteLoop) PlaybackType.Loop.Remote()
-            else if (isRemotePlaylist) PlaybackType.Playlist.Remote()
+            else if (isLocalCustomizedSong) PlaybackType.CustomizedSong.Local()
+            else if (isLocalPlaylist) PlaybackType.Playlist.Local()
             else TODO("Invalid media id ${toString()}")
 
     val isLocalSong: Boolean
         get() = source.contains(PlaybackType.Song.Local().toString())
 
-    val isRemoteLoop: Boolean
-        get() = source.contains(PlaybackType.Loop.Remote().toString()) && underlyingMediaId != null
+    val isLocalCustomizedSong: Boolean
+        get() = source.contains(
+            PlaybackType.CustomizedSong.Local().toString()
+        ) && underlyingMediaId != null
 
-    val isRemotePlaylist: Boolean
-        get() = source.contains(PlaybackType.Playlist.Remote().toString())
+    val isLocalPlaylist: Boolean
+        get() = source.contains(PlaybackType.Playlist.Local().toString())
 
-    val path: File?
+    val uri: Uri?
         get() {
             if (isLocalSong)
-                return File(
-                    "${Constants.EXTERNAL_STORAGE_DIRECTORY}/${
-                        source.replaceFirst(
-                            PlaybackType.Song.Local().toString(), ""
-                        )
-                    }"
+                return Uri.parse(
+                    source.replaceFirst(PlaybackType.Song.Local().toString(), "")
                 )
-            return underlyingMediaId?.path
+            return underlyingMediaId?.uri
         }
 
     override fun equals(other: Any?): Boolean {

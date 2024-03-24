@@ -3,9 +3,11 @@ plugins {
     id("org.jetbrains.kotlin.android")
 
     id("kotlin-kapt")
+    id("kotlin-android")
     id("com.google.dagger.hilt.android")
     id("dagger.hilt.android.plugin")
 }
+
 
 kotlin {
     sourceSets {
@@ -19,27 +21,31 @@ kotlin {
 }
 
 android {
-    compileSdk = Version.COMPILE_SDK
+    compileSdk = Index.COMPILE_SDK
 
     defaultConfig {
         applicationId = "com.tachyonmusic"
-        minSdk = Version.MIN_SDK
-        targetSdk = Version.TARGET_SDK
-        versionCode = Version.APP
-        versionName = Version.APP_NAME
+        minSdk = Index.MIN_SDK
+        targetSdk = Index.TARGET_SDK
+        versionCode = Index.APP
+        versionName = Index.APP_NAME
 
+        ndk.debugSymbolLevel = Index.DEBUG_SYMBOL_LEVEL
         testInstrumentationRunner = "com.tachyonmusic.testutils.HiltTestRunner"
 
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        manifestPlaceholders["redirectSchemeName"] = "spotify-sdk"
+        manifestPlaceholders["redirectHostName"] = "auth"
     }
 
     buildTypes {
         release {
-            isDebuggable = false
-            isShrinkResources = true
-            isMinifyEnabled = true
+//            isDebuggable = false
+//            isShrinkResources = true
+            isMinifyEnabled = false
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -49,12 +55,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = Version.JAVA
-        targetCompatibility = Version.JAVA
+        sourceCompatibility = Index.JAVA
+        targetCompatibility = Index.JAVA
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = Index.JVM_TARGET
     }
 
     buildFeatures {
@@ -65,7 +71,7 @@ android {
     namespace = "com.tachyonmusic.app"
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.3.0"
+        kotlinCompilerExtensionVersion = Index.COMPOSE_COMPILER
     }
 
     packagingOptions {
@@ -89,12 +95,15 @@ dependencies {
     implementation(Dependency.DaggerHilt.NAVIGATION_COMPOSE)
 
     implementation(Dependency.Media3.MEDIA_SESSION)
+    implementation(Dependency.Media3.CAST)
     implementation(Dependency.Compose.COIL)
 
+    implementation(Dependency.GSON.GSON)
 
     projectCore()
     projectMedia()
-    projectDatabase()
+    projectPlaybackLayers()
+    projectPlaybackLayerDatabase()
     projectUtil()
     projectLogger()
 

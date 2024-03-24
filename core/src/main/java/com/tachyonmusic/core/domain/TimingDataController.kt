@@ -2,61 +2,60 @@ package com.tachyonmusic.core.domain
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.ms
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
-class TimingDataController(
-    private val _timingData: ArrayList<String> = arrayListOf(),
-    currentIndex: Int = 0
-) : Parcelable {
+data class TimingDataController(
+    val timingData: List<TimingData> = listOf(),
     var currentIndex: Int = 0
-        private set
-
+) : Parcelable {
     val next: TimingData
         get() = nextTimingData()
 
     val current: TimingData
         get() = currentTimingData()
 
-    val timingData: MutableList<TimingData>
-        get() = _timingData.map { TimingData.deserialize(it) }.toMutableList()
 
-    constructor(
-        timingData: List<TimingData>,
-        currentIndex: Int = 0
-    ) : this(timingData.map { it.toString() } as ArrayList<String>, currentIndex)
+    fun coversDuration(start: Duration, end: Duration) =
+        timingData.find { it.startTime == start && it.endTime == end } != null
 
-    init {
-        this.currentIndex = currentIndex
+    fun advanceToIndex(i: Int) {
+        if (i < timingData.size && i >= 0)
+            currentIndex = i
     }
 
-    fun advanceToCurrentPosition(positionMs: Long) {
-        currentIndex = getIndexOfCurrentPosition(positionMs)
+    fun advanceToCurrentPosition(position: Duration) {
+        currentIndex = getIndexOfCurrentPosition(position)
     }
 
     fun advanceToNext() {
         currentIndex++
-        if (currentIndex >= _timingData.size)
+        if (currentIndex >= timingData.size)
             currentIndex = 0
     }
 
-    fun getIndexOfCurrentPosition(positionMs: Long): Int {
+    fun getIndexOfCurrentPosition(position: Duration): Int {
         // TODO: Better way of ensuring that when a new playback is played, the first timing data is loaded first
-        if (positionMs == 0L)
+        if (position == 0.ms)
             return 0
 
-        for (i in _timingData.indices) {
-            if (TimingData.deserialize(_timingData[i]).surrounds(positionMs))
+        for (i in timingData.indices) {
+            if (timingData[i].surrounds(position))
                 return i
         }
 
-        return closestTimingDataIndexAfter(positionMs)
+        return closestTimingDataIndexAfter(position)
     }
 
-    fun closestTimingDataIndexAfter(positionMs: Long): Int {
+    fun closestTimingDataIndexAfter(position: Duration): Int {
         var closestApproachIndex = 0
         var closestApproach = Int.MAX_VALUE
-        for (i in _timingData.indices) {
-            val distance = (TimingData.deserialize(_timingData[i]).startTime - positionMs).toInt()
-            if (distance > 0 && distance < closestApproach) {
+        for (i in timingData.indices) {
+            val distance =
+                (timingData[i].startTime - position).inWholeMilliseconds.toInt()
+            if (distance in 1 until closestApproach) {
                 closestApproach = distance
                 closestApproachIndex = i
             }
@@ -64,51 +63,63 @@ class TimingDataController(
         return closestApproachIndex
     }
 
-    fun anySurrounds(positionMs: Long): Boolean {
-        for (item in _timingData)
-            if (TimingData.deserialize(item).surrounds(positionMs))
+    fun anySurrounds(position: Duration): Boolean {
+        for (item in timingData)
+            if (item.surrounds(position))
                 return true
         return false
     }
 
     private fun nextTimingData(): TimingData {
         var nextIdx = currentIndex + 1
-        if (nextIdx >= _timingData.size)
+        if (nextIdx >= timingData.size)
             nextIdx = 0
-        return TimingData.deserialize(_timingData[nextIdx])
+        return timingData[nextIdx]
     }
 
-    private fun currentTimingData() = TimingData.deserialize(_timingData[currentIndex])
+    private fun currentTimingData() = timingData[currentIndex]
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-//        parcel.writeParcelableArray(this.toTypedArray(), flags)
-
-        parcel.writeStringArray(_timingData.toTypedArray())
+        parcel.writeTypedArray(timingData.toTypedArray(), flags)
         parcel.writeInt(currentIndex)
     }
 
     override fun describeContents() = 0
 
+    override fun toString() =
+        currentIndex.toString() + "--" + timingData.joinToString(separator = ";") { it.toString() }
+
     companion object CREATOR : Parcelable.Creator<TimingDataController> {
         override fun createFromParcel(parcel: Parcel): TimingDataController {
-            // TODO: Better implementation for loading arrays/lists/...
-//            val list = parcel.readParcelableArray(TimingData::class.java.classLoader)
-//                ?.map { it as TimingData } ?: emptyList()
-
-            val str = parcel.createStringArray()!!.toMutableList() as ArrayList<String>
+            val timingData = parcel.createTypedArray(TimingData.CREATOR)!!
 
             val index = parcel.readInt()
-            return TimingDataController(str, index)
+            return TimingDataController(timingData.toList(), index)
         }
 
         override fun newArray(size: Int): Array<TimingDataController?> = arrayOfNulls(size)
     }
 
-    fun getOrNull(index: Int) = TimingData.deserializeIfValid(_timingData.getOrNull(index))
-    fun isEmpty() = _timingData.isEmpty()
-    fun isNotEmpty() = _timingData.isNotEmpty()
-    val size get() = _timingData.size
-    val indices get() = _timingData.indices
-    operator fun get(index: Int) = TimingData.deserialize(_timingData[index])
+    fun getOrNull(index: Int) = timingData.getOrNull(index)
+    fun isEmpty() = timingData.isEmpty()
+    fun isNotEmpty() = timingData.isNotEmpty()
+    val size get() = timingData.size
+    val indices get() = timingData.indices
+    fun first() = timingData.first()
+    fun last() = timingData.last()
+    operator fun get(index: Int) = timingData[index]
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is TimingDataController) return false
+        return timingData == other.timingData && currentIndex == other.currentIndex
+    }
 }
 
+@OptIn(ExperimentalContracts::class)
+fun TimingDataController?.isNullOrEmpty(): Boolean {
+    contract {
+        returns(false) implies (this@isNullOrEmpty != null)
+    }
+
+    return this == null || timingData.isEmpty()
+}

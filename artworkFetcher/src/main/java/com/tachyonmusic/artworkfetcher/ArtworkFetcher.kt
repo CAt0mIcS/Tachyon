@@ -15,7 +15,7 @@ class ArtworkFetcher(
     )
 ) {
 
-    suspend fun query(title: String, artist: String, imageSize: Int) = flow {
+    suspend fun query(query: String, imageSize: Int, pageSize: Int = 1) = flow {
         emit(Resource.Loading())
 
         if (imageSize <= 0) {
@@ -30,24 +30,25 @@ class ArtworkFetcher(
             return@flow
         }
 
-        if (title.isBlank() || artist.isBlank()) {
-            emit(
-                Resource.Error(
-                    UiText.StringResource(
-                        R.string.invalid_media_metadata,
-                        title,
-                        artist
-                    )
-                )
-            )
+        if (query.isBlank()) {
+            emit(Resource.Error(UiText.StringResource(R.string.invalid_media_metadata, query)))
             return@flow
         }
 
         for (source in sources) {
-            val result = source.search(title, artist, imageSize)
-            emit(result)
-            if (result is Resource.Success)
-                break
+            try {
+                val result = source.search(query, imageSize, pageSize)
+                emit(result)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                emit(
+                    Resource.Error(
+                        UiText.build(
+                            e.localizedMessage ?: R.string.unknown_encoder_error
+                        )
+                    )
+                ) // TODO: No arg for unknown_encoder_error provided
+            }
         }
     }
 }

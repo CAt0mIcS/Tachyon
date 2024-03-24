@@ -2,12 +2,12 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import androidx.room.Room
-import com.tachyonmusic.core.data.playback.RemoteLoopImpl
-import com.tachyonmusic.core.data.playback.RemotePlaylistImpl
+import com.tachyonmusic.core.data.playback.LocalCustomizedSong
+import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Loop
+import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.data.repository.FileRepositoryImpl
@@ -47,11 +47,11 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun provideLoops(repository: SongRepository): MutableList<Loop> = runBlocking {
+    fun provideCustomizedSongs(repository: SongRepository): MutableList<CustomizedSong> = runBlocking {
         MutableList(3) { i ->
             val song = repository.getSongs()[i]
-            RemoteLoopImpl(
-                MediaId.ofRemoteLoop(i.toString(), song.mediaId),
+            LocalCustomizedSong(
+                MediaId.ofLocalCustomizedSong(i.toString(), song.mediaId),
                 i.toString(),
                 TimingDataController(
                     listOf(
@@ -68,8 +68,8 @@ object TestAppModule {
     @Singleton
     fun providePlaylists(repository: SongRepository): MutableList<Playlist> = runBlocking {
         MutableList(2) { i ->
-            RemotePlaylistImpl(
-                MediaId.ofRemotePlaylist(i.toString()),
+            LocalPlaylist(
+                MediaId.ofLocalPlaylist(i.toString()),
                 i.toString(),
                 repository.getSongs().filter {
                     it.title == "Cosmic Storm" || it.title == "Awake" || it.title == "Last Time"

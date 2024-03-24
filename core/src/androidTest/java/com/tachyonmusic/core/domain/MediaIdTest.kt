@@ -20,7 +20,7 @@ internal class MediaIdTest {
         val expectedSource = "*0*/Music/DANGER - 0.59 - MrSuicideSheep.mp3"
         assertEquals(mediaId.source, expectedSource)
         assert(mediaId.isLocalSong)
-        assertNotEquals(mediaId.path, null)
-        assertEquals(mediaId.path!!.absolutePath, path.absolutePath)
+        assertNotEquals(mediaId.uri, null)
+        assertEquals(mediaId.uri!!.absolutePath, path.absolutePath)
     }
 }
