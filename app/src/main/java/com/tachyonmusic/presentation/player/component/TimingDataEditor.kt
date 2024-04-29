@@ -1,6 +1,7 @@
 package com.tachyonmusic.presentation.player.component
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -84,101 +86,115 @@ fun TimingDataEditor(
 
             ) {
 
-                Row(modifier = Modifier.fillMaxWidth()) {
+                LazyRow(modifier = Modifier.fillMaxWidth()) {
 
                     // TODO: Should be a setting
                     val deltaDuration = 50.ms
 
-                    Button(
-                        onClick = {
-                            viewModel.updateTimingData(
-                                i,
-                                timingData[i].startTime - deltaDuration,
-                                timingData[i].endTime
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateTimingData(
+                                    i,
+                                    timingData[i].startTime - deltaDuration,
+                                    timingData[i].endTime
+                                )
+                                viewModel.setNewTimingData()
+                                viewModel.playTimingDataAt(i)
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(text = "<")
+                        }
+                    }
+
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateTimingData(
+                                    i,
+                                    timingData[i].startTime + deltaDuration,
+                                    timingData[i].endTime
+                                )
+                                viewModel.setNewTimingData()
+                                viewModel.playTimingDataAt(i)
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(text = ">")
+                        }
+                    }
+
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateStartToCurrentPosition(i)
+                                viewModel.setNewTimingData()
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text("<>")
+                        }
+                    }
+
+
+                    item {
+                        IconButton(
+                            onClick = { viewModel.playTimingDataAt(i) },
+                            modifier = Modifier.fillMaxHeight()
+                        ) {
+                            Icon(
+                                painterResource(R.drawable.ic_play),
+                                contentDescription = "Seek to timing data"
                             )
-                            viewModel.setNewTimingData()
-                            viewModel.playTimingDataAt(i)
-                        },
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text(text = "<")
-                    }
-
-                    Button(
-                        onClick = {
-                            viewModel.updateTimingData(
-                                i,
-                                timingData[i].startTime + deltaDuration,
-                                timingData[i].endTime
-                            )
-                            viewModel.setNewTimingData()
-                            viewModel.playTimingDataAt(i)
-                        },
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text(text = ">")
-                    }
-
-                    Button(
-                        onClick = {
-                            viewModel.updateStartToCurrentPosition(i)
-                            viewModel.setNewTimingData()
-                        },
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text("<>")
+                        }
                     }
 
 
-                    IconButton(
-                        onClick = { viewModel.playTimingDataAt(i) },
-                        modifier = Modifier.fillMaxHeight()
-                    ) {
-                        Icon(
-                            painterResource(R.drawable.ic_play),
-                            contentDescription = "Seek to timing data"
-                        )
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateEndToCurrentPosition(i)
+                                viewModel.setNewTimingData()
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text("<>")
+                        }
                     }
 
-
-                    Button(
-                        onClick = {
-                            viewModel.updateEndToCurrentPosition(i)
-                            viewModel.setNewTimingData()
-                        },
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text("<>")
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateTimingData(
+                                    i,
+                                    timingData[i].startTime,
+                                    timingData[i].endTime - deltaDuration
+                                )
+                                viewModel.setNewTimingData()
+                                viewModel.playTimingDataAt(i, startFromEnd = true)
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(text = "<")
+                        }
                     }
 
-                    Button(
-                        onClick = {
-                            viewModel.updateTimingData(
-                                i,
-                                timingData[i].startTime,
-                                timingData[i].endTime - deltaDuration
-                            )
-                            viewModel.setNewTimingData()
-                            viewModel.playTimingDataAt(i, startFromEnd = true)
-                        },
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text(text = "<")
-                    }
-
-                    Button(
-                        onClick = {
-                            viewModel.updateTimingData(
-                                i,
-                                timingData[i].startTime,
-                                timingData[i].endTime + deltaDuration
-                            )
-                            viewModel.setNewTimingData()
-                            viewModel.playTimingDataAt(i, startFromEnd = true)
-                        },
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text(text = ">")
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateTimingData(
+                                    i,
+                                    timingData[i].startTime,
+                                    timingData[i].endTime + deltaDuration
+                                )
+                                viewModel.setNewTimingData()
+                                viewModel.playTimingDataAt(i, startFromEnd = true)
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(text = ">")
+                        }
                     }
                 }
 
