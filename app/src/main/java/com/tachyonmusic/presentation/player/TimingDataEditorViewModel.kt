@@ -15,7 +15,9 @@ import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewCustomizedSong
 import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
+import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.domain.use_case.player.SetTimingData
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.presentation.util.update
 import com.tachyonmusic.util.*
@@ -30,6 +32,7 @@ import javax.inject.Inject
 class TimingDataEditorViewModel @Inject constructor(
     getRepositoryStates: GetRepositoryStates,
     private val setTimingData: SetTimingData,
+    private val seekToPosition: SeekToPosition,
     private val createAndSaveNewCustomizedSong: CreateAndSaveNewCustomizedSong,
     private val playPlayback: PlayPlayback,
     private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
@@ -62,15 +65,36 @@ class TimingDataEditorViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun playTimingDataAt(i: Int) {
+    fun playTimingDataAt(i: Int, startFromEnd: Boolean = false) {
+        // TODO: Should be setting: If timing data is started from end we seek back this value to allow user to listen to the last few seconds
+        val endTimeAdjustmentTime = 3.sec
+
         setTimingData.seekToTimingDataIndex(i)
+        if (startFromEnd) {
+            seekToPosition(timingData[i].endTime - endTimeAdjustmentTime)
+        }
         currentIndex = i
+        pauseResumePlayback(PauseResumePlayback.Action.Resume)
     }
 
     fun updateTimingData(i: Int, startTime: Duration, endTime: Duration) {
         timingData.update {
             it[i].startTime = startTime
             it[i].endTime = endTime
+            it
+        }
+    }
+
+    fun updateStartToCurrentPosition(i: Int) {
+        timingData.update {
+            it[i].startTime = getCurrentPosition() ?: return@update it
+            it
+        }
+    }
+
+    fun updateEndToCurrentPosition(i: Int) {
+        timingData.update {
+            it[i].endTime = getCurrentPosition() ?: return@update it
             it
         }
     }
