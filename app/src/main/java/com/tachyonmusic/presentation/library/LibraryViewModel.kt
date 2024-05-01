@@ -5,10 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.domain.LoadArtworkForPlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.DeletePlayback
-import com.tachyonmusic.domain.use_case.GetRepositoryStates
+import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
@@ -40,13 +39,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    getRepositoryStates: GetRepositoryStates,
     private val playbackRepository: PlaybackRepository,
 
     private val playPlayback: PlayPlayback,
+    private val browser: MediaBrowserController,
 
     private val addSongToExcludedSongs: AddSongToExcludedSongs,
-    private val browser: MediaBrowserController,
     private val deletePlayback: DeletePlayback,
 
     private val loadArtworkForPlayback: LoadArtworkForPlayback,
@@ -56,7 +54,7 @@ class LibraryViewModel @Inject constructor(
     private val updatePlaybackMetadata: UpdatePlaybackMetadata
 ) : ViewModel() {
 
-    val sortParams = getRepositoryStates.sortPrefs()
+    val sortParams = playbackRepository.sortingPreferences
 
     private var songs = playbackRepository.songFlow.map { songs ->
         songs.filter { !it.isHidden }.map { it.copy() }

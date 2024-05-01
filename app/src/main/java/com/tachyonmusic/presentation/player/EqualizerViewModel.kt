@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.core.domain.model.SoundLevel
-import com.tachyonmusic.domain.use_case.GetRepositoryStates
+import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.domain.AudioEffectController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -22,7 +22,7 @@ data class EqualizerState(
 @HiltViewModel
 class EqualizerViewModel @Inject constructor(
     private val audioEffectController: AudioEffectController,
-    getRepositoryStates: GetRepositoryStates
+    mediaBrowser: MediaBrowserController
 ) : ViewModel() {
     private val _bassBoost = MutableStateFlow(audioEffectController.bass)
     val bassBoost = _bassBoost.asStateFlow()
@@ -47,7 +47,7 @@ class EqualizerViewModel @Inject constructor(
     val reverb = _reverb.asStateFlow()
 
     init {
-        getRepositoryStates.playback().onEach {
+        mediaBrowser.currentPlayback.onEach {
             _bassBoost.update { audioEffectController.bass }
             _virtualizerStrength.update { audioEffectController.virtualizerStrength }
             _equalizer.update { it.copy(bands = audioEffectController.bands) }

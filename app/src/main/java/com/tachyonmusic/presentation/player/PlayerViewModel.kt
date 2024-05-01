@@ -6,10 +6,10 @@ import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.domain.LoadArtworkForPlayback
+import com.tachyonmusic.database.domain.repository.SettingsRepository
+import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
-import com.tachyonmusic.domain.use_case.GetRepositoryStates
-import com.tachyonmusic.domain.use_case.ObserveSettings
+import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewPlaylist
@@ -19,7 +19,6 @@ import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.RemovePlaybackFromPlaylist
 import com.tachyonmusic.domain.use_case.player.SavePlaybackToPlaylist
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
-import com.tachyonmusic.domain.use_case.player.SetRepeatMode
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.isPredefined
@@ -45,16 +44,14 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    getRepositoryStates: GetRepositoryStates,
+    private val mediaBrowser: MediaBrowserController,
     private val playbackRepository: PlaybackRepository,
     loadArtworkForPlayback: LoadArtworkForPlayback,
-
-    observeSettings: ObserveSettings,
+    settingsRepository: SettingsRepository,
 
     private val getCurrentPlaybackPos: GetCurrentPosition,
     private val seekToPosition: SeekToPosition,
     private val getRecentlyPlayed: GetRecentlyPlayed,
-    private val setRepeatMode: SetRepeatMode,
     private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
     private val pauseResumePlayback: PauseResumePlayback,
     private val playPlayback: PlayPlayback,
@@ -69,7 +66,7 @@ class PlayerViewModel @Inject constructor(
     /**************************************************************************
      ********** CURRENT PLAYBACK
      *************************************************************************/
-    private val _playback = getRepositoryStates.playback().map {
+    private val _playback = mediaBrowser.currentPlayback.map {
         (it ?: playbackRepository.getHistory().firstOrNull())?.copy()
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
@@ -105,7 +102,7 @@ class PlayerViewModel @Inject constructor(
         private set
 
     init {
-        observeSettings().onEach {
+        settingsRepository.observe().onEach {
             showMillisecondsInPositionText = it.shouldMillisecondsBeShown
             audioUpdateInterval = it.audioUpdateInterval
         }.launchIn(viewModelScope)
@@ -115,12 +112,12 @@ class PlayerViewModel @Inject constructor(
     /**************************************************************************
      ********** MEDIA CONTROLS
      *************************************************************************/
-    val seekIncrements = observeSettings().map {
+    val seekIncrements = settingsRepository.observe().map {
         SeekIncrements(it.seekForwardIncrement, it.seekBackIncrement)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SeekIncrements())
 
-    val isPlaying = getRepositoryStates.isPlaying()
-    val repeatMode = getRepositoryStates.repeatMode()
+    val isPlaying = mediaBrowser.isPlaying
+    val repeatMode = mediaBrowser.repeatMode
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), RepeatMode.All)
 
     private var recentlyPlayedPos: Duration? = null
@@ -151,7 +148,7 @@ class PlayerViewModel @Inject constructor(
 
     fun nextRepeatMode() {
         viewModelScope.launch {
-            setRepeatMode(repeatMode.value.next)
+            mediaBrowser.setRepeatMode(repeatMode.value.next)
         }
     }
 
@@ -187,7 +184,7 @@ class PlayerViewModel @Inject constructor(
     /**************************************************************************
      ********** NEXT PLAYBACK ITEMS / PLAYLIST ITEMS
      *************************************************************************/
-    private val currentPlaylist = getRepositoryStates.currentPlaylist()
+    private val currentPlaylist = mediaBrowser.currentPlaylist
 
     val playbackType = combine(_playback, currentPlaylist) { playback, playlist ->
         if (playlist?.isPredefined == true)

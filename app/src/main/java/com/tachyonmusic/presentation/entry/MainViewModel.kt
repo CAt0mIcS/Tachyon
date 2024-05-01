@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.data.repository.StateRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.domain.repository.STATE_LOADING_TASK_STARTUP
-import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
@@ -30,7 +29,6 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val stateRepository: StateRepository,
-    observeSettings: ObserveSettings,
 
     settingsRepository: SettingsRepository,
     updateSettingsDatabase: UpdateSettingsDatabase,
@@ -49,7 +47,7 @@ class MainViewModel @Inject constructor(
 
     private var cachedMusicDirectories = emptyList<Uri>()
 
-    val requiresMusicPathSelection = observeSettings().map {
+    val requiresMusicPathSelection = settingsRepository.observe().map {
         it.musicDirectories.isEmpty()
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), false)
 
