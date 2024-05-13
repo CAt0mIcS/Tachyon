@@ -2,14 +2,13 @@ package com.tachyonmusic.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.domain.LoadArtworkForPlayback
+import com.tachyonmusic.database.domain.repository.DataRepository
+import com.tachyonmusic.domain.model.SearchLocation
+import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
-import com.tachyonmusic.domain.use_case.home.GetSavedData
 import com.tachyonmusic.domain.use_case.home.UnloadArtworks
-import com.tachyonmusic.domain.use_case.player.SetRepeatMode
-import com.tachyonmusic.domain.use_case.search.SearchLocation
-import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
@@ -30,16 +29,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val playbackRepository: PlaybackRepository,
+    playbackRepository: PlaybackRepository,
     private val loadArtworkForPlayback: LoadArtworkForPlayback,
-
-    setRepeatMode: SetRepeatMode,
-    getSavedData: GetSavedData,
-
+    mediaBrowser: MediaBrowserController,
+    dataRepository: DataRepository,
     private val playPlayback: PlayPlayback,
-
     private val unloadArtworks: UnloadArtworks,
-
     private val searchStoredPlaybacks: SearchStoredPlaybacks
 ) : ViewModel() {
 
@@ -70,7 +65,7 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             // Make sure browser repeat mode is up to date with saved one
-            setRepeatMode(withContext(Dispatchers.IO) { getSavedData().repeatMode })
+            mediaBrowser.setRepeatMode(withContext(Dispatchers.IO) { dataRepository.getData().repeatMode })
         }
     }
 

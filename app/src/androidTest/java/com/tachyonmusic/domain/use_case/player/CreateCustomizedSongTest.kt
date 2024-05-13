@@ -32,7 +32,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
-internal class CreateAndSaveNewCustomizedSongTest {
+internal class CreateCustomizedSongTest {
     @get:Rule
     val hiltRule = HiltAndroidRule(this)
 
@@ -53,7 +53,7 @@ internal class CreateAndSaveNewCustomizedSongTest {
     private lateinit var browser: MediaBrowserController
     val name = "TestCustomizedSong"
 
-    private lateinit var createAndSaveNewCustomizedSong: CreateAndSaveNewCustomizedSong
+    private lateinit var createCustomizedSong: CreateCustomizedSong
 
     @Before
     fun setUp() {
@@ -87,7 +87,7 @@ internal class CreateAndSaveNewCustomizedSongTest {
             updateSongDatabase()
         }
 
-        createAndSaveNewCustomizedSong = CreateAndSaveNewCustomizedSong(
+        createCustomizedSong = CreateCustomizedSong(
             songRepository,
             customizedSongRepository,
             browser
@@ -97,7 +97,7 @@ internal class CreateAndSaveNewCustomizedSongTest {
 
     @Test
     fun nullPlaybackReturnsError() = runTest {
-        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
+        assert(createCustomizedSong(name) is Resource.Error)
     }
 
     @Test
@@ -109,16 +109,16 @@ internal class CreateAndSaveNewCustomizedSongTest {
             10000.ms
         )
 
-        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
+        assert(createCustomizedSong(name) is Resource.Error)
 
         every { browser.timingData } returns TimingDataController()
-        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
+        assert(createCustomizedSong(name) is Resource.Error)
 
         every { browser.duration } returns 10000.ms
         every { browser.timingData } returns TimingDataController(
             listOf(TimingData(0.ms, 10000.ms))
         )
-        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
+        assert(createCustomizedSong(name) is Resource.Error)
 
         every { browser.duration } returns 10000.ms
         every { browser.timingData } returns TimingDataController(
@@ -127,7 +127,7 @@ internal class CreateAndSaveNewCustomizedSongTest {
                 TimingData(0.ms, 10000.ms)
             )
         )
-        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
+        assert(createCustomizedSong(name) is Resource.Error)
     }
 
     @Test
@@ -142,7 +142,7 @@ internal class CreateAndSaveNewCustomizedSongTest {
                     TimingData(32.ms, 5634.ms)
                 )
             )
-            assert(createAndSaveNewCustomizedSong(name) is Resource.Success)
+            assert(createCustomizedSong(name) is Resource.Success)
         }
 
     @Test
@@ -153,7 +153,7 @@ internal class CreateAndSaveNewCustomizedSongTest {
             "Artist",
             10000.ms
         )
-        assert(createAndSaveNewCustomizedSong(name) is Resource.Error)
+        assert(createCustomizedSong(name) is Resource.Error)
     }
 
     @Test
@@ -166,7 +166,7 @@ internal class CreateAndSaveNewCustomizedSongTest {
             )
         )
 
-        val customizedSongRes = createAndSaveNewCustomizedSong(name)
+        val customizedSongRes = createCustomizedSong(name)
         checkCustomizedSongResource(customizedSongRes)
     }
 
@@ -180,7 +180,7 @@ internal class CreateAndSaveNewCustomizedSongTest {
             )
         )
 
-        val customizedSongRes = createAndSaveNewCustomizedSong(name)
+        val customizedSongRes = createCustomizedSong(name)
         checkCustomizedSongResource(customizedSongRes)
         val customizedSong = customizedSongRes.data!!
         assert(customizedSong.mediaId == MediaId.ofLocalCustomizedSong(name, getSong().mediaId))

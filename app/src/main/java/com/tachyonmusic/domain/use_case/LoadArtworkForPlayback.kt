@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain
+package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.domain.SongMetadataExtractor

@@ -1,4 +1,4 @@
-package com.tachyonmusic.domain.use_case.search
+package com.tachyonmusic.domain.model
 
 import androidx.annotation.DrawableRes
 import com.tachyonmusic.app.R

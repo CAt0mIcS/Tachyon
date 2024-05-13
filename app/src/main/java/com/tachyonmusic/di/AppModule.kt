@@ -4,22 +4,42 @@ import android.app.Application
 import android.content.Context
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.data.repository.*
+import com.tachyonmusic.data.repository.FileRepositoryImpl
+import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
+import com.tachyonmusic.data.repository.StateRepository
 import com.tachyonmusic.database.data.data_source.Database
-import com.tachyonmusic.database.domain.repository.*
-import com.tachyonmusic.domain.LoadArtworkForPlayback
+import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
+import com.tachyonmusic.database.domain.repository.DataRepository
+import com.tachyonmusic.database.domain.repository.HistoryRepository
+import com.tachyonmusic.database.domain.repository.PlaylistRepository
+import com.tachyonmusic.database.domain.repository.SettingsRepository
+import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.StateRepositoryImpl
-import com.tachyonmusic.domain.use_case.*
+import com.tachyonmusic.domain.use_case.DeletePlayback
+import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
+import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
+import com.tachyonmusic.domain.use_case.PlayPlayback
+import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
-import com.tachyonmusic.domain.use_case.home.*
+import com.tachyonmusic.domain.use_case.home.NormalizeCurrentPosition
+import com.tachyonmusic.domain.use_case.home.UnloadArtworks
+import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
+import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.domain.use_case.library.QueryArtworkForPlayback
 import com.tachyonmusic.domain.use_case.library.UpdatePlaybackMetadata
-import com.tachyonmusic.domain.use_case.player.*
+import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewPlaylist
+import com.tachyonmusic.domain.use_case.player.CreateCustomizedSong
+import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
+import com.tachyonmusic.domain.use_case.player.GetPlaybackChildren
+import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
+import com.tachyonmusic.domain.use_case.player.RemovePlaybackFromPlaylist
+import com.tachyonmusic.domain.use_case.player.SavePlaybackToPlaylist
+import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.domain.use_case.profile.ExportDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
 import com.tachyonmusic.domain.use_case.profile.WriteSettings
@@ -30,7 +50,12 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
-import com.tachyonmusic.playback_layers.domain.*
+import com.tachyonmusic.playback_layers.domain.ArtworkCodex
+import com.tachyonmusic.playback_layers.domain.ArtworkLoader
+import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
+import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -87,11 +112,6 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideObserveSettingsUseCase(settingsRepository: SettingsRepository) =
-        ObserveSettings(settingsRepository)
-
-    @Provides
-    @Singleton
     fun provideWriteSettingsUseCase(settingsRepository: SettingsRepository) =
         WriteSettings(settingsRepository)
 
@@ -108,15 +128,6 @@ object AppUseCaseModule {
         settingsRepository: SettingsRepository,
         uriPermissionRepository: UriPermissionRepository
     ) = ImportDatabase(database, context, settingsRepository, uriPermissionRepository)
-
-    @Provides
-    @Singleton
-    fun provideObserveSavedDataUseCase(dataRepository: DataRepository) =
-        ObserveSavedData(dataRepository)
-
-    @Provides
-    @Singleton
-    fun provideGetSavedDataUseCase(dataRepository: DataRepository) = GetSavedData(dataRepository)
 
     @Provides
     @Singleton
@@ -142,15 +153,8 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideCreateNewCustomizedSongUseCase(
-        customizedSongRepository: CustomizedSongRepository,
-        browser: MediaBrowserController,
-        audioEffectController: AudioEffectController
-    ) = CreateAndSaveNewCustomizedSong(
-        customizedSongRepository,
-        browser,
-        audioEffectController
-    )
+    fun provideCreateNewCustomizedSongUseCase(audioEffectController: AudioEffectController) =
+        CreateCustomizedSong(audioEffectController)
 
     @Provides
     @Singleton
@@ -238,21 +242,6 @@ object AppUseCaseModule {
         addNewPlaybackToHistory,
         logger
     )
-
-    @Provides
-    @Singleton
-    fun provideGetRepositoryStatesUseCase(
-        browser: MediaBrowserController,
-        playbackRepository: PlaybackRepository
-    ) = GetRepositoryStates(browser, playbackRepository)
-
-    @Provides
-    @Singleton
-    fun provideSetRepeatModeUseCase(browser: MediaBrowserController) = SetRepeatMode(browser)
-
-    @Provides
-    @Singleton
-    fun provideSetTimingDataUseCase(browser: MediaBrowserController) = SetTimingData(browser)
 
     @Provides
     @Singleton

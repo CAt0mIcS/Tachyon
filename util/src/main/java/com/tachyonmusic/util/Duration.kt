@@ -38,6 +38,8 @@ class Duration(private val valueMs: Long) : Comparable<Duration> {
         valueMs - other.valueMs
     }
 
+    operator fun unaryMinus() = Duration(-valueMs)
+
     override fun compareTo(other: Duration) = valueMs.compareTo(other.valueMs)
 }
 

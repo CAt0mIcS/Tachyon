@@ -24,6 +24,8 @@ class WriteSettings(
         excludedSongFiles: List<Uri>? = null,
         musicDirectories: List<Uri>? = null
     ) = withContext(Dispatchers.IO) {
+        // TODO: Validate correct settings
+
         settingsRepository.update(
             ignoreAudioFocus,
             autoDownloadAlbumArtwork,
