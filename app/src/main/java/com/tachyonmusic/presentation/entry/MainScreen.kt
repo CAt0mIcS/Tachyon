@@ -1,6 +1,7 @@
 @file:OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class,
-    ExperimentalMotionApi::class, ExperimentalMaterialApi::class, ExperimentalFoundationApi::class
+    ExperimentalAnimationApi::class,
+    ExperimentalMotionApi::class,
+    ExperimentalFoundationApi::class
 )
 
 package com.tachyonmusic.presentation.entry
@@ -23,11 +24,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text

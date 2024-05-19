@@ -28,6 +28,11 @@
             android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
             android:value="com.tachyonmusic.data.repository.CastOptionsProvider" />
 
+        <!--        Admob support-->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-7145716621236451~4657802755" />
+
         <activity
             android:name="com.tachyonmusic.presentation.entry.ActivityMain"
             android:exported="true">

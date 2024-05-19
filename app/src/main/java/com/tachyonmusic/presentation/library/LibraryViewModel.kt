@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.DeletePlayback
@@ -36,6 +37,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
 
+private const val ADD_INSERT_INTERVAL = 10
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
@@ -112,6 +114,15 @@ class LibraryViewModel @Inject constructor(
                 ).map {
                     it.toUiEntity()
                 }
+
+                else -> emptyList()
+            }.insertAfterEvery(
+                ADD_INSERT_INTERVAL
+            ) {
+                PlaybackUiEntity(
+                    mediaId = MediaId("AD$it"),
+                    playbackType = PlaybackType.Ad.Banner()
+                )
             }
         }.stateIn(
             viewModelScope + Dispatchers.IO,
@@ -195,5 +206,16 @@ class LibraryViewModel @Inject constructor(
         is PlaybackType.Song -> songs.value.find { it.mediaId == mediaId }
         is PlaybackType.CustomizedSong -> customizedSongs.value.find { it.mediaId == mediaId }
         is PlaybackType.Playlist -> playlists.value.find { it.mediaId == mediaId }
+        is PlaybackType.Ad -> null
+    }
+
+    private fun <E> List<E>.insertAfterEvery(insertAfterIdx: Int, elem: (i: Int) -> E): List<E> {
+        val result = mutableListOf<E>()
+        for (i in indices) {
+            result.add(this[i])
+            if (i % insertAfterIdx == 0)
+                result.add(elem(i))
+        }
+        return result
     }
 }

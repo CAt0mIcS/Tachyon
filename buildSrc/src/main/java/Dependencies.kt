@@ -113,6 +113,10 @@ object Dependency {
         const val AAR =
             "D:\\dev\\Android\\Projects\\Tachyon\\lib\\Spotify\\spotify-app-remote-release-0.7.2.aar"
     }
+
+    object Ads {
+        const val ADMOB = "com.google.android.gms:play-services-ads:23.1.0"
+    }
 }
 
 fun DependencyHandler.firebase() {
@@ -204,6 +208,10 @@ fun DependencyHandler.room() {
 
 fun DependencyHandler.googleCast() {
     implementation(Dependency.Cast.CAST_FRAMEWORK)
+}
+
+fun DependencyHandler.ads() {
+    implementation(Dependency.Ads.ADMOB)
 }
 
 fun DependencyHandler.gson() {

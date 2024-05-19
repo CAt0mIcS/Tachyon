@@ -43,6 +43,8 @@ class UpdatePlaybackMetadata(
                     name ?: return@withContext,
                     MediaId.ofLocalPlaylist(name),
                 )
+
+                is PlaybackType.Ad -> {}
             }
         }
 }
