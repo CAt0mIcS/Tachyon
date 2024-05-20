@@ -12,7 +12,7 @@ class RegisterNewUriPermission(
 ) {
     suspend operator fun invoke(uri: Uri?) = withContext(Dispatchers.IO) {
         if (uri == null)
-            return@withContext
+            return@withContext false
 
         uriPermissionRepository.addPermissionUri(uri)
 
@@ -27,6 +27,9 @@ class RegisterNewUriPermission(
                     removeAll { uri.toString() in it.toString() }
                 }
             )
-        }
+
+            true
+        } else
+            false
     }
 }

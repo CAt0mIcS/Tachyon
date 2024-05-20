@@ -39,7 +39,7 @@ android {
 
 dependencies {
     coroutines()
-    gson()
+    json()
 
     jsoup()
 

@@ -8,17 +8,16 @@ interface Database {
     val historyDao: HistoryDao
     val dataDao: DataDao
 
-    fun clearAllTables()
+    suspend fun toJson(): String
+    suspend fun overrideFromJson(json: String)
 
     fun checkpoint()
     val readableDatabasePath: String
 
     companion object {
         const val NAME = "TachyonDatabase"
-        const val SQLITE_WALFILE_SUFFIX = "-wal"
-        const val SQLITE_SHMFILE_SUFFIX = "-shm"
 
-        const val ZIP_MIME_TYPE = "application/zip"
-        const val BACKUP_FILE_NAME = NAME + "Backup.zip"
+        const val JSON_MIME_TYPE = "application/json"
+        const val BACKUP_FILE_NAME = NAME + "Backup.json"
     }
 }

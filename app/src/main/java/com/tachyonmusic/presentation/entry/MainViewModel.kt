@@ -19,9 +19,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
@@ -45,10 +47,17 @@ class MainViewModel @Inject constructor(
     private val _composeSettings = MutableStateFlow(ComposeSettings())
     val composeSettings = _composeSettings.asStateFlow()
 
+    private val _requiredMusicDirectoriesAfterDatabaseImport = MutableStateFlow(emptyList<String>())
+    val requiredMusicDirectoriesAfterDatabaseImport =
+        _requiredMusicDirectoriesAfterDatabaseImport.asStateFlow()
+
     private var cachedMusicDirectories = emptyList<Uri>()
 
-    val requiresMusicPathSelection = settingsRepository.observe().map {
-        it.musicDirectories.isEmpty()
+    val requiresMusicPathSelection = combine(
+        settingsRepository.observe(),
+        requiredMusicDirectoriesAfterDatabaseImport
+    ) { settings, requiredPathsAfterImport ->
+        settings.musicDirectories.isEmpty() || requiredPathsAfterImport.isNotEmpty()
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), false)
 
     init {
@@ -76,7 +85,11 @@ class MainViewModel @Inject constructor(
     fun setNewMusicDirectory(uri: Uri?) {
         viewModelScope.launch {
             stateRepository.queueLoadingTask("MainViewModel::registerNewUriPermission")
-            registerNewUriPermission(uri)
+            if (registerNewUriPermission(uri)) { // TODO: Test if updated correctly
+                _requiredMusicDirectoriesAfterDatabaseImport.update {
+                    it.toMutableList().apply { removeAll { path -> uri!!.encodedPath == path } }
+                }
+            }
             stateRepository.finishLoadingTask(
                 "MainViewModel::registerNewUriPermission",
                 timeout = .5.sec
@@ -87,7 +100,13 @@ class MainViewModel @Inject constructor(
     fun onImportDatabase(uri: Uri?) {
         viewModelScope.launch {
             stateRepository.queueLoadingTask("MainViewModel::importDatabase")
-            importDatabase(uri)
+            val missingUri = importDatabase(uri)
+
+            // TODO: Handle null case for missingUri ^ and it.path >
+            if (missingUri != null) {
+                _requiredMusicDirectoriesAfterDatabaseImport.update { missingUri.mapNotNull { it.encodedPath } }
+            }
+
             stateRepository.finishLoadingTask(
                 "MainViewModel::importDatabase",
                 timeout = .5.sec

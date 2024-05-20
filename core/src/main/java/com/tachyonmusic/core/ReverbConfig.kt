@@ -3,9 +3,11 @@ package com.tachyonmusic.core
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.annotation.IntRange
+import kotlinx.serialization.Serializable
 
 // https://registry.khronos.org/OpenSL-ES/specs/OpenSL_ES_Specification_1.0.1.pdf
 
+@Serializable
 data class ReverbConfig(
     @IntRange(ROOM_LEVEL_MIN, ROOM_LEVEL_MAX)
     var roomLevel: Short = ROOM_LEVEL_DEFAULT,

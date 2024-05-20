@@ -60,8 +60,9 @@ object Dependency {
         const val CAST_FRAMEWORK = "com.google.android.gms:play-services-cast-framework:21.2.0"
     }
 
-    object GSON {
+    object JSON {
         const val GSON = "com.google.code.gson:gson:2.9.0"
+        const val KOTLIN_SERIALIZATION = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
     }
 
     object Jsoup {
@@ -214,8 +215,9 @@ fun DependencyHandler.ads() {
     implementation(Dependency.Ads.ADMOB)
 }
 
-fun DependencyHandler.gson() {
-    implementation(Dependency.GSON.GSON)
+fun DependencyHandler.json() {
+    implementation(Dependency.JSON.GSON)
+    implementation(Dependency.JSON.KOTLIN_SERIALIZATION)
 }
 
 fun DependencyHandler.jsoup() {

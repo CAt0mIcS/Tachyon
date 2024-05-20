@@ -69,6 +69,7 @@ fun MainScreen(
 ) {
     val settings by viewModel.composeSettings.collectAsState()
     val requiresMusicPathSelection by viewModel.requiresMusicPathSelection.collectAsState()
+    val requiredMusicPathsAfterDatabaseImport by viewModel.requiredMusicDirectoriesAfterDatabaseImport.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     var showUriPermissionDialog by remember { mutableStateOf(false) }
@@ -123,12 +124,20 @@ fun MainScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+
                     Text("Please select a directory with all your music to continue")
+
+                    if(requiredMusicPathsAfterDatabaseImport.isNotEmpty()) {
+                        Text("The following directories are required by the imported database")
+                        for(dir in requiredMusicPathsAfterDatabaseImport)
+                            Text(dir)
+                    }
+
                     Button(onClick = { showUriPermissionDialog = true }) {
                         Text("Select...")
                     }
 
-                    if (!databaseImported) // TODO: Ask user to import all required directories
+                    if (!databaseImported)
                         Button(onClick = { showImportDbDialog = true }) {
                             Text("Import Database")
                         }
@@ -139,7 +148,7 @@ fun MainScreen(
                     showUriPermissionDialog = false
                 }
 
-                OpenDocumentDialog(showImportDbDialog, Database.ZIP_MIME_TYPE) {
+                OpenDocumentDialog(showImportDbDialog, Database.JSON_MIME_TYPE) {
                     viewModel.onImportDatabase(it)
                     databaseImported = it != null
                     showImportDbDialog = false

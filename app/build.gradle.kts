@@ -85,7 +85,7 @@ android {
 
 dependencies {
     googleCast()
-    gson()
+    json()
     coroutines()
     lifecycle()
     compose()
@@ -99,7 +99,7 @@ dependencies {
     implementation(Dependency.Media3.CAST)
     implementation(Dependency.Compose.COIL)
 
-    implementation(Dependency.GSON.GSON)
+    implementation(Dependency.JSON.GSON)
 
     projectCore()
     projectMedia()
