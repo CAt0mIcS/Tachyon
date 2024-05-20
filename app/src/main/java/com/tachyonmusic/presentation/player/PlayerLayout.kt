@@ -23,8 +23,6 @@ fun PlayerLayout(
 ) {
     val scope = rememberCoroutineScope()
 
-    println("PRG INLAYOUT: $motionLayoutProgress")
-
     // TODO: Different layout in landscape mode
 
     /**

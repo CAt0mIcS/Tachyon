@@ -2,6 +2,7 @@ package com.tachyonmusic.presentation.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.ads.AdView
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
@@ -84,6 +85,9 @@ class LibraryViewModel @Inject constructor(
     val artworkLoadingError = _artworkLoadingError.asStateFlow()
 
     private val artworkLoadingRange = MutableStateFlow(0..10)
+
+    private val _cachedBannerAds = mutableMapOf<MediaId, AdView>()
+    val cachedBannerAds: Map<MediaId, AdView> = _cachedBannerAds
 
     val items =
         combine(
@@ -200,6 +204,10 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch {
             updatePlaybackMetadata(playback.mediaId, title, artist, name)
         }
+    }
+
+    fun cacheAd(mediaId: MediaId, ad: AdView) {
+        _cachedBannerAds[mediaId] = ad
     }
 
     private fun PlaybackUiEntity.toPlayback() = when (playbackType) {

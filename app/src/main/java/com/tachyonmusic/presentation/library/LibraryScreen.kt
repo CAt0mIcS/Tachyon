@@ -12,16 +12,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
@@ -47,7 +44,7 @@ import kotlinx.coroutines.launch
 object LibraryScreen :
     BottomNavigationItem(R.string.btmNav_library, R.drawable.ic_library, "library") {
 
-    @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
         draggable: AnchoredDraggableState<SwipingStates>,
@@ -176,7 +173,14 @@ object LibraryScreen :
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
 
                 if (playback.playbackType is PlaybackType.Ad.Banner) {
-                    AdmobBanner()
+                    AdmobBanner(
+                        optionalAdView = viewModel.cachedBannerAds[playback.mediaId],
+                        onNewAdViewCreated = {
+                            viewModel.cacheAd(playback.mediaId, it)
+                        }
+                    )
+
+                    // TODO: Cache new ad view
                 } else {
                     val updatedPlayback by rememberUpdatedState(playback)
                     var showArtworkSelectionDialog by remember { mutableStateOf(false) }

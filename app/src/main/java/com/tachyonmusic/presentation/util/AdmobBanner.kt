@@ -12,7 +12,8 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 
 @Composable
-fun AdmobBanner(modifier: Modifier = Modifier, onBannerHeight: (Int) -> Unit = {}) {
+fun AdmobBanner(modifier: Modifier = Modifier, optionalAdView: AdView? = null, onBannerHeight: (Int) -> Unit = {}, onNewAdViewCreated: (AdView) -> Unit = {}) {
+
     BoxWithConstraints(modifier = modifier) {
         val screenWidthPx = with(LocalDensity.current) {
             maxWidth.toPx()
@@ -21,7 +22,12 @@ fun AdmobBanner(modifier: Modifier = Modifier, onBannerHeight: (Int) -> Unit = {
 
         AndroidView(
             factory = { context ->
-                AdView(context).apply {
+                val cachedOrNewView = optionalAdView ?: AdView(context)
+                if(optionalAdView == null)
+                    onNewAdViewCreated(cachedOrNewView)
+
+
+                optionalAdView ?: cachedOrNewView.apply {
                     var adWidthPixels = width.toFloat()
                     if (adWidthPixels == 0f) {
                         adWidthPixels = screenWidthPx
