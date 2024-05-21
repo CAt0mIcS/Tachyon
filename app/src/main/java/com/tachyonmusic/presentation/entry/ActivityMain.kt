@@ -42,7 +42,7 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
         MobileAds.initialize(this)
         MobileAds.setRequestConfiguration(
-            RequestConfiguration.Builder().setTestDeviceIds(listOf("TEST_EMULATOR", "SM-G981B")).build()
+            RequestConfiguration.Builder().setTestDeviceIds(listOf("TEST_EMULATOR")).build()
         )
 
         // Initialize the Cast context. This is required so that the media route button can be

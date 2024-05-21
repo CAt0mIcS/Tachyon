@@ -46,7 +46,9 @@ fun AdmobBanner(modifier: Modifier = Modifier, optionalAdView: AdView? = null, o
                         }
                     }
 
-                    adUnitId = "ca-app-pub-3940256099942544/9214589741"
+                    // Test-key
+//                    adUnitId = "ca-app-pub-3940256099942544/9214589741"
+                    adUnitId = "ca-app-pub-7145716621236451/1719814074"
                     loadAd(AdRequest.Builder().build())
                     onBannerHeight(widthFilledAdSize.height + 12)
                 }

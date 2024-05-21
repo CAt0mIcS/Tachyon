@@ -180,7 +180,6 @@ object LibraryScreen :
                         }
                     )
 
-                    // TODO: Cache new ad view
                 } else {
                     val updatedPlayback by rememberUpdatedState(playback)
                     var showArtworkSelectionDialog by remember { mutableStateOf(false) }
