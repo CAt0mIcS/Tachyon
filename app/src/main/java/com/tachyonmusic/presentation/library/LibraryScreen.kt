@@ -28,6 +28,7 @@ import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.presentation.BottomNavigationItem
+import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.entry.SwipingStates
@@ -56,7 +57,6 @@ object LibraryScreen :
 
         val filterPlaybackType by viewModel.filterType.collectAsState()
         val playbackItems by viewModel.items.collectAsState()
-
 
         val listState = rememberLazyListState()
         LaunchedEffect(listState.firstVisibleItemIndex) { // TODO: Optimize

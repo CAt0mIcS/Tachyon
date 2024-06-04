@@ -5,7 +5,8 @@ import androidx.compose.ui.res.stringResource
 import com.tachyonmusic.util.UiText
 
 @Composable
-fun UiText.asString() = when(this) {
+fun UiText?.asString() = when(this) {
     is UiText.DynamicString -> value
     is UiText.StringResource -> stringResource(resId, *arguments)
+    null -> "null"
 }

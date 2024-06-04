@@ -31,11 +31,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
+import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.player.TimingDataEditorViewModel
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
 
@@ -46,6 +49,10 @@ fun TimingDataEditor(
     viewModel: TimingDataEditorViewModel = hiltViewModel()
 ) {
     val timingData = viewModel.timingData
+    val error by viewModel.customizedSongError.collectAsState()
+
+    if(error != null)
+        ErrorDialog(title = stringResource(R.string.warning), subtitle = error.asString())
 
     Column(modifier = modifier) {
         IconButton(
