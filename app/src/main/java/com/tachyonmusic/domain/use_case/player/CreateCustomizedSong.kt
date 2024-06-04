@@ -65,11 +65,9 @@ class CreateCustomizedSong(
         timingData: TimingDataController?
     ): Boolean {
         contract {
-            returns(true) implies (playback != null && timingData != null)
+            returns(true) implies (playback != null)
         }
 
-        return playback != null && timingData != null && timingData.timingData.all {
-            it.startTime != 0.ms && it.endTime != playback.duration && it.startTime != it.endTime
-        }
+        return playback != null // TODO: Check if timing data is valid or if audio effects are applied
     }
 }
