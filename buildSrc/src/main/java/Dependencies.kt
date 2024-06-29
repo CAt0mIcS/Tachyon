@@ -60,8 +60,9 @@ object Dependency {
         const val CAST_FRAMEWORK = "com.google.android.gms:play-services-cast-framework:21.2.0"
     }
 
-    object GSON {
+    object JSON {
         const val GSON = "com.google.code.gson:gson:2.9.0"
+        const val KOTLIN_SERIALIZATION = "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
     }
 
     object Jsoup {
@@ -112,6 +113,10 @@ object Dependency {
         // TODO: Relative path
         const val AAR =
             "D:\\dev\\Android\\Projects\\Tachyon\\lib\\Spotify\\spotify-app-remote-release-0.7.2.aar"
+    }
+
+    object Ads {
+        const val ADMOB = "com.google.android.gms:play-services-ads:23.1.0"
     }
 }
 
@@ -206,8 +211,13 @@ fun DependencyHandler.googleCast() {
     implementation(Dependency.Cast.CAST_FRAMEWORK)
 }
 
-fun DependencyHandler.gson() {
-    implementation(Dependency.GSON.GSON)
+fun DependencyHandler.ads() {
+    implementation(Dependency.Ads.ADMOB)
+}
+
+fun DependencyHandler.json() {
+    implementation(Dependency.JSON.GSON)
+    implementation(Dependency.JSON.KOTLIN_SERIALIZATION)
 }
 
 fun DependencyHandler.jsoup() {

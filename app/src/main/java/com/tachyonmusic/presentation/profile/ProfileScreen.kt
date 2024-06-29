@@ -51,14 +51,14 @@ object ProfileScreen :
 
         CreateFileDialog(
             showCreateFileDialog,
-            Database.ZIP_MIME_TYPE,
+            Database.JSON_MIME_TYPE,
             Database.BACKUP_FILE_NAME
         ) {
             viewModel.onExportDatabase(it)
             showCreateFileDialog = false
         }
 
-        OpenDocumentDialog(showSelectFileDialog, Database.ZIP_MIME_TYPE) {
+        OpenDocumentDialog(showSelectFileDialog, Database.JSON_MIME_TYPE) {
             viewModel.onImportDatabase(it)
             showSelectFileDialog = false
         }

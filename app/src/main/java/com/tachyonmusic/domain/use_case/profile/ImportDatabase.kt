@@ -20,47 +20,28 @@ class ImportDatabase(
     private val permissionRepository: UriPermissionRepository
 ) {
     /**
-     * @return true if the database was imported successfully and if all the permissions to access
-     * the imported songs already exist, false if it was imported successfully but the permissions don't
+     * @return empty list if the database was imported successfully and if all the permissions to access
+     * the imported songs already exist, list with missing permission [Uri]s if it was imported successfully but the permissions don't
      * exist and null if there was an error
      */
-    suspend operator fun invoke(source: Uri?, restart: Boolean = true) =
+    suspend operator fun invoke(source: Uri?) =
         withContext(Dispatchers.IO) {
             if (source == null)
                 return@withContext null
 
-            val dbFile = File(database.readableDatabasePath)
-            val bkpFile = File(dbFile.path + "-bkp.zip")
             try {
-                if (bkpFile.exists()) bkpFile.delete()
-
-                val outputStream = BufferedOutputStream(FileOutputStream(bkpFile))
                 val inputStream =
                     context.contentResolver.openInputStream(source) ?: return@withContext null
-                inputStream.copyTo(outputStream)
+                val jsonString = inputStream.readBytes().decodeToString()
                 inputStream.close()
 
-                val delete = !unzip(bkpFile, dbFile.parent ?: return@withContext null)
-                outputStream.close()
                 database.checkpoint()
+                database.overrideFromJson(jsonString)
 
-                if (bkpFile.exists() && delete) bkpFile.delete()
-
-                // Make sure we don't save music directories to which we don't have access to
                 val settings = settingsRepository.getSettings()
-                if (settings.musicDirectories.any { !permissionRepository.hasPermission(it) }) {
-                    settingsRepository.update(musicDirectories = emptyList())
-                    return@withContext false
+                return@withContext settings.musicDirectories.filter {
+                    !permissionRepository.hasPermission(it)
                 }
-                return@withContext true
-
-                // TODO: Move somewhere else; TODO: Required?
-//            if (restart) {
-//                val i = context.packageManager.getLaunchIntentForPackage(context.packageName)
-//                i!!.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-//                context.startActivity(i)
-//                System.exit(0)
-//            }
             } catch (e: IOException) {
                 e.printStackTrace()
             }

@@ -4,6 +4,8 @@ plugins {
 
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+
+    id("kotlinx-serialization")
 }
 
 android {
@@ -49,7 +51,7 @@ android {
 }
 
 dependencies {
-    gson()
+    json()
     dagger()
 
     landscapist_glide()

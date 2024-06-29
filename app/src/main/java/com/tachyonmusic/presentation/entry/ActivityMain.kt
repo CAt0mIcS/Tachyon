@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.Menu
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.tachyonmusic.app.R
@@ -38,9 +40,15 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        MobileAds.initialize(this)
+        MobileAds.setRequestConfiguration(
+            RequestConfiguration.Builder().setTestDeviceIds(listOf("TEST_EMULATOR")).build()
+        )
+
         // Initialize the Cast context. This is required so that the media route button can be
         // created in the AppBar
         castContext = CastContext.getSharedInstance(this)
+
 
         mediaBrowser.registerLifecycle(lifecycle)
         mediaBrowser.registerEventListener(this)

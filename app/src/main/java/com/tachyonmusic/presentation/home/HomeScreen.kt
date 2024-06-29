@@ -51,6 +51,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,13 +59,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
-import com.tachyonmusic.domain.use_case.search.SearchLocation
+import com.tachyonmusic.domain.model.SearchLocation
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.home.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.AdmobBanner
 import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
@@ -74,7 +76,8 @@ import kotlinx.coroutines.launch
 object HomeScreen :
     BottomNavigationItem(R.string.btmNav_home, R.drawable.ic_home, "home") {
 
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
+    @OptIn(
+        ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
         ExperimentalFoundationApi::class
     )
     @Composable
@@ -326,7 +329,10 @@ private fun LazyListScope.playbacksView(
                 .isEnabled(playback.isPlayable)
                 .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
                 .clip(Theme.shapes.medium)
-                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceContainerHighest), shape = Theme.shapes.medium)
+                .border(
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceContainerHighest),
+                    shape = Theme.shapes.medium
+                )
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh, Theme.shapes.medium),
             playback = playback,
             artwork = playback.artwork ?: PlaceholderArtwork,

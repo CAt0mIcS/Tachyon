@@ -11,15 +11,15 @@ import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
 
 data class PlaybackUiEntity(
-    val title: String,
-    val artist: String,
-    val displayTitle: String,
-    val displaySubtitle: String,
-    val duration: Duration,
-    val mediaId: MediaId,
-    val playbackType: PlaybackType,
-    val artwork: Artwork?,
-    val isPlayable: Boolean
+    val title: String = "",
+    val artist: String = "",
+    val displayTitle: String = "",
+    val displaySubtitle: String = "",
+    val duration: Duration = 0.ms,
+    val mediaId: MediaId = MediaId.EMPTY,
+    val playbackType: PlaybackType = PlaybackType.Song.Local(),
+    val artwork: Artwork? = null,
+    val isPlayable: Boolean = false
 )
 
 fun Playback.toUiEntity() = when (this) {

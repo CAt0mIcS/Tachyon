@@ -19,10 +19,9 @@ plugins {
     id("com.android.application") version "8.2.2" apply false
     id("com.android.library") version "8.2.2" apply false
     id("org.jetbrains.kotlin.android") version Index.KOTLIN apply false
-}
 
-tasks.register("clean", Delete::class) {
-    delete(rootProject.buildDir)
+    kotlin("jvm") version "1.9.22"
+    kotlin("plugin.serialization") version "1.9.22"
 }
 
 // Show basic test information when running CI

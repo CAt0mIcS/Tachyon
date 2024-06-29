@@ -3,12 +3,11 @@ package com.tachyonmusic.presentation.player
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.animateTo
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,9 +24,7 @@ import com.tachyonmusic.presentation.player.component.MiniPlayer
 import com.tachyonmusic.util.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class,
-    ExperimentalFoundationApi::class
-)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MiniPlayerScreen(
     draggable: AnchoredDraggableState<SwipingStates>,
@@ -42,7 +39,7 @@ fun MiniPlayerScreen(
 
     val isPlaying by viewModel.isPlaying.collectAsState()
 
-    var currentPositionNormalized by remember { mutableStateOf(0f) }
+    var currentPositionNormalized by remember { mutableFloatStateOf(0f) }
 
     val scope = rememberCoroutineScope()
 

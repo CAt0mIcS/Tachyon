@@ -6,7 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.data.repository.StateRepository
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
-import com.tachyonmusic.domain.use_case.ObserveSettings
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.profile.ExportDatabase
@@ -23,17 +22,16 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    observeSettings: ObserveSettings,
+    private val settingsRepository: SettingsRepository,
     private val writeSettings: WriteSettings,
     private val registerNewUriPermission: RegisterNewUriPermission,
     private val stateRepository: StateRepository,
     private val exportDatabase: ExportDatabase,
     private val importDatabase: ImportDatabase,
     private val updateSongDatabase: UpdateSongDatabase,
-    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
-    val settings = observeSettings().stateIn(
+    val settings = settingsRepository.observe().stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(),
         SettingsEntity()
@@ -129,7 +127,7 @@ class ProfileViewModel @Inject constructor(
     fun onImportDatabase(uri: Uri?) {
         viewModelScope.launch(Dispatchers.IO) {
             stateRepository.queueLoadingTask("ProfileViewModel::importDatabase")
-            if (importDatabase(uri) == true) {
+            if (importDatabase(uri) != null) { // TODO: Display required music paths
                 updateSongDatabase(settingsRepository.getSettings())
             }
             stateRepository.finishLoadingTask("ProfileViewModel::importDatabase")

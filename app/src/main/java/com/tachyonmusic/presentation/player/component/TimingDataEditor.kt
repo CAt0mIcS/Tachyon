@@ -1,11 +1,16 @@
 package com.tachyonmusic.presentation.player.component
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -23,14 +28,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
+import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.player.TimingDataEditorViewModel
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.toReadableString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +49,10 @@ fun TimingDataEditor(
     viewModel: TimingDataEditorViewModel = hiltViewModel()
 ) {
     val timingData = viewModel.timingData
+    val error by viewModel.customizedSongError.collectAsState()
+
+    if(error != null)
+        ErrorDialog(title = stringResource(R.string.warning), subtitle = error.asString())
 
     Column(modifier = modifier) {
         IconButton(
@@ -67,20 +81,142 @@ fun TimingDataEditor(
             val sliderColor =
                 if (i == viewModel.currentIndex) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondary
 
-            Row(modifier = Modifier.fillMaxWidth()) {
-
-                IconButton(
-                    onClick = { viewModel.playTimingDataAt(i) },
-                    modifier = Modifier.fillMaxHeight()
-                ) {
-                    Icon(
-                        painterResource(R.drawable.ic_play),
-                        contentDescription = "Seek to timing data"
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(
+                        Theme.padding.extremelySmall,
+                        MaterialTheme.colorScheme.primary,
+                        Theme.shapes.medium
                     )
+                    .padding(Theme.padding.medium)
+
+            ) {
+
+                LazyRow(modifier = Modifier.fillMaxWidth()) {
+
+                    // TODO: Should be a setting
+                    val deltaDuration = 50.ms
+
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateTimingData(
+                                    i,
+                                    timingData[i].startTime - deltaDuration,
+                                    timingData[i].endTime
+                                )
+                                viewModel.setNewTimingData()
+                                viewModel.playTimingDataAt(i)
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(text = "<")
+                        }
+                    }
+
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateTimingData(
+                                    i,
+                                    timingData[i].startTime + deltaDuration,
+                                    timingData[i].endTime
+                                )
+                                viewModel.setNewTimingData()
+                                viewModel.playTimingDataAt(i)
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(text = ">")
+                        }
+                    }
+
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateStartToCurrentPosition(i)
+                                viewModel.setNewTimingData()
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text("<>")
+                        }
+                    }
+
+
+                    item {
+                        IconButton(
+                            onClick = { viewModel.playTimingDataAt(i) },
+                            modifier = Modifier.fillMaxHeight()
+                        ) {
+                            Icon(
+                                painterResource(R.drawable.ic_play),
+                                contentDescription = "Seek to timing data"
+                            )
+                        }
+                    }
+
+
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateEndToCurrentPosition(i)
+                                viewModel.setNewTimingData()
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text("<>")
+                        }
+                    }
+
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateTimingData(
+                                    i,
+                                    timingData[i].startTime,
+                                    timingData[i].endTime - deltaDuration
+                                )
+                                viewModel.setNewTimingData()
+                                viewModel.playTimingDataAt(i, startFromEnd = true)
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(text = "<")
+                        }
+                    }
+
+                    item {
+                        Button(
+                            onClick = {
+                                viewModel.updateTimingData(
+                                    i,
+                                    timingData[i].startTime,
+                                    timingData[i].endTime + deltaDuration
+                                )
+                                viewModel.setNewTimingData()
+                                viewModel.playTimingDataAt(i, startFromEnd = true)
+                            },
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(text = ">")
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(timingData[i].startTime.toReadableString(true))
+                    Text(timingData[i].endTime.toReadableString(true))
                 }
 
                 RangeSlider(
-                    modifier = Modifier.systemGestureExclusion(),
+                    modifier = Modifier
+                        .systemGestureExclusion()
+                        .align(Alignment.CenterHorizontally),
                     value = timingData[i].startTime.inWholeMilliseconds.toFloat()..timingData[i].endTime.inWholeMilliseconds.toFloat(),
                     onValueChange = {
                         viewModel.updateTimingData(i, it.start.ms, it.endInclusive.ms)
@@ -95,7 +231,6 @@ fun TimingDataEditor(
                     )
                 )
             }
-
 
 
             Spacer(modifier = Modifier.padding(top = 6.dp))
