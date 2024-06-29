@@ -37,6 +37,9 @@ interface SettingsDao {
     @Query("UPDATE $SETTINGS_DATABASE_TABLE_NAME SET combineDifferentPlaybackTypes=:value")
     suspend fun setCombineDifferentPlaybackTypes(value: Boolean)
 
+    @Query("UPDATE $SETTINGS_DATABASE_TABLE_NAME SET dynamicColors=:value")
+    suspend fun setDynamicColors(value: Boolean)
+
     @Query("UPDATE $SETTINGS_DATABASE_TABLE_NAME SET audioUpdateInterval=:value")
     suspend fun setAudioUpdateInterval(value: Duration)
 

@@ -143,7 +143,9 @@ object LibraryScreen :
                         )
 
 
-                        DropdownMenu(expanded = sortOptionsExpanded,
+                        DropdownMenu(
+                            modifier = Modifier.padding(Theme.padding.medium),
+                            expanded = sortOptionsExpanded,
                             onDismissRequest = { sortOptionsExpanded = false }) {
                             SortType.entries.forEach {
                                 DropdownMenuItem(

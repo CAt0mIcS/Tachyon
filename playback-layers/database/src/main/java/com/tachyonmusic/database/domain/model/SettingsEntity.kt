@@ -1,6 +1,7 @@
 package com.tachyonmusic.database.domain.model
 
 import android.net.Uri
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.tachyonmusic.util.Duration
@@ -28,6 +29,9 @@ data class SettingsEntity(
     var autoDownloadAlbumArtwork: Boolean = true,
     var autoDownloadAlbumArtworkWifiOnly: Boolean = true,
     var combineDifferentPlaybackTypes: Boolean = false,
+
+    @ColumnInfo(defaultValue = "true")
+    var dynamicColors: Boolean = true,
     var audioUpdateInterval: Duration = 100.ms,
     var maxPlaybacksInHistory: Int = 25,
     var seekForwardIncrement: Duration = 10.sec,
@@ -68,6 +72,8 @@ object SettingsEntitySerializer : KSerializer<SettingsEntity> {
         element<List<String>>("excludedSongFiles", isOptional = true)
         element<List<String>>("musicDirectories", isOptional = true)
         element<Int>("id", isOptional = true)
+
+        element<Boolean>("dynamicColors", isOptional = true)
     }
 
     override fun deserialize(decoder: Decoder) = decoder.decodeStructure(descriptor) {
@@ -75,6 +81,7 @@ object SettingsEntitySerializer : KSerializer<SettingsEntity> {
         var autoDownloadAlbumArtwork = true
         var autoDownloadAlbumArtworkWifiOnly = true
         var combineDifferentPlaybackTypes = false
+        var dynamicColors = true
         var audioUpdateInterval: Duration = 100.ms
         var maxPlaybacksInHistory = 25
         var seekForwardIncrement: Duration = 10.sec
@@ -114,6 +121,7 @@ object SettingsEntitySerializer : KSerializer<SettingsEntity> {
                 ).map { Uri.parse(it) }
 
                 13 -> id = decodeIntElement(descriptor, 13)
+                14 -> dynamicColors = decodeBooleanElement(descriptor, 14)
 
                 else -> throw SerializationException("Unexpected index $index")
             }
@@ -124,6 +132,7 @@ object SettingsEntitySerializer : KSerializer<SettingsEntity> {
             autoDownloadAlbumArtwork,
             autoDownloadAlbumArtworkWifiOnly,
             combineDifferentPlaybackTypes,
+            dynamicColors,
             audioUpdateInterval,
             maxPlaybacksInHistory,
             seekForwardIncrement,
@@ -161,6 +170,7 @@ object SettingsEntitySerializer : KSerializer<SettingsEntity> {
                 ListSerializer(String.serializer()),
                 value.musicDirectories.map { it.toString() })
             encodeIntElement(descriptor, 13, value.id)
+            encodeBooleanElement(descriptor, 14, value.dynamicColors)
         }
     }
 }

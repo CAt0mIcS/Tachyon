@@ -137,6 +137,7 @@ fun EqualizerEditor(
                 }
 
                 DropdownMenu(
+                    modifier = Modifier.padding(Theme.padding.medium),
                     expanded = isSelectingEqualizerPreset,
                     onDismissRequest = { isSelectingEqualizerPreset = false }
                 ) {

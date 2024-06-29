@@ -37,6 +37,7 @@ class RoomSettingsRepository(
         autoDownloadAlbumArtwork: Boolean?,
         autoDownloadAlbumArtworkWifiOnly: Boolean?,
         combineDifferentPlaybackTypes: Boolean?,
+        dynamicColors: Boolean?,
         audioUpdateInterval: Duration?,
         maxPlaybacksInHistory: Int?,
         seekForwardIncrement: Duration?,
@@ -58,6 +59,9 @@ class RoomSettingsRepository(
 
         if (combineDifferentPlaybackTypes != null)
             dao.setCombineDifferentPlaybackTypes(combineDifferentPlaybackTypes)
+
+        if(dynamicColors != null)
+            dao.setDynamicColors(dynamicColors)
 
         if (audioUpdateInterval != null)
             dao.setAudioUpdateInterval(audioUpdateInterval)

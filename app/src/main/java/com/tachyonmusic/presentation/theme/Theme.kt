@@ -265,11 +265,10 @@ private val highContrastDarkColorScheme = darkColorScheme(
 fun TachyonTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     settings: ComposeSettings = ComposeSettings(),
-    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colors = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        settings.dynamicColors && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }

@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.isNullOrEmpty
+import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -48,7 +49,7 @@ class TimingDataEditorViewModel @Inject constructor(
     private val createCustomizedSong: CreateCustomizedSong,
     private val playPlayback: PlayPlayback,
     private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
-    private val settingsRepository: SettingsRepository,
+    settingsRepository: SettingsRepository,
     private val pauseResumePlayback: PauseResumePlayback,
     private val customizedSongRepository: CustomizedSongRepository
 ) : ViewModel() {
@@ -62,6 +63,9 @@ class TimingDataEditorViewModel @Inject constructor(
     val timingData = mutableStateListOf<TimingData>()
     var currentIndex by mutableIntStateOf(0)
         private set
+
+    val settings = settingsRepository.observe()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SettingsEntity())
 
     init {
         mediaBrowser.currentPlayback.onEach {
@@ -147,7 +151,7 @@ class TimingDataEditorViewModel @Inject constructor(
                     val dbRes = customizedSongRepository.add(createRes.data!!)
 
                     if (dbRes is Resource.Success) {
-                        if (settingsRepository.getSettings().playNewlyCreatedCustomizedSong) {
+                        if (settings.value.playNewlyCreatedCustomizedSong) {
                             runOnUiThread {
                                 pauseResumePlayback(PauseResumePlayback.Action.Pause)
                                 // TODO: Some way to wait for predefined playlists repository to update

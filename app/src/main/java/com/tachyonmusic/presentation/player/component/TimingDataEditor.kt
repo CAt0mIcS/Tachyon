@@ -51,7 +51,7 @@ fun TimingDataEditor(
     val timingData = viewModel.timingData
     val error by viewModel.customizedSongError.collectAsState()
 
-    if(error != null)
+    if (error != null)
         ErrorDialog(title = stringResource(R.string.warning), subtitle = error.asString())
 
     Column(modifier = modifier) {
@@ -95,8 +95,7 @@ fun TimingDataEditor(
 
                 LazyRow(modifier = Modifier.fillMaxWidth()) {
 
-                    // TODO: Should be a setting
-                    val deltaDuration = 50.ms
+                    val deltaDuration = viewModel.settings.value.audioUpdateInterval
 
                     item {
                         Button(

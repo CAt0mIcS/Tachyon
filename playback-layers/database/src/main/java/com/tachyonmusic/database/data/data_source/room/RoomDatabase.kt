@@ -1,5 +1,6 @@
 package com.tachyonmusic.database.data.data_source.room
 
+import androidx.room.AutoMigration
 import androidx.room.TypeConverters
 import com.tachyonmusic.database.data.data_source.*
 import com.tachyonmusic.database.domain.Converters
@@ -26,8 +27,11 @@ import kotlinx.serialization.json.putJsonObject
         HistoryEntity::class,
         DataEntity::class
     ],
-    version = 1,
-    exportSchema = false,
+    version = 2,
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2)
+    ]
 )
 @TypeConverters(Converters::class)
 abstract class RoomDatabase : androidx.room.RoomDatabase(), Database {

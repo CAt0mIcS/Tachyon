@@ -92,6 +92,7 @@ fun HorizontalPlaybackView(
                 Icon(Icons.Default.MoreVert, contentDescription = "Playback options")
 
                 DropdownMenu(
+                    modifier = Modifier.padding(Theme.padding.medium),
                     expanded = dropDownMenuExpanded,
                     onDismissRequest = onOptionsMenuClicked,
                     content = dropDownMenuContent
