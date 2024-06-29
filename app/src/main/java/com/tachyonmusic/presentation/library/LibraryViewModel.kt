@@ -178,8 +178,7 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun loadArtwork(range: IntRange) {
-        val rangeToUpdate = removeAdIndices(0..21)
-//        val rangeToUpdate = removeAdIndices(range)
+        val rangeToUpdate = removeAdIndices(range)
         artworkLoadingRange.update { rangeToUpdate }
     }
 
@@ -235,6 +234,6 @@ class LibraryViewModel @Inject constructor(
      */
     private fun removeAdIndices(range: IntRange): IntRange {
         val numAds = range.last / ADD_INSERT_INTERVAL + 1
-        return (range.first + numAds)..(range.last + numAds)
+        return (range.first - numAds)..(range.last - numAds)
     }
 }
