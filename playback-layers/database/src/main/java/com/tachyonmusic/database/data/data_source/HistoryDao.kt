@@ -1,5 +1,6 @@
 package com.tachyonmusic.database.data.data_source
 
+import android.database.sqlite.SQLiteException
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
@@ -24,6 +25,10 @@ interface HistoryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun addHistory(history: HistoryEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Throws(SQLiteException::class)
+    suspend fun addAll(history: List<HistoryEntity>)
 
     @Query("DELETE FROM $HISTORY_DATABASE_TABLE_NAME WHERE mediaId LIKE '%' || :mediaId || '%'")
     suspend fun removeHistoryHierarchical(mediaId: MediaId)

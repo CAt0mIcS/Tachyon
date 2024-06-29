@@ -60,4 +60,8 @@
     <string name="reverb_mediumhall_name">Medium Hall</string>
     <string name="reverb_largehall_name">Large Hall</string>
     <string name="reverb_plate_name">Plate</string>
+
+    <string name="close">Close</string>
+    <string name="retry">Retry</string>
+    <string name="warning">Warning!</string>
 </resources>

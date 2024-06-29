@@ -13,14 +13,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
@@ -30,11 +28,13 @@ import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.presentation.BottomNavigationItem
+import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.AdmobBanner
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
 object LibraryScreen :
     BottomNavigationItem(R.string.btmNav_library, R.drawable.ic_library, "library") {
 
-    @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
         draggable: AnchoredDraggableState<SwipingStates>,
@@ -57,7 +57,6 @@ object LibraryScreen :
 
         val filterPlaybackType by viewModel.filterType.collectAsState()
         val playbackItems by viewModel.items.collectAsState()
-
 
         val listState = rememberLazyListState()
         LaunchedEffect(listState.firstVisibleItemIndex) { // TODO: Optimize
@@ -146,7 +145,7 @@ object LibraryScreen :
 
                         DropdownMenu(expanded = sortOptionsExpanded,
                             onDismissRequest = { sortOptionsExpanded = false }) {
-                            SortType.values().forEach {
+                            SortType.entries.forEach {
                                 DropdownMenuItem(
                                     text = {
                                         Text(it.asString())
@@ -173,148 +172,160 @@ object LibraryScreen :
 
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
 
-                val updatedPlayback by rememberUpdatedState(playback)
-                var showArtworkSelectionDialog by remember { mutableStateOf(false) }
-                var showMetadataDialog by remember { mutableStateOf(false) }
-                var showDropDownMenu by remember { mutableStateOf(false) }
+                if (playback.playbackType is PlaybackType.Ad.Banner) {
+                    AdmobBanner(
+                        optionalAdView = viewModel.cachedBannerAds[playback.mediaId],
+                        onNewAdViewCreated = {
+                            viewModel.cacheAd(playback.mediaId, it)
+                        }
+                    )
 
-                SwipeDelete(
-                    shape = Theme.shapes.medium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = Theme.padding.extraSmall),
-                    onClick = {
-                        viewModel.excludePlayback(updatedPlayback)
-                    }
-                ) {
-                    HorizontalPlaybackView(
-                        playback,
-                        playback.artwork ?: PlaceholderArtwork,
-                        modifier = Modifier.isEnabled(playback.isPlayable),
-                        showDropDownMenu,
-                        onOptionsMenuClicked = {
-                            showDropDownMenu = !showDropDownMenu
-                        },
-                        dropDownMenuContent = {
-                            Button(
-                                onClick = {
-                                    showMetadataDialog = true
-                                    showDropDownMenu = false
-                                }
-                            ) {
-                                Text("Set Metadata")
-                            }
-                            Button(
-                                onClick = {
-                                    viewModel.queryArtwork(playback)
-                                    showArtworkSelectionDialog = true
-                                    showDropDownMenu = false
-                                }
-                            ) {
-                                Text("Select Artwork")
-                            }
-                        },
+                } else {
+                    val updatedPlayback by rememberUpdatedState(playback)
+                    var showArtworkSelectionDialog by remember { mutableStateOf(false) }
+                    var showMetadataDialog by remember { mutableStateOf(false) }
+                    var showDropDownMenu by remember { mutableStateOf(false) }
+
+                    SwipeDelete(
+                        shape = Theme.shapes.medium,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = Theme.padding.extraSmall),
                         onClick = {
-                            viewModel.onItemClicked(playback)
-                            scope.launch {
-                                draggable.animateTo(SwipingStates.EXPANDED)
-                            }
-                        })
-                }
-
-                if (showArtworkSelectionDialog) {
-                    Dialog(
-                        onDismissRequest = { showArtworkSelectionDialog = false }
+                            viewModel.excludePlayback(updatedPlayback)
+                        }
                     ) {
-                        val artworks by viewModel.queriedArtwork.collectAsState()
-                        val error by viewModel.artworkLoadingError.collectAsState()
-
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(Theme.shapes.extraLarge)
-                        ) {
-                            Column(modifier = Modifier.fillMaxSize()) {
-                                var searchQuery by remember { mutableStateOf("${playback.artist} ${playback.title}") }
-
-                                LaunchedEffect(searchQuery) {
-                                    delay(1.sec)
-                                    viewModel.queryArtwork(playback, searchQuery)
+                        HorizontalPlaybackView(
+                            playback,
+                            playback.artwork ?: PlaceholderArtwork,
+                            modifier = Modifier.isEnabled(playback.isPlayable),
+                            showDropDownMenu,
+                            onOptionsMenuClicked = {
+                                showDropDownMenu = !showDropDownMenu
+                            },
+                            dropDownMenuContent = {
+                                Button(
+                                    onClick = {
+                                        showMetadataDialog = true
+                                        showDropDownMenu = false
+                                    }
+                                ) {
+                                    Text("Set Metadata")
                                 }
+                                Button(
+                                    onClick = {
+                                        viewModel.queryArtwork(playback)
+                                        showArtworkSelectionDialog = true
+                                        showDropDownMenu = false
+                                    }
+                                ) {
+                                    Text("Select Artwork")
+                                }
+                            },
+                            onClick = {
+                                viewModel.onItemClicked(playback)
+                                scope.launch {
+                                    draggable.animateTo(SwipingStates.EXPANDED)
+                                }
+                            })
+                    }
 
-                                Text(
-                                    "Select artwork to assign to playback",
-                                    modifier = Modifier.padding(Theme.padding.medium)
-                                )
+                    if (showArtworkSelectionDialog) {
+                        Dialog(
+                            onDismissRequest = { showArtworkSelectionDialog = false }
+                        ) {
+                            val artworks by viewModel.queriedArtwork.collectAsState()
+                            val error by viewModel.artworkLoadingError.collectAsState()
 
-                                Text("Search Query")
-                                TextField(value = searchQuery, onValueChange = { searchQuery = it })
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(Theme.shapes.extraLarge)
+                            ) {
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    var searchQuery by remember { mutableStateOf("${playback.artist} ${playback.title}") }
 
-                                if (error != null) {
+                                    LaunchedEffect(searchQuery) {
+                                        delay(1.sec)
+                                        viewModel.queryArtwork(playback, searchQuery)
+                                    }
+
                                     Text(
-                                        error?.asString() ?: "Unknown error occurred",
+                                        "Select artwork to assign to playback",
                                         modifier = Modifier.padding(Theme.padding.medium)
                                     )
-                                }
 
-                                LazyVerticalGrid(
-                                    modifier = Modifier.padding(Theme.padding.medium),
-                                    columns = GridCells.Adaptive(100.dp),
-                                    contentPadding = PaddingValues(Theme.padding.small)
-                                ) {
-                                    items(artworks) { artwork ->
-                                        artwork(null,
-                                            Modifier
-                                                .size(100.dp)
-                                                .clickable {
-                                                    showArtworkSelectionDialog = false
-                                                    viewModel.assignArtworkToPlayback(
-                                                        artwork,
-                                                        playback
-                                                    )
-                                                })
+                                    Text("Search Query")
+                                    TextField(
+                                        value = searchQuery,
+                                        onValueChange = { searchQuery = it })
+
+                                    if (error != null) {
+                                        Text(
+                                            error?.asString() ?: "Unknown error occurred",
+                                            modifier = Modifier.padding(Theme.padding.medium)
+                                        )
+                                    }
+
+                                    LazyVerticalGrid(
+                                        modifier = Modifier.padding(Theme.padding.medium),
+                                        columns = GridCells.Adaptive(100.dp),
+                                        contentPadding = PaddingValues(Theme.padding.small)
+                                    ) {
+                                        items(artworks) { artwork ->
+                                            artwork(null,
+                                                Modifier
+                                                    .size(100.dp)
+                                                    .clickable {
+                                                        showArtworkSelectionDialog = false
+                                                        viewModel.assignArtworkToPlayback(
+                                                            artwork,
+                                                            playback
+                                                        )
+                                                    })
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-                if (showMetadataDialog) {
-                    Dialog(
-                        onDismissRequest = { showMetadataDialog = false }
-                    ) {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(Theme.shapes.extraLarge)
+                    if (showMetadataDialog) {
+                        Dialog(
+                            onDismissRequest = { showMetadataDialog = false }
                         ) {
-                            Column(modifier = Modifier.fillMaxSize()) {
-                                var title by remember { mutableStateOf(playback.title) }
-                                var artist by remember { mutableStateOf(playback.artist) }
-                                var name by remember { mutableStateOf(playback.displayTitle) }
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(Theme.shapes.extraLarge)
+                            ) {
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    var title by remember { mutableStateOf(playback.title) }
+                                    var artist by remember { mutableStateOf(playback.artist) }
+                                    var name by remember { mutableStateOf(playback.displayTitle) }
 
-                                val playbackType = playback.mediaId.playbackType
+                                    val playbackType = playback.mediaId.playbackType
 
-                                if (playbackType !is PlaybackType.Playlist) {
-                                    Text("Title")
-                                    TextField(value = title, onValueChange = { title = it })
+                                    if (playbackType !is PlaybackType.Playlist) {
+                                        Text("Title")
+                                        TextField(value = title, onValueChange = { title = it })
 
-                                    Text("Artist")
-                                    TextField(value = artist, onValueChange = { artist = it })
-                                }
-                                if (playbackType is PlaybackType.CustomizedSong || playbackType is PlaybackType.Playlist) {
-                                    Text("Name")
-                                    TextField(value = name, onValueChange = { name = it })
-                                }
-
-                                Button(
-                                    onClick = {
-                                        showMetadataDialog = false
-                                        viewModel.updateMetadata(playback, title, artist, name)
+                                        Text("Artist")
+                                        TextField(value = artist, onValueChange = { artist = it })
                                     }
-                                ) {
-                                    Text("Confirm")
+                                    if (playbackType is PlaybackType.CustomizedSong || playbackType is PlaybackType.Playlist) {
+                                        Text("Name")
+                                        TextField(value = name, onValueChange = { name = it })
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            showMetadataDialog = false
+                                            viewModel.updateMetadata(playback, title, artist, name)
+                                        }
+                                    ) {
+                                        Text("Confirm")
+                                    }
                                 }
                             }
                         }

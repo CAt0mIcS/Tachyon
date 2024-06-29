@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 @Composable
 operator fun PaddingValues.plus(other: PaddingValues): PaddingValues {
@@ -14,5 +16,21 @@ operator fun PaddingValues.plus(other: PaddingValues): PaddingValues {
         top = calculateTopPadding() + other.calculateTopPadding(),
         end = calculateEndPadding(layoutDir) + other.calculateEndPadding(layoutDir),
         bottom = calculateBottomPadding() + other.calculateBottomPadding()
+    )
+}
+
+@Composable
+fun PaddingValues.copy(
+    start: Dp? = null,
+    end: Dp? = null,
+    top: Dp? = null,
+    bottom: Dp? = null
+): PaddingValues {
+    val layoutDir = LocalLayoutDirection.current
+    return PaddingValues(
+        start = start ?: calculateStartPadding(layoutDir),
+        top = top ?: calculateTopPadding(),
+        end = end ?: calculateEndPadding(layoutDir),
+        bottom = bottom ?: calculateBottomPadding()
     )
 }

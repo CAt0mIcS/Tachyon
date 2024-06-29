@@ -8,6 +8,7 @@ import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
+import kotlinx.serialization.Serializable
 import java.security.InvalidParameterException
 
 /**

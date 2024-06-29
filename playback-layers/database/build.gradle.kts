@@ -3,6 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
 
     id("kotlin-kapt")
+
+    id("kotlinx-serialization")
 }
 
 android {
@@ -49,7 +51,7 @@ android {
 dependencies {
     room()
     dagger()
-    gson()
+    json()
 
     coroutines()
     paging()

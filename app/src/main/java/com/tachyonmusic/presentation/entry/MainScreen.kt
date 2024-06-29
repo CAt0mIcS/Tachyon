@@ -1,6 +1,7 @@
 @file:OptIn(
-    ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class,
-    ExperimentalMotionApi::class, ExperimentalMaterialApi::class, ExperimentalFoundationApi::class
+    ExperimentalAnimationApi::class,
+    ExperimentalMotionApi::class,
+    ExperimentalFoundationApi::class
 )
 
 package com.tachyonmusic.presentation.entry
@@ -23,12 +24,10 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Scaffold
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -70,6 +70,7 @@ fun MainScreen(
 ) {
     val settings by viewModel.composeSettings.collectAsState()
     val requiresMusicPathSelection by viewModel.requiresMusicPathSelection.collectAsState()
+    val requiredMusicPathsAfterDatabaseImport by viewModel.requiredMusicDirectoriesAfterDatabaseImport.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     var showUriPermissionDialog by remember { mutableStateOf(false) }
@@ -102,7 +103,7 @@ fun MainScreen(
                             )
 
                             Text(
-                                "Loading",
+                                stringResource(androidx.media3.cast.R.string.cast_expanded_controller_loading),
                                 modifier = Modifier
                                     .padding(
                                         start = 80.dp,
@@ -124,12 +125,20 @@ fun MainScreen(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+
                     Text("Please select a directory with all your music to continue")
+
+                    if(requiredMusicPathsAfterDatabaseImport.isNotEmpty()) {
+                        Text("The following directories are required by the imported database")
+                        for(dir in requiredMusicPathsAfterDatabaseImport)
+                            Text(dir)
+                    }
+
                     Button(onClick = { showUriPermissionDialog = true }) {
                         Text("Select...")
                     }
 
-                    if (!databaseImported) // TODO: Ask user to import all required directories
+                    if (!databaseImported)
                         Button(onClick = { showImportDbDialog = true }) {
                             Text("Import Database")
                         }
@@ -140,7 +149,7 @@ fun MainScreen(
                     showUriPermissionDialog = false
                 }
 
-                OpenDocumentDialog(showImportDbDialog, Database.ZIP_MIME_TYPE) {
+                OpenDocumentDialog(showImportDbDialog, Database.JSON_MIME_TYPE) {
                     viewModel.onImportDatabase(it)
                     databaseImported = it != null
                     showImportDbDialog = false

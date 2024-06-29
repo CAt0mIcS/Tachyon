@@ -2,8 +2,10 @@ package com.tachyonmusic.presentation.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.ads.AdView
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.DeletePlayback
@@ -36,6 +38,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
 import javax.inject.Inject
 
+private const val ADD_INSERT_INTERVAL = 10
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
@@ -83,6 +86,9 @@ class LibraryViewModel @Inject constructor(
 
     private val artworkLoadingRange = MutableStateFlow(0..10)
 
+    private val _cachedBannerAds = mutableMapOf<MediaId, AdView>()
+    val cachedBannerAds: Map<MediaId, AdView> = _cachedBannerAds
+
     val items =
         combine(
             songs,
@@ -112,6 +118,15 @@ class LibraryViewModel @Inject constructor(
                 ).map {
                     it.toUiEntity()
                 }
+
+                else -> emptyList()
+            }.insertBeforeEvery(
+                ADD_INSERT_INTERVAL
+            ) {
+                PlaybackUiEntity(
+                    mediaId = MediaId("AD$it"),
+                    playbackType = PlaybackType.Ad.Banner()
+                )
             }
         }.stateIn(
             viewModelScope + Dispatchers.IO,
@@ -163,7 +178,8 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun loadArtwork(range: IntRange) {
-        artworkLoadingRange.update { range }
+        val rangeToUpdate = removeAdIndices(range)
+        artworkLoadingRange.update { rangeToUpdate }
     }
 
     /**
@@ -191,9 +207,33 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
+    fun cacheAd(mediaId: MediaId, ad: AdView) {
+        _cachedBannerAds[mediaId] = ad
+    }
+
     private fun PlaybackUiEntity.toPlayback() = when (playbackType) {
         is PlaybackType.Song -> songs.value.find { it.mediaId == mediaId }
         is PlaybackType.CustomizedSong -> customizedSongs.value.find { it.mediaId == mediaId }
         is PlaybackType.Playlist -> playlists.value.find { it.mediaId == mediaId }
+        is PlaybackType.Ad -> null
+    }
+
+    private fun <E> List<E>.insertBeforeEvery(insertBeforeIdx: Int, elem: (i: Int) -> E): List<E> {
+        val result = mutableListOf<E>()
+        for (i in indices) {
+            if (i % insertBeforeIdx == 0)
+                result.add(elem(i))
+            result.add(this[i])
+        }
+        return result
+    }
+
+    /**
+     * The range received from the UI includes all banner ad indices which we don't need for ranged
+     * loading of playback artwork. Function removes these unwanted indices
+     */
+    private fun removeAdIndices(range: IntRange): IntRange {
+        val numAds = range.last / ADD_INSERT_INTERVAL + 1
+        return (range.first - numAds)..(range.last - numAds)
     }
 }

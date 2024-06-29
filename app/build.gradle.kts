@@ -85,7 +85,7 @@ android {
 
 dependencies {
     googleCast()
-    gson()
+    json()
     coroutines()
     lifecycle()
     compose()
@@ -93,12 +93,13 @@ dependencies {
     paging()
     dagger()
     implementation(Dependency.DaggerHilt.NAVIGATION_COMPOSE)
+    ads()
 
     implementation(Dependency.Media3.MEDIA_SESSION)
     implementation(Dependency.Media3.CAST)
     implementation(Dependency.Compose.COIL)
 
-    implementation(Dependency.GSON.GSON)
+    implementation(Dependency.JSON.GSON)
 
     projectCore()
     projectMedia()

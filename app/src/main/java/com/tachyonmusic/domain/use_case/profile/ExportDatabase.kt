@@ -22,37 +22,15 @@ class ExportDatabase(
         if (destination == null)
             return@withContext
 
-        val dbFile =
-            context.getDatabasePath(Database.NAME)
-        val dbWalFile = File(dbFile.path + Database.SQLITE_WALFILE_SUFFIX)
-        val dbShmFile = File(dbFile.path + Database.SQLITE_SHMFILE_SUFFIX)
-        val bkpFile = File(dbFile.path + "-bkp.zip")
-        if (bkpFile.exists()) bkpFile.delete()
         database.checkpoint()
         try {
-            zip(bkpFile.path, listOf(dbFile, dbWalFile, dbShmFile))
+            val jsonString = database.toJson()
             val outputStream =
                 context.contentResolver.openOutputStream(destination) ?: return@withContext
-            outputStream.write(bkpFile.readBytes())
+            outputStream.write(jsonString.encodeToByteArray())
             outputStream.close()
         } catch (e: IOException) {
             e.printStackTrace()
         }
-    }
-
-    private fun zip(outputPath: String, files: List<File>): Uri {
-        val out = ZipOutputStream(BufferedOutputStream(FileOutputStream(outputPath)))
-        for (file in files) {
-            if (!file.exists())
-                continue
-
-            val origin = BufferedInputStream(FileInputStream(file))
-            val entry = ZipEntry(file.path.substring(file.path.lastIndexOf("/")))
-            out.putNextEntry(entry)
-            origin.copyTo(out)
-            origin.close()
-        }
-        out.close()
-        return Uri.fromFile(File(outputPath))
     }
 }

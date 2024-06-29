@@ -31,6 +31,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
@@ -46,6 +47,7 @@ import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.presentation.core_components.AnimatedText
+import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.player.component.EqualizerEditor
@@ -54,6 +56,7 @@ import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
 import com.tachyonmusic.presentation.player.component.TimingDataEditor
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
@@ -97,6 +100,10 @@ fun PlayerScreen(
             onCreatePlaylist = viewModel::createPlaylist
         )
     }
+
+    val error by viewModel.error.collectAsState()
+    if (error != null)
+        ErrorDialog(title = stringResource(R.string.warning), subtitle = error.asString())
 
     var isEditingTimingData by remember { mutableStateOf(false) }
     var isEditingEqualizer by remember { mutableStateOf(false) }
