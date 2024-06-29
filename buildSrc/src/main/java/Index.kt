@@ -5,7 +5,7 @@ object Index {
     const val MIN_SDK = 21
     const val TARGET_SDK = COMPILE_SDK
 
-    const val APP = 83
+    const val APP = 84
     const val APP_NAME = "Dev $APP"
 
     const val COMPOSE = "1.6.0"

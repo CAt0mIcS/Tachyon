@@ -120,7 +120,7 @@ class LibraryViewModel @Inject constructor(
                 }
 
                 else -> emptyList()
-            }.insertAfterEvery(
+            }.insertBeforeEvery(
                 ADD_INSERT_INTERVAL
             ) {
                 PlaybackUiEntity(
@@ -217,12 +217,12 @@ class LibraryViewModel @Inject constructor(
         is PlaybackType.Ad -> null
     }
 
-    private fun <E> List<E>.insertAfterEvery(insertAfterIdx: Int, elem: (i: Int) -> E): List<E> {
+    private fun <E> List<E>.insertBeforeEvery(insertBeforeIdx: Int, elem: (i: Int) -> E): List<E> {
         val result = mutableListOf<E>()
         for (i in indices) {
-            result.add(this[i])
-            if (i % insertAfterIdx == 0)
+            if (i % insertBeforeIdx == 0)
                 result.add(elem(i))
+            result.add(this[i])
         }
         return result
     }

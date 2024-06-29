@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.media3.cast.CastPlayer
 import androidx.media3.cast.SessionAvailabilityListener
 import androidx.media3.common.*
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.session.*
@@ -56,6 +57,7 @@ import javax.inject.Inject
  * https://developer.android.com/guide/topics/media/media3
  */
 
+@UnstableApi
 @AndroidEntryPoint
 class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 

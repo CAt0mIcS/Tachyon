@@ -147,8 +147,6 @@ fun ErrorDialog(
                             }
                         }
                     }
-
-
                 }
             }
         }

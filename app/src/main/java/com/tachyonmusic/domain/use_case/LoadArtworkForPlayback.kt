@@ -15,6 +15,7 @@ class LoadArtworkForPlayback(
     @JvmName("invokeSongs")
     operator fun invoke(songs: List<Song>, range: IntRange, quality: Int = 100): List<Song> {
         return songs.mapIndexed { i, song ->
+
             if (i in range && song.artwork is EmbeddedArtwork && !song.artwork!!.isLoaded) {
                 // Load artwork
                 val uri = (song.artwork as EmbeddedArtwork).uri
