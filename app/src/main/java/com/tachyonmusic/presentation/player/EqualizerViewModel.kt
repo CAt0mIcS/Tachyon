@@ -2,6 +2,8 @@ package com.tachyonmusic.presentation.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.common.base.Defaults
+import com.tachyonmusic.app.R
 import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.core.domain.model.SoundLevel
@@ -46,6 +48,10 @@ class EqualizerViewModel @Inject constructor(
     private val _reverb = MutableStateFlow(audioEffectController.reverb)
     val reverb = _reverb.asStateFlow()
 
+    val selectedReverbText: StateFlow<Int> = reverb.map {
+        it?.toPresetStringId() ?: R.string.nothing
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), R.string.nothing)
+
     init {
         mediaBrowser.currentPlayback.onEach {
             _bassBoost.update { audioEffectController.bass }
@@ -81,7 +87,7 @@ class EqualizerViewModel @Inject constructor(
     }
 
     fun setEqualizerPreset(preset: String) {
-        if(audioEffectController.equalizerEnabled) {
+        if (audioEffectController.equalizerEnabled) {
             audioEffectController.setPreset(preset)
 
             _equalizer.update { it.copy(bands = audioEffectController.bands) }

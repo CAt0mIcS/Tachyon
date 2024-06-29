@@ -222,7 +222,7 @@ fun EqualizerEditor(
             Spacer(modifier = Modifier.height(32.dp))
 
             var reverbPresetMenuExpanded by remember { mutableStateOf(false) }
-            var selectedReverbText by remember { mutableIntStateOf(R.string.reverb_generic_name) }
+            val selectedReverbText by viewModel.selectedReverbText.collectAsState()
 
 
             ExposedDropdownMenuBox(
@@ -245,182 +245,149 @@ fun EqualizerEditor(
                     val applyReverb = { reverb: ReverbConfig ->
                         viewModel.setReverb(reverb)
                         reverbPresetMenuExpanded = false
-
-                        selectedReverbText = when (reverb) {
-                            ReverbConfig.PRESET_GENERIC -> R.string.reverb_generic_name
-                            ReverbConfig.PRESET_PADDEDCELL -> R.string.reverb_paddedcell_name
-                            ReverbConfig.PRESET_ROOM -> R.string.reverb_room_name
-                            ReverbConfig.PRESET_BATHROOM -> R.string.reverb_bathroom_name
-                            ReverbConfig.PRESET_LIVINGROOM -> R.string.reverb_livingroom_name
-                            ReverbConfig.PRESET_STONEROOM -> R.string.reverb_stoneroom_name
-                            ReverbConfig.PRESET_AUDITORIUM -> R.string.reverb_auditorium_name
-                            ReverbConfig.PRESET_CONCERTHALL -> R.string.reverb_concerthall_name
-                            ReverbConfig.PRESET_CAVE -> R.string.reverb_cave_name
-                            ReverbConfig.PRESET_ARENA -> R.string.reverb_arena_name
-                            ReverbConfig.PRESET_HANGAR -> R.string.reverb_hangar_name
-                            ReverbConfig.PRESET_CARPETEDHALLWAY -> R.string.reverb_carpetedhallway_name
-                            ReverbConfig.PRESET_HALLWAY -> R.string.reverb_hallway_name
-                            ReverbConfig.PRESET_STONECORRIDOR -> R.string.reverb_stonecorridor_name
-                            ReverbConfig.PRESET_ALLEY -> R.string.reverb_alley_name
-                            ReverbConfig.PRESET_FOREST -> R.string.reverb_forest_name
-                            ReverbConfig.PRESET_CITY -> R.string.reverb_city_name
-                            ReverbConfig.PRESET_MOUNTAINS -> R.string.reverb_mountains_name
-                            ReverbConfig.PRESET_QUARRY -> R.string.reverb_quarry_name
-                            ReverbConfig.PRESET_PLAIN -> R.string.reverb_plain_name
-                            ReverbConfig.PRESET_PARKINGLOT -> R.string.reverb_parkinglot_name
-                            ReverbConfig.PRESET_SEWERPIPE -> R.string.reverb_sewerpipe_name
-                            ReverbConfig.PRESET_UNDERWATER -> R.string.reverb_underwater_name
-                            ReverbConfig.PRESET_SMALLROOM -> R.string.reverb_smallroom_name
-                            ReverbConfig.PRESET_MEDIUMROOM -> R.string.reverb_mediumroom_name
-                            ReverbConfig.PRESET_LARGEROOM -> R.string.reverb_largeroom_name
-                            ReverbConfig.PRESET_MEDIUMHALL -> R.string.reverb_mediumhall_name
-                            ReverbConfig.PRESET_LARGEHALL -> R.string.reverb_largehall_name
-                            ReverbConfig.PRESET_PLATE -> R.string.reverb_plate_name
-                            else -> R.string.reverb_generic_name
-                        }
                     }
 
-                    ReverbPresetDropdownMenuItem(R.string.reverb_generic_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_GENERIC.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_GENERIC
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_paddedcell_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_PADDEDCELL.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_PADDEDCELL
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_room_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_ROOM.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_ROOM
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_bathroom_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_BATHROOM.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_BATHROOM
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_livingroom_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_LIVINGROOM.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_LIVINGROOM
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_stoneroom_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_STONEROOM.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_STONEROOM
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_auditorium_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_AUDITORIUM.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_AUDITORIUM
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_concerthall_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_CONCERTHALL.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_CONCERTHALL
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_cave_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_CAVE.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_CAVE
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_arena_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_ARENA.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_ARENA
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_hangar_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_HANGAR.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_HANGAR
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_carpetedhallway_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_CARPETEDHALLWAY.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_CARPETEDHALLWAY
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_hallway_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_HALLWAY.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_HALLWAY
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_stonecorridor_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_STONECORRIDOR.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_STONECORRIDOR
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_alley_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_ALLEY.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_ALLEY
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_forest_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_FOREST.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_FOREST
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_city_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_CITY.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_CITY
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_mountains_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_MOUNTAINS.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_MOUNTAINS
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_quarry_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_QUARRY.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_QUARRY
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_plain_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_PLAIN.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_PLAIN
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_parkinglot_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_PARKINGLOT.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_PARKINGLOT
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_sewerpipe_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_SEWERPIPE.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_SEWERPIPE
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_underwater_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_UNDERWATER.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_UNDERWATER
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_smallroom_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_SMALLROOM.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_SMALLROOM
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_mediumroom_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_MEDIUMROOM.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_MEDIUMROOM
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_largeroom_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_LARGEROOM.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_LARGEROOM
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_mediumhall_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_MEDIUMHALL.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_MEDIUMHALL
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_largehall_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_LARGEHALL.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_LARGEHALL
                         )
                     }
-                    ReverbPresetDropdownMenuItem(R.string.reverb_plate_name) {
+                    ReverbPresetDropdownMenuItem(ReverbConfig.PRESET_PLATE.toPresetStringId()) {
                         applyReverb(
                             ReverbConfig.PRESET_PLATE
                         )
@@ -543,7 +510,7 @@ private fun CheckboxText(
 ) {
     Row(modifier = modifier) {
         Checkbox(checked, onCheckedChange, Modifier, enabled, colors, interactionSource)
-        Text(text)
+        Text(text, modifier = Modifier.align(Alignment.CenterVertically))
     }
 }
 

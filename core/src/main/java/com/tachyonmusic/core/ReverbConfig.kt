@@ -67,6 +67,39 @@ data class ReverbConfig(
 
     override fun describeContents() = 0
 
+    fun toPresetStringId() = when(this) {
+        PRESET_GENERIC -> R.string.reverb_generic_name
+        PRESET_PADDEDCELL -> R.string.reverb_paddedcell_name
+        PRESET_ROOM -> R.string.reverb_room_name
+        PRESET_BATHROOM -> R.string.reverb_bathroom_name
+        PRESET_LIVINGROOM -> R.string.reverb_livingroom_name
+        PRESET_STONEROOM -> R.string.reverb_stoneroom_name
+        PRESET_AUDITORIUM -> R.string.reverb_auditorium_name
+        PRESET_CONCERTHALL -> R.string.reverb_concerthall_name
+        PRESET_CAVE -> R.string.reverb_cave_name
+        PRESET_ARENA -> R.string.reverb_arena_name
+        PRESET_HANGAR -> R.string.reverb_hangar_name
+        PRESET_CARPETEDHALLWAY -> R.string.reverb_carpetedhallway_name
+        PRESET_HALLWAY -> R.string.reverb_hallway_name
+        PRESET_STONECORRIDOR -> R.string.reverb_stonecorridor_name
+        PRESET_ALLEY -> R.string.reverb_alley_name
+        PRESET_FOREST -> R.string.reverb_forest_name
+        PRESET_CITY -> R.string.reverb_city_name
+        PRESET_MOUNTAINS -> R.string.reverb_mountains_name
+        PRESET_QUARRY -> R.string.reverb_quarry_name
+        PRESET_PLAIN -> R.string.reverb_plain_name
+        PRESET_PARKINGLOT -> R.string.reverb_parkinglot_name
+        PRESET_SEWERPIPE -> R.string.reverb_sewerpipe_name
+        PRESET_UNDERWATER -> R.string.reverb_underwater_name
+        PRESET_SMALLROOM -> R.string.reverb_smallroom_name
+        PRESET_MEDIUMROOM -> R.string.reverb_mediumroom_name
+        PRESET_LARGEROOM -> R.string.reverb_largeroom_name
+        PRESET_MEDIUMHALL -> R.string.reverb_mediumhall_name
+        PRESET_LARGEHALL -> R.string.reverb_largehall_name
+        PRESET_PLATE -> R.string.reverb_plate_name
+        else -> R.string.reverb_custom
+    }
+
     companion object {
         const val MILLIBEL_MAX: Short = 0x7FFF
         const val MILLIBEL_MIN: Short = (-MILLIBEL_MAX - 1).toShort()

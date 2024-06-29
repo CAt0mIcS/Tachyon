@@ -31,37 +31,8 @@
 
     <string name="playback_not_in_playlist">Trying to play playback \"%1$s\" but it doesn\'t exist in playlist \"%2$s\"</string>
 
-    <string name="reverb_generic_name">Generic</string>
-    <string name="reverb_paddedcell_name">Padded Cell</string>
-    <string name="reverb_room_name">Room</string>
-    <string name="reverb_bathroom_name">Bathroom</string>
-    <string name="reverb_livingroom_name">Living Room</string>
-    <string name="reverb_stoneroom_name">Stone Room</string>
-    <string name="reverb_auditorium_name">Auditorium</string>
-    <string name="reverb_concerthall_name">Concert Hall</string>
-    <string name="reverb_cave_name">Cave</string>
-    <string name="reverb_arena_name">Arena</string>
-    <string name="reverb_hangar_name">Hangar</string>
-    <string name="reverb_carpetedhallway_name">Carpeted Hallway</string>
-    <string name="reverb_hallway_name">Hallway</string>
-    <string name="reverb_stonecorridor_name">Stone Corridor</string>
-    <string name="reverb_alley_name">Alley</string>
-    <string name="reverb_forest_name">Forest</string>
-    <string name="reverb_city_name">City</string>
-    <string name="reverb_mountains_name">Mountains</string>
-    <string name="reverb_quarry_name">Quarry</string>
-    <string name="reverb_plain_name">Plain</string>
-    <string name="reverb_parkinglot_name">Parking Lot</string>
-    <string name="reverb_sewerpipe_name">Sewer Pipe</string>
-    <string name="reverb_underwater_name">Underwater</string>
-    <string name="reverb_smallroom_name">Small Room</string>
-    <string name="reverb_mediumroom_name">Medium Room</string>
-    <string name="reverb_largeroom_name">Large Room</string>
-    <string name="reverb_mediumhall_name">Medium Hall</string>
-    <string name="reverb_largehall_name">Large Hall</string>
-    <string name="reverb_plate_name">Plate</string>
-
     <string name="close">Close</string>
     <string name="retry">Retry</string>
     <string name="warning">Warning!</string>
+    <string name="nothing" />
 </resources>
