@@ -178,7 +178,9 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun loadArtwork(range: IntRange) {
-        artworkLoadingRange.update { range }
+        val rangeToUpdate = removeAdIndices(0..21)
+//        val rangeToUpdate = removeAdIndices(range)
+        artworkLoadingRange.update { rangeToUpdate }
     }
 
     /**
@@ -225,5 +227,14 @@ class LibraryViewModel @Inject constructor(
             result.add(this[i])
         }
         return result
+    }
+
+    /**
+     * The range received from the UI includes all banner ad indices which we don't need for ranged
+     * loading of playback artwork. Function removes these unwanted indices
+     */
+    private fun removeAdIndices(range: IntRange): IntRange {
+        val numAds = range.last / ADD_INSERT_INTERVAL + 1
+        return (range.first + numAds)..(range.last + numAds)
     }
 }
