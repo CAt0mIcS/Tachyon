@@ -72,7 +72,7 @@ fun EqualizerEditor(
             text = "Reverb"
         )
 
-        HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+        HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
         if (bass != null) {
             Text(text = "Bass")
@@ -83,7 +83,7 @@ fun EqualizerEditor(
                 valueRange = 0f..1000f,
             )
 
-            HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+            HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
         }
 
         if (virtualizer != null) {
@@ -95,7 +95,7 @@ fun EqualizerEditor(
                 valueRange = 0f..1000f,
             )
 
-            HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+            HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
         }
 
         // TODO: Worth storing over multiple UI recreations? E.g. should be saved as setting in db?
@@ -160,7 +160,7 @@ fun EqualizerEditor(
             text = "Sync Speed and Pitch"
         )
 
-        HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+        HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
         Text(text = "Volume")
         Slider(
@@ -172,7 +172,7 @@ fun EqualizerEditor(
 
         if (equalizer.bands != null) {
 
-            HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+            HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
             if (equalizer.presets.isNotEmpty()) {
                 var equalizerPresetMenuExpanded by remember { mutableStateOf(false) }
@@ -265,7 +265,7 @@ fun EqualizerEditor(
          ********** Reverb
          *************************************************************************/
         if (reverb != null) {
-            HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+            HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
             var reverbPresetMenuExpanded by remember { mutableStateOf(false) }
             val selectedReverbText by viewModel.selectedReverbText.collectAsState()
