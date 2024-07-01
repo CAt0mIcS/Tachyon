@@ -14,6 +14,11 @@ import com.tachyonmusic.core.domain.model.mDb
 import com.tachyonmusic.core.domain.model.mHz
 import com.tachyonmusic.media.domain.AudioEffectController
 
+/**
+ * TODO: Changes in audio effects from e.g. the MediaPlaybackService (when switching to loop for example) are not always reflected in the UI due
+ *      to no states being used for audio effect variables (bass, reverb, ...)
+ */
+
 class AndroidAudioEffectController : AudioEffectController {
     private var equalizer: Equalizer? = null
     private var virtualizer: Virtualizer? = null

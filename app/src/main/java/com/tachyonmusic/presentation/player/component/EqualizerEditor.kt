@@ -19,6 +19,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -77,6 +78,8 @@ fun EqualizerEditor(
             text = "Reverb"
         )
 
+        HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+
         if (bass != null) {
             Text(text = "Bass")
             Slider(
@@ -85,6 +88,8 @@ fun EqualizerEditor(
                 onValueChange = { viewModel.setBass(it.toInt()) },
                 valueRange = 0f..1000f,
             )
+
+            HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
         }
 
         if (virtualizer != null) {
@@ -95,30 +100,73 @@ fun EqualizerEditor(
                 onValueChange = { viewModel.setVirtualizerStrength(it.toInt()) },
                 valueRange = 0f..1000f,
             )
+
+            HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
         }
 
+        // TODO: Worth storing over multiple UI recreations? E.g. should be saved as setting in db?
+        var syncSpeedPitch by remember { mutableStateOf(true) }
+        var preciseInput by remember { mutableStateOf(false) }
+
+        CheckboxText(
+            checked = preciseInput,
+            onCheckedChange = { preciseInput = it },
+            text = "Precise Speed and Pitch Input"
+        )
 
         Text(text = "Speed")
-        var speedText by remember { mutableStateOf(playbackParams.speed.toString()) }
-        TextField(
-            value = speedText,
-            onValueChange = {
-                speedText = it
-                val num = it.toFloatOrNull() ?: return@TextField
-                if (num > 0f)
-                    viewModel.setSpeed(num)
-            })
+        if (preciseInput) {
+            TextField(
+                value = playbackParams.speed,
+                onValueChange = {
+                    viewModel.setSpeed(it)
+                    if (syncSpeedPitch)
+                        viewModel.setPitch(it)
+                })
 
-        Text(text = "Pitch")
-        var pitchText by remember { mutableStateOf(playbackParams.pitch.toString()) }
-        TextField(
-            value = pitchText,
-            onValueChange = {
-                pitchText = it
-                val num = it.toFloatOrNull() ?: return@TextField
-                if (num > 0f)
-                    viewModel.setPitch(num)
-            })
+            Text(text = "Pitch")
+            TextField(
+                value = playbackParams.pitch,
+                onValueChange = {
+                    viewModel.setPitch(it)
+                    if (syncSpeedPitch)
+                        viewModel.setSpeed(it)
+                })
+        } else {
+            val minValue = .3f // TODO: Setting?
+            val maxValue = 2.5f // TODO: Setting?
+
+            Slider(
+                modifier = Modifier.systemGestureExclusion(),
+                value = playbackParams.speed.toFloat(),
+                onValueChange = {
+                    viewModel.setSpeed(it.toString())
+                    if (syncSpeedPitch)
+                        viewModel.setPitch(it.toString())
+                },
+                valueRange = minValue..maxValue
+            )
+
+            Text(text = "Pitch")
+            Slider(
+                modifier = Modifier.systemGestureExclusion(),
+                value = playbackParams.pitch.toFloat(),
+                onValueChange = {
+                    viewModel.setPitch(it.toString())
+                    if (syncSpeedPitch)
+                        viewModel.setSpeed(it.toString())
+                },
+                valueRange = minValue..maxValue
+            )
+        }
+
+        CheckboxText(
+            checked = syncSpeedPitch,
+            onCheckedChange = { syncSpeedPitch = it },
+            text = "Sync Speed and Pitch"
+        )
+
+        HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
 
         Text(text = "Volume")
         Slider(
@@ -129,6 +177,9 @@ fun EqualizerEditor(
         )
 
         if (equalizer.bands != null) {
+
+            HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+
             if (equalizer.presets.isNotEmpty()) {
                 var isSelectingEqualizerPreset by remember { mutableStateOf(false) }
 
@@ -219,7 +270,7 @@ fun EqualizerEditor(
          ********** Reverb
          *************************************************************************/
         if (reverb != null) {
-            Spacer(modifier = Modifier.height(32.dp))
+            HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
 
             var reverbPresetMenuExpanded by remember { mutableStateOf(false) }
             val selectedReverbText by viewModel.selectedReverbText.collectAsState()

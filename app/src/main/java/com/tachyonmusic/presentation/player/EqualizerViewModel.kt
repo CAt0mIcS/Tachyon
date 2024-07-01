@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.common.base.Defaults
 import com.tachyonmusic.app.R
+import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.core.domain.model.SoundLevel
@@ -21,6 +22,12 @@ data class EqualizerState(
     val presets: List<String>
 )
 
+data class PlaybackParametersState(
+    val speed: String,
+    val pitch: String,
+    val volume: Float
+)
+
 @HiltViewModel
 class EqualizerViewModel @Inject constructor(
     private val audioEffectController: AudioEffectController,
@@ -32,6 +39,7 @@ class EqualizerViewModel @Inject constructor(
     private val _virtualizerStrength = MutableStateFlow(audioEffectController.virtualizerStrength)
     val virtualizerStrength = _virtualizerStrength.asStateFlow()
 
+
     private val _equalizer = MutableStateFlow(
         EqualizerState(
             audioEffectController.minBandLevel,
@@ -42,7 +50,8 @@ class EqualizerViewModel @Inject constructor(
     )
     val equalizer = _equalizer.asStateFlow()
 
-    private val _playbackParameters = MutableStateFlow(audioEffectController.playbackParams)
+    private val _playbackParameters =
+        MutableStateFlow(audioEffectController.playbackParams.toUiState())
     val playbackParameters = _playbackParameters.asStateFlow()
 
     private val _reverb = MutableStateFlow(audioEffectController.reverb)
@@ -57,7 +66,7 @@ class EqualizerViewModel @Inject constructor(
             _bassBoost.update { audioEffectController.bass }
             _virtualizerStrength.update { audioEffectController.virtualizerStrength }
             _equalizer.update { it.copy(bands = audioEffectController.bands) }
-            _playbackParameters.update { audioEffectController.playbackParams }
+            _playbackParameters.update { audioEffectController.playbackParams.toUiState() }
             _reverb.update { audioEffectController.reverb }
         }.launchIn(viewModelScope)
     }
@@ -94,16 +103,22 @@ class EqualizerViewModel @Inject constructor(
         }
     }
 
-    fun setSpeed(speed: Float) {
-        audioEffectController.playbackParams =
-            audioEffectController.playbackParams.copy(speed = speed)
+    fun setSpeed(speed: String) {
         _playbackParameters.update { it.copy(speed = speed) }
+
+        val num = speed.toFloatOrNull() ?: return
+        if (num > 0f)
+            audioEffectController.playbackParams =
+                audioEffectController.playbackParams.copy(speed = num)
     }
 
-    fun setPitch(pitch: Float) {
-        audioEffectController.playbackParams =
-            audioEffectController.playbackParams.copy(pitch = pitch)
+    fun setPitch(pitch: String) {
         _playbackParameters.update { it.copy(pitch = pitch) }
+
+        val num = pitch.toFloatOrNull() ?: return
+        if (num > 0f)
+            audioEffectController.playbackParams =
+                audioEffectController.playbackParams.copy(pitch = num)
     }
 
     fun setVolume(volume: Float) {
@@ -154,3 +169,8 @@ class EqualizerViewModel @Inject constructor(
 }
 
 
+private fun PlaybackParameters.toUiState() = PlaybackParametersState(
+    speed.toString(),
+    pitch.toString(),
+    volume
+)
