@@ -5,9 +5,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material3.Button
@@ -22,22 +20,18 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.tachyonmusic.app.R
 import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.model.mDb
 import com.tachyonmusic.presentation.player.EqualizerViewModel
@@ -181,59 +175,60 @@ fun EqualizerEditor(
             HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
 
             if (equalizer.presets.isNotEmpty()) {
-                var isSelectingEqualizerPreset by remember { mutableStateOf(false) }
+                var equalizerPresetMenuExpanded by remember { mutableStateOf(false) }
 
-                Button(onClick = { isSelectingEqualizerPreset = !isSelectingEqualizerPreset }) {
-                    Text("Equalizer Preset")
-                }
-
-                DropdownMenu(
-                    modifier = Modifier.padding(Theme.padding.medium),
-                    expanded = isSelectingEqualizerPreset,
-                    onDismissRequest = { isSelectingEqualizerPreset = false }
-                ) {
-                    for (preset in equalizer.presets) {
-                        DropdownMenuItem(text = { Text(preset) }, onClick = {
-                            isSelectingEqualizerPreset = false
-                            viewModel.setEqualizerPreset(preset)
-                        })
-                    }
-                }
-
+//                Button(onClick = { equalizerPresetMenuExpanded = !equalizerPresetMenuExpanded }) {
+//                    Text("Equalizer Preset")
+//                }
 //
-//                var isSelectingEqualizerPreset by remember { mutableStateOf(false) }
-//
-//                ExposedDropdownMenuBox(
-//                    modifier = Modifier.height(200.dp),
-//                    expanded = isSelectingEqualizerPreset,
-//                    onExpandedChange = { isSelectingEqualizerPreset = it }
+//                DropdownMenu(
+//                    modifier = Modifier.padding(Theme.padding.medium),
+//                    expanded = equalizerPresetMenuExpanded,
+//                    onDismissRequest = { equalizerPresetMenuExpanded = false }
 //                ) {
-//                    TextField(
-//                        value = equalizer.currentPreset ?: "Custom",
-//                        onValueChange = {},
-//                        readOnly = true,
-//                        trailingIcon = {
-//                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = isSelectingEqualizerPreset)
-//                        },
-//                        placeholder = {
-//                            Text(text = "Reverb Preset")
-//                        },
-//                        colors = ExposedDropdownMenuDefaults.textFieldColors(),
-//                        modifier = Modifier.menuAnchor()
-//                    )
-//
-//                    ExposedDropdownMenu(
-//                        expanded = isSelectingEqualizerPreset,
-//                        onDismissRequest = { isSelectingEqualizerPreset = false }
-//                    ) {
-//                        for (preset in equalizer.presets) {
-//                            DropdownMenuItem(text = { Text(preset) }, onClick = {
-//                                isSelectingEqualizerPreset = false
-//                                viewModel.setEqualizerPreset(preset)
-//                            })
-//                        }
+//                    for (preset in equalizer.presets) {
+//                        DropdownMenuItem(text = { Text(preset) }, onClick = {
+//                            equalizerPresetMenuExpanded = false
+//                            viewModel.setEqualizerPreset(preset)
+//                        })
 //                    }
 //                }
+
+                val selectedReverbText by viewModel.selectedEqualizerText.collectAsState()
+
+                ExposedDropdownMenuBox(
+                    expanded = equalizerPresetMenuExpanded,
+                    onExpandedChange = { equalizerPresetMenuExpanded = it },
+                ) {
+
+                    TextField(
+                        value = selectedReverbText,
+                        onValueChange = {},
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = equalizerPresetMenuExpanded) },
+                        modifier = Modifier.menuAnchor()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = equalizerPresetMenuExpanded,
+                        onDismissRequest = { equalizerPresetMenuExpanded = false }
+                    ) {
+                        for (preset in equalizer.presets) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        preset,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                },
+                                onClick = {
+                                    equalizerPresetMenuExpanded = false
+                                    viewModel.setEqualizerPreset(preset)
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             for (bandNumber in equalizer.bands!!.indices) {

@@ -39,7 +39,6 @@ class EqualizerViewModel @Inject constructor(
     private val _virtualizerStrength = MutableStateFlow(audioEffectController.virtualizerStrength)
     val virtualizerStrength = _virtualizerStrength.asStateFlow()
 
-
     private val _equalizer = MutableStateFlow(
         EqualizerState(
             audioEffectController.minBandLevel,
@@ -60,6 +59,10 @@ class EqualizerViewModel @Inject constructor(
     val selectedReverbText: StateFlow<Int> = reverb.map {
         it?.toPresetStringId() ?: R.string.nothing
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), R.string.nothing)
+
+    val selectedEqualizerText: StateFlow<String> = equalizer.map {
+        audioEffectController.currentPreset ?: "" // TODO R.string.custom in [audioEffectController.currentPreset]
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "")
 
     init {
         mediaBrowser.currentPlayback.onEach {

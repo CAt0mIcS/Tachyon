@@ -125,6 +125,12 @@ class AndroidAudioEffectController : AudioEffectController {
             equalizer?.getPresetName(it.toShort())
         }.filterNotNull()
 
+    override val currentPreset: String?
+        get() {
+            val name = equalizer?.getPresetName(equalizer?.currentPreset ?: return null)
+            return if (name?.isBlank() == true) "Custom" else name
+        }
+
     override val bands: List<EqualizerBand>?
         get() {
             if (!equalizerEnabled)
