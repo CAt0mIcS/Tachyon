@@ -13,8 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.systemGestureExclusion
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,6 +48,7 @@ import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.player.TimingDataEditorViewModel
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.asString
+import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
 
@@ -60,25 +65,6 @@ fun TimingDataEditor(
         ErrorDialog(title = stringResource(R.string.warning), subtitle = error.asString())
 
     Column(modifier = modifier) {
-        IconButton(
-            modifier = Modifier.padding(Theme.padding.small),
-            onClick = { viewModel.addNewTimingData(timingData.size) }
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_add_circle),
-                contentDescription = "Add new customizedSong time point"
-            )
-        }
-
-        IconButton(
-            modifier = Modifier.padding(Theme.padding.small),
-            onClick = { viewModel.removeTimingData(timingData.size - 1) }) {
-            Icon(
-                painterResource(R.drawable.ic_rewind),
-                contentDescription = "Remove customizedSong time point"
-            )
-        }
-
         val duration by viewModel.duration.collectAsState()
 
         for (i in timingData.indices) {
@@ -188,6 +174,77 @@ fun TimingDataEditor(
                 )
 
                 LazyRow(modifier = Modifier.align(Alignment.End)) {
+                    item {
+                        var timingDataInfoDropdownExpanded by remember { mutableStateOf(false) }
+
+                        IconButton(
+                            onClick = {
+                                timingDataInfoDropdownExpanded = !timingDataInfoDropdownExpanded
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.Settings,
+                                "Additional Loop options for timing data $i"
+                            )
+                        }
+
+                        DropdownMenu(
+                            modifier = Modifier.padding(Theme.padding.medium),
+                            expanded = timingDataInfoDropdownExpanded,
+                            onDismissRequest = { timingDataInfoDropdownExpanded = false }
+                        ) {
+                            var isMoveUpValid by remember { mutableStateOf(false) }
+                            var isMoveDownValid by remember { mutableStateOf(false) }
+                            LaunchedEffect(timingData) {
+                                isMoveUpValid = viewModel.isValidTimingDataMove(i, i - 1)
+                                isMoveDownValid = viewModel.isValidTimingDataMove(i, i + 1)
+                            }
+
+
+                            Button(onClick = {
+                                viewModel.addNewTimingData(i)
+                                timingDataInfoDropdownExpanded = false
+                            }) {
+                                Text("Insert before")
+                            }
+                            Button(onClick = {
+                                viewModel.addNewTimingData(i + 1)
+                                timingDataInfoDropdownExpanded = false
+                            }) {
+                                Text("Insert after")
+                            }
+
+
+                            Button(
+                                onClick = {
+                                    viewModel.moveTimingData(i, i - 1)
+                                    timingDataInfoDropdownExpanded = false
+                                },
+                                enabled = isMoveUpValid
+                            ) {
+                                Text("Move up")
+                            }
+                            Button(
+                                onClick = {
+                                    viewModel.moveTimingData(i, i + 1)
+                                    timingDataInfoDropdownExpanded = false
+                                },
+                                enabled = isMoveDownValid
+                            ) {
+                                Text("Move down")
+                            }
+
+
+                            Button(onClick = {
+                                viewModel.removeTimingData(i)
+                                timingDataInfoDropdownExpanded = false
+                            }) {
+                                Text("Delete")
+                            }
+                        }
+                    }
+
+
                     item {
                         Button(
                             onClick = {

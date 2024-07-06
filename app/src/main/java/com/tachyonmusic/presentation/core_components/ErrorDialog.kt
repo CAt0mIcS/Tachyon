@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -82,7 +84,7 @@ fun ErrorDialog(
                     ) {
                         Image(
                             modifier = Modifier.fillMaxSize(),
-                            painter = painterResource(R.drawable.warning_amber),
+                            imageVector = Icons.Default.Warning,
                             contentDescription = "Error Icon",
                             alignment = Alignment.Center,
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onError)

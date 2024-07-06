@@ -133,6 +133,22 @@ class TimingDataEditorViewModel @Inject constructor(
         mediaBrowser.currentPlaybackTimingData = TimingDataController(
             timingData.toMutableList().apply {
                 removeAt(i)
+
+                // Add default back if last timingData was deleted
+                if(i == 0 && isEmpty())
+                    add(TimingData(0.ms, duration.value))
+            },
+            currentIndex
+        )
+    }
+
+    fun moveTimingData(from: Int, to: Int) {
+        mediaBrowser.currentPlaybackTimingData = TimingDataController(
+            timingData.toMutableList().apply {
+                if(isValidTimingDataMove(from, to)) {
+                    val tdToMove = removeAt(from)
+                    add(to, tdToMove)
+                }
             },
             currentIndex
         )
@@ -172,5 +188,14 @@ class TimingDataEditorViewModel @Inject constructor(
             } else
                 _customizedSongError.update { createRes.message }
         }
+    }
+
+
+    fun isValidTimingDataMove(from: Int, to: Int): Boolean {
+        if(timingData.size <= 1) return false
+        if(timingData.size == to) return false
+        if(from < 0 || to < 0) return false
+
+        return true
     }
 }

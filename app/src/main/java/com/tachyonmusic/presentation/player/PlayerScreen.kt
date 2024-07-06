@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.systemGestureExclusion
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -343,20 +344,24 @@ fun PlayerScreen(
 
         if (isEditingTimingData) {
             item {
+                HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+
                 TimingDataEditor(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = Theme.padding.large)
+                        .padding(horizontal = Theme.padding.medium)
                 )
             }
         }
 
         if (isEditingEqualizer) {
             item {
+                HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+
                 EqualizerEditor(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = Theme.padding.large)
+                        .padding(horizontal = Theme.padding.medium)
                 )
             }
         }
