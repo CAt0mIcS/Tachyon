@@ -65,7 +65,10 @@ fun BottomNavigation(
                     },
                     selected = selected,
                     colors = NavigationBarItemDefaults.colors()
-                        .copy(selectedIndicatorColor = MaterialTheme.colorScheme.onPrimary),
+                        .copy(
+                            selectedIndicatorColor = MaterialTheme.colorScheme.onPrimary,
+                            selectedIconColor = MaterialTheme.colorScheme.primary
+                        ),
                     onClick = {
                         scope.launch {
                             swipe?.animateTo(SwipingStates.COLLAPSED)

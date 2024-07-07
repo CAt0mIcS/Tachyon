@@ -19,6 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
@@ -120,6 +123,8 @@ object LibraryScreen :
             }
 
             item {
+                var rowSize by remember { mutableStateOf(Size.Zero) }
+
                 Row(modifier = Modifier
                     .padding(Theme.padding.medium)
                     .clickable(
@@ -127,6 +132,9 @@ object LibraryScreen :
                         indication = null,
                     ) {
                         sortOptionsExpanded = true
+                    }
+                    .onGloballyPositioned { layoutCoordinates ->
+                        rowSize = layoutCoordinates.size.toSize()
                     }) {
                     val iconAndTextColor by animateColorAsState(
                         if (sortOptionsExpanded) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onBackground,
@@ -144,7 +152,9 @@ object LibraryScreen :
 
 
                         DropdownMenu(
-                            modifier = Modifier.padding(Theme.padding.medium),
+                            modifier = Modifier
+                                .padding(horizontal = Theme.padding.small)
+                                .widthIn(max = with(LocalDensity.current) { rowSize.width.toDp() - Theme.padding.extraSmall }),
                             expanded = sortOptionsExpanded,
                             onDismissRequest = { sortOptionsExpanded = false }) {
                             SortType.entries.forEach {

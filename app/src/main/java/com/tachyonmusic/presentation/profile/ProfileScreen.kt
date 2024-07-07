@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -31,12 +32,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.database.data.data_source.Database
@@ -312,10 +317,15 @@ fun Setting(
             },
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
+        var rowSize by remember { mutableStateOf(Size.Zero) }
+
         Row(
             modifier = Modifier
                 .align(Alignment.CenterVertically)
                 .weight(1f)
+                .onGloballyPositioned { layoutCoordinates ->
+                    rowSize = layoutCoordinates.size.toSize()
+                }
         ) {
             textComposable()
 
@@ -323,7 +333,9 @@ fun Setting(
                 var showDescriptivePopup by remember { mutableStateOf(false) }
 
                 DropdownMenu(
-                    modifier = Modifier.padding(Theme.padding.medium),
+                    modifier = Modifier
+                        .padding(horizontal = Theme.padding.small)
+                        .widthIn(max = with(LocalDensity.current) { rowSize.width.toDp() - Theme.padding.extraSmall }),
                     expanded = showDescriptivePopup,
                     onDismissRequest = { showDescriptivePopup = false },
                     content = {
@@ -335,6 +347,7 @@ fun Setting(
                     onClick = { showDescriptivePopup = !showDescriptivePopup },
                     modifier = Modifier
                         .padding(Theme.padding.small)
+                        .align(Alignment.CenterVertically)
                         .size(18.dp)
                 ) {
                     Icon(Icons.Default.Info, contentDescription = "Setting description")
