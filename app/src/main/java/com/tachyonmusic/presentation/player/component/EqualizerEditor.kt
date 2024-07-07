@@ -48,6 +48,7 @@ fun EqualizerEditor(
     val equalizer by viewModel.equalizer.collectAsState()
     val playbackParams by viewModel.playbackParameters.collectAsState()
     val reverb by viewModel.reverb.collectAsState()
+    val volumeEnhancer by viewModel.volumeEnhancer.collectAsState()
 
     Column(modifier = modifier) {
 
@@ -70,6 +71,11 @@ fun EqualizerEditor(
             checked = reverb != null,
             onCheckedChange = viewModel::setReverbEnabled,
             text = "Reverb"
+        )
+        CheckboxText(
+            checked = volumeEnhancer != null,
+            onCheckedChange = viewModel::setVolumeEnhancerEnabled,
+            text = "Volume Enhancer"
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
@@ -108,7 +114,7 @@ fun EqualizerEditor(
             text = "Precise Speed and Pitch Input"
         )
 
-        Text(text = "Speed")
+        Text(text = "Speed", modifier = Modifier.padding(horizontal = Theme.padding.medium))
         if (preciseInput) {
             TextField(
                 value = playbackParams.speed,
@@ -116,7 +122,9 @@ fun EqualizerEditor(
                     viewModel.setSpeed(it)
                     if (syncSpeedPitch)
                         viewModel.setPitch(it)
-                })
+                },
+                modifier = Modifier.padding(horizontal = Theme.padding.medium)
+            )
 
             Text(text = "Pitch")
             TextField(
@@ -125,13 +133,17 @@ fun EqualizerEditor(
                     viewModel.setPitch(it)
                     if (syncSpeedPitch)
                         viewModel.setSpeed(it)
-                })
+                },
+                modifier = Modifier.padding(horizontal = Theme.padding.medium)
+            )
         } else {
             val minValue = .3f // TODO: Setting?
             val maxValue = 2.5f // TODO: Setting?
 
             Slider(
-                modifier = Modifier.systemGestureExclusion(),
+                modifier = Modifier
+                    .systemGestureExclusion()
+                    .padding(horizontal = Theme.padding.medium),
                 value = playbackParams.speed.toFloat(),
                 onValueChange = {
                     viewModel.setSpeed(it.toString())
@@ -143,7 +155,9 @@ fun EqualizerEditor(
 
             Text(text = "Pitch")
             Slider(
-                modifier = Modifier.systemGestureExclusion(),
+                modifier = Modifier
+                    .systemGestureExclusion()
+                    .padding(horizontal = Theme.padding.medium),
                 value = playbackParams.pitch.toFloat(),
                 onValueChange = {
                     viewModel.setPitch(it.toString())
@@ -160,15 +174,17 @@ fun EqualizerEditor(
             text = "Sync Speed and Pitch"
         )
 
-        HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
+        if (volumeEnhancer != null) {
+            HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
-        Text(text = "Volume")
-        Slider(
-            modifier = Modifier.systemGestureExclusion(),
-            value = playbackParams.volume,
-            onValueChange = viewModel::setVolume,
-            valueRange = 0f..10f,
-        )
+            Text(text = "Volume")
+            Slider(
+                modifier = Modifier.systemGestureExclusion(),
+                value = playbackParams.volume!!,
+                onValueChange = viewModel::setVolume,
+                valueRange = 0f..4f,
+            )
+        }
 
         if (equalizer.bands != null) {
 

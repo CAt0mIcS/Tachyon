@@ -25,7 +25,7 @@ data class EqualizerState(
 data class PlaybackParametersState(
     val speed: String,
     val pitch: String,
-    val volume: Float
+    val volume: Float?
 )
 
 @HiltViewModel
@@ -56,12 +56,19 @@ class EqualizerViewModel @Inject constructor(
     private val _reverb = MutableStateFlow(audioEffectController.reverb)
     val reverb = _reverb.asStateFlow()
 
+    val volumeEnhancer: StateFlow<Float?> = playbackParameters.map {
+        val ret = if (audioEffectController.volumeEnhancerEnabled) it.volume else null
+        println("HOW: $ret")
+        ret
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+
     val selectedReverbText: StateFlow<Int> = reverb.map {
         it?.toPresetStringId() ?: R.string.nothing
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), R.string.nothing)
 
     val selectedEqualizerText: StateFlow<String> = equalizer.map {
-        audioEffectController.currentPreset ?: "" // TODO R.string.custom in [audioEffectController.currentPreset]
+        audioEffectController.currentPreset
+            ?: "" // TODO R.string.custom in [audioEffectController.currentPreset]
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "")
 
     init {
@@ -125,8 +132,6 @@ class EqualizerViewModel @Inject constructor(
     }
 
     fun setVolume(volume: Float) {
-        audioEffectController.volumeEnhancerEnabled = true
-
         if (audioEffectController.volumeEnhancerEnabled) {
             audioEffectController.playbackParams = audioEffectController.playbackParams.copy(
                 volume = if (volume <= 1f) volume else volume * 150
@@ -169,11 +174,17 @@ class EqualizerViewModel @Inject constructor(
         audioEffectController.reverbEnabled = enabled
         _reverb.update { audioEffectController.reverb }
     }
+
+    fun setVolumeEnhancerEnabled(enabled: Boolean) {
+        audioEffectController.volumeEnhancerEnabled = enabled
+        _playbackParameters.update { audioEffectController.playbackParams.toUiState() }
+    }
+
+    private fun PlaybackParameters.toUiState() = PlaybackParametersState(
+        speed.toString(),
+        pitch.toString(),
+        if (audioEffectController.volumeEnhancerEnabled) volume else null
+    )
 }
 
 
-private fun PlaybackParameters.toUiState() = PlaybackParametersState(
-    speed.toString(),
-    pitch.toString(),
-    volume
-)
