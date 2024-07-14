@@ -153,7 +153,6 @@ object LibraryScreen :
 
                         DropdownMenu(
                             modifier = Modifier
-                                .padding(horizontal = Theme.padding.small)
                                 .widthIn(max = with(LocalDensity.current) { rowSize.width.toDp() - Theme.padding.extraSmall }),
                             expanded = sortOptionsExpanded,
                             onDismissRequest = { sortOptionsExpanded = false }) {
@@ -216,23 +215,22 @@ object LibraryScreen :
                                 showDropDownMenu = !showDropDownMenu
                             },
                             dropDownMenuContent = {
-                                Button(
+                                DropdownMenuItem(
+                                    text = { Text("Set Metadata") },
                                     onClick = {
                                         showMetadataDialog = true
                                         showDropDownMenu = false
                                     }
-                                ) {
-                                    Text("Set Metadata")
-                                }
-                                Button(
+                                )
+
+                                DropdownMenuItem(
+                                    text = { Text("Select Artwork") },
                                     onClick = {
                                         viewModel.queryArtwork(playback)
                                         showArtworkSelectionDialog = true
                                         showDropDownMenu = false
                                     }
-                                ) {
-                                    Text("Select Artwork")
-                                }
+                                )
                             },
                             onClick = {
                                 viewModel.onItemClicked(playback)

@@ -193,23 +193,6 @@ fun EqualizerEditor(
             if (equalizer.presets.isNotEmpty()) {
                 var equalizerPresetMenuExpanded by remember { mutableStateOf(false) }
 
-//                Button(onClick = { equalizerPresetMenuExpanded = !equalizerPresetMenuExpanded }) {
-//                    Text("Equalizer Preset")
-//                }
-//
-//                DropdownMenu(
-//                    modifier = Modifier.padding(Theme.padding.medium),
-//                    expanded = equalizerPresetMenuExpanded,
-//                    onDismissRequest = { equalizerPresetMenuExpanded = false }
-//                ) {
-//                    for (preset in equalizer.presets) {
-//                        DropdownMenuItem(text = { Text(preset) }, onClick = {
-//                            equalizerPresetMenuExpanded = false
-//                            viewModel.setEqualizerPreset(preset)
-//                        })
-//                    }
-//                }
-
                 val selectedReverbText by viewModel.selectedEqualizerText.collectAsState()
 
                 ExposedDropdownMenuBox(

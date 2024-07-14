@@ -1,6 +1,7 @@
 package com.tachyonmusic.presentation.player.component
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.excludeFromSystemGesture
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,6 +20,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -189,7 +192,6 @@ fun TimingDataEditor(
                         }
 
                         DropdownMenu(
-                            modifier = Modifier.padding(Theme.padding.medium),
                             expanded = timingDataInfoDropdownExpanded,
                             onDismissRequest = { timingDataInfoDropdownExpanded = false }
                         ) {
@@ -200,47 +202,47 @@ fun TimingDataEditor(
                                 isMoveDownValid = viewModel.isValidTimingDataMove(i, i + 1)
                             }
 
+                            DropdownMenuItem(
+                                text = { Text("Insert before") },
+                                onClick = {
+                                    viewModel.addNewTimingData(i)
+                                    timingDataInfoDropdownExpanded = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Insert after") },
+                                onClick = {
+                                    viewModel.addNewTimingData(i + 1)
+                                    timingDataInfoDropdownExpanded = false
+                                }
+                            )
 
-                            Button(onClick = {
-                                viewModel.addNewTimingData(i)
-                                timingDataInfoDropdownExpanded = false
-                            }) {
-                                Text("Insert before")
-                            }
-                            Button(onClick = {
-                                viewModel.addNewTimingData(i + 1)
-                                timingDataInfoDropdownExpanded = false
-                            }) {
-                                Text("Insert after")
-                            }
 
-
-                            Button(
+                            DropdownMenuItem(
+                                text = { Text("Move up") },
                                 onClick = {
                                     viewModel.moveTimingData(i, i - 1)
                                     timingDataInfoDropdownExpanded = false
                                 },
                                 enabled = isMoveUpValid
-                            ) {
-                                Text("Move up")
-                            }
-                            Button(
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Move down") },
                                 onClick = {
                                     viewModel.moveTimingData(i, i + 1)
                                     timingDataInfoDropdownExpanded = false
                                 },
                                 enabled = isMoveDownValid
-                            ) {
-                                Text("Move down")
-                            }
+                            )
 
 
-                            Button(onClick = {
-                                viewModel.removeTimingData(i)
-                                timingDataInfoDropdownExpanded = false
-                            }) {
-                                Text("Delete")
-                            }
+                            DropdownMenuItem(
+                                text = { Text("Delete") },
+                                onClick = {
+                                    viewModel.removeTimingData(i)
+                                    timingDataInfoDropdownExpanded = false
+                                }
+                            )
                         }
                     }
 
