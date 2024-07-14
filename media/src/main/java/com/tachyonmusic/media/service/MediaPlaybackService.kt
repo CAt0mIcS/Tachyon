@@ -2,6 +2,7 @@ package com.tachyonmusic.media.service
 
 import android.app.PendingIntent
 import android.os.Bundle
+import android.os.Looper
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.media3.cast.CastPlayer
@@ -49,6 +50,8 @@ import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import java.lang.Integer.max
 import javax.inject.Inject
 
@@ -140,28 +143,32 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             registerEventListener(CustomPlayerEventListener())
         }
 
-        audioEffectController.controller = object : AudioEffectController.PlaybackController {
-            override fun onNewPlaybackParameters(params: PlaybackParameters) {
-                exoPlayer.playbackParameters = PlaybackParameters(
-                    params.speed,
-                    params.pitch
+        audioEffectController.playbackParams.onEach { params ->
+            exoPlayer.playbackParameters = androidx.media3.common.PlaybackParameters(
+                params.speed,
+                params.pitch
+            )
+            exoPlayer.volume = params.volume
+            castPlayer?.playbackParameters = exoPlayer.playbackParameters
+            castPlayer?.volume = exoPlayer.volume
+        }.launchIn(ioScope + Dispatchers.Main)
+
+        audioEffectController.reverbEnabled.onEach { enabled ->
+            if (enabled) {
+                currentPlayer.setAuxEffectInfo(
+                    AuxEffectInfo(
+                        audioEffectController.reverbAudioEffectId!!,
+                        1F
+                    )
                 )
-                exoPlayer.volume = params.volume
-                castPlayer?.playbackParameters = exoPlayer.playbackParameters
-                castPlayer?.volume = exoPlayer.volume
+            } else {
+                val effectInfo = AuxEffectInfo(AuxEffectInfo.NO_AUX_EFFECT_ID, 0F)
+                exoPlayer.setAuxEffectInfo(effectInfo)
             }
+        }.launchIn(ioScope + Dispatchers.Main)
 
-            override fun onReverbToggled(enabled: Boolean, effectId: Int) {
-                if (enabled) {
-                    currentPlayer.setAuxEffectInfo(AuxEffectInfo(effectId, 1F))
-                } else {
-                    val effectInfo = AuxEffectInfo(AuxEffectInfo.NO_AUX_EFFECT_ID, 0F)
-                    exoPlayer.setAuxEffectInfo(effectInfo)
-                }
+        // TODO: Set aux effects for [CastPlayer]
 
-                // TODO: Set aux effects for [CastPlayer]
-            }
-        }
         audioEffectController.updateAudioSessionId(exoPlayer.audioSessionId)
 
 //        settingsRepository.observe().onEach {
@@ -414,54 +421,38 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
         when (playback) {
             is CustomizedSong -> {
-                if (playback.bassBoostEnabled) {
-                    audioEffectController.bassEnabled = true
-                    audioEffectController.bass = playback.bassBoost
-                }
+                if (audioEffectController.setBassEnabled(playback.bassBoostEnabled))
+                    audioEffectController.setBass(playback.bassBoost!!)
+                if (audioEffectController.setVirtualizerEnabled(playback.virtualizerEnabled))
+                    audioEffectController.setVirtualizerStrength(playback.virtualizerStrength!!)
+                if (audioEffectController.setReverbEnabled(playback.reverbEnabled))
+                    audioEffectController.setReverb(playback.reverb!!)
 
-                if (playback.virtualizerEnabled) {
-                    audioEffectController.virtualizerEnabled = true
-                    audioEffectController.virtualizerStrength = playback.virtualizerStrength
-                }
+                audioEffectController.setPlaybackParameters(
+                    playback.playbackParameters ?: PlaybackParameters()
+                )
 
-                audioEffectController.playbackParams =
-                    playback.playbackParameters ?: PlaybackParameters(
-                        speed = 1f,
-                        pitch = 1f,
-                        volume = 1f
-                    )
-
-                if (playback.equalizerEnabled) {
-                    audioEffectController.equalizerEnabled = true
+                if (audioEffectController.setEqualizerEnabled(playback.equalizerEnabled)) {
 
                     playback.equalizerBands?.forEach { equalizerBand ->
                         // TODO: Do we need all this information to differentiate different bands?
-                        audioEffectController.getBandIndex(
+                        audioEffectController.getEqualizerBandIndex(
                             equalizerBand.lowerBandFrequency,
                             equalizerBand.upperBandFrequency,
                             equalizerBand.centerFrequency
                         )?.let { band ->
-                            audioEffectController.setBandLevel(band, equalizerBand.level)
+                            audioEffectController.setEqualizerBandLevel(band, equalizerBand.level)
                         }
                     }
-                }
-
-                if (playback.reverbEnabled) {
-                    audioEffectController.reverbEnabled = true
-                    audioEffectController.reverb = playback.reverb
                 }
             }
 
             else -> {
-                audioEffectController.bass = null
-                audioEffectController.virtualizerStrength = null
-                audioEffectController.playbackParams = PlaybackParameters(
-                    speed = 1f,
-                    pitch = 1f,
-                    volume = 1f
-                )
-                audioEffectController.reverb = null
-                audioEffectController.equalizerEnabled = false
+                audioEffectController.setBassEnabled(false)
+                audioEffectController.setVirtualizerEnabled(false)
+                audioEffectController.setReverbEnabled(false)
+                audioEffectController.setPlaybackParameters(PlaybackParameters())
+                audioEffectController.setEqualizerEnabled(false)
             }
         }
 

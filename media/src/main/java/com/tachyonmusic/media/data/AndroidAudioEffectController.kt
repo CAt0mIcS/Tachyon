@@ -13,6 +13,10 @@ import com.tachyonmusic.core.domain.model.SoundLevel
 import com.tachyonmusic.core.domain.model.mDb
 import com.tachyonmusic.core.domain.model.mHz
 import com.tachyonmusic.media.domain.AudioEffectController
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 /**
  * TODO: Changes in audio effects from e.g. the MediaPlaybackService (when switching to loop for example) are not always reflected in the UI due
@@ -24,101 +28,64 @@ class AndroidAudioEffectController : AudioEffectController {
     private var virtualizer: Virtualizer? = null
     private var bassBoost: BassBoost? = null
     private var environmentalReverb: EnvironmentalReverb? = null
-    private var volumeEnhancer: LoudnessEnhancer? = null
-
-    override var controller: AudioEffectController.PlaybackController? = null
-
-    /**************************************************************************
-     ********** Bass
-     *************************************************************************/
-
-    override var bass: Int?
-        get() = if (!bassEnabled) null else bassBoost?.roundedStrength?.toInt()
-        set(value) {
-            if (value == null) {
-                bassEnabled = false
-                return
-            }
-            bassBoost?.setStrength(value.toShort())
-        }
-
-    /**************************************************************************
-     ********** Virtualizer
-     *************************************************************************/
-
-    override var virtualizerStrength: Int?
-        get() = if (!virtualizerEnabled) null else virtualizer?.roundedStrength?.toInt()
-        set(value) {
-            if (value == null) {
-                virtualizerEnabled = false
-                return
-            }
-            virtualizer?.setStrength(value.toShort())
-        }
 
     /**************************************************************************
      ********** Enabled states
      *************************************************************************/
 
-    override var bassEnabled: Boolean
-        get() = bassBoost?.enabled == true && bassBoost?.hasControl() == true
-        set(value) {
-            bassBoost?.enabled = value
-        }
+    private var _bassEnabled = MutableStateFlow(false)
+    override val bassEnabled = _bassEnabled.asStateFlow()
 
-    override var virtualizerEnabled: Boolean
-        get() = virtualizer?.enabled == true && virtualizer?.hasControl() == true && virtualizer?.strengthSupported == true
-        set(value) {
-            virtualizer?.enabled = value
-        }
+    private var _virtualizerEnabled = MutableStateFlow(false)
+    override val virtualizerEnabled = _virtualizerEnabled.asStateFlow()
 
-    override var equalizerEnabled: Boolean
-        get() = equalizer?.enabled == true && equalizer?.hasControl() == true
-        set(value) {
-            equalizer?.enabled = value
-        }
+    private var _equalizerEnabled = MutableStateFlow(false)
+    override val equalizerEnabled = _equalizerEnabled.asStateFlow()
 
-    override var reverbEnabled: Boolean
-        get() = environmentalReverb?.enabled == true && environmentalReverb?.hasControl() == true
-        set(value) {
-            environmentalReverb?.enabled = value
-            controller?.onReverbToggled(value, environmentalReverb?.id ?: return)
-        }
-
-    override var volumeEnhancerEnabled: Boolean
-        get() = volumeEnhancer?.enabled == true && volumeEnhancer?.hasControl() == true
-        set(value) {
-            volumeEnhancer?.enabled = value
-        }
+    private var _reverbEnabled = MutableStateFlow(false)
+    override val reverbEnabled = _reverbEnabled.asStateFlow()
 
     /**************************************************************************
      ********** [PlaybackParameters]
      *************************************************************************/
 
-    override var playbackParams = PlaybackParameters(1f, 1f, 1f)
-        set(value) {
-            field = value
-            if (value.volume > 1f) {
-                controller?.onNewPlaybackParameters(value.copy(volume = 1f))
-                volumeEnhancer?.setTargetGain((value.volume - 1).toInt())
-            } else {
-                controller?.onNewPlaybackParameters(value)
-                volumeEnhancer?.setTargetGain(0)
-            }
-        }
+    private var _playbackParams = MutableStateFlow(PlaybackParameters())
+    override val playbackParams = _playbackParams.asStateFlow()
+
+    /**************************************************************************
+     ********** Bass
+     *************************************************************************/
+
+    private var _bass = MutableStateFlow(0) // TODO: Default value
+    override val bass = _bass.asStateFlow()
+
+    /**************************************************************************
+     ********** Virtualizer
+     *************************************************************************/
+
+    private var _virtualizerStrength = MutableStateFlow(0) // TODO: Default value
+    override val virtualizerStrength = _virtualizerStrength.asStateFlow()
+
+    /**************************************************************************
+     ********** Reverb |
+     *************************************************************************/
+    private var _reverb = MutableStateFlow(ReverbConfig())
+    override var reverb = _reverb.asStateFlow()
 
     /**************************************************************************
      ********** Equalizer
      *************************************************************************/
 
     override val numBands: Int
-        get() = if (!equalizerEnabled) 0 else equalizer?.numberOfBands?.toInt() ?: 0
+        get() = if (!equalizerEnabled.value) 0 else equalizer?.numberOfBands?.toInt() ?: 0
 
     override val minBandLevel: SoundLevel
-        get() = if (!equalizerEnabled) 0.mDb else equalizer?.bandLevelRange?.first()?.mDb ?: 0.mDb
+        get() = if (!equalizerEnabled.value) 0.mDb else equalizer?.bandLevelRange?.first()?.mDb
+            ?: 0.mDb
 
     override val maxBandLevel: SoundLevel
-        get() = if (!equalizerEnabled) 0.mDb else equalizer?.bandLevelRange?.last()?.mDb ?: 0.mDb
+        get() = if (!equalizerEnabled.value) 0.mDb else equalizer?.bandLevelRange?.last()?.mDb
+            ?: 0.mDb
 
     override val presets: List<String>
         get() = List(equalizer?.numberOfPresets?.toInt() ?: 0) {
@@ -131,82 +98,75 @@ class AndroidAudioEffectController : AudioEffectController {
             return if (name?.isBlank() == true) "Custom" else name
         }
 
-    override val bands: List<EqualizerBand>?
-        get() {
-            if (!equalizerEnabled)
-                return null
-            else
-                return List(numBands) {
-                    val range = equalizer?.getBandFreqRange(it.toShort()) ?: return null
-                    EqualizerBand(
-                        level = getBandLevel(it),
-                        lowerBandFrequency = range.first().mHz,
-                        upperBandFrequency = range.last().mHz,
-                        centerFrequency = equalizer?.getCenterFreq(it.toShort())?.mHz ?: return null
-                    )
-                }
-        }
+    private var _bands = MutableStateFlow<List<EqualizerBand>>(emptyList())
+    override val bands = _bands.asStateFlow()
+    override val reverbAudioEffectId: Int?
+        get() = if (reverbEnabled.value) environmentalReverb?.id else null
 
-    /**************************************************************************
-     ********** Reverb |
-     *************************************************************************/
-    override var reverb: ReverbConfig?
-        get() = if (!reverbEnabled || environmentalReverb == null) null else ReverbConfig(
-            environmentalReverb!!.roomLevel,
-            environmentalReverb!!.roomHFLevel,
-            environmentalReverb!!.decayTime,
-            environmentalReverb!!.decayHFRatio,
-            environmentalReverb!!.reflectionsLevel,
-            environmentalReverb!!.reflectionsDelay,
-            environmentalReverb!!.reverbLevel,
-            environmentalReverb!!.reverbDelay,
-            environmentalReverb!!.diffusion,
-            environmentalReverb!!.density
-        )
-        set(value) {
-            if (value == null) {
-                reverbEnabled = false
-                return
-            }
+    override fun setPlaybackParameters(value: PlaybackParameters) {
+        // TODO: Volume
+        _playbackParams.update { value }
+    }
 
-            environmentalReverb?.roomLevel = value.roomLevel
-            environmentalReverb?.roomHFLevel = value.roomHFLevel
-            environmentalReverb?.decayTime = value.decayTime
-            environmentalReverb?.decayHFRatio = value.decayHFRatio
-            environmentalReverb?.reflectionsLevel = value.reflectionsLevel
-            environmentalReverb?.reflectionsDelay = value.reflectionsDelay
-            environmentalReverb?.reverbLevel = value.reverbLevel
-            environmentalReverb?.reverbDelay = value.reverbDelay
-            environmentalReverb?.diffusion = value.diffusion
-            environmentalReverb?.density = value.density
-        }
+    override fun setBass(value: Int) {
+        assert(bassEnabled.value) { "Bass is not enabled" }
+        bassBoost!!.setStrength(value.toShort())
+        _bass.update { bassBoost!!.roundedStrength.toInt() }
+    }
+
+    override fun setVirtualizerStrength(value: Int) {
+        assert(virtualizerEnabled.value) { "Virtualizer is not enabled" }
+        virtualizer!!.setStrength(value.toShort())
+        _virtualizerStrength.update { virtualizer!!.roundedStrength.toInt() }
+    }
+
+    override fun setReverb(value: ReverbConfig) {
+        assert(reverbEnabled.value) { "Reverb is not enabled" }
+        environmentalReverb!!.roomLevel = value.roomLevel
+        environmentalReverb!!.roomHFLevel = value.roomHFLevel
+        environmentalReverb!!.decayTime = value.decayTime
+        environmentalReverb!!.decayHFRatio = value.decayHFRatio
+        environmentalReverb!!.reflectionsLevel = value.reflectionsLevel
+        environmentalReverb!!.reflectionsDelay = value.reflectionsDelay
+        environmentalReverb!!.reverbLevel = value.reverbLevel
+        environmentalReverb!!.reverbDelay = value.reverbDelay
+        environmentalReverb!!.diffusion = value.diffusion
+        environmentalReverb!!.density = value.density
+        _reverb.update { value }
+    }
 
 
-    override fun setBandLevel(band: Int, level: SoundLevel) {
+    override fun setEqualizerBandLevel(band: Int, level: SoundLevel) {
         assert(level in minBandLevel..maxBandLevel) { "BandLevel $level is invalid (range: $minBandLevel..$maxBandLevel)" }
         assert(band in 0..numBands) { "Band $band is invalid (max: ${numBands - 1})" }
         equalizer?.setBandLevel(band.toShort(), level.inmDb.toShort())
+
+        val newBands = loadNewEqualizerBands()
+        _bands.update { newBands }
     }
 
-    override fun setPreset(preset: String) {
+    override fun setEqualizerPreset(preset: String) {
         assert(preset in presets) { "Preset $preset not found in available presets" }
         equalizer?.usePreset(presets.indexOf(preset).toShort())
+
+        val newBands = loadNewEqualizerBands()
+        _bands.update { newBands }
     }
 
-    override fun getBandLevel(band: Int): SoundLevel {
+    override fun getEqualizerBandLevel(band: Int): SoundLevel {
         assert(band in 0..numBands) { "Band $band is invalid (max: ${numBands - 1})" }
         return equalizer?.getBandLevel(band.toShort())?.mDb ?: 0.mDb
     }
 
-    override fun getBandIndex(
+    override fun getEqualizerBandIndex(
         lowerBandFrequency: SoundFrequency,
         upperBandFrequency: SoundFrequency,
         centerFrequency: SoundFrequency
     ): Int? {
-        val idx = bands?.indexOfFirst { it ->
+        val idx = bands.value.indexOfFirst {
             it.lowerBandFrequency == lowerBandFrequency && it.upperBandFrequency == upperBandFrequency && it.centerFrequency == centerFrequency
         }
-        if (idx == null || idx == -1)
+        if (idx == -1)
             return null
         return idx
     }
@@ -219,7 +179,6 @@ class AndroidAudioEffectController : AudioEffectController {
         virtualizer = Virtualizer(Int.MAX_VALUE, audioSessionId)
         bassBoost = BassBoost(Int.MAX_VALUE, audioSessionId)
         environmentalReverb = EnvironmentalReverb(0, 0)
-        volumeEnhancer = LoudnessEnhancer(audioSessionId)
     }
 
     override fun release() {
@@ -227,6 +186,44 @@ class AndroidAudioEffectController : AudioEffectController {
         virtualizer?.release()
         bassBoost?.release()
         environmentalReverb?.release()
-        volumeEnhancer?.release()
+    }
+
+    override fun setBassEnabled(enabled: Boolean): Boolean {
+        bassBoost?.enabled = enabled
+        _bassEnabled.update { bassBoost?.enabled == true && bassBoost?.hasControl() == true }
+        return bassEnabled.value
+    }
+
+    override fun setVirtualizerEnabled(enabled: Boolean): Boolean {
+        virtualizer?.enabled = enabled
+        _virtualizerEnabled.update { virtualizer?.enabled == true && virtualizer?.hasControl() == true && virtualizer?.strengthSupported == true }
+        return virtualizerEnabled.value
+    }
+
+    override fun setEqualizerEnabled(enabled: Boolean): Boolean {
+        equalizer?.enabled = enabled
+        _equalizerEnabled.update { equalizer?.enabled == true && equalizer?.hasControl() == true }
+
+        val newBands = loadNewEqualizerBands()
+        _bands.update { newBands }
+
+        return equalizerEnabled.value
+    }
+
+    override fun setReverbEnabled(enabled: Boolean): Boolean {
+        environmentalReverb?.enabled = enabled
+        _reverbEnabled.update { environmentalReverb?.enabled == true && environmentalReverb?.hasControl() == true }
+        return reverbEnabled.value
+    }
+
+
+    private fun loadNewEqualizerBands(): List<EqualizerBand> = List(numBands) {
+        val range = equalizer?.getBandFreqRange(it.toShort()) ?: return emptyList()
+        EqualizerBand(
+            level = getEqualizerBandLevel(it),
+            lowerBandFrequency = range.first().mHz,
+            upperBandFrequency = range.last().mHz,
+            centerFrequency = equalizer?.getCenterFreq(it.toShort())?.mHz ?: return emptyList()
+        )
     }
 }

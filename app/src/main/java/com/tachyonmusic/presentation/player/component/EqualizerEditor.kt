@@ -43,48 +43,47 @@ fun EqualizerEditor(
     modifier: Modifier = Modifier,
     viewModel: EqualizerViewModel = hiltViewModel()
 ) {
-    val bass by viewModel.bassBoost.collectAsState()
-    val virtualizer by viewModel.virtualizerStrength.collectAsState()
+    val bass by viewModel.bass.collectAsState()
+    val virtualizer by viewModel.virtualizer.collectAsState()
     val equalizer by viewModel.equalizer.collectAsState()
     val playbackParams by viewModel.playbackParameters.collectAsState()
     val reverb by viewModel.reverb.collectAsState()
-    val volumeEnhancer by viewModel.volumeEnhancer.collectAsState()
+
+    val bassEnabled by viewModel.bassEnabled.collectAsState()
+    val virtualizerEnabled by viewModel.virtualizerEnabled.collectAsState()
+    val equalizerEnabled by viewModel.equalizerEnabled.collectAsState()
+    val reverbEnabled by viewModel.reverbEnabled.collectAsState()
 
     Column(modifier = modifier) {
 
         CheckboxText(
-            checked = bass != null,
+            checked = bassEnabled,
             onCheckedChange = viewModel::setBassBoostEnabled,
             text = "Bass"
         )
         CheckboxText(
-            checked = virtualizer != null,
+            checked = virtualizerEnabled,
             onCheckedChange = viewModel::setVirtualizerEnabled,
             text = "Virtualizer"
         )
         CheckboxText(
-            checked = !equalizer.bands.isNullOrEmpty(),
+            checked = equalizerEnabled && !equalizer?.bands.isNullOrEmpty(),
             onCheckedChange = viewModel::setEqualizerEnabled,
             text = "Equalizer"
         )
         CheckboxText(
-            checked = reverb != null,
+            checked = reverbEnabled,
             onCheckedChange = viewModel::setReverbEnabled,
             text = "Reverb"
-        )
-        CheckboxText(
-            checked = volumeEnhancer != null,
-            onCheckedChange = viewModel::setVolumeEnhancerEnabled,
-            text = "Volume Enhancer"
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
-        if (bass != null) {
+        if (bassEnabled) {
             Text(text = "Bass")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = bass!!.toFloat(),
+                value = bass.toFloat(),
                 onValueChange = { viewModel.setBass(it.toInt()) },
                 valueRange = 0f..1000f,
             )
@@ -92,11 +91,11 @@ fun EqualizerEditor(
             HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
         }
 
-        if (virtualizer != null) {
+        if (virtualizerEnabled) {
             Text(text = "Virtualizer Strength")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = virtualizer!!.toFloat(),
+                value = virtualizer.toFloat(),
                 onValueChange = { viewModel.setVirtualizerStrength(it.toInt()) },
                 valueRange = 0f..1000f,
             )
@@ -174,23 +173,12 @@ fun EqualizerEditor(
             text = "Sync Speed and Pitch"
         )
 
-        if (volumeEnhancer != null) {
-            HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
-            Text(text = "Volume")
-            Slider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = playbackParams.volume!!,
-                onValueChange = viewModel::setVolume,
-                valueRange = 0f..4f,
-            )
-        }
-
-        if (equalizer.bands != null) {
+        if (equalizerEnabled) {
 
             HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
-            if (equalizer.presets.isNotEmpty()) {
+            if (equalizer!!.presets.isNotEmpty()) {
                 var equalizerPresetMenuExpanded by remember { mutableStateOf(false) }
 
                 val selectedReverbText by viewModel.selectedEqualizerText.collectAsState()
@@ -212,7 +200,7 @@ fun EqualizerEditor(
                         expanded = equalizerPresetMenuExpanded,
                         onDismissRequest = { equalizerPresetMenuExpanded = false }
                     ) {
-                        for (preset in equalizer.presets) {
+                        for (preset in equalizer!!.presets) {
                             DropdownMenuItem(
                                 text = {
                                     Text(
@@ -230,8 +218,8 @@ fun EqualizerEditor(
                 }
             }
 
-            for (bandNumber in equalizer.bands!!.indices) {
-                val band = equalizer.bands!![bandNumber]
+            for (bandNumber in equalizer!!.bands!!.indices) {
+                val band = equalizer!!.bands!![bandNumber]
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -250,7 +238,7 @@ fun EqualizerEditor(
                             onValueChange = {
                                 viewModel.setBandLevel(bandNumber, it.toInt().mDb)
                             },
-                            valueRange = equalizer.minBandLevel.inmDb.toFloat()..equalizer.maxBandLevel.inmDb.toFloat(),
+                            valueRange = equalizer!!.minBandLevel.inmDb.toFloat()..equalizer!!.maxBandLevel.inmDb.toFloat(),
                         )
                     }
 
@@ -263,7 +251,7 @@ fun EqualizerEditor(
         /**************************************************************************
          ********** Reverb
          *************************************************************************/
-        if (reverb != null) {
+        if (reverbEnabled) {
             HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
             var reverbPresetMenuExpanded by remember { mutableStateOf(false) }
@@ -443,9 +431,9 @@ fun EqualizerEditor(
             Text("roomLevel")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = reverb!!.roomLevel.toFloat(),
+                value = reverb.roomLevel.toFloat(),
                 onValueChange = {
-                    viewModel.setReverb(reverb!!.copy(roomLevel = it.toInt().toShort()))
+                    viewModel.setReverb(reverb.copy(roomLevel = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.ROOM_LEVEL_MIN.toFloat()..ReverbConfig.ROOM_LEVEL_MAX.toFloat(),
             )
@@ -453,9 +441,9 @@ fun EqualizerEditor(
             Text("roomHFLevel")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = reverb!!.roomHFLevel.toFloat(),
+                value = reverb.roomHFLevel.toFloat(),
                 onValueChange = {
-                    viewModel.setReverb(reverb!!.copy(roomHFLevel = it.toInt().toShort()))
+                    viewModel.setReverb(reverb.copy(roomHFLevel = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.ROOM_HF_LEVEL_MIN.toFloat()..ReverbConfig.ROOM_HF_LEVEL_MAX.toFloat(),
             )
@@ -463,9 +451,9 @@ fun EqualizerEditor(
             Text("decayTime")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = reverb!!.decayTime.toFloat(),
+                value = reverb.decayTime.toFloat(),
                 onValueChange = {
-                    viewModel.setReverb(reverb!!.copy(decayTime = it.toInt()))
+                    viewModel.setReverb(reverb.copy(decayTime = it.toInt()))
                 },
                 valueRange = ReverbConfig.DECAY_TIME_MIN.toFloat()..ReverbConfig.DECAY_TIME_MAX.toFloat(),
             )
@@ -473,9 +461,9 @@ fun EqualizerEditor(
             Text("decayHFRatio")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = reverb!!.decayHFRatio.toFloat(),
+                value = reverb.decayHFRatio.toFloat(),
                 onValueChange = {
-                    viewModel.setReverb(reverb!!.copy(decayHFRatio = it.toInt().toShort()))
+                    viewModel.setReverb(reverb.copy(decayHFRatio = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.DECAY_HF_RATIO_MIN.toFloat()..ReverbConfig.DECAY_HF_RATIO_MAX.toFloat(),
             )
@@ -483,9 +471,9 @@ fun EqualizerEditor(
             Text("reflectionsLevel")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = reverb!!.reflectionsLevel.toFloat(),
+                value = reverb.reflectionsLevel.toFloat(),
                 onValueChange = {
-                    viewModel.setReverb(reverb!!.copy(reflectionsLevel = it.toInt().toShort()))
+                    viewModel.setReverb(reverb.copy(reflectionsLevel = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.REFLECTIONS_LEVEL_MIN.toFloat()..ReverbConfig.REFLECTIONS_LEVEL_MAX.toFloat(),
             )
@@ -493,9 +481,9 @@ fun EqualizerEditor(
             Text("reflectionsDelay")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = reverb!!.reflectionsDelay.toFloat(),
+                value = reverb.reflectionsDelay.toFloat(),
                 onValueChange = {
-                    viewModel.setReverb(reverb!!.copy(reflectionsDelay = it.toInt()))
+                    viewModel.setReverb(reverb.copy(reflectionsDelay = it.toInt()))
                 },
                 valueRange = ReverbConfig.REFLECTIONS_DELAY_MIN.toFloat()..ReverbConfig.REFLECTIONS_DELAY_MAX.toFloat(),
             )
@@ -503,9 +491,9 @@ fun EqualizerEditor(
             Text("reverbLevel")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = reverb!!.reverbLevel.toFloat(),
+                value = reverb.reverbLevel.toFloat(),
                 onValueChange = {
-                    viewModel.setReverb(reverb!!.copy(reverbLevel = it.toInt().toShort()))
+                    viewModel.setReverb(reverb.copy(reverbLevel = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.REVERB_LEVEL_MIN.toFloat()..ReverbConfig.REVERB_LEVEL_MAX.toFloat(),
             )
@@ -513,9 +501,9 @@ fun EqualizerEditor(
             Text("reverbDelay")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = reverb!!.reverbDelay.toFloat(),
+                value = reverb.reverbDelay.toFloat(),
                 onValueChange = {
-                    viewModel.setReverb(reverb!!.copy(reverbDelay = it.toInt()))
+                    viewModel.setReverb(reverb.copy(reverbDelay = it.toInt()))
                 },
                 valueRange = ReverbConfig.REVERB_DELAY_MIN.toFloat()..ReverbConfig.REVERB_DELAY_MAX.toFloat(),
             )
@@ -523,9 +511,9 @@ fun EqualizerEditor(
             Text("diffusion")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = reverb!!.diffusion.toFloat(),
+                value = reverb.diffusion.toFloat(),
                 onValueChange = {
-                    viewModel.setReverb(reverb!!.copy(diffusion = it.toInt().toShort()))
+                    viewModel.setReverb(reverb.copy(diffusion = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.DIFFUSION_MIN.toFloat()..ReverbConfig.DIFFUSION_MAX.toFloat(),
             )
@@ -533,9 +521,9 @@ fun EqualizerEditor(
             Text("density")
             Slider(
                 modifier = Modifier.systemGestureExclusion(),
-                value = reverb!!.density.toFloat(),
+                value = reverb.density.toFloat(),
                 onValueChange = {
-                    viewModel.setReverb(reverb!!.copy(density = it.toInt().toShort()))
+                    viewModel.setReverb(reverb.copy(density = it.toInt().toShort()))
                 },
                 valueRange = ReverbConfig.DENSITY_MIN.toFloat()..ReverbConfig.DENSITY_MAX.toFloat(),
             )

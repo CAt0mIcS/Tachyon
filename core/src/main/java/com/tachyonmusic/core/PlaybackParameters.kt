@@ -6,9 +6,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PlaybackParameters(
-    val speed: Float,
-    val pitch: Float,
-    val volume: Float
+    val speed: Float = 1f,
+    val pitch: Float = 1f,
+    val volume: Float = 1f
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readFloat(),
