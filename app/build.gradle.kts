@@ -85,6 +85,7 @@ android {
 
 dependencies {
     googleCast()
+    googlePlay()
     json()
     coroutines()
     lifecycle()
