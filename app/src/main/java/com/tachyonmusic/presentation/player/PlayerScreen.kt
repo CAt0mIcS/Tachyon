@@ -6,9 +6,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -126,8 +128,9 @@ fun PlayerScreen(
                 .aspectRatio(1f)
                 .shadow(Theme.shadow.small, shape = Theme.shapes.large)
 
-            playback.artwork?.Image(modifier = artworkModifier, contentDescription = null)
-                ?: PlaceholderArtwork(modifier = artworkModifier, contentDescription = null)
+            playback.artwork?.Image(modifier = artworkModifier, contentDescription = null) ?: Spacer(
+                modifier = Modifier.height(24.dp)
+            )
         }
 
         item {
