@@ -18,6 +18,11 @@ interface AudioEffectController {
     val equalizerEnabled: StateFlow<Boolean>
     val reverbEnabled: StateFlow<Boolean>
 
+    val bassValue: Int?
+    val virtualizerValue: Int?
+    val reverbValue: ReverbConfig?
+    val equalizerBandValues: List<EqualizerBand>?
+
     val numBands: Int
     val maxBandLevel: SoundLevel
     val minBandLevel: SoundLevel

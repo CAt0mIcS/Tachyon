@@ -41,11 +41,11 @@ class CreateCustomizedSong(
                     song.duration,
                     playback.timingData?.timingData,
                     currentTimingDataIndex = 0,
-                    audioEffectController.bass.value,
-                    audioEffectController.virtualizerStrength.value,
-                    audioEffectController.bands.value,
+                    audioEffectController.bassValue,
+                    audioEffectController.virtualizerValue,
+                    audioEffectController.equalizerBandValues,
                     audioEffectController.playbackParams.value,
-                    audioEffectController.reverb.value
+                    audioEffectController.reverbValue
                 )
             }
 

@@ -45,6 +45,15 @@ class AndroidAudioEffectController : AudioEffectController {
     private var _reverbEnabled = MutableStateFlow(false)
     override val reverbEnabled = _reverbEnabled.asStateFlow()
 
+    override val bassValue: Int?
+        get() = if(bassEnabled.value) bass.value else null
+    override val virtualizerValue: Int?
+        get() = if(virtualizerEnabled.value) virtualizerStrength.value else null
+    override val reverbValue: ReverbConfig?
+        get() = if(reverbEnabled.value) reverb.value else null
+    override val equalizerBandValues: List<EqualizerBand>?
+        get() = if(equalizerEnabled.value) bands.value else null
+
     /**************************************************************************
      ********** [PlaybackParameters]
      *************************************************************************/
