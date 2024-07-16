@@ -65,7 +65,7 @@ interface SinglePlayback : Playback {
      * being removed from the path where the playback is saved
      */
     var isPlayable: Boolean
-
+    val album: String?
     var timingData: TimingDataController?
 
     override val underlyingSong: Song

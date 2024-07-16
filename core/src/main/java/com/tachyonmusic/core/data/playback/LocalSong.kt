@@ -31,6 +31,7 @@ class LocalSong(
         it.isArtworkLoading = isArtworkLoading
         it.isPlayable = isPlayable
         it.timingData = timingData?.copy()
+        it.album = album
         it
     }
 
@@ -45,6 +46,7 @@ class LocalSong(
         artwork = parcel.readParcelable(Artwork::class.java.classLoader)
         isArtworkLoading = parcel.readInt().toBoolean()
         isPlayable = parcel.readInt().toBoolean()
+        album = parcel.readString()
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -57,6 +59,7 @@ class LocalSong(
         parcel.writeParcelable(artwork, flags)
         parcel.writeInt(isArtworkLoading.toInt())
         parcel.writeInt(isPlayable.toInt())
+        parcel.writeString(album)
     }
 
     companion object {

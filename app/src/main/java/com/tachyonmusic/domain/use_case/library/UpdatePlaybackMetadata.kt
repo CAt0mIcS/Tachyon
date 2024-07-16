@@ -13,35 +13,47 @@ class UpdatePlaybackMetadata(
     private val customizedSongRepository: CustomizedSongRepository,
     private val playlistRepository: PlaylistRepository
 ) {
-    suspend operator fun invoke(mediaId: MediaId, title: String?, artist: String?, name: String?) =
+    suspend operator fun invoke(
+        mediaId: MediaId,
+        oldTitle: String,
+        newTitle: String?,
+        oldArtist: String,
+        newArtist: String?,
+        oldName: String?,
+        newName: String?,
+        oldAlbum: String?,
+        newAlbum: String?
+    ) =
         withContext(Dispatchers.IO) {
             when (mediaId.playbackType) {
                 is PlaybackType.Song -> songRepository.updateMetadata(
                     mediaId,
-                    title ?: return@withContext,
-                    artist ?: return@withContext
+                    newTitle?: oldTitle,
+                    newArtist ?:oldArtist,
+                    newAlbum ?: oldAlbum
                 )
 
                 is PlaybackType.CustomizedSong.Local -> {
-                    if (name != null)
+                    if (newName != null)
                         customizedSongRepository.updateMetadata(
                             mediaId,
-                            MediaId.ofLocalCustomizedSong(name, mediaId.underlyingMediaId!!)
+                            MediaId.ofLocalCustomizedSong(newName, mediaId.underlyingMediaId!!)
                         )
 
-                    if (title != null && artist != null) {
+                    if (newTitle != null || newArtist != null || newAlbum != null) {
                         songRepository.updateMetadata(
                             mediaId.underlyingMediaId!!,
-                            title,
-                            artist
+                            newTitle ?:oldTitle,
+                            newArtist ?: oldArtist,
+                            newAlbum ?: oldAlbum
                         )
                     }
                 }
 
                 is PlaybackType.Playlist.Local -> playlistRepository.updateMetadata(
                     mediaId,
-                    name ?: return@withContext,
-                    MediaId.ofLocalPlaylist(name),
+                    newName ?: return@withContext,
+                    MediaId.ofLocalPlaylist(newName),
                 )
 
                 is PlaybackType.Ad -> {}

@@ -8,6 +8,8 @@ import com.tachyonmusic.core.domain.model.EqualizerBand
 interface CustomizedSong : SinglePlayback {
     val name: String
     val song: Song
+    override val album: String?
+        get() = song.album
 
     val timingDataLoopingEnabled: Boolean
         get() = !timingData.isNullOrEmpty()

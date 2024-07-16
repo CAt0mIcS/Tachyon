@@ -201,9 +201,25 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    fun updateMetadata(playback: PlaybackUiEntity, title: String?, artist: String?, name: String?) {
+    fun updateMetadata(
+        playback: PlaybackUiEntity,
+        title: String?,
+        artist: String?,
+        name: String?,
+        album: String?
+    ) {
         viewModelScope.launch {
-            updatePlaybackMetadata(playback.mediaId, title, artist, name)
+            updatePlaybackMetadata(
+                playback.mediaId,
+                oldTitle = playback.title,
+                newTitle = title,
+                oldArtist = playback.artist,
+                newArtist = artist,
+                oldName = playback.displayTitle,
+                newName = name,
+                oldAlbum = playback.album,
+                newAlbum = album
+            )
         }
     }
 

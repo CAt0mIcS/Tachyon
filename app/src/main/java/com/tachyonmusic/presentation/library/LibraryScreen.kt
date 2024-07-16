@@ -252,11 +252,11 @@ object LibraryScreen :
                                     .fillMaxWidth()
                                     .clip(Theme.shapes.extraLarge)
                             ) {
-                                Column(modifier = Modifier.fillMaxSize()) {
-                                    var searchQuery by remember { mutableStateOf("${playback.artist} ${playback.title}") }
+                                Column {
+                                    var searchQuery by remember { mutableStateOf(playback.albumArtworkSearchQuery) }
 
                                     LaunchedEffect(searchQuery) {
-                                        delay(1.sec)
+                                        delay(2.sec) // TODO: Proper delay option/...
                                         viewModel.queryArtwork(playback, searchQuery)
                                     }
 
@@ -313,6 +313,7 @@ object LibraryScreen :
                                     var title by remember { mutableStateOf(playback.title) }
                                     var artist by remember { mutableStateOf(playback.artist) }
                                     var name by remember { mutableStateOf(playback.displayTitle) }
+                                    var album by remember {mutableStateOf(playback.album)}
 
                                     val playbackType = playback.mediaId.playbackType
 
@@ -322,6 +323,9 @@ object LibraryScreen :
 
                                         Text("Artist")
                                         TextField(value = artist, onValueChange = { artist = it })
+
+                                        Text("Album")
+                                        TextField(value = album,  onValueChange = {album = it})
                                     }
                                     if (playbackType is PlaybackType.CustomizedSong || playbackType is PlaybackType.Playlist) {
                                         Text("Name")
@@ -331,7 +335,7 @@ object LibraryScreen :
                                     Button(
                                         onClick = {
                                             showMetadataDialog = false
-                                            viewModel.updateMetadata(playback, title, artist, name)
+                                            viewModel.updateMetadata(playback, title, artist, name, album)
                                         }
                                     ) {
                                         Text("Confirm")

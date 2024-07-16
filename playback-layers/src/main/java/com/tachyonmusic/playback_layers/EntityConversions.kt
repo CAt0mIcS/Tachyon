@@ -24,6 +24,7 @@ fun SongEntity.toLocalSong(artwork: Artwork?, isPlayable: Boolean) =
         it.isPlayable = isPlayable
         it.isArtworkLoading = artworkType == ArtworkType.UNKNOWN
         it.artwork = artwork
+        it.album = album
         it
     }
 

@@ -1,5 +1,6 @@
 package com.tachyonmusic.database.domain.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import com.tachyonmusic.core.ArtworkType
@@ -36,7 +37,10 @@ class SongEntity(
     // Whether the song should be hidden in the UI
     var isHidden: Boolean = false,
     var artworkType: String = ArtworkType.UNKNOWN,
-    var artworkUrl: String? = null
+    var artworkUrl: String? = null,
+
+    @ColumnInfo(defaultValue = "null")
+    var album: String? = null
 ) : SinglePlaybackEntity(mediaId, title, artist, duration)
 
 object SongEntitySerializer : KSerializer<SongEntity> {
@@ -48,6 +52,7 @@ object SongEntitySerializer : KSerializer<SongEntity> {
         element<Boolean>("IsHidden", isOptional = true)
         element<String>("ArtworkType", isOptional = true)
         element<String>("ArtworkUrl", isOptional = true)
+        element<String>("Album", isOptional = true)
     }
 
     override fun deserialize(decoder: Decoder) = decoder.decodeStructure(descriptor) {
@@ -58,6 +63,7 @@ object SongEntitySerializer : KSerializer<SongEntity> {
         var isHidden = false
         var artworkType: String = ArtworkType.UNKNOWN
         var artworkUrl: String? = null
+        var album: String? = null
 
         loop@ while (true) {
             when (val index = decodeElementIndex(descriptor)) {
@@ -70,12 +76,22 @@ object SongEntitySerializer : KSerializer<SongEntity> {
                 4 -> isHidden = decodeBooleanElement(descriptor, 4)
                 5 -> artworkType = decodeStringElement(descriptor, 5)
                 6 -> artworkUrl = decodeStringElement(descriptor, 6).ifEmpty { null }
+                7 -> album = decodeStringElement(descriptor, 7).ifBlank { null }
 
                 else -> throw SerializationException("Unexpected index $index")
             }
         }
 
-        SongEntity(mediaId!!, title!!, artist!!, duration!!, isHidden, artworkType, artworkUrl)
+        SongEntity(
+            mediaId!!,
+            title!!,
+            artist!!,
+            duration!!,
+            isHidden,
+            artworkType,
+            artworkUrl,
+            album
+        )
     }
 
     override fun serialize(encoder: Encoder, value: SongEntity) {
@@ -87,6 +103,7 @@ object SongEntitySerializer : KSerializer<SongEntity> {
             encodeBooleanElement(descriptor, 4, value.isHidden)
             encodeStringElement(descriptor, 5, value.artworkType)
             encodeStringElement(descriptor, 6, value.artworkUrl ?: "")
+            encodeStringElement(descriptor, 7, value.album ?: "")
         }
     }
 }
