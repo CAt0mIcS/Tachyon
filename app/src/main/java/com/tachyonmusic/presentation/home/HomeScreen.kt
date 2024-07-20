@@ -39,6 +39,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,12 +89,13 @@ object HomeScreen :
         draggable: AnchoredDraggableState<SwipingStates>,
         viewModel: HomeViewModel = hiltViewModel()
     ) {
-        var isSearching by remember { mutableStateOf(false) }
-        var searchLocation by remember { mutableStateOf<SearchLocation>(SearchLocation.Local) }
+
+        var isSearching by rememberSaveable { mutableStateOf(false) }
+        var searchLocation by remember { mutableStateOf<SearchLocation>(SearchLocation.Local) } // TODO: rememberSaveable and Saver
         val history by viewModel.history.collectAsState()
         val searchResults by viewModel.searchResults.collectAsState()
 
-        var searchText by remember { mutableStateOf("") }
+        var searchText by rememberSaveable { mutableStateOf("") }
         val focusManager = LocalFocusManager.current
 
         val scope = rememberCoroutineScope()

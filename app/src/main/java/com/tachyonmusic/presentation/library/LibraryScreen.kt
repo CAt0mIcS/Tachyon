@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -54,7 +55,7 @@ object LibraryScreen :
         draggable: AnchoredDraggableState<SwipingStates>,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
-        var sortOptionsExpanded by remember { mutableStateOf(false) }
+        var sortOptionsExpanded by rememberSaveable { mutableStateOf(false) }
 
         val scope = rememberCoroutineScope()
 

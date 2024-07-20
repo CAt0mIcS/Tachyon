@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -108,8 +109,8 @@ fun PlayerScreen(
     if (error != null)
         ErrorDialog(title = stringResource(R.string.warning), subtitle = error.asString())
 
-    var isEditingTimingData by remember { mutableStateOf(false) }
-    var isEditingEqualizer by remember { mutableStateOf(false) }
+    var isEditingTimingData by rememberSaveable { mutableStateOf(false) }
+    var isEditingEqualizer by rememberSaveable { mutableStateOf(false) }
 
     val subPlaybackItems by viewModel.subPlaybackItems.collectAsState()
     val playbackType by viewModel.playbackType.collectAsState()
