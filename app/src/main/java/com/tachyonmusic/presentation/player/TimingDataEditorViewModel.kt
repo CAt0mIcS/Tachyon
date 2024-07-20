@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.isNullOrEmpty
+import com.tachyonmusic.core.domain.playback.CustomizedSong
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
@@ -59,6 +60,10 @@ class TimingDataEditorViewModel @Inject constructor(
     val duration = mediaBrowser.currentPlayback.map {
         it?.duration ?: Long.MAX_VALUE.ms
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
+
+    val currentCustomizedSongName = mediaBrowser.currentPlayback.map {
+        if(it is CustomizedSong) it.name else null
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     val timingData = mutableStateListOf<TimingData>()
     var currentIndex by mutableIntStateOf(0)

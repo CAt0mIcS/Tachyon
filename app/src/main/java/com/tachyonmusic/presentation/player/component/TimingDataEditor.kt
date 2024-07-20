@@ -299,7 +299,13 @@ fun TimingDataEditor(
         }
 
         var openAlertDialog by remember { mutableStateOf(false) }
-        var customizedSongName by remember { mutableStateOf("") }
+        val currentName by viewModel.currentCustomizedSongName.collectAsState()
+        var customizedSongName by remember { mutableStateOf(currentName ?: "") }
+
+        // TODO: Is this a good way to keep states synced?
+        LaunchedEffect(currentName) {
+            customizedSongName = currentName ?: ""
+        }
 
         Button(onClick = {
             openAlertDialog = true
