@@ -160,6 +160,7 @@ class CustomPlayerImpl(
             )
         ) {
             currentMediaItem?.mediaMetadata?.timingData = null
+            invokeEvent { it.onTimingDataUpdated(null) }
             return
         }
 
