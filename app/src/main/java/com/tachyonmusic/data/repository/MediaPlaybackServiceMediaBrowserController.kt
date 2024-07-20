@@ -26,7 +26,7 @@ import com.tachyonmusic.media.util.playback
 import com.tachyonmusic.media.util.toMediaItems
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
-import com.tachyonmusic.playback_layers.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.playback_layers.predefinedRemixPlaylistMediaId
 import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.*
 import kotlinx.coroutines.CompletableJob
@@ -73,7 +73,7 @@ class MediaPlaybackServiceMediaBrowserController(
 
         /**
          * Make sure that if the predefined playlists change the playlist in the player gets
-         * updated, too. For example when changing the combine songs and customized songs in playlist
+         * updated, too. For example when changing the combine songs and remixes in playlist
          * setting
          */
         predefinedPlaylistsRepository.songPlaylist.onEach {
@@ -86,9 +86,9 @@ class MediaPlaybackServiceMediaBrowserController(
             }
         }.launchIn(owner.lifecycleScope)
 
-        predefinedPlaylistsRepository.customizedSongPlaylist.onEach {
-            if (!canPrepare && currentPlaylist.value?.mediaId == predefinedCustomizedSongPlaylistMediaId) {
-                log.info("Updating player with new predefined customized song playlist during playback")
+        predefinedPlaylistsRepository.remixPlaylist.onEach {
+            if (!canPrepare && currentPlaylist.value?.mediaId == predefinedRemixPlaylistMediaId) {
+                log.info("Updating player with new predefined remix playlist during playback")
                 val prevPosition = currentPosition
                 val prevPb = currentPlayback.value ?: return@onEach
                 setPlaylist(getPlaylistForPlayback(prevPb) ?: return@onEach)

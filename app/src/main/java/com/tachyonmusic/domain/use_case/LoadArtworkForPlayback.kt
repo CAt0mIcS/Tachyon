@@ -31,15 +31,15 @@ class LoadArtworkForPlayback(
         }
     }
 
-    @JvmName("invokeCustomizedSongs")
+    @JvmName("invokeRemixes")
     operator fun invoke(
-        customizedSongs: List<CustomizedSong>,
+        remixes: List<Remix>,
         range: IntRange,
         quality: Int = 100
-    ): List<CustomizedSong> {
-        val newSongs = invoke(customizedSongs.map { it.song }, range, quality)
-        return customizedSongs.onEachIndexed { i, customized ->
-            customized.artwork = newSongs[i].artwork
+    ): List<Remix> {
+        val newSongs = invoke(remixes.map { it.song }, range, quality)
+        return remixes.onEachIndexed { i, remix ->
+            remix.artwork = newSongs[i].artwork
         }
     }
 
@@ -95,7 +95,7 @@ class LoadArtworkForPlayback(
     @JvmName("invokeSinglePlayback")
     operator fun invoke(playback: SinglePlayback, quality: Int = 100) = when (playback) {
         is Song -> invoke(playback, quality)
-        is CustomizedSong -> invoke(playback, quality)
+        is Remix -> invoke(playback, quality)
         else -> TODO("Invalid playback type")
     }
 
@@ -113,11 +113,11 @@ class LoadArtworkForPlayback(
     }
 
     /**
-     * @return customized song with loaded artwork for underlying song
+     * @return remix with loaded artwork for underlying song
      */
-    @JvmName("invokeCustomizedSong")
-    operator fun invoke(customized: CustomizedSong, quality: Int = 100): CustomizedSong {
-        customized.artwork = invoke(customized.song, quality).artwork
-        return customized
+    @JvmName("invokeRemix")
+    operator fun invoke(remix: Remix, quality: Int = 100): Remix {
+        remix.artwork = invoke(remix.song, quality).artwork
+        return remix
     }
 }

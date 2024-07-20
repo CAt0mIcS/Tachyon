@@ -36,7 +36,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -155,7 +154,7 @@ object ProfileScreen :
             Text("Playback", fontSize = headlineFontSize, fontWeight = headlineFontWeight)
             Setting(
                 text = "Combined Playback Playlist",
-                desc = "If enabled and a song is started clicking next until after the last song will switch to the list of customized songs, if a customized song is started clicking next until after the last customizes song will switch to the list of songs"
+                desc = "If enabled and a song is started clicking next until after the last song will switch to the list of remixes, if a remix is started clicking next until after the last customizes song will switch to the list of songs"
             ) {
                 Switch(
                     checked = settings.combineDifferentPlaybackTypes,
@@ -207,11 +206,11 @@ object ProfileScreen :
 
             Setting(
                 text = "Play Newly Created",
-                desc = "If enabled a newly created customized song will automatically start playing after creation"
+                desc = "If enabled a newly created remix will automatically start playing after creation"
             ) {
                 Switch(
-                    checked = settings.playNewlyCreatedCustomizedSong,
-                    onCheckedChange = viewModel::playNewlyCreatedCustomizedSong
+                    checked = settings.playNewlyCreatedRemix,
+                    onCheckedChange = viewModel::playNewlyCreatedRemix
                 )
             }
 

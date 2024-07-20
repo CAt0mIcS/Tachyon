@@ -2,12 +2,12 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import androidx.room.Room
-import com.tachyonmusic.core.data.playback.LocalCustomizedSong
+import com.tachyonmusic.core.data.playback.LocalRemix
 import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.CustomizedSong
+import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.data.repository.FileRepositoryImpl
@@ -47,11 +47,11 @@ object TestAppModule {
 
     @Provides
     @Singleton
-    fun provideCustomizedSongs(repository: SongRepository): MutableList<CustomizedSong> = runBlocking {
+    fun provideCustomizedSongs(repository: SongRepository): MutableList<Remix> = runBlocking {
         MutableList(3) { i ->
             val song = repository.getSongs()[i]
-            LocalCustomizedSong(
-                MediaId.ofLocalCustomizedSong(i.toString(), song.mediaId),
+            LocalRemix(
+                MediaId.ofLocalRemix(i.toString(), song.mediaId),
                 i.toString(),
                 TimingDataController(
                     listOf(

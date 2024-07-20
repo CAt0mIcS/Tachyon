@@ -44,7 +44,7 @@ class RoomSettingsRepository(
         seekBackIncrement: Duration?,
         animateText: Boolean?,
         shouldMillisecondsBeShown: Boolean?,
-        playNewlyCreatedCustomizedSong: Boolean?,
+        playNewlyCreatedRemix: Boolean?,
         excludedSongFiles: List<Uri>?,
         musicDirectories: List<Uri>?
     ) {
@@ -81,8 +81,8 @@ class RoomSettingsRepository(
         if (shouldMillisecondsBeShown != null)
             dao.setShouldMillisecondsBeShown(shouldMillisecondsBeShown)
 
-        if(playNewlyCreatedCustomizedSong != null)
-            dao.setPlayNewlyCreatedCustomizedSong(playNewlyCreatedCustomizedSong)
+        if(playNewlyCreatedRemix != null)
+            dao.setPlayNewlyCreatedCustomizedSong(playNewlyCreatedRemix)
 
         if (excludedSongFiles != null)
             dao.setExcludedSongFiles(excludedSongFiles.toSet().toList())

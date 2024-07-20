@@ -4,7 +4,7 @@ import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.playback_layers.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.playback_layers.predefinedRemixPlaylistMediaId
 import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.indexOf
 import kotlinx.coroutines.Dispatchers
@@ -26,8 +26,8 @@ class GetPlaylistForPlayback(
 
         if (mediaId.isLocalSong)
             getSongPlaylist(mediaId)
-        else if (mediaId.isLocalCustomizedSong)
-            getCustomizedSongPlaylist(mediaId)
+        else if (mediaId.isLocalRemix)
+            getRemixPlaylist(mediaId)
         else null
     }
 
@@ -48,16 +48,16 @@ class GetPlaylistForPlayback(
     }
 
 
-    private suspend fun getCustomizedSongPlaylist(
+    private suspend fun getRemixPlaylist(
         mediaId: MediaId
     ): Playlist {
-        val items = predefinedPlaylistsRepository.customizedSongPlaylist.value
+        val items = predefinedPlaylistsRepository.remixPlaylist.value
         items.forEach {
             artworkCodex.await(it.mediaId.underlyingMediaId ?: it.mediaId)
         }
 
         return LocalPlaylist.build(
-            predefinedCustomizedSongPlaylistMediaId,
+            predefinedRemixPlaylistMediaId,
             items.toMutableList(),
             items.indexOf { it.mediaId == mediaId } ?: 0
         )

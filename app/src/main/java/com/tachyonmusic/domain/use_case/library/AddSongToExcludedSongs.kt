@@ -19,8 +19,8 @@ class AddSongToExcludedSongs(
         // We don't want to remove the hidden song from history
 //        historyRepository.removeHierarchical(song.mediaId)
 
-        // We don't want to remove customized songs using the hidden song
-//        customizedSongRepository.removeIf {
+        // We don't want to remove remixes using the hidden song
+//        remixRepository.removeIf {
 //            it.mediaId.underlyingMediaId == song.mediaId
 //        }
 

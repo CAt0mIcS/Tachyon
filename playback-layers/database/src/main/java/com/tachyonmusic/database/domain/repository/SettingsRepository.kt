@@ -26,7 +26,7 @@ interface SettingsRepository {
         seekBackIncrement: Duration? = null,
         animateText: Boolean? = null,
         shouldMillisecondsBeShown: Boolean? = null,
-        playNewlyCreatedCustomizedSong: Boolean? = null,
+        playNewlyCreatedRemix: Boolean? = null,
         excludedSongFiles: List<Uri>? = null,
         musicDirectories: List<Uri>? = null
     )

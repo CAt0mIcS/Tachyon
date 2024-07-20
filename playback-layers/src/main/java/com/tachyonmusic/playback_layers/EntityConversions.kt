@@ -2,13 +2,13 @@ package com.tachyonmusic.playback_layers
 
 import android.net.Uri
 import com.tachyonmusic.core.ArtworkType
-import com.tachyonmusic.core.data.playback.LocalCustomizedSong
+import com.tachyonmusic.core.data.playback.LocalRemix
 import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.database.domain.model.CustomizedSongEntity
+import com.tachyonmusic.database.domain.model.RemixEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.util.ms
 
@@ -28,8 +28,8 @@ fun SongEntity.toLocalSong(artwork: Artwork?, isPlayable: Boolean) =
         it
     }
 
-fun CustomizedSongEntity.toCustomizedSong(song: Song?) =
-    LocalCustomizedSong(
+fun RemixEntity.toRemix(song: Song?) =
+    LocalRemix(
         mediaId,
         song ?: LocalSong(
             Uri.EMPTY,

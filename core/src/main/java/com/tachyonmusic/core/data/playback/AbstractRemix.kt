@@ -14,14 +14,14 @@ import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.model.EqualizerBand
-import com.tachyonmusic.core.domain.playback.CustomizedSong
+import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Duration
 
-abstract class AbstractCustomizedSong(
+abstract class AbstractRemix(
     final override val mediaId: MediaId,
     final override val song: Song
-) : CustomizedSong {
+) : Remix {
 
 
     override val title: String
@@ -34,7 +34,7 @@ abstract class AbstractCustomizedSong(
     override val uri: Uri
         get() = song.uri
 
-    abstract override val playbackType: PlaybackType.CustomizedSong
+    abstract override val playbackType: PlaybackType.Remix
 
     override var artwork: Artwork?
         get() = song.artwork
@@ -83,7 +83,7 @@ abstract class AbstractCustomizedSong(
             putLong(MetadataKeys.Duration, duration.inWholeMilliseconds)
             putParcelable(MetadataKeys.TimingData, timingData)
             putString(MetadataKeys.Name, name)
-            putParcelable(MetadataKeys.Playback, this@AbstractCustomizedSong)
+            putParcelable(MetadataKeys.Playback, this@AbstractRemix)
         })
     }.build()
 
@@ -103,7 +103,7 @@ abstract class AbstractCustomizedSong(
     override fun describeContents() = 0
 
     override fun equals(other: Any?) =
-        other is AbstractCustomizedSong && mediaId == other.mediaId &&
+        other is AbstractRemix && mediaId == other.mediaId &&
                 song == other.song && timingData == other.timingData && bassBoost == other.bassBoost &&
                 virtualizerStrength == other.virtualizerStrength && playbackParameters == other.playbackParameters &&
                 equalizerBands == other.equalizerBands && reverb == other.reverb

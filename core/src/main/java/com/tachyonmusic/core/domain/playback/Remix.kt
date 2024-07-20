@@ -5,7 +5,7 @@ import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.isNullOrEmpty
 import com.tachyonmusic.core.domain.model.EqualizerBand
 
-interface CustomizedSong : SinglePlayback {
+interface Remix : SinglePlayback {
     val name: String
     val song: Song
     override val album: String?
@@ -30,5 +30,5 @@ interface CustomizedSong : SinglePlayback {
     var playbackParameters: PlaybackParameters?
     var reverb: ReverbConfig?
 
-    override fun copy(): CustomizedSong
+    override fun copy(): Remix
 }

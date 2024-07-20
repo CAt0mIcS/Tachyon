@@ -63,8 +63,8 @@ class LibraryViewModel @Inject constructor(
         songs.filter { !it.isHidden }.map { it.copy() }
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
-    private var customizedSongs = playbackRepository.customizedSongFlow.map { customizedSongs ->
-        customizedSongs.map {
+    private var remixes = playbackRepository.remixFlow.map { remixes ->
+        remixes.map {
             it.copy()
         }
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
@@ -92,19 +92,19 @@ class LibraryViewModel @Inject constructor(
     val items =
         combine(
             songs,
-            customizedSongs,
+            remixes,
             playlists,
             filterType,
             artworkLoadingRange
-        ) { songs, customizedSongs, playlists, filterType, itemsToLoad ->
+        ) { songs, remixes, playlists, filterType, itemsToLoad ->
             val quality = 50
             when (filterType) {
                 is PlaybackType.Song -> loadArtworkForPlayback(songs, itemsToLoad, quality).map {
                     it.toUiEntity()
                 }
 
-                is PlaybackType.CustomizedSong -> loadArtworkForPlayback(
-                    customizedSongs,
+                is PlaybackType.Remix -> loadArtworkForPlayback(
+                    remixes,
                     itemsToLoad,
                     quality
                 ).map {
@@ -139,8 +139,8 @@ class LibraryViewModel @Inject constructor(
         _filterType.value = PlaybackType.Song.Local()
     }
 
-    fun onFilterCustomizedSongs() {
-        _filterType.value = PlaybackType.CustomizedSong.Local()
+    fun onFilterRemixes() {
+        _filterType.value = PlaybackType.Remix.Local()
     }
 
     fun onFilterPlaylists() {
@@ -229,7 +229,7 @@ class LibraryViewModel @Inject constructor(
 
     private fun PlaybackUiEntity.toPlayback() = when (playbackType) {
         is PlaybackType.Song -> songs.value.find { it.mediaId == mediaId }
-        is PlaybackType.CustomizedSong -> customizedSongs.value.find { it.mediaId == mediaId }
+        is PlaybackType.Remix -> remixes.value.find { it.mediaId == mediaId }
         is PlaybackType.Playlist -> playlists.value.find { it.mediaId == mediaId }
         is PlaybackType.Ad -> null
     }

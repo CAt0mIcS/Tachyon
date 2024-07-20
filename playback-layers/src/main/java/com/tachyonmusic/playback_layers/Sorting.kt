@@ -54,7 +54,7 @@ private fun Playback.getComparedString(type: SortType) = when (this) {
         }
     }
 
-    is CustomizedSong -> {
+    is Remix -> {
         when (type) {
             SortType.AlphabeticalTitle -> name + title + artist
             SortType.AlphabeticalArtist -> artist + name + title

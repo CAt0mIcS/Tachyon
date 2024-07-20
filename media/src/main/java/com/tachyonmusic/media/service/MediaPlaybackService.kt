@@ -2,7 +2,6 @@ package com.tachyonmusic.media.service
 
 import android.app.PendingIntent
 import android.os.Bundle
-import android.os.Looper
 import android.provider.MediaStore
 import android.widget.Toast
 import androidx.media3.cast.CastPlayer
@@ -24,7 +23,7 @@ import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.CustomizedSong
+import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
@@ -43,7 +42,7 @@ import com.tachyonmusic.media.util.*
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
-import com.tachyonmusic.playback_layers.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.playback_layers.predefinedRemixPlaylistMediaId
 import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
@@ -420,7 +419,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         val playback = mediaItem?.mediaMetadata?.playback ?: return
 
         when (playback) {
-            is CustomizedSong -> {
+            is Remix -> {
                 if (audioEffectController.setBassEnabled(playback.bassBoostEnabled))
                     audioEffectController.setBass(playback.bassBoost!!)
                 if (audioEffectController.setVirtualizerEnabled(playback.virtualizerEnabled))
@@ -541,8 +540,8 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 predefinedPlaylistsRepository.songPlaylist.value.map { it.mediaId } ->
                     predefinedSongPlaylistMediaId
 
-                predefinedPlaylistsRepository.customizedSongPlaylist.value.map { it.mediaId } ->
-                    predefinedCustomizedSongPlaylistMediaId
+                predefinedPlaylistsRepository.remixPlaylist.value.map { it.mediaId } ->
+                    predefinedRemixPlaylistMediaId
 
                 else -> findPlaylistWithPlaybacks(mediaIds)
             } ?: return null

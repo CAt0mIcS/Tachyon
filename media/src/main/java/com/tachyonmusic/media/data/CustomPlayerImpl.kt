@@ -28,7 +28,7 @@ class CustomPlayerImpl(
     Player.Listener,
     IListenable<CustomPlayer.Listener> by Listenable() {
 
-    private var customizedSongMessage: PlayerMessage? = null
+    private var remixMessage: PlayerMessage? = null
     private var castPlayerMessageSender: CastPlayerMessageSender? = null
 
     init {
@@ -165,7 +165,7 @@ class CustomPlayerImpl(
         }
 
         newTimingData.advanceToCurrentPosition(currentPosition.ms)
-        postCustomizedSongMessage(
+        postRemixMessage(
             newTimingData.next.startTime,
             newTimingData.current.endTime
         )
@@ -183,7 +183,7 @@ class CustomPlayerImpl(
             return
 
         timingData.advanceToIndex(i)
-        postCustomizedSongMessage(timingData.next.startTime, timingData.current.endTime)
+        postRemixMessage(timingData.next.startTime, timingData.current.endTime)
         seekWithoutCallback(timingData.getOrNull(i)?.startTime?.inWholeMilliseconds ?: return)
         currentMediaItem?.mediaMetadata?.timingData = timingData
         invokeEvent { it.onTimingDataUpdated(timingData) }
@@ -215,11 +215,11 @@ class CustomPlayerImpl(
             TODO("Cannot set aux effect info in another player yet")
     }
 
-    private fun postCustomizedSongMessage(startTime: Duration, endTime: Duration) {
+    private fun postRemixMessage(startTime: Duration, endTime: Duration) {
         // Cancel any previous messages
-        customizedSongMessage?.cancel()
+        remixMessage?.cancel()
 
-        customizedSongMessage = createMessage { _, payload ->
+        remixMessage = createMessage { _, payload ->
             seekWithoutCallback(payload as Long)
             val timingData = currentMediaItem?.mediaMetadata?.timingData
             if (timingData != null) {
@@ -240,7 +240,7 @@ class CustomPlayerImpl(
 
                 timingData.advanceToNext()
                 invokeEvent { it.onTimingDataUpdated(timingData) }
-                postCustomizedSongMessage(timingData.next.startTime, timingData.current.endTime)
+                postRemixMessage(timingData.next.startTime, timingData.current.endTime)
                 log.debug(
                     "The next timing data will be loaded at ${timingData.current.endTime} and will seek to ${timingData.next.startTime}"
                 )

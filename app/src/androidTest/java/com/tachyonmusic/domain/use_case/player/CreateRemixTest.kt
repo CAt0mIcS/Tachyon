@@ -1,13 +1,13 @@
 package com.tachyonmusic.domain.use_case.player
 
 import com.tachyonmusic.core.data.playback.LocalSong
-import com.tachyonmusic.core.data.playback.LocalCustomizedSong
+import com.tachyonmusic.core.data.playback.LocalRemix
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.database.domain.model.CustomizedSongEntity
-import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
+import com.tachyonmusic.database.domain.model.RemixEntity
+import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.FileRepository
@@ -32,7 +32,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
-internal class CreateCustomizedSongTest {
+internal class CreateRemixTest {
     @get:Rule
     val hiltRule = HiltAndroidRule(this)
 
@@ -40,7 +40,7 @@ internal class CreateCustomizedSongTest {
     lateinit var songRepository: SongRepository
 
     @Inject
-    lateinit var customizedSongRepository: CustomizedSongRepository
+    lateinit var remixRepository: RemixRepository
 
     @Inject
     lateinit var settingsRepository: SettingsRepository
@@ -53,7 +53,7 @@ internal class CreateCustomizedSongTest {
     private lateinit var browser: MediaBrowserController
     val name = "TestCustomizedSong"
 
-    private lateinit var createCustomizedSong: CreateCustomizedSong
+    private lateinit var createRemix: CreateRemix
 
     @Before
     fun setUp() {
@@ -87,9 +87,9 @@ internal class CreateCustomizedSongTest {
             updateSongDatabase()
         }
 
-        createCustomizedSong = CreateCustomizedSong(
+        createRemix = CreateRemix(
             songRepository,
-            customizedSongRepository,
+            remixRepository,
             browser
         )
 
@@ -97,7 +97,7 @@ internal class CreateCustomizedSongTest {
 
     @Test
     fun nullPlaybackReturnsError() = runTest {
-        assert(createCustomizedSong(name) is Resource.Error)
+        assert(createRemix(name) is Resource.Error)
     }
 
     @Test
@@ -109,16 +109,16 @@ internal class CreateCustomizedSongTest {
             10000.ms
         )
 
-        assert(createCustomizedSong(name) is Resource.Error)
+        assert(createRemix(name) is Resource.Error)
 
         every { browser.timingData } returns TimingDataController()
-        assert(createCustomizedSong(name) is Resource.Error)
+        assert(createRemix(name) is Resource.Error)
 
         every { browser.duration } returns 10000.ms
         every { browser.timingData } returns TimingDataController(
             listOf(TimingData(0.ms, 10000.ms))
         )
-        assert(createCustomizedSong(name) is Resource.Error)
+        assert(createRemix(name) is Resource.Error)
 
         every { browser.duration } returns 10000.ms
         every { browser.timingData } returns TimingDataController(
@@ -127,7 +127,7 @@ internal class CreateCustomizedSongTest {
                 TimingData(0.ms, 10000.ms)
             )
         )
-        assert(createCustomizedSong(name) is Resource.Error)
+        assert(createRemix(name) is Resource.Error)
     }
 
     @Test
@@ -142,7 +142,7 @@ internal class CreateCustomizedSongTest {
                     TimingData(32.ms, 5634.ms)
                 )
             )
-            assert(createCustomizedSong(name) is Resource.Success)
+            assert(createRemix(name) is Resource.Success)
         }
 
     @Test
@@ -153,7 +153,7 @@ internal class CreateCustomizedSongTest {
             "Artist",
             10000.ms
         )
-        assert(createCustomizedSong(name) is Resource.Error)
+        assert(createRemix(name) is Resource.Error)
     }
 
     @Test
@@ -166,8 +166,8 @@ internal class CreateCustomizedSongTest {
             )
         )
 
-        val customizedSongRes = createCustomizedSong(name)
-        checkCustomizedSongResource(customizedSongRes)
+        val remixRes = createRemix(name)
+        checkCustomizedSongResource(remixRes)
     }
 
     @Test
@@ -180,24 +180,24 @@ internal class CreateCustomizedSongTest {
             )
         )
 
-        val customizedSongRes = createCustomizedSong(name)
-        checkCustomizedSongResource(customizedSongRes)
-        val customizedSong = customizedSongRes.data!!
-        assert(customizedSong.mediaId == MediaId.ofLocalCustomizedSong(name, getSong().mediaId))
+        val remixRes = createRemix(name)
+        checkCustomizedSongResource(remixRes)
+        val remix = remixRes.data!!
+        assert(remix.mediaId == MediaId.ofLocalRemix(name, getSong().mediaId))
     }
 
 
-    private fun checkCustomizedSongResource(customizedSongRes: Resource<CustomizedSongEntity>) {
-        assert(customizedSongRes is Resource.Success)
-        assert(customizedSongRes.data != null)
+    private fun checkCustomizedSongResource(remixRes: Resource<RemixEntity>) {
+        assert(remixRes is Resource.Success)
+        assert(remixRes.data != null)
 
-        val customizedSong = customizedSongRes.data!!
+        val remix = remixRes.data!!
 
-        assert(customizedSong.songTitle == "Title")
-        assert(customizedSong.songArtist == "Artist")
-        assert(customizedSong.songDuration == 10000.ms)
-        assert(customizedSong.timingData == browser.timingData?.timingData)
-        assert(customizedSong.currentTimingDataIndex == browser.timingData?.currentIndex)
+        assert(remix.songTitle == "Title")
+        assert(remix.songArtist == "Artist")
+        assert(remix.songDuration == 10000.ms)
+        assert(remix.timingData == browser.timingData?.timingData)
+        assert(remix.currentTimingDataIndex == browser.timingData?.currentIndex)
         // TODO: Check if artwork is correct
     }
 
@@ -210,10 +210,10 @@ internal class CreateCustomizedSongTest {
         ), "Title", "Artist", 10000.ms
     )
 
-    private fun getCustomizedSong(): LocalCustomizedSong {
+    private fun getCustomizedSong(): LocalRemix {
         val song = getSong()
-        return LocalCustomizedSong(
-            MediaId.ofLocalCustomizedSong(name + "2", song.mediaId),
+        return LocalRemix(
+            MediaId.ofLocalRemix(name + "2", song.mediaId),
             name + "2",
             TimingDataController(listOf(TimingData(323.ms, 3233.ms))),
             song

@@ -8,7 +8,7 @@ import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.data.repository.StateRepository
 import com.tachyonmusic.database.data.data_source.Database
-import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
+import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
@@ -33,7 +33,7 @@ import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.domain.use_case.library.QueryArtworkForPlayback
 import com.tachyonmusic.domain.use_case.library.UpdatePlaybackMetadata
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewPlaylist
-import com.tachyonmusic.domain.use_case.player.CreateCustomizedSong
+import com.tachyonmusic.domain.use_case.player.CreateRemix
 import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
 import com.tachyonmusic.domain.use_case.player.GetPlaybackChildren
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
@@ -98,9 +98,9 @@ object AppUseCaseModule {
     @Singleton
     fun provideUpdatePlaybackMetadataUseCase(
         songRepository: SongRepository,
-        customizedSongRepository: CustomizedSongRepository,
+        remixRepository: RemixRepository,
         playlistRepository: PlaylistRepository
-    ) = UpdatePlaybackMetadata(songRepository, customizedSongRepository, playlistRepository)
+    ) = UpdatePlaybackMetadata(songRepository, remixRepository, playlistRepository)
 
     @Provides
     @Singleton
@@ -147,8 +147,8 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideCreateNewCustomizedSongUseCase(audioEffectController: AudioEffectController) =
-        CreateCustomizedSong(audioEffectController)
+    fun provideCreateNewRemixUseCase(audioEffectController: AudioEffectController) =
+        CreateRemix(audioEffectController)
 
     @Provides
     @Singleton
@@ -204,12 +204,12 @@ object AppUseCaseModule {
     @Provides
     @Singleton
     fun provideDeletePlaybackUseCase(
-        customizedSongRepository: CustomizedSongRepository,
+        remixRepository: RemixRepository,
         playlistRepository: PlaylistRepository,
         playbackRepository: PlaybackRepository,
         historyRepository: HistoryRepository
     ) = DeletePlayback(
-        customizedSongRepository,
+        remixRepository,
         playlistRepository,
         playbackRepository,
         historyRepository

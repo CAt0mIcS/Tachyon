@@ -18,7 +18,7 @@ class SearchStoredPlaybacks(
     suspend operator fun invoke(query: String?): List<Playback> {
         val playbacks =
             predefinedPlaylistsRepository.songPlaylist.value.filter { it.mediaId.isLocalSong } +
-                    predefinedPlaylistsRepository.customizedSongPlaylist.value + playbackRepository.getPlaylists()
+                    predefinedPlaylistsRepository.remixPlaylist.value + playbackRepository.getPlaylists()
 
         if (query.isNullOrEmpty())
             return playbacks
@@ -38,7 +38,7 @@ class SearchStoredPlaybacks(
     fun byTitleArtist(title: String?, artist: String?): List<SinglePlayback> {
         val items =
             predefinedPlaylistsRepository.songPlaylist.value.filter { it.mediaId.isLocalSong } +
-                    predefinedPlaylistsRepository.customizedSongPlaylist.value
+                    predefinedPlaylistsRepository.remixPlaylist.value
 
         if (title.isNullOrBlank() || artist.isNullOrBlank())
             return items

@@ -91,9 +91,9 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun playNewlyCreatedCustomizedSong(playNewly: Boolean) {
+    fun playNewlyCreatedRemix(playNewly: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            settingsRepository.update(playNewlyCreatedCustomizedSong = playNewly)
+            settingsRepository.update(playNewlyCreatedRemix = playNewly)
         }
     }
 

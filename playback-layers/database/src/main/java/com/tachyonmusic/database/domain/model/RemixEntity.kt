@@ -21,11 +21,11 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
 
-const val CUSTOMIZED_SONG_DATABASE_TABLE_NAME = "CustomizedSongs"
+const val REMIX_DATABASE_TABLE_NAME = "CustomizedSongs"
 
-@Serializable(with = CustomizedSongEntitySerializer::class)
-@Entity(tableName = CUSTOMIZED_SONG_DATABASE_TABLE_NAME)
-class CustomizedSongEntity(
+@Serializable(with = RemixEntitySerializer::class)
+@Entity(tableName = REMIX_DATABASE_TABLE_NAME)
+class RemixEntity(
     mediaId: MediaId,
     val songTitle: String,
     val songArtist: String,
@@ -45,7 +45,7 @@ class CustomizedSongEntity(
 ) : SinglePlaybackEntity(mediaId, songTitle, songArtist, songDuration)
 
 
-object CustomizedSongEntitySerializer : KSerializer<CustomizedSongEntity> {
+object RemixEntitySerializer : KSerializer<RemixEntity> {
     override val descriptor = buildClassSerialDescriptor("CustomizedSongEntity") {
         element<String>("MediaId")
         element<String>("SongTitle")
@@ -117,7 +117,7 @@ object CustomizedSongEntitySerializer : KSerializer<CustomizedSongEntity> {
             }
         }
 
-        CustomizedSongEntity(
+        RemixEntity(
             mediaId!!,
             songTitle!!,
             songArtist!!,
@@ -132,7 +132,7 @@ object CustomizedSongEntitySerializer : KSerializer<CustomizedSongEntity> {
         )
     }
 
-    override fun serialize(encoder: Encoder, value: CustomizedSongEntity) {
+    override fun serialize(encoder: Encoder, value: RemixEntity) {
         encoder.encodeStructure(descriptor) {
             encodeStringElement(descriptor, 0, value.mediaId.toString())
             encodeStringElement(descriptor, 1, value.songTitle)

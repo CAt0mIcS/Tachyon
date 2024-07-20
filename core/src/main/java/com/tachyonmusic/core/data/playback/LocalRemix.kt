@@ -8,22 +8,22 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.model.EqualizerBand
-import com.tachyonmusic.core.domain.playback.CustomizedSong
+import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.core.domain.playback.Song
 
 /**
- * Currently customized songs will always be local because Spotify doesn't have any song customization
+ * Currently remixes will always be local because Spotify doesn't have any song customization
  * API. However, the underlying [song] could still be a [SpotifySong]
  */
-class LocalCustomizedSong(
+class LocalRemix(
     mediaId: MediaId,
     song: Song
-) : AbstractCustomizedSong(mediaId, song) {
+) : AbstractRemix(mediaId, song) {
 
-    override val playbackType = PlaybackType.CustomizedSong.Local()
+    override val playbackType = PlaybackType.Remix.Local()
 
-    override fun copy(): CustomizedSong =
-        LocalCustomizedSong(mediaId, song.copy()).let {
+    override fun copy(): Remix =
+        LocalRemix(mediaId, song.copy()).let {
             it.bassBoost = bassBoost
             it.virtualizerStrength = virtualizerStrength
             it.equalizerBands = equalizerBands
@@ -37,14 +37,14 @@ class LocalCustomizedSong(
 
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<LocalCustomizedSong> {
-            override fun createFromParcel(parcel: Parcel): LocalCustomizedSong {
+        val CREATOR = object : Parcelable.Creator<LocalRemix> {
+            override fun createFromParcel(parcel: Parcel): LocalRemix {
                 val name = parcel.readString()!!
 
                 val song: Song =
                     parcel.readParcelable(Song::class.java.classLoader)!!
-                return LocalCustomizedSong(
-                    MediaId.ofLocalCustomizedSong(name, song.mediaId),
+                return LocalRemix(
+                    MediaId.ofLocalRemix(name, song.mediaId),
                     song
                 ).apply {
                     timingData =
@@ -68,7 +68,7 @@ class LocalCustomizedSong(
                 }
             }
 
-            override fun newArray(size: Int): Array<LocalCustomizedSong?> = arrayOfNulls(size)
+            override fun newArray(size: Int): Array<LocalRemix?> = arrayOfNulls(size)
         }
     }
 }

@@ -13,7 +13,7 @@ interface HistoryRepository {
 
     /**
      * Removes elements containing [mediaId]. If it's a song's media id
-     * it will also remove any customizedSongs with that song
+     * it will also remove any remixes with that song
      */
     suspend fun removeHierarchical(mediaId: MediaId)
 

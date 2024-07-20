@@ -36,7 +36,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -176,8 +175,8 @@ class PlayerViewModel @Inject constructor(
                                 predefinedPlaylistsRepository.songPlaylist.value
                                     .find { it.mediaId == entity.mediaId }
 
-                            is PlaybackType.CustomizedSong ->
-                                predefinedPlaylistsRepository.customizedSongPlaylist.value
+                            is PlaybackType.Remix ->
+                                predefinedPlaylistsRepository.remixPlaylist.value
                                     .find { it.mediaId == entity.mediaId }
 
                             else -> TODO("Can't have playlists inside playlists yet")

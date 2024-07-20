@@ -24,7 +24,7 @@ class BrowserTree(
 
         const val PLAYLIST_ROOT = ROOT + "Playlist/"
 
-        const val LOOP_ROOT = ROOT + "CustomizedSong/"
+        const val LOOP_ROOT = ROOT + "Remix/"
     }
 
     var maximumRootChildLimit: Int = 4
@@ -57,7 +57,7 @@ class BrowserTree(
                             setMediaMetadata(MediaMetadata.Builder().apply {
                                 setFolderType(MediaMetadata.FOLDER_TYPE_TITLES)
                                 setIsPlayable(false)
-                                setTitle("Customized Songs")
+                                setTitle("remixes")
                             }.build())
                         }.build(),
 
@@ -72,7 +72,7 @@ class BrowserTree(
                     )
                 }
                 SONG_ROOT -> constraintItems(getSongs(), page, pageSize)
-                LOOP_ROOT -> constraintItems(getCustomizedSongs(), page, pageSize)
+                LOOP_ROOT -> constraintItems(getRemixes(), page, pageSize)
                 PLAYLIST_ROOT -> constraintItems(getPlaylists(), page, pageSize)
                 else -> {
                     /**
@@ -107,8 +107,8 @@ class BrowserTree(
 
     // TODO: Nullable?
     private suspend fun getSongs() = playbackRepository.getSongs().map { it.toMediaItem() }
-    private suspend fun getCustomizedSongs() =
-        playbackRepository.getCustomizedSongs().map { it.toMediaItem() }
+    private suspend fun getRemixes() =
+        playbackRepository.getRemixes().map { it.toMediaItem() }
 
     private suspend fun getPlaylists() = playbackRepository.getPlaylists().map { it.toMediaItem() }
 

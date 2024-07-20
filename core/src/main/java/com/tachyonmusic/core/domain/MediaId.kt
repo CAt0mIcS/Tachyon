@@ -31,8 +31,8 @@ data class MediaId(
         fun ofLocalSong(uri: Uri) =
             MediaId(PlaybackType.Song.Local().toString() + uri.toString())
 
-        fun ofLocalCustomizedSong(name: String, songMediaId: MediaId) =
-            MediaId(PlaybackType.CustomizedSong.Local().toString() + name, songMediaId)
+        fun ofLocalRemix(name: String, songMediaId: MediaId) =
+            MediaId(PlaybackType.Remix.Local().toString() + name, songMediaId)
 
         fun ofLocalPlaylist(name: String) =
             MediaId(PlaybackType.Playlist.Local().toString() + name)
@@ -43,16 +43,16 @@ data class MediaId(
     val playbackType: PlaybackType
         get() =
             if (isLocalSong) PlaybackType.Song.Local()
-            else if (isLocalCustomizedSong) PlaybackType.CustomizedSong.Local()
+            else if (isLocalRemix) PlaybackType.Remix.Local()
             else if (isLocalPlaylist) PlaybackType.Playlist.Local()
             else TODO("Invalid media id ${toString()}")
 
     val isLocalSong: Boolean
         get() = source.contains(PlaybackType.Song.Local().toString())
 
-    val isLocalCustomizedSong: Boolean
+    val isLocalRemix: Boolean
         get() = source.contains(
-            PlaybackType.CustomizedSong.Local().toString()
+            PlaybackType.Remix.Local().toString()
         ) && underlyingMediaId != null
 
     val isLocalPlaylist: Boolean

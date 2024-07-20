@@ -338,7 +338,7 @@ fun PlayerScreen(
                     onClick = { isEditingTimingData = !isEditingTimingData }
                 ) {
                     Icon(
-                        painterResource(R.drawable.ic_customized_song),
+                        painterResource(R.drawable.ic_remix),
                         contentDescription = null,
                         modifier = Modifier.scale(iconScale)
                     )

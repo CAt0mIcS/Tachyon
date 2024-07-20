@@ -8,13 +8,13 @@ import org.junit.Test
 internal class MediaIdTest {
 
     @Test
-    fun of_remote_customizedSong_creates_correct_media_id() {
+    fun of_remote_remix_creates_correct_media_id() {
         val name = "CustomizedSongNameHere"
         val songMediaId = MediaId("*0*/SomeSon|||g.mp3")
-        val mediaId = MediaId.ofLocalCustomizedSong(name, songMediaId)
+        val mediaId = MediaId.ofLocalRemix(name, songMediaId)
         assertEquals(mediaId.source, "*1*$name")
         assertEquals(mediaId.underlyingMediaId, songMediaId)
-        assert(mediaId.isLocalCustomizedSong)
+        assert(mediaId.isLocalRemix)
     }
 
     @Test

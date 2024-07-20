@@ -1,25 +1,25 @@
 package com.tachyonmusic.domain.use_case
 
-import com.tachyonmusic.core.domain.playback.CustomizedSong
+import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.database.domain.repository.HistoryRepository
-import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
+import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class DeletePlayback(
-    private val customizedSongRepository: CustomizedSongRepository,
+    private val remixRepository: RemixRepository,
     private val playlistRepository: PlaylistRepository,
     private val playbackRepository: PlaybackRepository,
     private val historyRepository: HistoryRepository
 ) {
     suspend operator fun invoke(playback: Playback?) = withContext(Dispatchers.IO) {
         when (playback) {
-            is CustomizedSong -> {
-                customizedSongRepository.remove(playback.mediaId)
+            is Remix -> {
+                remixRepository.remove(playback.mediaId)
 
                 val playlists = playbackRepository.getPlaylists()
                 for (i in playlists.indices) {

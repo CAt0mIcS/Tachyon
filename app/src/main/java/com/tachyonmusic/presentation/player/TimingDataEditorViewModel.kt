@@ -9,17 +9,17 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.isNullOrEmpty
-import com.tachyonmusic.core.domain.playback.CustomizedSong
+import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
+import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.PlayPlayback
-import com.tachyonmusic.domain.use_case.player.CreateCustomizedSong
+import com.tachyonmusic.domain.use_case.player.CreateRemix
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
-import com.tachyonmusic.playback_layers.toCustomizedSong
+import com.tachyonmusic.playback_layers.toRemix
 import com.tachyonmusic.presentation.util.update
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.Resource
@@ -47,22 +47,22 @@ import javax.inject.Inject
 class TimingDataEditorViewModel @Inject constructor(
     private val mediaBrowser: MediaBrowserController,
     private val seekToPosition: SeekToPosition,
-    private val createCustomizedSong: CreateCustomizedSong,
+    private val createRemix: CreateRemix,
     private val playPlayback: PlayPlayback,
     private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
     settingsRepository: SettingsRepository,
     private val pauseResumePlayback: PauseResumePlayback,
-    private val customizedSongRepository: CustomizedSongRepository
+    private val remixRepository: RemixRepository
 ) : ViewModel() {
-    private val _customizedSongError = MutableStateFlow<UiText?>(null)
-    val customizedSongError = _customizedSongError.asStateFlow()
+    private val _remixError = MutableStateFlow<UiText?>(null)
+    val remixError = _remixError.asStateFlow()
 
     val duration = mediaBrowser.currentPlayback.map {
         it?.duration ?: Long.MAX_VALUE.ms
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
-    val currentCustomizedSongName = mediaBrowser.currentPlayback.map {
-        if(it is CustomizedSong) it.name else null
+    val currentRemixName = mediaBrowser.currentPlayback.map {
+        if(it is Remix) it.name else null
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     val timingData = mutableStateListOf<TimingData>()
@@ -159,39 +159,39 @@ class TimingDataEditorViewModel @Inject constructor(
         )
     }
 
-    fun saveNewCustomizedSong(name: String) {
+    fun saveNewRemix(name: String) {
         viewModelScope.launch {
-            val sizeBefore = predefinedPlaylistsRepository.customizedSongPlaylist.value.size
+            val sizeBefore = predefinedPlaylistsRepository.remixPlaylist.value.size
             val mediaPosBefore = mediaBrowser.currentPosition
             val playback = mediaBrowser.currentPlayback.value
-            val createRes = createCustomizedSong(name, playback, playback?.timingData)
+            val createRes = createRemix(name, playback, playback?.timingData)
 
             if (createRes is Resource.Success) {
-                _customizedSongError.update { null }
+                _remixError.update { null }
                 withContext(Dispatchers.IO) {
-                    val dbRes = customizedSongRepository.add(createRes.data!!)
+                    val dbRes = remixRepository.add(createRes.data!!)
 
                     if (dbRes is Resource.Success) {
-                        if (settings.value.playNewlyCreatedCustomizedSong) {
+                        if (settings.value.playNewlyCreatedRemix) {
                             runOnUiThread {
                                 pauseResumePlayback(PauseResumePlayback.Action.Pause)
                                 // TODO: Some way to wait for predefined playlists repository to update
-                                //  playPlayback is not working because new customized song is not in predefined playlists yet
-                                while (predefinedPlaylistsRepository.customizedSongPlaylist.value.size <= sizeBefore) {
+                                //  playPlayback is not working because new remix is not in predefined playlists yet
+                                while (predefinedPlaylistsRepository.remixPlaylist.value.size <= sizeBefore) {
                                     delay(50.ms)
                                 }
 
                                 playPlayback(
-                                    createRes.data!!.toCustomizedSong(playback?.underlyingSong),
+                                    createRes.data!!.toRemix(playback?.underlyingSong),
                                     mediaPosBefore
                                 )
                             }
                         }
                     } else
-                        _customizedSongError.update { dbRes.message }
+                        _remixError.update { dbRes.message }
                 }
             } else
-                _customizedSongError.update { createRes.message }
+                _remixError.update { createRes.message }
         }
     }
 

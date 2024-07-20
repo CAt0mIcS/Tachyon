@@ -6,7 +6,7 @@ import com.tachyonmusic.core.domain.playback.*
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
-import com.tachyonmusic.playback_layers.predefinedCustomizedSongPlaylistMediaId
+import com.tachyonmusic.playback_layers.predefinedRemixPlaylistMediaId
 import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.cycle
 import com.tachyonmusic.util.indexOf
@@ -49,11 +49,11 @@ class GetPlaybackChildren(
                         ?: return emptyList()
                 listOfNotNull(predefinedPlaylists.songPlaylist.value.cycle(idx + 1))
             }
-            is CustomizedSong -> {
+            is Remix -> {
                 val idx =
-                    predefinedPlaylists.customizedSongPlaylist.value.indexOf { playback.mediaId == it.mediaId }
+                    predefinedPlaylists.remixPlaylist.value.indexOf { playback.mediaId == it.mediaId }
                         ?: return emptyList()
-                listOfNotNull(predefinedPlaylists.customizedSongPlaylist.value.cycle(idx + 1))
+                listOfNotNull(predefinedPlaylists.remixPlaylist.value.cycle(idx + 1))
             }
             else -> TODO("Invalid playback type ${playback.javaClass.name}")
         }
@@ -71,8 +71,8 @@ class GetPlaybackChildren(
                 if (predefinedPlaylists.songPlaylist.value.lastOrNull()?.mediaId == playback.mediaId)
                     return emptyList()
             }
-            predefinedCustomizedSongPlaylistMediaId -> {
-                if (predefinedPlaylists.customizedSongPlaylist.value.lastOrNull()?.mediaId == playback.mediaId)
+            predefinedRemixPlaylistMediaId -> {
+                if (predefinedPlaylists.remixPlaylist.value.lastOrNull()?.mediaId == playback.mediaId)
                     return emptyList()
             }
         }

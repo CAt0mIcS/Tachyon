@@ -5,5 +5,5 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface PredefinedPlaylistsRepository {
     val songPlaylist: StateFlow<List<SinglePlayback>>
-    val customizedSongPlaylist: StateFlow<List<SinglePlayback>>
+    val remixPlaylist: StateFlow<List<SinglePlayback>>
 }

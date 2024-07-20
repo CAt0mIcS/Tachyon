@@ -41,13 +41,13 @@ class PlaybackLayerRepositoryModule {
     @Singleton
     fun providePlaybackRepository(
         songRepository: SongRepository,
-        customizedSongRepository: CustomizedSongRepository,
+        remixRepository: RemixRepository,
         playlistRepository: PlaylistRepository,
         historyRepository: HistoryRepository,
         @ApplicationContext context: Context,
     ): PlaybackRepository = PlaybackRepositoryImpl(
         songRepository,
-        customizedSongRepository,
+        remixRepository,
         playlistRepository,
         historyRepository,
         context

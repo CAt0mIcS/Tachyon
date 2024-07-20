@@ -2,7 +2,7 @@ package com.tachyonmusic.domain.use_case.library
 
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
+import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import kotlinx.coroutines.Dispatchers
@@ -10,7 +10,7 @@ import kotlinx.coroutines.withContext
 
 class UpdatePlaybackMetadata(
     private val songRepository: SongRepository,
-    private val customizedSongRepository: CustomizedSongRepository,
+    private val remixRepository: RemixRepository,
     private val playlistRepository: PlaylistRepository
 ) {
     suspend operator fun invoke(
@@ -33,11 +33,11 @@ class UpdatePlaybackMetadata(
                     newAlbum ?: oldAlbum
                 )
 
-                is PlaybackType.CustomizedSong.Local -> {
+                is PlaybackType.Remix.Local -> {
                     if (newName != null)
-                        customizedSongRepository.updateMetadata(
+                        remixRepository.updateMetadata(
                             mediaId,
-                            MediaId.ofLocalCustomizedSong(newName, mediaId.underlyingMediaId!!)
+                            MediaId.ofLocalRemix(newName, mediaId.underlyingMediaId!!)
                         )
 
                     if (newTitle != null || newArtist != null || newAlbum != null) {

@@ -42,9 +42,9 @@ private fun oneSong(i: Int, artistI: Int): TestSong {
     )
 }
 
-private fun oneCustomizedSong(name: String, i: Int, artistI: Int): TestCustomizedSong {
+private fun oneCustomizedSong(name: String, i: Int, artistI: Int): TestRemix {
     val song = oneSong(i, artistI)
-    return TestCustomizedSong(MediaId.ofLocalCustomizedSong(name, song.mediaId), name, song)
+    return TestRemix(MediaId.ofLocalRemix(name, song.mediaId), name, song)
 }
 
 private fun onePlaylist(name: String): TestPlaylist {

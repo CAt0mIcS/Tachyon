@@ -11,7 +11,7 @@ object MetadataKeys {
     const val IsPlaying = "com.tachyonmusic.IS_PLAYING"
 
     /**
-     * Name of customizedSong or playlist
+     * Name of remix or playlist
      */
     const val Name = "com.tachyonmusic.NAME"
 }

@@ -1,16 +1,12 @@
 package com.tachyonmusic.presentation.player.component
 
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.excludeFromSystemGesture
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
@@ -30,9 +26,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,10 +35,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
@@ -52,7 +44,6 @@ import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.player.TimingDataEditorViewModel
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.asString
-import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
 
@@ -63,7 +54,7 @@ fun TimingDataEditor(
     viewModel: TimingDataEditorViewModel = hiltViewModel()
 ) {
     val timingData = viewModel.timingData
-    val error by viewModel.customizedSongError.collectAsState()
+    val error by viewModel.remixError.collectAsState()
 
     if (error != null)
         ErrorDialog(title = stringResource(R.string.warning), subtitle = error.asString())
@@ -300,12 +291,12 @@ fun TimingDataEditor(
         }
 
         var openAlertDialog by remember { mutableStateOf(false) }
-        val currentName by viewModel.currentCustomizedSongName.collectAsState()
-        var customizedSongName by rememberSaveable { mutableStateOf(currentName ?: "") }
+        val currentName by viewModel.currentRemixName.collectAsState()
+        var remixName by rememberSaveable { mutableStateOf(currentName ?: "") }
 
         // TODO: Is this a good way to keep states synced?
         LaunchedEffect(currentName) {
-            customizedSongName = currentName ?: ""
+            remixName = currentName ?: ""
         }
 
         Button(onClick = {
@@ -316,18 +307,18 @@ fun TimingDataEditor(
 
         if (openAlertDialog) {
             // TODO: Show error
-            val error by viewModel.customizedSongError.collectAsState()
+            val error by viewModel.remixError.collectAsState()
 
             BasicAlertDialog(
                 onDismissRequest = { openAlertDialog = false },
             ) {
                 Column {
                     TextField(
-                        value = customizedSongName,
-                        onValueChange = { customizedSongName = it })
+                        value = remixName,
+                        onValueChange = { remixName = it })
                     Button(
                         onClick = {
-                            viewModel.saveNewCustomizedSong(customizedSongName)
+                            viewModel.saveNewRemix(remixName)
                             if (error == null)
                                 openAlertDialog = false
                         }

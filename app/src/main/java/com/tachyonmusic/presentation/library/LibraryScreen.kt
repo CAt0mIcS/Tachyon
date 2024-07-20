@@ -32,7 +32,6 @@ import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.presentation.BottomNavigationItem
-import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.entry.SwipingStates
@@ -110,10 +109,10 @@ object LibraryScreen :
 
                     Spacer(modifier = Modifier.width(8.dp))
                     FilterItem(
-                        R.string.customized_songs,
-                        filterPlaybackType is PlaybackType.CustomizedSong
+                        R.string.remixes,
+                        filterPlaybackType is PlaybackType.Remix
                     ) {
-                        viewModel.onFilterCustomizedSongs()
+                        viewModel.onFilterRemixes()
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -328,7 +327,7 @@ object LibraryScreen :
                                         Text("Album")
                                         TextField(value = album,  onValueChange = {album = it})
                                     }
-                                    if (playbackType is PlaybackType.CustomizedSong || playbackType is PlaybackType.Playlist) {
+                                    if (playbackType is PlaybackType.Remix || playbackType is PlaybackType.Playlist) {
                                         Text("Name")
                                         TextField(value = name, onValueChange = { name = it })
                                     }

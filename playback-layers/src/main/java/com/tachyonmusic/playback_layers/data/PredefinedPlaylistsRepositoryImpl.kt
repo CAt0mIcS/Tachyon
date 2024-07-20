@@ -17,24 +17,24 @@ class PredefinedPlaylistsRepositoryImpl(
     private val _songPlaylist = MutableStateFlow<List<SinglePlayback>>(emptyList())
     override val songPlaylist = _songPlaylist.asStateFlow()
 
-    private val _customizedSongPlaylist = MutableStateFlow<List<SinglePlayback>>(emptyList())
-    override val customizedSongPlaylist = _customizedSongPlaylist.asStateFlow()
+    private val _remixPlaylist = MutableStateFlow<List<SinglePlayback>>(emptyList())
+    override val remixPlaylist = _remixPlaylist.asStateFlow()
 
     init {
         combine(
             playbackRepository.songFlow,
-            playbackRepository.customizedSongFlow,
+            playbackRepository.remixFlow,
             settingsRepository.observe()
-        ) { songs, customizedSongs, settings ->
+        ) { songs, remixes, settings ->
             val filteredSongs = songs.filter { it.isPlayable && !it.isHidden }
-            val filteredCustomizedSongs = customizedSongs.filter { it.isPlayable }
+            val filteredRemixes = remixes.filter { it.isPlayable }
 
             if (settings.combineDifferentPlaybackTypes) {
-                _songPlaylist.update { filteredSongs + filteredCustomizedSongs }
-                _customizedSongPlaylist.update { filteredCustomizedSongs + filteredSongs }
+                _songPlaylist.update { filteredSongs + filteredRemixes }
+                _remixPlaylist.update { filteredRemixes + filteredSongs }
             } else {
                 _songPlaylist.update { filteredSongs }
-                _customizedSongPlaylist.update { filteredCustomizedSongs }
+                _remixPlaylist.update { filteredRemixes }
             }
         }.launchIn(externalScope + Dispatchers.IO)
     }

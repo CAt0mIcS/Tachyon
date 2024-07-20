@@ -26,7 +26,7 @@ const val SETTINGS_DATABASE_TABLE_NAME = "Settings"
 @Entity(tableName = SETTINGS_DATABASE_TABLE_NAME)
 data class SettingsEntity(
     var ignoreAudioFocus: Boolean = false,
-    var autoDownloadAlbumArtwork: Boolean = true,
+    var autoDownloadAlbumArtwork: Boolean = false,
     var autoDownloadAlbumArtworkWifiOnly: Boolean = true,
     var combineDifferentPlaybackTypes: Boolean = false,
 
@@ -45,11 +45,12 @@ data class SettingsEntity(
 
     /**
      * The app may revert customization changes to the currently playing media item due to the
-     * playlist update that happens when saving a newly created customized song. This controls
-     * whether you want to play the newly created customized song or keep playing the old playback
-     * which will revert to either no customization (if it's a song) or customization of the customized song
+     * playlist update that happens when saving a newly created remix. This controls
+     * whether you want to play the newly created remix or keep playing the old playback
+     * which will revert to either no customization (if it's a song) or customization of the remix
      */
-    var playNewlyCreatedCustomizedSong: Boolean = true,
+    @ColumnInfo(name = "playNewlyCreatedCustomizedSong")
+    var playNewlyCreatedRemix: Boolean = true,
 
     var excludedSongFiles: List<Uri> = emptyList(),
     var musicDirectories: List<Uri> = emptyList(),
@@ -88,7 +89,7 @@ object SettingsEntitySerializer : KSerializer<SettingsEntity> {
         var seekBackIncrement: Duration = 10.sec
         var animateText = true
         var shouldMillisecondsBeShown = false
-        var playNewlyCreatedCustomizedSong = true
+        var playNewlyCreatedRemix = true
         var excludedSongFiles: List<Uri> = emptyList()
         var musicDirectories: List<Uri> = emptyList()
         var id = 0
@@ -107,7 +108,7 @@ object SettingsEntitySerializer : KSerializer<SettingsEntity> {
                 7 -> seekBackIncrement = Duration(decodeLongElement(descriptor, 7))
                 8 -> animateText = decodeBooleanElement(descriptor, 8)
                 9 -> shouldMillisecondsBeShown = decodeBooleanElement(descriptor, 9)
-                10 -> playNewlyCreatedCustomizedSong = decodeBooleanElement(descriptor, 10)
+                10 -> playNewlyCreatedRemix = decodeBooleanElement(descriptor, 10)
                 11 -> excludedSongFiles = decodeSerializableElement(
                     descriptor,
                     11,
@@ -139,7 +140,7 @@ object SettingsEntitySerializer : KSerializer<SettingsEntity> {
             seekBackIncrement,
             animateText,
             shouldMillisecondsBeShown,
-            playNewlyCreatedCustomizedSong,
+            playNewlyCreatedRemix,
             excludedSongFiles,
             musicDirectories,
             id
@@ -158,7 +159,7 @@ object SettingsEntitySerializer : KSerializer<SettingsEntity> {
             encodeLongElement(descriptor, 7, value.seekBackIncrement.inWholeMilliseconds)
             encodeBooleanElement(descriptor, 8, value.animateText)
             encodeBooleanElement(descriptor, 9, value.shouldMillisecondsBeShown)
-            encodeBooleanElement(descriptor, 10, value.playNewlyCreatedCustomizedSong)
+            encodeBooleanElement(descriptor, 10, value.playNewlyCreatedRemix)
             encodeSerializableElement(
                 descriptor,
                 11,
