@@ -6,13 +6,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.systemGestureExclusion
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -105,8 +109,8 @@ fun PlayerScreen(
     if (error != null)
         ErrorDialog(title = stringResource(R.string.warning), subtitle = error.asString())
 
-    var isEditingTimingData by remember { mutableStateOf(false) }
-    var isEditingEqualizer by remember { mutableStateOf(false) }
+    var isEditingTimingData by rememberSaveable { mutableStateOf(false) }
+    var isEditingEqualizer by rememberSaveable { mutableStateOf(false) }
 
     val subPlaybackItems by viewModel.subPlaybackItems.collectAsState()
     val playbackType by viewModel.playbackType.collectAsState()
@@ -125,8 +129,9 @@ fun PlayerScreen(
                 .aspectRatio(1f)
                 .shadow(Theme.shadow.small, shape = Theme.shapes.large)
 
-            playback.artwork?.Image(modifier = artworkModifier, contentDescription = null)
-                ?: PlaceholderArtwork(modifier = artworkModifier, contentDescription = null)
+            playback.artwork?.Image(modifier = artworkModifier, contentDescription = null) ?: Spacer(
+                modifier = Modifier.height(24.dp)
+            )
         }
 
         item {
@@ -343,20 +348,24 @@ fun PlayerScreen(
 
         if (isEditingTimingData) {
             item {
+                HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+
                 TimingDataEditor(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = Theme.padding.large)
+                        .padding(horizontal = Theme.padding.medium)
                 )
             }
         }
 
         if (isEditingEqualizer) {
             item {
+                HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+
                 EqualizerEditor(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = Theme.padding.large)
+                        .padding(horizontal = Theme.padding.medium)
                 )
             }
         }

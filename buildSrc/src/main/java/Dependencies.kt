@@ -27,7 +27,7 @@ object Dependency {
         const val UI_TOOLING = "androidx.compose.ui:ui-tooling:${Index.COMPOSE}"
         const val COIL = "io.coil-kt:coil-compose:2.2.2"
         const val PAGING = "androidx.paging:paging-compose:1.0.0-alpha17"
-        const val COMPOSE_MATERIAL3 = "androidx.compose.material3:material3:1.2.0"
+        const val COMPOSE_MATERIAL3 = "androidx.compose.material3:material3:1.2.1"
 
         object Accompanist {
             const val NAVIGATION_ANIMATION =
@@ -56,8 +56,10 @@ object Dependency {
         const val COMPILER = "com.google.dagger:hilt-compiler:2.50"
     }
 
-    object Cast {
+    object Google {
         const val CAST_FRAMEWORK = "com.google.android.gms:play-services-cast-framework:21.2.0"
+        const val PLAY_UPDATE = "com.google.android.play:app-update:2.1.0"
+        const val PLAY_UPDATE_KTX = "com.google.android.play:app-update-ktx:2.1.0"
     }
 
     object JSON {
@@ -208,7 +210,12 @@ fun DependencyHandler.room() {
 }
 
 fun DependencyHandler.googleCast() {
-    implementation(Dependency.Cast.CAST_FRAMEWORK)
+    implementation(Dependency.Google.CAST_FRAMEWORK)
+}
+
+fun DependencyHandler.googlePlay() {
+    implementation(Dependency.Google.PLAY_UPDATE)
+    implementation(Dependency.Google.PLAY_UPDATE_KTX)
 }
 
 fun DependencyHandler.ads() {
@@ -334,14 +341,14 @@ private fun DependencyHandler.testImplementation(dep: org.gradle.api.artifacts.D
     add("testImplementation", dep)
 }
 
-private fun DependencyHandler.androidTestImplementation(depName: String) {
+fun DependencyHandler.androidTestImplementation(depName: String) {
     add("androidTestImplementation", depName)
 }
 
-private fun DependencyHandler.androidTestImplementation(dep: org.gradle.api.artifacts.Dependency) {
+fun DependencyHandler.androidTestImplementation(dep: org.gradle.api.artifacts.Dependency) {
     add("androidTestImplementation", dep)
 }
 
-private fun DependencyHandler.kaptAndroidTest(depName: String) {
+fun DependencyHandler.kaptAndroidTest(depName: String) {
     add("kaptAndroidTest", depName)
 }

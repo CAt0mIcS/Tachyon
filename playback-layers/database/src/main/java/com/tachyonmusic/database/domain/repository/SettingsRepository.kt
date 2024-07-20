@@ -19,6 +19,7 @@ interface SettingsRepository {
         autoDownloadAlbumArtwork: Boolean? = null,
         autoDownloadAlbumArtworkWifiOnly: Boolean? = null,
         combineDifferentPlaybackTypes: Boolean? = null,
+        dynamicColors: Boolean? = null,
         audioUpdateInterval: Duration? = null,
         maxPlaybacksInHistory: Int? = null,
         seekForwardIncrement: Duration? = null,

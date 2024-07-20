@@ -19,6 +19,6 @@ interface SongRepository {
     suspend fun addAll(songs: List<SongEntity>): Resource<Unit>
     suspend fun updateArtwork(song: MediaId, artworkType: String, artworkUrl: String? = null)
     suspend fun updateIsHidden(song: MediaId, isHidden: Boolean)
-    suspend fun updateMetadata(song: MediaId, title: String, artist: String)
+    suspend fun updateMetadata(song: MediaId, title: String, artist: String, album: String? = null)
     suspend fun getSongsWithArtworkTypes(vararg artworkTypes: String): List<SongEntity>
 }

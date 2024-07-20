@@ -65,19 +65,21 @@ class MainViewModel @Inject constructor(
             cachedMusicDirectories = settingsRepository.getSettings().musicDirectories
             updateSettingsDatabase()
 
-            settingsRepository.observe().onEach {
+            settingsRepository.observe().onEach { settings ->
                 val loadingTaskRunning =
                     stateRepository.isLoadingTaskRunning(STATE_LOADING_TASK_STARTUP)
                 if (loadingTaskRunning ||
-                    (it.musicDirectories.isNotEmpty() && cachedMusicDirectories != it.musicDirectories)
+                    (settings.musicDirectories.isNotEmpty() && cachedMusicDirectories != settings.musicDirectories)
                 ) {
                     log.info("Starting song database update due to new music directory or reload")
-                    updateSongDatabase(it)
-                    cachedMusicDirectories = it.musicDirectories
+                    updateSongDatabase(settings)
+                    cachedMusicDirectories = settings.musicDirectories
 
                     if (loadingTaskRunning)
                         stateRepository.finishLoadingTask(STATE_LOADING_TASK_STARTUP)
                 }
+
+                _composeSettings.update { ComposeSettings(settings.animateText, settings.dynamicColors, settings.audioUpdateInterval) }
             }.collect()
         }
     }

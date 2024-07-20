@@ -8,7 +8,8 @@ interface SongMetadataExtractor {
     data class SongMetadata(
         val title: String,
         val artist: String,
-        val duration: Duration
+        val duration: Duration,
+        val album: String?
     )
 
     fun loadMetadata(uri: Uri, defaultTitle: String): SongMetadata?

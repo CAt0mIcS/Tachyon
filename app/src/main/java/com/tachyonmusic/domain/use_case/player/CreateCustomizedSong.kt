@@ -3,17 +3,11 @@ package com.tachyonmusic.domain.use_case.player
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.isNullOrEmpty
 import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.model.CustomizedSongEntity
-import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
-import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.domain.AudioEffectController
-import com.tachyonmusic.playback_layers.toCustomizedSong
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
-import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -47,11 +41,11 @@ class CreateCustomizedSong(
                     song.duration,
                     playback.timingData?.timingData,
                     currentTimingDataIndex = 0,
-                    audioEffectController.bass,
-                    audioEffectController.virtualizerStrength,
-                    audioEffectController.bands,
-                    audioEffectController.playbackParams,
-                    audioEffectController.reverb
+                    audioEffectController.bassValue,
+                    audioEffectController.virtualizerValue,
+                    audioEffectController.equalizerBandValues,
+                    audioEffectController.playbackParams.value,
+                    audioEffectController.reverbValue
                 )
             }
 

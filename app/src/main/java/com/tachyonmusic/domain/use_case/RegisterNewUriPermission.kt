@@ -19,13 +19,13 @@ class RegisterNewUriPermission(
         if (uriPermissionRepository.hasPermission(uri)) {
             val settings = settingsRepository.getSettings()
             settingsRepository.update(
-                musicDirectories = settings.musicDirectories + uri,
                 excludedSongFiles = settings.excludedSongFiles.toMutableList().apply {
                     /**
                      * Remove all excluded song files in the [uri] folder that was added to permissions
                      */
                     removeAll { uri.toString() in it.toString() }
-                }
+                },
+                musicDirectories = settings.musicDirectories + uri
             )
 
             true

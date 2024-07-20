@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.isNullOrEmpty
+import com.tachyonmusic.core.domain.playback.CustomizedSong
+import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.CustomizedSongRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -48,7 +50,7 @@ class TimingDataEditorViewModel @Inject constructor(
     private val createCustomizedSong: CreateCustomizedSong,
     private val playPlayback: PlayPlayback,
     private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
-    private val settingsRepository: SettingsRepository,
+    settingsRepository: SettingsRepository,
     private val pauseResumePlayback: PauseResumePlayback,
     private val customizedSongRepository: CustomizedSongRepository
 ) : ViewModel() {
@@ -59,9 +61,16 @@ class TimingDataEditorViewModel @Inject constructor(
         it?.duration ?: Long.MAX_VALUE.ms
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
+    val currentCustomizedSongName = mediaBrowser.currentPlayback.map {
+        if(it is CustomizedSong) it.name else null
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+
     val timingData = mutableStateListOf<TimingData>()
     var currentIndex by mutableIntStateOf(0)
         private set
+
+    val settings = settingsRepository.observe()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SettingsEntity())
 
     init {
         mediaBrowser.currentPlayback.onEach {
@@ -129,6 +138,22 @@ class TimingDataEditorViewModel @Inject constructor(
         mediaBrowser.currentPlaybackTimingData = TimingDataController(
             timingData.toMutableList().apply {
                 removeAt(i)
+
+                // Add default back if last timingData was deleted
+                if(i == 0 && isEmpty())
+                    add(TimingData(0.ms, duration.value))
+            },
+            currentIndex
+        )
+    }
+
+    fun moveTimingData(from: Int, to: Int) {
+        mediaBrowser.currentPlaybackTimingData = TimingDataController(
+            timingData.toMutableList().apply {
+                if(isValidTimingDataMove(from, to)) {
+                    val tdToMove = removeAt(from)
+                    add(to, tdToMove)
+                }
             },
             currentIndex
         )
@@ -147,7 +172,7 @@ class TimingDataEditorViewModel @Inject constructor(
                     val dbRes = customizedSongRepository.add(createRes.data!!)
 
                     if (dbRes is Resource.Success) {
-                        if (settingsRepository.getSettings().playNewlyCreatedCustomizedSong) {
+                        if (settings.value.playNewlyCreatedCustomizedSong) {
                             runOnUiThread {
                                 pauseResumePlayback(PauseResumePlayback.Action.Pause)
                                 // TODO: Some way to wait for predefined playlists repository to update
@@ -168,5 +193,14 @@ class TimingDataEditorViewModel @Inject constructor(
             } else
                 _customizedSongError.update { createRes.message }
         }
+    }
+
+
+    fun isValidTimingDataMove(from: Int, to: Int): Boolean {
+        if(timingData.size <= 1) return false
+        if(timingData.size == to) return false
+        if(from < 0 || to < 0) return false
+
+        return true
     }
 }

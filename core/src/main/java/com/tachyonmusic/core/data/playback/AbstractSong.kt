@@ -25,6 +25,7 @@ abstract class AbstractSong(
     abstract override val playbackType: PlaybackType.Song
 
     override var isPlayable: Boolean = false
+    override var album: String? = null
 
     override var artwork: Artwork? = null
     override var isArtworkLoading = false
@@ -48,6 +49,7 @@ abstract class AbstractSong(
 
         setTitle(title)
         setArtist(artist)
+        setAlbumArtist(album)
         setExtras(Bundle().apply {
             putLong(MetadataKeys.Duration, duration.inWholeMilliseconds)
 
@@ -66,5 +68,5 @@ abstract class AbstractSong(
                 artist == other.artist && duration == other.duration &&
                 timingData == other.timingData && isPlayable == other.isPlayable &&
                 artwork == other.artwork && isArtworkLoading == other.isArtworkLoading &&
-                isHidden == other.isHidden
+                isHidden == other.isHidden && album == other.album
 }

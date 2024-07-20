@@ -34,7 +34,8 @@ class FileSongMetadataExtractor(
             artist = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
                 ?: "Unknown Artist",
             duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                ?.toLong()?.ms ?: 0.ms
+                ?.toLong()?.ms ?: 0.ms,
+            album = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
         )
     }
 

@@ -15,10 +15,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
@@ -51,7 +55,7 @@ object LibraryScreen :
         draggable: AnchoredDraggableState<SwipingStates>,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
-        var sortOptionsExpanded by remember { mutableStateOf(false) }
+        var sortOptionsExpanded by rememberSaveable { mutableStateOf(false) }
 
         val scope = rememberCoroutineScope()
 
@@ -120,6 +124,8 @@ object LibraryScreen :
             }
 
             item {
+                var rowSize by remember { mutableStateOf(Size.Zero) }
+
                 Row(modifier = Modifier
                     .padding(Theme.padding.medium)
                     .clickable(
@@ -127,6 +133,9 @@ object LibraryScreen :
                         indication = null,
                     ) {
                         sortOptionsExpanded = true
+                    }
+                    .onGloballyPositioned { layoutCoordinates ->
+                        rowSize = layoutCoordinates.size.toSize()
                     }) {
                     val iconAndTextColor by animateColorAsState(
                         if (sortOptionsExpanded) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onBackground,
@@ -143,7 +152,10 @@ object LibraryScreen :
                         )
 
 
-                        DropdownMenu(expanded = sortOptionsExpanded,
+                        DropdownMenu(
+                            modifier = Modifier
+                                .widthIn(max = with(LocalDensity.current) { rowSize.width.toDp() - Theme.padding.extraSmall }),
+                            expanded = sortOptionsExpanded,
                             onDismissRequest = { sortOptionsExpanded = false }) {
                             SortType.entries.forEach {
                                 DropdownMenuItem(
@@ -204,23 +216,22 @@ object LibraryScreen :
                                 showDropDownMenu = !showDropDownMenu
                             },
                             dropDownMenuContent = {
-                                Button(
+                                DropdownMenuItem(
+                                    text = { Text("Set Metadata") },
                                     onClick = {
                                         showMetadataDialog = true
                                         showDropDownMenu = false
                                     }
-                                ) {
-                                    Text("Set Metadata")
-                                }
-                                Button(
+                                )
+
+                                DropdownMenuItem(
+                                    text = { Text("Select Artwork") },
                                     onClick = {
                                         viewModel.queryArtwork(playback)
                                         showArtworkSelectionDialog = true
                                         showDropDownMenu = false
                                     }
-                                ) {
-                                    Text("Select Artwork")
-                                }
+                                )
                             },
                             onClick = {
                                 viewModel.onItemClicked(playback)
@@ -242,11 +253,11 @@ object LibraryScreen :
                                     .fillMaxWidth()
                                     .clip(Theme.shapes.extraLarge)
                             ) {
-                                Column(modifier = Modifier.fillMaxSize()) {
-                                    var searchQuery by remember { mutableStateOf("${playback.artist} ${playback.title}") }
+                                Column {
+                                    var searchQuery by remember { mutableStateOf(playback.albumArtworkSearchQuery) }
 
                                     LaunchedEffect(searchQuery) {
-                                        delay(1.sec)
+                                        delay(2.sec) // TODO: Proper delay option/...
                                         viewModel.queryArtwork(playback, searchQuery)
                                     }
 
@@ -303,6 +314,7 @@ object LibraryScreen :
                                     var title by remember { mutableStateOf(playback.title) }
                                     var artist by remember { mutableStateOf(playback.artist) }
                                     var name by remember { mutableStateOf(playback.displayTitle) }
+                                    var album by remember {mutableStateOf(playback.album)}
 
                                     val playbackType = playback.mediaId.playbackType
 
@@ -312,6 +324,9 @@ object LibraryScreen :
 
                                         Text("Artist")
                                         TextField(value = artist, onValueChange = { artist = it })
+
+                                        Text("Album")
+                                        TextField(value = album,  onValueChange = {album = it})
                                     }
                                     if (playbackType is PlaybackType.CustomizedSong || playbackType is PlaybackType.Playlist) {
                                         Text("Name")
@@ -321,7 +336,7 @@ object LibraryScreen :
                                     Button(
                                         onClick = {
                                             showMetadataDialog = false
-                                            viewModel.updateMetadata(playback, title, artist, name)
+                                            viewModel.updateMetadata(playback, title, artist, name, album)
                                         }
                                     ) {
                                         Text("Confirm")

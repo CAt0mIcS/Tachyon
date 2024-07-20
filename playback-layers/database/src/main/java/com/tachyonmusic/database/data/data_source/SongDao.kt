@@ -52,6 +52,6 @@ interface SongDao {
     @Query("UPDATE $SONG_DATABASE_TABLE_NAME SET isHidden=:isHidden WHERE mediaId=:mediaId")
     suspend fun updateIsHidden(mediaId: MediaId, isHidden: Boolean)
 
-    @Query("UPDATE $SONG_DATABASE_TABLE_NAME SET title=:title, artist=:artist WHERE mediaId=:mediaId")
-    suspend fun updateMetadata(mediaId: MediaId, title: String, artist: String)
+    @Query("UPDATE $SONG_DATABASE_TABLE_NAME SET title=:title, artist=:artist, album=:album WHERE mediaId=:mediaId")
+    suspend fun updateMetadata(mediaId: MediaId, title: String, artist: String, album: String?)
 }

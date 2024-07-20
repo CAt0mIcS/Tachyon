@@ -42,7 +42,6 @@ import com.tachyonmusic.domain.use_case.player.SavePlaybackToPlaylist
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.domain.use_case.profile.ExportDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
-import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.data.ConsoleUiTextLogger
@@ -109,11 +108,6 @@ object AppUseCaseModule {
         settingsRepository: SettingsRepository,
         @ApplicationContext context: Context
     ) = UpdateSettingsDatabase(settingsRepository, context)
-
-    @Provides
-    @Singleton
-    fun provideWriteSettingsUseCase(settingsRepository: SettingsRepository) =
-        WriteSettings(settingsRepository)
 
     @Provides
     @Singleton

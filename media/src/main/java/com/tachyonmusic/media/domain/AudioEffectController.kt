@@ -5,33 +5,42 @@ import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.core.domain.model.SoundFrequency
 import com.tachyonmusic.core.domain.model.SoundLevel
+import kotlinx.coroutines.flow.StateFlow
 
 interface AudioEffectController {
-    var controller: PlaybackController?
+    val playbackParams: StateFlow<PlaybackParameters>
+    val bass: StateFlow<Int>
+    val virtualizerStrength: StateFlow<Int>
+    val reverb: StateFlow<ReverbConfig>
 
-    var bass: Int?
-    var virtualizerStrength: Int?
+    val bassEnabled: StateFlow<Boolean>
+    val virtualizerEnabled: StateFlow<Boolean>
+    val equalizerEnabled: StateFlow<Boolean>
+    val reverbEnabled: StateFlow<Boolean>
 
-    var bassEnabled: Boolean
-    var virtualizerEnabled: Boolean
-    var equalizerEnabled: Boolean
-    var reverbEnabled: Boolean
-    var volumeEnhancerEnabled: Boolean
-
-    var playbackParams: PlaybackParameters
+    val bassValue: Int?
+    val virtualizerValue: Int?
+    val reverbValue: ReverbConfig?
+    val equalizerBandValues: List<EqualizerBand>?
 
     val numBands: Int
     val maxBandLevel: SoundLevel
     val minBandLevel: SoundLevel
     val presets: List<String>
-    val bands: List<EqualizerBand>?
+    val currentPreset: String?
+    val bands: StateFlow<List<EqualizerBand>>
 
-    var reverb: ReverbConfig?
+    val reverbAudioEffectId: Int?
 
-    fun setBandLevel(band: Int, level: SoundLevel)
-    fun setPreset(preset: String)
-    fun getBandLevel(band: Int): SoundLevel
-    fun getBandIndex(
+    fun setPlaybackParameters(value: PlaybackParameters)
+    fun setBass(value: Int)
+    fun setVirtualizerStrength(value: Int)
+    fun setReverb(value: ReverbConfig)
+
+    fun setEqualizerBandLevel(band: Int, level: SoundLevel)
+    fun setEqualizerPreset(preset: String)
+    fun getEqualizerBandLevel(band: Int): SoundLevel
+    fun getEqualizerBandIndex(
         lowerBandFrequency: SoundFrequency,
         upperBandFrequency: SoundFrequency,
         centerFrequency: SoundFrequency
@@ -40,8 +49,12 @@ interface AudioEffectController {
     fun updateAudioSessionId(audioSessionId: Int)
     fun release()
 
-    interface PlaybackController {
-        fun onNewPlaybackParameters(params: PlaybackParameters) {}
-        fun onReverbToggled(enabled: Boolean, effectId: Int) {}
-    }
+    /**
+     * @return the actual enabled state of the audio effect, since they may be unavailable
+     */
+
+    fun setBassEnabled(enabled: Boolean): Boolean
+    fun setVirtualizerEnabled(enabled: Boolean): Boolean
+    fun setEqualizerEnabled(enabled: Boolean): Boolean
+    fun setReverbEnabled(enabled: Boolean): Boolean
 }

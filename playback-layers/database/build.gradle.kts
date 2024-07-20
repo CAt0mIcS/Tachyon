@@ -18,6 +18,12 @@ android {
         ndk.debugSymbolLevel = Index.DEBUG_SYMBOL_LEVEL
         testInstrumentationRunner = "com.tachyonmusic.testutils.HiltTestRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += "room.schemaLocation" to "$projectDir/schemas"
+            }
+        }
     }
 
     buildTypes {

@@ -53,8 +53,13 @@ class RoomSongRepository(
         dao.updateIsHidden(song, isHidden)
     }
 
-    override suspend fun updateMetadata(song: MediaId, title: String, artist: String) {
-        dao.updateMetadata(song, title, artist)
+    override suspend fun updateMetadata(
+        song: MediaId,
+        title: String,
+        artist: String,
+        album: String?
+    ) {
+        dao.updateMetadata(song, title, artist, album)
     }
 
     override suspend fun getSongsWithArtworkTypes(vararg artworkTypes: String) =

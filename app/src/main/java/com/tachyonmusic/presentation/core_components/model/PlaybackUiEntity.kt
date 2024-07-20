@@ -19,7 +19,9 @@ data class PlaybackUiEntity(
     val mediaId: MediaId = MediaId.EMPTY,
     val playbackType: PlaybackType = PlaybackType.Song.Local(),
     val artwork: Artwork? = null,
-    val isPlayable: Boolean = false
+    val isPlayable: Boolean = false,
+    val album: String = "",
+    val albumArtworkSearchQuery: String = ""
 )
 
 fun Playback.toUiEntity() = when (this) {
@@ -32,7 +34,9 @@ fun Playback.toUiEntity() = when (this) {
         mediaId,
         playbackType,
         artwork,
-        isPlayable
+        isPlayable,
+        album ?: "Unknown Album",
+        album ?: "$artist $title"
     )
     is CustomizedSong -> PlaybackUiEntity(
         title,
@@ -43,7 +47,9 @@ fun Playback.toUiEntity() = when (this) {
         mediaId,
         playbackType,
         artwork,
-        isPlayable
+        isPlayable,
+        album ?: "Unknown Album",
+        album ?: "$artist $title"
     )
     is Playlist -> PlaybackUiEntity(
         playbacks.first().title,

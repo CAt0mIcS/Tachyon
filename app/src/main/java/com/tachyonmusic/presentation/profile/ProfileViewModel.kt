@@ -10,7 +10,6 @@ import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.profile.ExportDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
-import com.tachyonmusic.domain.use_case.profile.WriteSettings
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.sec
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +22,6 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
-    private val writeSettings: WriteSettings,
     private val registerNewUriPermission: RegisterNewUriPermission,
     private val stateRepository: StateRepository,
     private val exportDatabase: ExportDatabase,
@@ -40,71 +38,77 @@ class ProfileViewModel @Inject constructor(
 
     fun seekForwardIncrementChanged(inc: Duration) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(seekForwardIncrement = inc)
+            settingsRepository.update(seekForwardIncrement = inc)
         }
     }
 
     fun seekBackIncrementChanged(inc: Duration) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(seekBackIncrement = inc)
+            settingsRepository.update(seekBackIncrement = inc)
         }
     }
 
     fun onAnimateTextChanged(animateText: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(animateText = animateText)
+            settingsRepository.update(animateText = animateText)
         }
     }
 
     fun ignoreAudioFocusChanged(ignore: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(ignoreAudioFocus = ignore)
+            settingsRepository.update(ignoreAudioFocus = ignore)
         }
         // TODO: Audio in Android Auto won't play if audio focus is not requested
     }
 
     fun autoDownloadAlbumArtworkChanged(autoDownload: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(autoDownloadAlbumArtwork = autoDownload)
+            settingsRepository.update(autoDownloadAlbumArtwork = autoDownload)
         }
     }
 
     fun autoDownloadAlbumArtworkWifiOnly(downloadWifiOnly: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(autoDownloadAlbumArtworkWifiOnly = downloadWifiOnly)
+            settingsRepository.update(autoDownloadAlbumArtworkWifiOnly = downloadWifiOnly)
         }
     }
 
     fun combineDifferentPlaybackTypesChanged(combine: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(combineDifferentPlaybackTypes = combine)
+            settingsRepository.update(combineDifferentPlaybackTypes = combine)
         }
     }
 
     fun maxPlaybacksInHistoryChanged(maxPlaybacks: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(maxPlaybacksInHistory = maxPlaybacks)
+            settingsRepository.update(maxPlaybacksInHistory = maxPlaybacks)
         }
     }
 
     fun audioUpdateIntervalChanged(interval: Duration) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(audioUpdateInterval = interval)
+            settingsRepository.update(audioUpdateInterval = interval)
         }
     }
 
     fun playNewlyCreatedCustomizedSong(playNewly: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(playNewlyCreatedCustomizedSong = playNewly)
+            settingsRepository.update(playNewlyCreatedCustomizedSong = playNewly)
         }
     }
 
     fun shouldMillisecondsBeShownChanged(shouldShow: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            writeSettings(shouldMillisecondsBeShown = shouldShow)
+            settingsRepository.update(shouldMillisecondsBeShown = shouldShow)
         }
     }
 
+    fun dynamicColorsChanged(enabled: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            settingsRepository.update(dynamicColors = enabled)
+        }
+    }
+    
     fun onUriPermissionResult(uri: Uri?) {
         viewModelScope.launch {
             stateRepository.queueLoadingTask("ProfileViewModel::registerNewUriPermission")

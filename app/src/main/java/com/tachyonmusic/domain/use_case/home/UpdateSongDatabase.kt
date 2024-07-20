@@ -126,7 +126,8 @@ class UpdateSongDatabase(
                 MediaId.ofLocalSong(path.uri),
                 metadata.title,
                 metadata.artist,
-                metadata.duration
+                metadata.duration,
+                album = metadata.album
             )
 
             loadArtworkForEntity(entity) { toUpdate ->
