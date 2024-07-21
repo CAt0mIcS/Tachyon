@@ -11,7 +11,7 @@ sealed class SearchLocation(val id: Int) {
         override val next = Local
 
         @DrawableRes
-        override val icon = R.drawable.ic_search
+        override val icon = R.drawable.ic_local_search
 
         override fun toString() = "SearchLocation.Local"
     }

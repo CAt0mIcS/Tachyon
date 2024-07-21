@@ -1,17 +1,25 @@
 package com.tachyonmusic.presentation.library.search
 
 import android.os.Bundle
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -82,6 +90,7 @@ object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(
+                        start = Theme.padding.medium,
                         end = Theme.padding.medium,
                         top = Theme.padding.medium
                     )
@@ -127,7 +136,7 @@ object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
                     },
                     leadingIcon = {
                         Icon(
-                            painterResource(R.drawable.ic_search),
+                            Icons.Default.Search,
                             contentDescription = "Search Playbacks",
                             modifier = Modifier.scale(1.2f)
                         )
@@ -148,18 +157,27 @@ object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
                 )
             }
 
-            LazyColumn(
+            Spacer(Modifier.height(Theme.padding.large))
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = Theme.padding.medium,
-                        top = Theme.padding.medium,
-                        end = Theme.padding.medium
+                    .background(
+                        MaterialTheme.colorScheme.surfaceContainerLowest,
+                        shape = Theme.shapes.large
                     )
+                    .clip(Theme.shapes.large)
+                    .fillMaxHeight()
             ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = Theme.padding.medium,
+                            top = Theme.padding.small,
+                            end = Theme.padding.medium
+                        )
+                ) {
 
-                for (it in searchResults) {
-                    item {
+                    items(searchResults) {
                         HorizontalPlaybackView(
                             playback = it.playback,
                             modifier = Modifier
@@ -173,10 +191,6 @@ object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
                             }
                             keyboardController?.hide()
                         }
-                    }
-
-                    item {
-                        Text(it.score.toString())
                     }
                 }
             }
