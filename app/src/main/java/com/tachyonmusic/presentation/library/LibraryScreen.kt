@@ -108,22 +108,30 @@ object LibraryScreen :
                             bottom = Theme.padding.extraSmall
                         ), horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    FilterItem(R.string.songs, filterPlaybackType is PlaybackType.Song) {
+                    Spacer(modifier = Modifier.width(2.dp))
+                    FilterItem(R.string.songs, selected = filterPlaybackType is PlaybackType.Song,
+                        modifier = Modifier.weight(1f)) {
                         viewModel.onFilterSongs()
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
                     FilterItem(
                         R.string.remixes,
-                        filterPlaybackType is PlaybackType.Remix
+                        selected = filterPlaybackType is PlaybackType.Remix,
+                        modifier = Modifier.weight(1f)
                     ) {
                         viewModel.onFilterRemixes()
                     }
 
-                    Spacer(modifier = Modifier.width(8.dp))
-                    FilterItem(R.string.playlists, filterPlaybackType is PlaybackType.Playlist) {
+                    Spacer(modifier = Modifier.width(16.dp))
+                    FilterItem(
+                        R.string.playlists,
+                        selected = filterPlaybackType is PlaybackType.Playlist,
+                        modifier = Modifier.weight(1f)
+                    ) {
                         viewModel.onFilterPlaylists()
                     }
+                    Spacer(modifier = Modifier.width(2.dp))
                 }
             }
 
