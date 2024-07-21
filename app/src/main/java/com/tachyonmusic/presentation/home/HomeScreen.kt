@@ -73,106 +73,6 @@ object HomeScreen :
                 bottom = miniPlayerHeight + Theme.padding.medium
             )
         ) {
-//
-//            item {
-//                val interactionSource: MutableInteractionSource =
-//                    remember { MutableInteractionSource() }
-//
-//                BackHandler(isSearching) {
-//                    isSearching = false
-//                    searchText = ""
-//                    focusManager.clearFocus()
-//                }
-//
-//                BasicTextField(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(
-//                            end = Theme.padding.medium,
-//                            top = Theme.padding.medium
-//                        )
-//                        .shadow(Theme.shadow.medium, shape = Theme.shapes.medium)
-//                        .clip(Theme.shapes.medium)
-//                        .defaultMinSize(
-//                            minWidth = TextFieldDefaults.MinWidth,
-//                            minHeight = TextFieldDefaults.MinHeight
-//                        ),
-//                    value = searchText,
-//                    onValueChange = {
-//                        searchText = it
-//                        isSearching = true
-//                        viewModel.search(it, searchLocation)
-//                    },
-//                    singleLine = true
-//                ) { innerTextField ->
-//                    TextFieldDefaults.DecorationBox(
-//                        value = searchText,
-//                        innerTextField = innerTextField,
-//                        enabled = true,
-//                        singleLine = true,
-//                        visualTransformation = VisualTransformation.None,
-//                        interactionSource = interactionSource,
-//                        isError = false,
-//                        colors = TextFieldDefaults.colors().copy(
-//                            focusedIndicatorColor = Color.Transparent,
-//                            unfocusedIndicatorColor = Color.Transparent,
-//                            disabledIndicatorColor = Color.Transparent,
-//
-//                            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-//                            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
-//                        ),
-//                        placeholder = {
-//                            Text(
-//                                text = stringResource(androidx.appcompat.R.string.search_menu_title),
-//                                fontSize = 22.sp
-//                            )
-//                        },
-//                        leadingIcon = {
-//                            Icon(
-//                                painterResource(R.drawable.ic_search),
-//                                contentDescription = "Search Playbacks",
-//                                modifier = Modifier.scale(1.2f)
-//                            )
-//                        },
-//                        trailingIcon = {
-//                            Icon(
-//                                painterResource(searchLocation.icon),
-//                                contentDescription = "Change search location",
-//                                modifier = Modifier
-//                                    .scale(.9f)
-//                                    .clip(Theme.shapes.extraLarge)
-//                                    .clickable {
-//                                        searchLocation = searchLocation.next
-//                                        if (isSearching)
-//                                            viewModel.search(searchText, searchLocation)
-//                                    }
-//                            )
-//                        },
-//                        contentPadding = PaddingValues(0.dp),
-//                    )
-//                }
-//            }
-//
-//            // TODO: Don't rely on states to display search view/normal home view
-//            if (isSearching) {
-//                items(searchResults, key = { it.mediaId.toString() }) {
-//                    HorizontalPlaybackView(
-//                        playback = it,
-//                        artwork = it.artwork ?: PlaceholderArtwork,
-//                        modifier = Modifier.padding(
-//                            top = Theme.padding.small,
-//                            end = Theme.padding.medium
-//                        ),
-//                        onClick = {
-//                            viewModel.onItemClicked(it)
-//                            isSearching = false
-//                            searchText = ""
-//                            focusManager.clearFocus()
-//                        }
-//                    )
-//                }
-//            } else {
-
             item {
                 Row(
                     modifier = Modifier
@@ -192,25 +92,24 @@ object HomeScreen :
                         fontWeight = FontWeight.Bold
                     )
 
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.End,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        TextButton(
-                            onClick = { viewModel.refreshArtwork() },
-                        ) {
-                            Text(
-                                "View All",
-                                color = MaterialTheme.colorScheme.tertiary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
+//                    Column(
+//                        modifier = Modifier.fillMaxSize(),
+//                        horizontalAlignment = Alignment.End,
+//                        verticalArrangement = Arrangement.Center
+//                    ) {
+//                        TextButton(
+//                            onClick = { viewModel.refreshArtwork() },
+//                        ) {
+//                            Text(
+//                                "View All",
+//                                color = MaterialTheme.colorScheme.tertiary,
+//                                fontSize = 16.sp,
+//                                fontWeight = FontWeight.Bold
+//                            )
+//                        }
+//                    }
                 }
             }
-
 
 
             item {
@@ -240,42 +139,9 @@ object HomeScreen :
                     }
                 }
             }
-
-//                item {
-//
-//                    Text(
-//                        "Recommended for You",
-//                        fontSize = 24.sp,
-//                        fontWeight = FontWeight.Bold,
-//                        modifier = Modifier.padding(
-//                            start = Theme.padding.medium,
-//                            top = Theme.padding.large,
-//                            end = Theme.padding.medium
-//                        )
-//                    )
-//                }
-
-//                item {
-//                    // TODO: Recommendations
-//                    LazyRow(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(start = Theme.padding.small, top = Theme.padding.small)
-//                    ) {
-//                        playbacksView(playbacks = history) {
-//                            viewModel.onItemClicked(it)
-//                            scope.launch {
-//                                sheetState.expand()
-//                            }
-//                            onSheetStateFraction(1f)
-//                        }
-//                    }
-//
-//                }
         }
     }
 }
-//}
 
 
 private fun LazyListScope.playbacksView(

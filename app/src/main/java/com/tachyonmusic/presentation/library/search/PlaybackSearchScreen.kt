@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,8 +29,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -39,18 +43,19 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.presentation.NavigationItem
@@ -65,7 +70,6 @@ object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
         navArgument("playbackType") { type = NavType.StringType }
     )
 
-
     @Composable
     operator fun invoke(
         arguments: Bundle,
@@ -73,6 +77,10 @@ object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
         viewModel: PlaybackSearchViewModel = hiltViewModel()
     ) {
         val playbackType = PlaybackType.build(arguments.getString("playbackType")!!)
+
+        LaunchedEffect(Unit) {
+            viewModel.resetLoadingRange()
+        }
 
         val searchLocation by viewModel.searchLocation.collectAsState()
         val searchQuery by viewModel.searchQuery.collectAsState()
@@ -112,7 +120,10 @@ object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
                 onValueChange = {
                     viewModel.search(it, playbackType)
                 },
-                textStyle = TextStyle.Default.copy(fontSize = 22.sp, color = MaterialTheme.colorScheme.onPrimaryContainer),
+                textStyle = TextStyle.Default.copy(
+                    fontSize = 22.sp,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 cursorBrush = SolidColor(MaterialTheme.colorScheme.onPrimaryContainer),
                 singleLine = true
             ) { innerTextField ->
@@ -176,24 +187,59 @@ object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
                         .fillMaxWidth()
                         .padding(
                             start = Theme.padding.medium,
-                            top = Theme.padding.small,
                             end = Theme.padding.medium
                         )
                 ) {
 
-                    items(searchResults) {
-                        HorizontalPlaybackView(
-                            playback = it.playback,
-                            modifier = Modifier
-                                .isEnabled(it.playback.isPlayable)
-                                .padding(bottom = Theme.padding.extraSmall),
-                            artwork = it.playback.artwork ?: PlaceholderArtwork
-                        ) {
-                            viewModel.onItemClicked(it.playback)
-                            scope.launch {
-                                draggable.animateTo(SwipingStates.EXPANDED)
+                    if (searchResults.isEmpty()) {
+                        item {
+                            Text(
+                                "No Results Found",
+                                style = TextStyle.Default.copy(
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    fontSize = 26.sp,
+                                    textAlign = TextAlign.Center
+                                ),
+                                modifier = Modifier.fillMaxWidth().padding(top = Theme.padding.large),
+                            )
+                        }
+                    } else {
+                        items(searchResults) { searchResult ->
+                            HorizontalPlaybackView(
+                                playback = searchResult.playback,
+                                modifier = Modifier
+                                    .isEnabled(searchResult.playback.isPlayable)
+                                    .padding(top = Theme.padding.small),
+                                artwork = searchResult.playback.artwork
+                                    ?: PlaceholderArtwork
+                            ) {
+                                viewModel.onItemClicked(searchResult.playback)
+                                scope.launch {
+                                    draggable.animateTo(SwipingStates.EXPANDED)
+                                }
+                                keyboardController?.hide()
                             }
-                            keyboardController?.hide()
+                        }
+
+                        item {
+                            Text(
+                                "Show more",
+                                style = TextStyle.Default.copy(
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    fontSize = 20.sp,
+                                    textAlign = TextAlign.Center
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        viewModel.increaseLoadingRange()
+                                    }
+                                    .padding(
+                                        vertical = Theme.padding.medium,
+                                        horizontal = Theme.padding.medium
+                                    )
+                                    .clip(Theme.shapes.medium)
+                            )
                         }
                     }
                 }

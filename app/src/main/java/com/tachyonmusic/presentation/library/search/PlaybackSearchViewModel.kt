@@ -52,21 +52,26 @@ class PlaybackSearchViewModel @Inject constructor(
     val searchQuery = _searchQuery.asStateFlow()
 
     // TODO: Only load visible?
-    private var artworkLoadingRange = MutableStateFlow(0..Int.MAX_VALUE)
+    private var itemDisplayRange = MutableStateFlow(10)
 
     private var _searchLocation = MutableStateFlow<SearchLocation>(SearchLocation.Local)
     val searchLocation = _searchLocation.asStateFlow()
 
     val searchResults =
-        combine(searchQuery, searchLocation, artworkLoadingRange) { query, location, artworkRange ->
+        combine(searchQuery, searchLocation, itemDisplayRange) { query, location, itemRange ->
             when (location) {
                 SearchLocation.Local -> {
                     val quality = 50
                     loadArtwork(
-                        searchStoredPlaybacks(query, playbackType),
-                        artworkRange,
+                        searchStoredPlaybacks(query, playbackType, itemRange),
+                        0..Int.MAX_VALUE,
                         quality
-                    ).map { SearchResultUiEntity(it.playback.toUiEntity(), it.score) } // TODO: playback type
+                    ).map {
+                        SearchResultUiEntity(
+                            it.playback.toUiEntity(),
+                            it.score
+                        )
+                    } // TODO: playback type
                 }
             }.copy()
         }.debounce(500L).stateIn(
@@ -85,6 +90,14 @@ class PlaybackSearchViewModel @Inject constructor(
         _searchLocation.update { location }
     }
 
+    fun increaseLoadingRange() {
+        itemDisplayRange.update { it + 10 }
+    }
+
+    fun resetLoadingRange() {
+        itemDisplayRange.update { 10 }
+    }
+
     fun onItemClicked(entity: PlaybackUiEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             playPlayback(
@@ -94,7 +107,7 @@ class PlaybackSearchViewModel @Inject constructor(
         }
     }
 
-    private suspend fun PlaybackUiEntity.toPlayback() = when(playbackType) {
+    private suspend fun PlaybackUiEntity.toPlayback() = when (playbackType) {
         is PlaybackType.Song -> toSong(playbackRepository.getSongs())
         is PlaybackType.Remix -> toRemix(playbackRepository.getRemixes())
         is PlaybackType.Playlist -> toPlaylist(playbackRepository.getPlaylists())
