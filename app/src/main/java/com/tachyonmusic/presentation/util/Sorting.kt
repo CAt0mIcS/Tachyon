@@ -11,37 +11,66 @@ import com.tachyonmusic.playback_layers.SortType
 
 @SuppressLint("ComposableNaming")
 @Composable
-fun SortType.asString(playbackType: PlaybackType, sortOrder: SortOrder? = null) = when (this) {
-    SortType.TitleAlphabetically -> stringResource(
-        R.string.sorted_by_alphabetical_title,
-        sortOrder?.asString() ?: ""
-    )
-
-    SortType.ArtistAlphabetically -> stringResource(
-        R.string.sorted_by_alphabetical_artist,
-        sortOrder?.asString() ?: ""
-    )
-
-    SortType.NameAlphabetically -> stringResource(
-        R.string.sorted_by_alphabetical_name,
-        sortOrder?.asString() ?: ""
-    )
-
-    SortType.DateCreatedOrEdited -> when(playbackType) {
-        is PlaybackType.Song -> stringResource(
+fun SortType.asString(playbackType: PlaybackType, sortOrder: SortOrder? = null) = when (playbackType) {
+    is PlaybackType.Song -> when(this) {
+        SortType.TitleAlphabetically -> stringResource(
+            R.string.sorted_by_alphabetical_title,
+            sortOrder?.asString() ?: ""
+        )
+        SortType.ArtistAlphabetically -> stringResource(
+            R.string.sorted_by_alphabetical_artist,
+            sortOrder?.asString() ?: ""
+        )
+        SortType.DateCreatedOrEdited -> stringResource(
             R.string.sorted_by_date_added,
             sortOrder?.asString() ?: ""
         )
-        is PlaybackType.Remix -> stringResource(
+        else -> TODO("Invalid sort type $this for Song")
+    }
+    is PlaybackType.Remix -> when(this) {
+        SortType.TitleAlphabetically -> stringResource(
+            R.string.sorted_by_alphabetical_name,
+            sortOrder?.asString() ?: ""
+        )
+        SortType.SubtitleAlphabetically -> stringResource(
+            R.string.sorted_by_alphabetical_title,
+            sortOrder?.asString() ?: ""
+        )
+        SortType.ArtistAlphabetically -> stringResource(
+            R.string.sorted_by_alphabetical_artist,
+            sortOrder?.asString() ?: ""
+        )
+        SortType.DateCreatedOrEdited -> stringResource(
             R.string.sorted_by_date_created,
             sortOrder?.asString() ?: ""
         )
-        is PlaybackType.Playlist -> stringResource(
-            R.string.sorted_by_date_edited,
-            sortOrder?.asString() ?: ""
-        )
-        is PlaybackType.Ad -> ""
+
+        else -> TODO("Invalid sort type $this for Remix")
     }
+    is PlaybackType.Playlist -> {
+        when(this) {
+            SortType.TitleAlphabetically -> stringResource(
+                R.string.sorted_by_alphabetical_name,
+                sortOrder?.asString() ?: ""
+            )
+            SortType.SubtitleAlphabetically -> stringResource(
+                R.string.sorted_by_alphabetical_title,
+                sortOrder?.asString() ?: ""
+            )
+            SortType.ArtistAlphabetically -> stringResource(
+                R.string.sorted_by_alphabetical_artist,
+                sortOrder?.asString() ?: ""
+            )
+            SortType.DateCreatedOrEdited -> stringResource(
+                R.string.sorted_by_date_edited,
+                sortOrder?.asString() ?: ""
+            )
+
+            else -> TODO("Invalid sort type $this for Playlist")
+        }
+    }
+
+    is PlaybackType.Ad -> ""
 }
 
 

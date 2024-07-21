@@ -16,7 +16,7 @@ enum class SortOrder {
 enum class SortType {
     TitleAlphabetically,
     ArtistAlphabetically,
-    NameAlphabetically,
+    SubtitleAlphabetically,
     DateCreatedOrEdited;
 
     companion object {
@@ -63,7 +63,7 @@ private inline fun <T, R : Comparable<R>> Collection<T>.sortWithOrder(
 private fun Playback.getComparedString(type: SortType) = when (this) {
     is Song -> {
         when (type) {
-            SortType.TitleAlphabetically, SortType.NameAlphabetically -> title + artist
+            SortType.TitleAlphabetically, SortType.SubtitleAlphabetically -> title + artist
             SortType.ArtistAlphabetically -> artist + title
             SortType.DateCreatedOrEdited -> timestampCreatedAddedEdited.toString()
         }
@@ -71,18 +71,18 @@ private fun Playback.getComparedString(type: SortType) = when (this) {
 
     is Remix -> {
         when (type) {
-            SortType.TitleAlphabetically -> title + artist + name
+            SortType.TitleAlphabetically -> name + title + artist
             SortType.ArtistAlphabetically -> artist + name + title
-            SortType.NameAlphabetically -> name + title + artist
+            SortType.SubtitleAlphabetically -> title + name + artist
             SortType.DateCreatedOrEdited -> timestampCreatedAddedEdited.toString()
         }
     }
 
     is Playlist -> {
         when (type) {
-            SortType.TitleAlphabetically -> title + name + artist
+            SortType.TitleAlphabetically -> name + title + artist
             SortType.ArtistAlphabetically -> artist + name + title
-            SortType.NameAlphabetically -> name + title + artist
+            SortType.SubtitleAlphabetically -> title + name + artist
             SortType.DateCreatedOrEdited -> timestampCreatedAddedEdited.toString()
         }
     }

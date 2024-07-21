@@ -89,12 +89,12 @@ class LibraryViewModel @Inject constructor(
             )
 
             is PlaybackType.Remix -> listOf(
-                SortType.NameAlphabetically, SortType.TitleAlphabetically,
+                SortType.SubtitleAlphabetically, SortType.TitleAlphabetically,
                 SortType.ArtistAlphabetically, SortType.DateCreatedOrEdited
             )
 
             is PlaybackType.Playlist -> listOf(
-                SortType.NameAlphabetically, SortType.DateCreatedOrEdited
+                SortType.SubtitleAlphabetically, SortType.DateCreatedOrEdited
             )
 
             is PlaybackType.Ad -> emptyList()
@@ -165,12 +165,12 @@ class LibraryViewModel @Inject constructor(
 
     fun onFilterRemixes() {
         _filterType.value = PlaybackType.Remix.Local()
-        onSortTypeChanged(SortType.NameAlphabetically)
+        onSortTypeChanged(SortType.TitleAlphabetically)
     }
 
     fun onFilterPlaylists() {
         _filterType.value = PlaybackType.Playlist.Local()
-        onSortTypeChanged(SortType.NameAlphabetically)
+        onSortTypeChanged(SortType.TitleAlphabetically)
     }
 
     fun onSortTypeChanged(type: SortType) {
