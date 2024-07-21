@@ -222,6 +222,7 @@ object LibraryScreen :
 
                 if (playback.playbackType is PlaybackType.Ad.Banner) {
                     AdmobBanner(
+                        modifier = Modifier.padding(bottom = Theme.padding.extraSmall),
                         optionalAdView = viewModel.cachedBannerAds[playback.mediaId],
                         onNewAdViewCreated = {
                             viewModel.cacheAd(playback.mediaId, it)
