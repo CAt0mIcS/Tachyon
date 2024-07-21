@@ -2,8 +2,16 @@ package com.tachyonmusic.database.util
 
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.RemoteArtwork
-import com.tachyonmusic.core.domain.playback.*
-import com.tachyonmusic.database.domain.model.*
+import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Remix
+import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.database.domain.model.PlaybackEntity
+import com.tachyonmusic.database.domain.model.PlaylistEntity
+import com.tachyonmusic.database.domain.model.RemixEntity
+import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
+import com.tachyonmusic.database.domain.model.SongEntity
 
 fun Playback.toEntity(): PlaybackEntity = when (this) {
     is Song -> toEntity()

@@ -6,6 +6,7 @@ import androidx.media3.cast.MediaItemConverter
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata.MEDIA_TYPE_MUSIC
 import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
 import com.google.android.gms.cast.MediaInfo
 import com.google.android.gms.cast.MediaMetadata
 import com.google.android.gms.cast.MediaQueueItem
@@ -20,7 +21,7 @@ import com.tachyonmusic.media.util.duration
 import com.tachyonmusic.media.util.name
 import org.json.JSONObject
 
-
+@UnstableApi
 class CastMediaItemConverter(
     private val castWebServerController: CastWebServerController
 ) : MediaItemConverter {

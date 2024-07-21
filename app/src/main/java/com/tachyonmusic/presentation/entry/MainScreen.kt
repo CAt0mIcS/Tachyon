@@ -1,15 +1,7 @@
-@file:OptIn(
-    ExperimentalAnimationApi::class,
-    ExperimentalMotionApi::class,
-    ExperimentalFoundationApi::class
-)
-
 package com.tachyonmusic.presentation.entry
 
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -47,7 +39,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.constraintlayout.compose.ConstraintSet
-import androidx.constraintlayout.compose.ExperimentalMotionApi
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
@@ -63,7 +54,6 @@ enum class SwipingStates {
     COLLAPSED
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
@@ -211,7 +201,6 @@ fun MainScreen(
                         Column {
                             MotionLayoutHeader(
                                 progress,
-                                anchoredDraggableState,
                                 mainContent = { modifier ->
                                     Box(modifier = modifier.fillMaxHeight()) {
                                         NavigationGraph(
@@ -245,7 +234,6 @@ fun MainScreen(
                                                 .coerceIn(0f, 1f)
 
                                         PlayerLayout(
-                                            navController,
                                             miniPlayerHeight,
                                             { miniPlayerHeight = it },
                                             anchoredDraggableState,
@@ -262,11 +250,9 @@ fun MainScreen(
     }
 }
 
-@OptIn(ExperimentalMotionApi::class)
 @Composable
 private fun MotionLayoutHeader(
     progress: Float,
-    draggableState: AnchoredDraggableState<SwipingStates>,
     mainContent: @Composable (Modifier) -> Unit,
     scrollableBody: @Composable () -> Unit
 ) {

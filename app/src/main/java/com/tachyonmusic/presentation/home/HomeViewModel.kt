@@ -3,13 +3,11 @@ package com.tachyonmusic.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.repository.DataRepository
-import com.tachyonmusic.domain.model.SearchLocation
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.domain.use_case.home.UnloadArtworks
-import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.core_components.model.toUiEntity
@@ -17,7 +15,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update

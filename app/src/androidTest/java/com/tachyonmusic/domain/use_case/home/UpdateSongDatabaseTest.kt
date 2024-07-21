@@ -15,7 +15,6 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkConstructor
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
@@ -23,7 +22,6 @@ import org.junit.Rule
 import org.junit.Test
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 internal class UpdateSongDatabaseTest {
 

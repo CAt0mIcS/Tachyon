@@ -1,7 +1,7 @@
 package com.tachyonmusic.domain.use_case.player
 
-import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.data.playback.LocalRemix
+import com.tachyonmusic.core.data.playback.LocalSong
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.TimingData
@@ -22,7 +22,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -30,7 +29,6 @@ import org.junit.Test
 import javax.inject.Inject
 
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltAndroidTest
 internal class CreateRemixTest {
     @get:Rule

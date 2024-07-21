@@ -30,7 +30,7 @@ import javax.inject.Inject
 class MiniPlayerViewModel @Inject constructor(
     playbackRepository: PlaybackRepository,
     loadArtworkForPlayback: LoadArtworkForPlayback,
-    private val mediaBrowser: MediaBrowserController,
+    mediaBrowser: MediaBrowserController,
     private val normalizeCurrentPosition: NormalizeCurrentPosition,
     dataRepository: DataRepository,
     private val pauseResumePlayback: PauseResumePlayback,

@@ -1,6 +1,5 @@
 package com.tachyonmusic.presentation.entry
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.height
@@ -29,7 +28,6 @@ import com.tachyonmusic.presentation.theme.NoRippleTheme
 import com.tachyonmusic.presentation.theme.Theme
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BottomNavigation(
     swipe: AnchoredDraggableState<SwipingStates>?,

@@ -2,11 +2,13 @@ package com.tachyonmusic.data.repository
 
 import android.content.Context
 import androidx.media3.cast.DefaultCastOptionsProvider
+import androidx.media3.common.util.UnstableApi
 import com.google.android.gms.cast.framework.CastOptions
 import com.google.android.gms.cast.framework.OptionsProvider
 import com.google.android.gms.cast.framework.SessionProvider
 import com.google.android.gms.cast.framework.media.CastMediaOptions
 
+@UnstableApi
 class CastOptionsProvider : OptionsProvider {
 
     override fun getCastOptions(context: Context): CastOptions {

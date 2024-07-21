@@ -111,12 +111,6 @@ object Dependency {
         const val PAGING = "androidx.room:room-paging:${Index.ROOM}"
     }
 
-    object Spotify {
-        // TODO: Relative path
-        const val AAR =
-            "D:\\dev\\Android\\Projects\\Tachyon\\lib\\Spotify\\spotify-app-remote-release-0.7.2.aar"
-    }
-
     object Ads {
         const val ADMOB = "com.google.android.gms:play-services-ads:23.1.0"
     }
@@ -231,7 +225,7 @@ fun DependencyHandler.jsoup() {
     implementation(Dependency.Jsoup.JSOUP)
 }
 
-fun DependencyHandler.landscapist_glide() {
+fun DependencyHandler.landscapistGlide() {
     implementation(Dependency.Landscapist.GLIDE)
 }
 

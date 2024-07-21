@@ -3,7 +3,6 @@ package com.tachyonmusic.media.domain.use_case
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
-import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import java.util.Arrays
 
 data class PlaybackSearchResult(

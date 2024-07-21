@@ -2,13 +2,13 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import androidx.room.Room
-import com.tachyonmusic.core.data.playback.LocalRemix
 import com.tachyonmusic.core.data.playback.LocalPlaylist
+import com.tachyonmusic.core.data.playback.LocalRemix
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController

@@ -3,7 +3,6 @@ package com.tachyonmusic.media.data
 import android.media.audiofx.BassBoost
 import android.media.audiofx.EnvironmentalReverb
 import android.media.audiofx.Equalizer
-import android.media.audiofx.LoudnessEnhancer
 import android.media.audiofx.Virtualizer
 import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
@@ -14,7 +13,6 @@ import com.tachyonmusic.core.domain.model.mDb
 import com.tachyonmusic.core.domain.model.mHz
 import com.tachyonmusic.media.domain.AudioEffectController
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 

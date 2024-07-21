@@ -48,22 +48,4 @@ class ImportDatabase(
             null
         }
 
-    private fun unzip(source: File, outputDirectory: String): Boolean {
-        return try {
-            ZipFile(source).use { zip ->
-                zip.entries().asSequence().forEach { entry ->
-                    zip.getInputStream(entry).use { input ->
-                        val filePath = outputDirectory + File.separator + entry.name
-                        val output = BufferedOutputStream(FileOutputStream(filePath))
-                        input.copyTo(output)
-                        output.close()
-                    }
-                }
-            }
-            true
-        } catch (e: IOException) {
-            e.printStackTrace() // source could be empty, don't copy it
-            false
-        }
-    }
 }

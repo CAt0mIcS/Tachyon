@@ -28,7 +28,6 @@ internal class LibraryPlayerTest {
     @get:Rule(order = 1)
     val composeRule = createAndroidComposeRule<ActivityMain>()
 
-    @OptIn(ExperimentalMaterial3Api::class)
     @Before
     fun setUp() {
         hiltRule.inject()

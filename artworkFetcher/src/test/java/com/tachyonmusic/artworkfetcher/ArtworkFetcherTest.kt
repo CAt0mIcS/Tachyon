@@ -4,14 +4,12 @@ import com.tachyonmusic.artworkfetcher.domain.artwork_source.ArtworkSource
 import com.tachyonmusic.util.Resource
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class ArtworkFetcherTest {
     private lateinit var downloader: ArtworkFetcher
 

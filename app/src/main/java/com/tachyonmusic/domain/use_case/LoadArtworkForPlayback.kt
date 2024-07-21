@@ -2,7 +2,11 @@ package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.core.domain.playback.*
+import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Remix
+import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.logger.domain.Logger
 
 /**
@@ -75,11 +79,12 @@ class LoadArtworkForPlayback(
         range: IntRange,
         quality: Int = 100
     ): List<Playback> {
-        val songs = invoke(playbacks.map {
-            when (it) {
-                is SinglePlayback -> it.underlyingSong
-                is Playlist -> (it.playbacks.find { it.hasArtwork }
-                    ?: it.playbacks.first()).underlyingSong
+        val songs = invoke(playbacks.map { playback ->
+            when (playback) {
+                is SinglePlayback -> playback.underlyingSong
+                is Playlist -> (playback.playbacks.find { it.hasArtwork }
+                    ?: playback.playbacks.first()).underlyingSong
+
                 else -> TODO("Invalid playback type")
             }
         }, range, quality)

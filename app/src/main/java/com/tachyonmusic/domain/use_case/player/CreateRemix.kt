@@ -11,7 +11,6 @@ import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.runOnUiThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 class CreateRemix(
@@ -53,7 +52,6 @@ class CreateRemix(
         }
     }
 
-    @OptIn(ExperimentalContracts::class)
     private fun isValidPlayback(
         playback: SinglePlayback?,
         timingData: TimingDataController?

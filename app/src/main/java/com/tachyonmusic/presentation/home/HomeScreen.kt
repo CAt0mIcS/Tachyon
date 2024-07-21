@@ -1,7 +1,6 @@
 package com.tachyonmusic.presentation.home
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -27,7 +26,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,10 +56,8 @@ import kotlinx.coroutines.launch
 object HomeScreen :
     BottomNavigationItem(R.string.btmNav_home, R.drawable.ic_home, "home") {
 
-    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
-        navController: NavController,
         miniPlayerHeight: Dp,
         draggable: AnchoredDraggableState<SwipingStates>,
         viewModel: HomeViewModel = hiltViewModel()
@@ -217,7 +216,7 @@ object HomeScreen :
             item {
                 val rowState = rememberLazyListState()
 
-                LaunchedEffect(rowState.firstVisibleItemIndex) {
+                LaunchedEffect(remember { derivedStateOf { rowState.firstVisibleItemIndex } }) {
                     delay(200.ms)
                     viewModel.loadArtwork(
                         kotlin.math.max(

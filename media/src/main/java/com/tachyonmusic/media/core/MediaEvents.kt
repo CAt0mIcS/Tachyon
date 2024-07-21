@@ -1,7 +1,11 @@
+@file:SuppressLint("UnsafeOptInUsageError")
+
 package com.tachyonmusic.media.core
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.media3.common.Bundleable
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand

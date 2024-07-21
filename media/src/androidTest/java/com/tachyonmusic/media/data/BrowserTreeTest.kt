@@ -1,19 +1,17 @@
 package com.tachyonmusic.media.data
 
-import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
+import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.media.util.getCustomizedSongs
 import com.tachyonmusic.media.util.getPlaylists
 import com.tachyonmusic.media.util.getSongs
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class BrowserTreeTest {
 
     private val songRepository: SongRepository = mockk()

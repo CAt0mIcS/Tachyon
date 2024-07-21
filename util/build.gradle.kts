@@ -33,6 +33,10 @@ android {
 
     kotlinOptions {
         jvmTarget = Index.JVM_TARGET
+
+        freeCompilerArgs += listOf(
+            "-Xopt-in=kotlin.contracts.ExperimentalContracts"
+        )
     }
 
     namespace = "com.tachyonmusic.util"

@@ -1,12 +1,15 @@
-@file:OptIn(ExperimentalContracts::class)
-
 package com.tachyonmusic.util
 
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.asExecutor
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.util.concurrent.Callable
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -27,7 +30,6 @@ fun <T> future(
 /**
  * Dispatches [block] to UI thread while suspending current coroutine until [block] finishes
  */
-@OptIn(ExperimentalContracts::class)
 suspend fun <T> runOnUiThread(block: suspend CoroutineScope.() -> T): T {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)

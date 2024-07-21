@@ -1,6 +1,5 @@
 package com.tachyonmusic.util
 
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -16,7 +15,6 @@ sealed class Resource<T>(val data: T? = null, val message: UiText? = null) {
         constructor(res: Error<*>, data: T? = null) : this(res.message, data, res.exception)
     }
 
-    @OptIn(ExperimentalContracts::class)
     inline fun getOrElse(onErrorOrLoading: (T?, UiText?) -> T?): T? {
 
         contract {

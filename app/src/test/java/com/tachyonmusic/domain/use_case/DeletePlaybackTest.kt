@@ -1,20 +1,22 @@
 package com.tachyonmusic.domain.use_case
 
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.database.domain.repository.HistoryRepository
-import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
-import io.mockk.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.tachyonmusic.database.domain.repository.RemixRepository
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class DeletePlaybackTest {
 
     val remixRepo = mockk<RemixRepository>()

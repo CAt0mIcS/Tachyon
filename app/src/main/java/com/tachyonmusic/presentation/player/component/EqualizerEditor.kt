@@ -8,13 +8,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.systemGestureExclusion
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxColors
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -37,7 +34,6 @@ import com.tachyonmusic.core.domain.model.mDb
 import com.tachyonmusic.presentation.player.EqualizerViewModel
 import com.tachyonmusic.presentation.theme.Theme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EqualizerEditor(
     modifier: Modifier = Modifier,

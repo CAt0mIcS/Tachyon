@@ -1,6 +1,5 @@
 package com.tachyonmusic.presentation.player
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.runtime.Composable
@@ -24,7 +23,6 @@ import com.tachyonmusic.presentation.player.component.MiniPlayer
 import com.tachyonmusic.util.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MiniPlayerScreen(
     draggable: AnchoredDraggableState<SwipingStates>,

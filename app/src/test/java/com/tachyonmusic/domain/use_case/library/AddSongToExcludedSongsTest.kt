@@ -3,14 +3,20 @@ package com.tachyonmusic.domain.use_case.library
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.database.domain.repository.*
-import io.mockk.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.tachyonmusic.database.domain.repository.HistoryRepository
+import com.tachyonmusic.database.domain.repository.PlaylistRepository
+import com.tachyonmusic.database.domain.repository.RemixRepository
+import com.tachyonmusic.database.domain.repository.SettingsRepository
+import com.tachyonmusic.database.domain.repository.SongRepository
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class AddSongToExcludedSongsTest {
 
     val settingsRepo = mockk<SettingsRepository>()

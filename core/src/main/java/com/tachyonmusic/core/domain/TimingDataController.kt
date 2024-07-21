@@ -4,7 +4,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
-import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
 data class TimingDataController(
@@ -115,7 +114,6 @@ data class TimingDataController(
     }
 }
 
-@OptIn(ExperimentalContracts::class)
 fun TimingDataController?.isNullOrEmpty(): Boolean {
     contract {
         returns(false) implies (this@isNullOrEmpty != null)

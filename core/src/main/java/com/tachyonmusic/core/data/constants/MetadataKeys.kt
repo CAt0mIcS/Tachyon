@@ -6,8 +6,6 @@ object MetadataKeys {
     const val Playlist = "com.tachyonmusic.PLAYLIST"
     const val TimingData = "com.tachyonmusic.TIMING_DATA"
     const val RepeatMode = "com.tachyonmusic.REPEAT_MODE"
-    const val SortType = "com.tachyonmusic.SORT_TYPE"
-    const val SortOrder = "com.tachyonmusic.SORT_ORDER"
     const val IsPlaying = "com.tachyonmusic.IS_PLAYING"
     const val TimestampCreatedAddedEdited = "com.tachyonmusic.SORT_TIMESTAMP_INFO"
 

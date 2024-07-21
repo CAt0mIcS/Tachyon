@@ -4,9 +4,11 @@ import android.os.Handler
 import androidx.core.os.postDelayed
 import androidx.media3.cast.CastPlayer
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.PlayerMessage
 import com.tachyonmusic.logger.domain.Logger
 
+@UnstableApi
 class CastPlayerMessageSender(
     private val player: CastPlayer,
     private val log: Logger

@@ -1,7 +1,6 @@
 package com.tachyonmusic.presentation.player
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.runtime.Composable
@@ -12,10 +11,8 @@ import com.tachyonmusic.presentation.entry.SwipingStates
 import kotlinx.coroutines.launch
 
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PlayerLayout(
-    navController: NavController,
     miniPlayerHeight: Dp,
     onMiniPlayerHeight: (Dp) -> Unit,
     draggable: AnchoredDraggableState<SwipingStates>,
@@ -45,6 +42,6 @@ fun PlayerLayout(
             }
         }
 
-        PlayerScreen(motionLayoutProgress, miniPlayerHeight, navController)
+        PlayerScreen(motionLayoutProgress, miniPlayerHeight)
     }
 }

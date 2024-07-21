@@ -1,9 +1,11 @@
 package com.tachyonmusic.media.data
 
 import android.os.Looper
+import androidx.annotation.OptIn
 import androidx.media3.cast.CastPlayer
 import androidx.media3.common.*
 import androidx.media3.common.util.Clock
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.PlayerMessage
 import com.tachyonmusic.core.domain.MediaId
@@ -20,6 +22,7 @@ import com.tachyonmusic.util.ms
 /**
  * Override player to always enable SEEK_PREVIOUS and SEEK_NEXT commands
  */
+@UnstableApi
 class CustomPlayerImpl(
     player: Player,
     private val log: Logger

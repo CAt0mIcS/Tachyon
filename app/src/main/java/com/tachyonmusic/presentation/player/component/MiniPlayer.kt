@@ -2,7 +2,12 @@ package com.tachyonmusic.presentation.player.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -20,8 +25,6 @@ import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
-import com.tachyonmusic.presentation.theme.LightOnPrimaryContainer
-import com.tachyonmusic.presentation.theme.LightPrimary
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.interpolate
 

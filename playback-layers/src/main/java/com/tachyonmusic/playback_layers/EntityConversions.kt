@@ -43,9 +43,9 @@ fun RemixEntity.toRemix(song: Song?) =
         ), // TODO: Better way of displaying loops of deleted songs
         timestampCreatedAddedEdited
     ).let {
-        it.timingData = timingData?.let {
+        it.timingData = timingData?.let { tdItems ->
             TimingDataController(
-                it,
+                tdItems,
                 currentTimingDataIndex
             )
         }

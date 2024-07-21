@@ -31,17 +31,15 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.NavOptionsBuilder
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.entry.SwipingStates
-import com.tachyonmusic.presentation.library.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.library.component.FilterItem
+import com.tachyonmusic.presentation.library.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.AdmobBanner
 import com.tachyonmusic.presentation.util.asString
@@ -54,7 +52,6 @@ import kotlinx.coroutines.launch
 object LibraryScreen :
     BottomNavigationItem(R.string.btmNav_library, R.drawable.ic_library, "library") {
 
-    @OptIn(ExperimentalFoundationApi::class)
     @Composable
     operator fun invoke(
         draggable: AnchoredDraggableState<SwipingStates>,
@@ -70,7 +67,7 @@ object LibraryScreen :
         val playbackItems by viewModel.items.collectAsState()
 
         val listState = rememberLazyListState()
-        LaunchedEffect(listState.firstVisibleItemIndex) { // TODO: Optimize
+        LaunchedEffect(remember { derivedStateOf { listState.firstVisibleItemIndex } }) { // TODO: Optimize
             /**
              * If [listState.firstVisibleItemIndex] changes the coroutine will get cancelled and
              * relaunched. If it changes too fast we don't want to always load artwork, waiting for
@@ -133,10 +130,12 @@ object LibraryScreen :
             item {
                 var rowSize by remember { mutableStateOf(Size.Zero) }
 
+                val interactionSource = remember {MutableInteractionSource()}
+
                 Row(modifier = Modifier
                     .padding(Theme.padding.medium)
                     .clickable(
-                        interactionSource = MutableInteractionSource(),
+                        interactionSource = interactionSource,
                         indication = null,
                     ) {
                         sortOptionsExpanded = true

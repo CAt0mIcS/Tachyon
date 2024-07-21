@@ -2,10 +2,12 @@ package com.tachyonmusic.media.domain
 
 import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
 
 
+@UnstableApi
 interface CustomPlayer : Player {
     var audioSessionId: Int
 

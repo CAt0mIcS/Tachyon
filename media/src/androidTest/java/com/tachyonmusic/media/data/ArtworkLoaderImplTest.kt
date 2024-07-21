@@ -18,7 +18,6 @@ import com.tachyonmusic.util.ms
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -26,7 +25,6 @@ import java.net.URI
 
 
 @Suppress("TestFunctionName")
-@OptIn(ExperimentalCoroutinesApi::class)
 internal class ArtworkLoaderImplTest {
     private val log: Logger = mockk(relaxed = true)
     private val artworkFetcher: ArtworkFetcher = mockk()

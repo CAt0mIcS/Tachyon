@@ -27,15 +27,12 @@
 
     <string name="unknown_error">An unknown error occurred</string>
 
-    <string name="invalid_search_query">Invalid search query %1$s</string>
     <string name="invalid_name">Invalid name \"%1$s\" specified</string>
     <string name="cannot_create_remix">Cannot create invalid remix, Name: \"%1$s\"; Playback: \"%2$s\"; TimingData: \"%3$s\"</string>
-    <string name="song_not_found">Unable to find song \"%1$s\"</string>
-
-    <string name="playback_not_in_playlist">Trying to play playback \"%1$s\" but it doesn\'t exist in playlist \"%2$s\"</string>
 
     <string name="close">Close</string>
     <string name="retry">Retry</string>
     <string name="warning">Warning!</string>
     <string name="nothing" />
+    <string name="cast">Cast</string>
 </resources>

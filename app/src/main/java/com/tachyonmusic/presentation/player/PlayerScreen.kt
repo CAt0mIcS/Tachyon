@@ -70,7 +70,6 @@ import com.tachyonmusic.util.toReadableString
 fun PlayerScreen(
     motionLayoutProgress: Float,
     miniPlayerHeight: Dp,
-    navController: NavController,
     viewModel: PlayerViewModel = hiltViewModel()
 ) {
     val shouldShowPlayer by viewModel.shouldShowPlayer.collectAsState()

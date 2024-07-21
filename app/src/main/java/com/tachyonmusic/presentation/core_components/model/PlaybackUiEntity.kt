@@ -3,9 +3,9 @@ package com.tachyonmusic.presentation.core_components.model
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms

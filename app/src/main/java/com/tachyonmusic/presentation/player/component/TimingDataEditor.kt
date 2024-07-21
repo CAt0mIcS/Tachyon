@@ -17,7 +17,6 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,7 +46,6 @@ import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimingDataEditor(
     modifier: Modifier = Modifier,
@@ -307,7 +305,7 @@ fun TimingDataEditor(
 
         if (openAlertDialog) {
             // TODO: Show error
-            val error by viewModel.remixError.collectAsState()
+            val remixError by viewModel.remixError.collectAsState()
 
             BasicAlertDialog(
                 onDismissRequest = { openAlertDialog = false },
@@ -319,7 +317,7 @@ fun TimingDataEditor(
                     Button(
                         onClick = {
                             viewModel.saveNewRemix(remixName)
-                            if (error == null)
+                            if (remixError == null)
                                 openAlertDialog = false
                         }
                     ) {
