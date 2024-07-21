@@ -33,6 +33,9 @@ interface PlaylistDao {
     @Query("UPDATE $PLAYLIST_DATABASE_TABLE_NAME SET items=:playbacks WHERE mediaId=:mediaId")
     suspend fun setPlaybacks(mediaId: MediaId, playbacks: List<MediaId>)
 
+    @Query("UPDATE $PLAYLIST_DATABASE_TABLE_NAME SET timestampCreatedAddedEdited=:timestamp WHERE mediaId=:mediaId")
+    suspend fun setTimestampLastEdited(mediaId: MediaId, timestamp: Long)
+
     @Query("DELETE FROM $PLAYLIST_DATABASE_TABLE_NAME WHERE mediaId=:mediaId")
     suspend fun delete(mediaId: MediaId)
 

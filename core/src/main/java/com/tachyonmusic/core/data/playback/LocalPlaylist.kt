@@ -15,7 +15,8 @@ import com.tachyonmusic.util.copy
 class LocalPlaylist(
     mediaId: MediaId,
     playbacks: MutableList<SinglePlayback>,
-    currentPlaylistIndex: Int = 0
+    currentPlaylistIndex: Int = 0,
+    override val timestampCreatedAddedEdited: Long
 ) : AbstractPlaylist(mediaId, playbacks, currentPlaylistIndex) {
 
     override val playbackType = PlaybackType.Playlist.Local()
@@ -24,12 +25,13 @@ class LocalPlaylist(
         get() = mediaId.source.replace(playbackType.toString(), "")
 
     override fun copy(): Playlist =
-        LocalPlaylist(mediaId, _playbacks.copy(), currentPlaylistIndex)
+        LocalPlaylist(mediaId, _playbacks.copy(), currentPlaylistIndex, timestampCreatedAddedEdited)
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
         parcel.writeParcelableArray(playbacks.toTypedArray(), flags)
         parcel.writeInt(currentPlaylistIndex)
+        parcel.writeLong(timestampCreatedAddedEdited)
     }
 
     companion object {
@@ -41,11 +43,13 @@ class LocalPlaylist(
                     .map { it as SinglePlayback }.toMutableList()
 
                 val currentPlaylistIndex = parcel.readInt()
+                val timestampCreatedAddedEdited = parcel.readLong()
 
                 return LocalPlaylist(
                     MediaId.ofLocalPlaylist(name),
                     playbacks,
-                    currentPlaylistIndex
+                    currentPlaylistIndex,
+                    timestampCreatedAddedEdited
                 )
             }
 
@@ -55,12 +59,14 @@ class LocalPlaylist(
         fun build(
             mediaId: MediaId,
             playbacks: MutableList<SinglePlayback>,
-            currentPlaylistIndex: Int
+            currentPlaylistIndex: Int,
+            timestampCreatedAddedEdited: Long
         ): Playlist =
             LocalPlaylist(
                 mediaId,
                 playbacks,
-                currentPlaylistIndex
+                currentPlaylistIndex,
+                timestampCreatedAddedEdited
             )
     }
 }

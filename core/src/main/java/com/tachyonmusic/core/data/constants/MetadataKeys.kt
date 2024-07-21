@@ -9,6 +9,7 @@ object MetadataKeys {
     const val SortType = "com.tachyonmusic.SORT_TYPE"
     const val SortOrder = "com.tachyonmusic.SORT_ORDER"
     const val IsPlaying = "com.tachyonmusic.IS_PLAYING"
+    const val TimestampCreatedAddedEdited = "com.tachyonmusic.SORT_TIMESTAMP_INFO"
 
     /**
      * Name of remix or playlist

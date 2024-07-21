@@ -106,8 +106,7 @@ class PlaybackRepositoryImpl(
                     },
                     entity.checkIfPlayable(context)
                 )
-            }
-            else
+            } else
                 TODO("Invalid media id ${entity.mediaId}")
         }.sortedBy(sorting)
 
@@ -138,7 +137,12 @@ class PlaybackRepositoryImpl(
         }
 
         if (entity.mediaId.isLocalPlaylist)
-            LocalPlaylist.build(entity.mediaId, items.toMutableList(), entity.currentItemIndex)
+            LocalPlaylist.build(
+                entity.mediaId,
+                items.toMutableList(),
+                entity.currentItemIndex,
+                entity.timestampCreatedAddedEdited
+            )
         else
             TODO("Invalid playlist conversion media id ${entity.mediaId}")
     }.sortedBy(sorting)

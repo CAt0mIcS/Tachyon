@@ -19,6 +19,7 @@ interface Playback : Parcelable {
     val uri: Uri?
 
     val playbackType: PlaybackType
+    val timestampCreatedAddedEdited: Long
 
     fun toMediaItem(): MediaItem
 

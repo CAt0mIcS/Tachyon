@@ -25,7 +25,9 @@ class PlaylistEntity(
     mediaId: MediaId,
     val items: List<MediaId>,
     val currentItemIndex: Int = 0,
-) : PlaybackEntity(mediaId)
+
+    timestampCreatedAddedEdited: Long = System.currentTimeMillis(),
+) : PlaybackEntity(mediaId, timestampCreatedAddedEdited)
 
 
 object PlaylistEntitySerializer : KSerializer<PlaylistEntity> {
@@ -34,6 +36,7 @@ object PlaylistEntitySerializer : KSerializer<PlaylistEntity> {
         element<String>("MediaId")
         element<List<String>>("Items")
         element<Int>("CurrentItemIndex", isOptional = true)
+        element<Long>("TimestampCreatedAddedEdited", isOptional = true)
     }
 
     override fun deserialize(decoder: Decoder) = decoder.decodeStructure(descriptor) {
@@ -41,6 +44,7 @@ object PlaylistEntitySerializer : KSerializer<PlaylistEntity> {
         var mediaId: MediaId? = null
         var items: List<MediaId>? = null
         var currentItemIndex = 0
+        var timestampCreatedAddedEdited = 0L
 
         loop@ while (true) {
             when (val index = decodeElementIndex(descriptor)) {
@@ -55,12 +59,13 @@ object PlaylistEntitySerializer : KSerializer<PlaylistEntity> {
                 ).map { MediaId.deserialize(it) }
 
                 3 -> currentItemIndex = decodeIntElement(descriptor, 3)
+                4 -> timestampCreatedAddedEdited = decodeLongElement(descriptor, 4)
 
                 else -> throw SerializationException("Unexpected index $index")
             }
         }
 
-        PlaylistEntity(name!!, mediaId!!, items!!, currentItemIndex)
+        PlaylistEntity(name!!, mediaId!!, items!!, currentItemIndex, timestampCreatedAddedEdited)
     }
 
     override fun serialize(encoder: Encoder, value: PlaylistEntity) {
@@ -73,6 +78,7 @@ object PlaylistEntitySerializer : KSerializer<PlaylistEntity> {
                 ListSerializer(String.serializer()),
                 value.items.map { it.toString() })
             encodeIntElement(descriptor, 3, value.currentItemIndex)
+            encodeLongElement(descriptor, 4, value.timestampCreatedAddedEdited)
         }
     }
 }

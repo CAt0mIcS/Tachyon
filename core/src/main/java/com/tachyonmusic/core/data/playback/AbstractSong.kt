@@ -49,13 +49,14 @@ abstract class AbstractSong(
 
         setTitle(title)
         setArtist(artist)
-        setAlbumArtist(album)
+        setAlbumTitle(album)
         setExtras(Bundle().apply {
             putLong(MetadataKeys.Duration, duration.inWholeMilliseconds)
 
             // Empty here to allow custom setting of timing data
             putParcelable(MetadataKeys.TimingData, TimingDataController())
             putParcelable(MetadataKeys.Playback, this@AbstractSong)
+            putLong(MetadataKeys.TimestampCreatedAddedEdited, timestampCreatedAddedEdited)
         })
     }.build()
 
@@ -68,5 +69,6 @@ abstract class AbstractSong(
                 artist == other.artist && duration == other.duration &&
                 timingData == other.timingData && isPlayable == other.isPlayable &&
                 artwork == other.artwork && isArtworkLoading == other.isArtworkLoading &&
-                isHidden == other.isHidden && album == other.album
+                isHidden == other.isHidden && album == other.album &&
+                timestampCreatedAddedEdited == other.timestampCreatedAddedEdited
 }

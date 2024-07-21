@@ -19,7 +19,8 @@ fun SongEntity.toLocalSong(artwork: Artwork?, isPlayable: Boolean) =
         title,
         artist,
         duration,
-        isHidden
+        isHidden,
+        timestampCreatedAddedEdited
     ).let {
         it.isPlayable = isPlayable
         it.isArtworkLoading = artworkType == ArtworkType.UNKNOWN
@@ -37,8 +38,10 @@ fun RemixEntity.toRemix(song: Song?) =
             "",
             "",
             0.ms,
-            true
-        ) // TODO: Better way of displaying loops of deleted songs
+            true,
+            0L
+        ), // TODO: Better way of displaying loops of deleted songs
+        timestampCreatedAddedEdited
     ).let {
         it.timingData = timingData?.let {
             TimingDataController(

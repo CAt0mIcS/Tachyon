@@ -81,6 +81,26 @@ class LibraryViewModel @Inject constructor(
     private var _filterType = MutableStateFlow<PlaybackType>(PlaybackType.Song.Local())
     val filterType = _filterType.asStateFlow()
 
+    val availableSortTypes = filterType.map {
+        when (it) {
+            is PlaybackType.Song -> listOf(
+                SortType.TitleAlphabetically, SortType.ArtistAlphabetically,
+                SortType.DateCreatedOrEdited
+            )
+
+            is PlaybackType.Remix -> listOf(
+                SortType.NameAlphabetically, SortType.TitleAlphabetically,
+                SortType.ArtistAlphabetically, SortType.DateCreatedOrEdited
+            )
+
+            is PlaybackType.Playlist -> listOf(
+                SortType.NameAlphabetically, SortType.DateCreatedOrEdited
+            )
+
+            is PlaybackType.Ad -> emptyList()
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
     private var _queriedArtwork = MutableStateFlow(emptyList<Artwork>())
     val queriedArtwork = _queriedArtwork.asStateFlow()
 
@@ -140,18 +160,20 @@ class LibraryViewModel @Inject constructor(
 
     fun onFilterSongs() {
         _filterType.value = PlaybackType.Song.Local()
+        onSortTypeChanged(SortType.TitleAlphabetically)
     }
 
     fun onFilterRemixes() {
         _filterType.value = PlaybackType.Remix.Local()
+        onSortTypeChanged(SortType.NameAlphabetically)
     }
 
     fun onFilterPlaylists() {
         _filterType.value = PlaybackType.Playlist.Local()
+        onSortTypeChanged(SortType.NameAlphabetically)
     }
 
     fun onSortTypeChanged(type: SortType) {
-        // TODO: UseCase
         playbackRepository.setSortingPreferences(sortParams.value.copy(type = type))
     }
 
@@ -230,7 +252,7 @@ class LibraryViewModel @Inject constructor(
         _cachedBannerAds[mediaId] = ad
     }
 
-    private fun PlaybackUiEntity.toPlayback() = when(playbackType) {
+    private fun PlaybackUiEntity.toPlayback() = when (playbackType) {
         is PlaybackType.Song -> toSong(songs.value)
         is PlaybackType.Remix -> toRemix(remixes.value)
         is PlaybackType.Playlist -> toPlaylist(playlists.value)

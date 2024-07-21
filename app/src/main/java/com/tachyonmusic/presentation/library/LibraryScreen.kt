@@ -66,6 +66,7 @@ object LibraryScreen :
         val scope = rememberCoroutineScope()
 
         val filterPlaybackType by viewModel.filterType.collectAsState()
+        val availableSortTypes by viewModel.availableSortTypes.collectAsState()
         val playbackItems by viewModel.items.collectAsState()
 
         val listState = rememberLazyListState()
@@ -167,10 +168,10 @@ object LibraryScreen :
                                 .widthIn(max = with(LocalDensity.current) { rowSize.width.toDp() - Theme.padding.extraSmall }),
                             expanded = sortOptionsExpanded,
                             onDismissRequest = { sortOptionsExpanded = false }) {
-                            SortType.entries.forEach {
+                            availableSortTypes.forEach {
                                 DropdownMenuItem(
                                     text = {
-                                        Text(it.asString())
+                                        Text(it.asString(filterPlaybackType))
                                     },
                                     onClick = {
                                         viewModel.onSortTypeChanged(it)
@@ -187,7 +188,7 @@ object LibraryScreen :
                                 start = Theme.padding.large,
                                 end = Theme.padding.medium
                             ),
-                            text = sortParams.type.asString(sortParams.order),
+                            text = sortParams.type.asString(filterPlaybackType, sortParams.order),
                             fontSize = 18.sp,
                             color = iconAndTextColor
                         )

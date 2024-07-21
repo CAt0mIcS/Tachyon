@@ -6,31 +6,43 @@ enum class SortOrder {
     Ascending, Descending;
 
     companion object {
-        fun fromInt(ordinal: Int) = values().first { it.ordinal == ordinal }
+        fun fromInt(ordinal: Int) = entries.first { it.ordinal == ordinal }
     }
 }
 
 enum class SortType {
-    AlphabeticalTitle,
-    AlphabeticalArtist,
-    LastPlayedDate;
+    TitleAlphabetically,
+    ArtistAlphabetically,
+    NameAlphabetically,
+    DateCreatedOrEdited;
 
     companion object {
-        fun fromInt(ordinal: Int) = values().first { it.ordinal == ordinal }
+        fun fromInt(ordinal: Int) = entries.first { it.ordinal == ordinal }
     }
 }
 
 data class SortingPreferences(
-    val type: SortType = SortType.AlphabeticalTitle,
+    val type: SortType = SortType.TitleAlphabetically,
     val order: SortOrder = SortOrder.Ascending
 )
 
 
 @JvmName("sortedByPlayback")
 fun <T : Playback> Collection<T>.sortedBy(sortType: SortType, sortOrder: SortOrder): List<T> =
-    sortWithOrder(sortOrder) {
-        it.getComparedString(sortType)
+    when (sortType) {
+        SortType.DateCreatedOrEdited -> {
+            sortWithOrder(sortOrder) {
+                -it.getComparedString(sortType).toLong()
+            }
+        }
+
+        else -> {
+            sortWithOrder(sortOrder) {
+                it.getComparedString(sortType)
+            }
+        }
     }
+
 
 @JvmName("sortedByPb")
 fun <T : Playback> Collection<T>.sortedBy(sortParams: SortingPreferences) =
@@ -48,25 +60,27 @@ private inline fun <T, R : Comparable<R>> Collection<T>.sortWithOrder(
 private fun Playback.getComparedString(type: SortType) = when (this) {
     is Song -> {
         when (type) {
-            SortType.AlphabeticalTitle -> title + artist
-            SortType.AlphabeticalArtist -> artist + title
-            SortType.LastPlayedDate -> TODO()
+            SortType.TitleAlphabetically, SortType.NameAlphabetically -> title + artist
+            SortType.ArtistAlphabetically -> artist + title
+            SortType.DateCreatedOrEdited -> timestampCreatedAddedEdited.toString()
         }
     }
 
     is Remix -> {
         when (type) {
-            SortType.AlphabeticalTitle -> name + title + artist
-            SortType.AlphabeticalArtist -> artist + name + title
-            SortType.LastPlayedDate -> TODO()
+            SortType.TitleAlphabetically -> title + artist + name
+            SortType.ArtistAlphabetically -> artist + name + title
+            SortType.NameAlphabetically -> name + title + artist
+            SortType.DateCreatedOrEdited -> timestampCreatedAddedEdited.toString()
         }
     }
 
     is Playlist -> {
         when (type) {
-            SortType.AlphabeticalTitle -> name + title + artist
-            SortType.AlphabeticalArtist -> artist + name + title
-            SortType.LastPlayedDate -> TODO()
+            SortType.TitleAlphabetically -> title + name + artist
+            SortType.ArtistAlphabetically -> artist + name + title
+            SortType.NameAlphabetically -> name + title + artist
+            SortType.DateCreatedOrEdited -> timestampCreatedAddedEdited.toString()
         }
     }
 

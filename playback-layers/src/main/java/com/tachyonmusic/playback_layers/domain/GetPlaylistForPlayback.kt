@@ -43,7 +43,8 @@ class GetPlaylistForPlayback(
         return LocalPlaylist.build(
             predefinedSongPlaylistMediaId,
             items.toMutableList(),
-            items.indexOf { it.mediaId == mediaId } ?: 0
+            items.indexOf { it.mediaId == mediaId } ?: 0,
+            timestampCreatedAddedEdited = 0L
         )
     }
 
@@ -59,7 +60,8 @@ class GetPlaylistForPlayback(
         return LocalPlaylist.build(
             predefinedRemixPlaylistMediaId,
             items.toMutableList(),
-            items.indexOf { it.mediaId == mediaId } ?: 0
+            items.indexOf { it.mediaId == mediaId } ?: 0,
+            timestampCreatedAddedEdited = 0L
         )
     }
 }

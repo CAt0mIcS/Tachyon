@@ -52,6 +52,7 @@ class RoomPlaylistRepository(
         playbacks: List<MediaId>
     ) {
         dao.setPlaybacks(playlistMediaId, playbacks)
+        dao.setTimestampLastEdited(playlistMediaId, System.currentTimeMillis())
     }
 
     override suspend fun findByMediaId(mediaId: MediaId): PlaylistEntity? =

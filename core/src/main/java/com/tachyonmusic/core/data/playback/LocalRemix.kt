@@ -17,13 +17,14 @@ import com.tachyonmusic.core.domain.playback.Song
  */
 class LocalRemix(
     mediaId: MediaId,
-    song: Song
+    song: Song,
+    override val timestampCreatedAddedEdited: Long
 ) : AbstractRemix(mediaId, song) {
 
     override val playbackType = PlaybackType.Remix.Local()
 
     override fun copy(): Remix =
-        LocalRemix(mediaId, song.copy()).let {
+        LocalRemix(mediaId, song.copy(), timestampCreatedAddedEdited).let {
             it.bassBoost = bassBoost
             it.virtualizerStrength = virtualizerStrength
             it.equalizerBands = equalizerBands
@@ -43,9 +44,11 @@ class LocalRemix(
 
                 val song: Song =
                     parcel.readParcelable(Song::class.java.classLoader)!!
+                val timestampCreatedAddedEdited = parcel.readLong()
                 return LocalRemix(
                     MediaId.ofLocalRemix(name, song.mediaId),
-                    song
+                    song,
+                    timestampCreatedAddedEdited
                 ).apply {
                     timingData =
                         parcel.readParcelable(TimingDataController::class.java.classLoader)

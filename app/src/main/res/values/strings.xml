@@ -2,9 +2,12 @@
     <string name="app_name">Tachyon</string>
 
     <string name="song_name_and_artist">%1$s by %2$s</string>
-    <string name="sorted_by_alphabetical_title">Alphabetical by Title %1$s</string>
-    <string name="sorted_by_alphabetical_artist">Alphabetical by Artist %1$s</string>
-    <string name="sorted_by_last_played_date">Date Last Played %1$s</string>
+    <string name="sorted_by_alphabetical_title">Alphabetically by Title %1$s</string>
+    <string name="sorted_by_alphabetical_artist">Alphabetically by Artist %1$s</string>
+    <string name="sorted_by_alphabetical_name">Alphabetically by Name %1$s</string>
+    <string name="sorted_by_date_added">Date Added %1$s</string>
+    <string name="sorted_by_date_created">Date Created %1$s</string>
+    <string name="sorted_by_date_edited">Date Edited %1$s</string>
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
 

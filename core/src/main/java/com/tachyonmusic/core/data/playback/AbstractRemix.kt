@@ -79,17 +79,20 @@ abstract class AbstractRemix(
 
         setTitle("$name - $title")
         setArtist(artist)
+        setAlbumTitle(album)
         setExtras(Bundle().apply {
             putLong(MetadataKeys.Duration, duration.inWholeMilliseconds)
             putParcelable(MetadataKeys.TimingData, timingData)
             putString(MetadataKeys.Name, name)
             putParcelable(MetadataKeys.Playback, this@AbstractRemix)
+            putLong(MetadataKeys.TimestampCreatedAddedEdited, timestampCreatedAddedEdited)
         })
     }.build()
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(name)
         parcel.writeParcelable(song, flags)
+        parcel.writeLong(timestampCreatedAddedEdited)
         parcel.writeParcelable(timingData, flags)
         parcel.writeInt(bassBoost ?: 0)
         parcel.writeInt(virtualizerStrength ?: 0)
@@ -106,5 +109,6 @@ abstract class AbstractRemix(
         other is AbstractRemix && mediaId == other.mediaId &&
                 song == other.song && timingData == other.timingData && bassBoost == other.bassBoost &&
                 virtualizerStrength == other.virtualizerStrength && playbackParameters == other.playbackParameters &&
-                equalizerBands == other.equalizerBands && reverb == other.reverb
+                equalizerBands == other.equalizerBands && reverb == other.reverb &&
+                timestampCreatedAddedEdited == other.timestampCreatedAddedEdited
 }

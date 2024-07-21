@@ -40,8 +40,10 @@ class SongEntity(
     var artworkUrl: String? = null,
 
     @ColumnInfo(defaultValue = "null")
-    var album: String? = null
-) : SinglePlaybackEntity(mediaId, title, artist, duration)
+    var album: String? = null,
+
+    timestampCreatedAddedEdited: Long = System.currentTimeMillis(),
+) : SinglePlaybackEntity(mediaId, title, artist, duration, timestampCreatedAddedEdited)
 
 object SongEntitySerializer : KSerializer<SongEntity> {
     override val descriptor = buildClassSerialDescriptor("SongEntity") {
@@ -53,6 +55,7 @@ object SongEntitySerializer : KSerializer<SongEntity> {
         element<String>("ArtworkType", isOptional = true)
         element<String>("ArtworkUrl", isOptional = true)
         element<String>("Album", isOptional = true)
+        element<Long>("TimestampCreatedAddedEdited", isOptional = true)
     }
 
     override fun deserialize(decoder: Decoder) = decoder.decodeStructure(descriptor) {
@@ -64,6 +67,7 @@ object SongEntitySerializer : KSerializer<SongEntity> {
         var artworkType: String = ArtworkType.UNKNOWN
         var artworkUrl: String? = null
         var album: String? = null
+        var timestampCreatedAddedEdited = 0L
 
         loop@ while (true) {
             when (val index = decodeElementIndex(descriptor)) {
@@ -77,6 +81,7 @@ object SongEntitySerializer : KSerializer<SongEntity> {
                 5 -> artworkType = decodeStringElement(descriptor, 5)
                 6 -> artworkUrl = decodeStringElement(descriptor, 6).ifEmpty { null }
                 7 -> album = decodeStringElement(descriptor, 7).ifBlank { null }
+                8 -> timestampCreatedAddedEdited = decodeLongElement(descriptor, 8)
 
                 else -> throw SerializationException("Unexpected index $index")
             }
@@ -90,7 +95,8 @@ object SongEntitySerializer : KSerializer<SongEntity> {
             isHidden,
             artworkType,
             artworkUrl,
-            album
+            album,
+            timestampCreatedAddedEdited
         )
     }
 
@@ -104,6 +110,7 @@ object SongEntitySerializer : KSerializer<SongEntity> {
             encodeStringElement(descriptor, 5, value.artworkType)
             encodeStringElement(descriptor, 6, value.artworkUrl ?: "")
             encodeStringElement(descriptor, 7, value.album ?: "")
+            encodeLongElement(descriptor, 8, value.timestampCreatedAddedEdited)
         }
     }
 }

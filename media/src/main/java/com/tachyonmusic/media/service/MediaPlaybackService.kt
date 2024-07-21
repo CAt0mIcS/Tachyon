@@ -551,7 +551,8 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         return LocalPlaylist(
             mediaId,
             items.mapNotNull { it.mediaMetadata.playback }.toMutableList(),
-            currentPlayer.currentMediaItemIndex
+            currentPlayer.currentMediaItemIndex,
+            timestampCreatedAddedEdited = 0L
         )
     }
 

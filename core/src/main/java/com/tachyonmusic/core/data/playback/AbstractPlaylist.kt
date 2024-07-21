@@ -54,6 +54,7 @@ abstract class AbstractPlaylist(
         setExtras(Bundle().apply {
             putString(MetadataKeys.Name, name)
             putParcelable(MetadataKeys.Playback, this@AbstractPlaylist)
+            putLong(MetadataKeys.TimestampCreatedAddedEdited, timestampCreatedAddedEdited)
         })
     }.build()
 
@@ -73,5 +74,6 @@ abstract class AbstractPlaylist(
 
     override fun equals(other: Any?) =
         other is AbstractPlaylist && mediaId == other.mediaId && playbacks == other.playbacks &&
-                currentPlaylistIndex == other.currentPlaylistIndex
+                currentPlaylistIndex == other.currentPlaylistIndex &&
+                timestampCreatedAddedEdited == other.timestampCreatedAddedEdited
 }

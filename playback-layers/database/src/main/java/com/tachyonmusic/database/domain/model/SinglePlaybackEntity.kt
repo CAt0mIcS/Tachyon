@@ -7,5 +7,6 @@ open class SinglePlaybackEntity(
     mediaId: MediaId,
     var title: String,
     var artist: String,
-    var duration: Duration
-) : PlaybackEntity(mediaId)
+    var duration: Duration,
+    timestampCreatedAddedEdited: Long
+) : PlaybackEntity(mediaId, timestampCreatedAddedEdited)

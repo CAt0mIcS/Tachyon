@@ -41,8 +41,10 @@ class RemixEntity(
     val playbackParameters: PlaybackParameters? = null,
 
     @Embedded
-    val reverb: ReverbConfig? = null
-) : SinglePlaybackEntity(mediaId, songTitle, songArtist, songDuration)
+    val reverb: ReverbConfig? = null,
+
+    timestampCreatedAddedEdited: Long = System.currentTimeMillis(),
+) : SinglePlaybackEntity(mediaId, songTitle, songArtist, songDuration, timestampCreatedAddedEdited)
 
 
 object RemixEntitySerializer : KSerializer<RemixEntity> {
@@ -58,6 +60,7 @@ object RemixEntitySerializer : KSerializer<RemixEntity> {
         element<List<String>?>("EqualizerBands", isOptional = true)
         element<PlaybackParameters?>("PlaybackParameters", isOptional = true)
         element<ReverbConfig?>("ReverbConfig", isOptional = true)
+        element<Long>("TimestampCreatedAddedEdited", isOptional = true)
     }
 
     override fun deserialize(decoder: Decoder) = decoder.decodeStructure(descriptor) {
@@ -72,6 +75,7 @@ object RemixEntitySerializer : KSerializer<RemixEntity> {
         var equalizerBands: List<EqualizerBand>? = null
         var playbackParameters: PlaybackParameters? = null
         var reverb: ReverbConfig? = null
+        var timestampCreatedAddedEdited = 0L
 
         loop@ while (true) {
             when (val index = decodeElementIndex(descriptor)) {
@@ -112,6 +116,7 @@ object RemixEntitySerializer : KSerializer<RemixEntity> {
 
                 10 -> reverb =
                     decodeNullableSerializableElement(descriptor, 10, ReverbConfig.serializer())
+                11 -> timestampCreatedAddedEdited = decodeLongElement(descriptor, 11)
 
                 else -> throw SerializationException("Unexpected index $index")
             }
@@ -128,7 +133,8 @@ object RemixEntitySerializer : KSerializer<RemixEntity> {
             virtualizerStrength,
             equalizerBands,
             playbackParameters,
-            reverb
+            reverb,
+            timestampCreatedAddedEdited
         )
     }
 
@@ -163,6 +169,7 @@ object RemixEntitySerializer : KSerializer<RemixEntity> {
                 ReverbConfig.serializer(),
                 value.reverb
             )
+            encodeLongElement(descriptor, 11, value.timestampCreatedAddedEdited)
         }
     }
 }
