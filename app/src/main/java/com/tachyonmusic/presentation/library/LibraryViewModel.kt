@@ -19,6 +19,9 @@ import com.tachyonmusic.domain.use_case.library.UpdatePlaybackMetadata
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
+import com.tachyonmusic.presentation.core_components.model.toPlaylist
+import com.tachyonmusic.presentation.core_components.model.toRemix
+import com.tachyonmusic.presentation.core_components.model.toSong
 import com.tachyonmusic.presentation.core_components.model.toUiEntity
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
@@ -227,11 +230,11 @@ class LibraryViewModel @Inject constructor(
         _cachedBannerAds[mediaId] = ad
     }
 
-    private fun PlaybackUiEntity.toPlayback() = when (playbackType) {
-        is PlaybackType.Song -> songs.value.find { it.mediaId == mediaId }
-        is PlaybackType.Remix -> remixes.value.find { it.mediaId == mediaId }
-        is PlaybackType.Playlist -> playlists.value.find { it.mediaId == mediaId }
-        is PlaybackType.Ad -> null
+    private fun PlaybackUiEntity.toPlayback() = when(playbackType) {
+        is PlaybackType.Song -> toSong(songs.value)
+        is PlaybackType.Remix -> toRemix(remixes.value)
+        is PlaybackType.Playlist -> toPlaylist(playlists.value)
+        is PlaybackType.Ad -> TODO("Cannot convert Ad to Playback")
     }
 
     private fun <E> List<E>.insertBeforeEvery(insertBeforeIdx: Int, elem: (i: Int) -> E): List<E> {

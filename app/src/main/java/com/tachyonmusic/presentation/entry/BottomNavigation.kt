@@ -51,7 +51,7 @@ fun BottomNavigation(
             val currentRoute = navBackStackEntry?.destination?.route
 
             for (item in items) {
-                val selected = currentRoute == item.route
+                val selected = currentRoute == item.route()
 
                 NavigationBarItem(
                     icon = {
@@ -74,7 +74,7 @@ fun BottomNavigation(
                             swipe?.animateTo(SwipingStates.COLLAPSED)
                         }
 
-                        navController.navigate(item.route) {
+                        navController.navigate(item.route()) {
 
                             navController.graph.startDestinationRoute?.let { screenRoute ->
                                 popUpTo(screenRoute) {

@@ -140,9 +140,8 @@ object AppUseCaseModule {
     @Provides
     @Singleton
     fun provideSearchStoredPlaybacksUseCase(
-        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
         playbackRepository: PlaybackRepository
-    ) = SearchStoredPlaybacks(predefinedPlaylistsRepository, playbackRepository)
+    ) = SearchStoredPlaybacks(playbackRepository)
 
 
     @Provides

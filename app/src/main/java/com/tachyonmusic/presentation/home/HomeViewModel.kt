@@ -34,8 +34,7 @@ class HomeViewModel @Inject constructor(
     mediaBrowser: MediaBrowserController,
     dataRepository: DataRepository,
     private val playPlayback: PlayPlayback,
-    private val unloadArtworks: UnloadArtworks,
-    private val searchStoredPlaybacks: SearchStoredPlaybacks
+    private val unloadArtworks: UnloadArtworks
 ) : ViewModel() {
 
     private val historyArtworkLoadingRange = MutableStateFlow(0..0)
@@ -59,9 +58,6 @@ class HomeViewModel @Inject constructor(
         emptyList()
     )
 
-    private val _searchResults = MutableStateFlow<List<PlaybackUiEntity>>(emptyList())
-    val searchResults = _searchResults.asStateFlow()
-
     init {
         viewModelScope.launch {
             // Make sure browser repeat mode is up to date with saved one
@@ -81,19 +77,6 @@ class HomeViewModel @Inject constructor(
     fun refreshArtwork() {
         viewModelScope.launch(Dispatchers.IO) {
             unloadArtworks()
-        }
-    }
-
-    fun search(searchText: String, searchLocation: SearchLocation) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val results = when (searchLocation) {
-                is SearchLocation.Local -> searchStoredPlaybacks(searchText)
-            }
-            // TODO: Paging for search
-            val loadedArtworkResults = loadArtworkForPlayback(results, 0..results.size + 1).map {
-                it.toUiEntity()
-            }
-            _searchResults.update { loadedArtworkResults }
         }
     }
 

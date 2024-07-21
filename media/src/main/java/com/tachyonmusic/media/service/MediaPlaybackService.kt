@@ -20,6 +20,7 @@ import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.TimingDataController
@@ -53,6 +54,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import java.lang.Integer.max
 import javax.inject.Inject
+import kotlin.random.Random
 
 /**
  * DOCUMENTATION
@@ -561,18 +563,19 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         return when (extras.getString(MediaStore.EXTRA_MEDIA_FOCUS)) {
             MediaStore.Audio.Playlists.ENTRY_CONTENT_TYPE -> {
                 val playlist = extras.getString(MediaStore.EXTRA_MEDIA_ALBUM)
-                searchStoredPlaybacks.byPlaylist(playlist).map { it.toMediaItem() }
+                searchStoredPlaybacks.byPlaylist(playlist).map { it.playback.toMediaItem() }
             }
 
             MediaStore.Audio.Media.ENTRY_CONTENT_TYPE -> {
                 val title = extras.getString(MediaStore.EXTRA_MEDIA_TITLE)
                 val artist = extras.getString(MediaStore.EXTRA_MEDIA_ARTIST)
-                searchStoredPlaybacks.byTitleArtist(title, artist).map { it.toMediaItem() }
+                searchStoredPlaybacks.byTitleArtist(title, artist).map { it.playback.toMediaItem() }
             }
 
             else -> {
                 // if query is blank search will return all playbacks (for commands like "play some music")
-                searchStoredPlaybacks(query).map { it.toMediaItem() }
+                // using a random playback type to select music search location
+                searchStoredPlaybacks(query, PlaybackType.build("*${Random.nextInt(0, 3)}*")).map { it.playback.toMediaItem() }
             }
         }
     }

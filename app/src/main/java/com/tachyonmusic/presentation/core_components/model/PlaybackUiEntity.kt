@@ -38,11 +38,12 @@ fun Playback.toUiEntity() = when (this) {
         album ?: "Unknown Album",
         album ?: "$artist $title"
     )
+
     is Remix -> PlaybackUiEntity(
         title,
         artist,
         name,
-        if(isPlayable) "$title by $artist" else "Missing: ${mediaId.uri}",
+        if (isPlayable) "$title by $artist" else "Missing: ${mediaId.uri}",
         duration,
         mediaId,
         playbackType,
@@ -51,6 +52,7 @@ fun Playback.toUiEntity() = when (this) {
         album ?: "Unknown Album",
         album ?: "$artist $title"
     )
+
     is Playlist -> PlaybackUiEntity(
         playbacks.first().title,
         playbacks.first().artist,
@@ -62,5 +64,10 @@ fun Playback.toUiEntity() = when (this) {
         playbacks.find { it.hasArtwork }?.artwork,
         true
     )
+
     else -> TODO("Invalid playback type ${this.javaClass.name}")
 }
+
+fun PlaybackUiEntity.toSong(songs: List<Song>) = songs.find { it.mediaId == mediaId }
+fun PlaybackUiEntity.toRemix(remixes: List<Remix>) = remixes.find { it.mediaId == mediaId }
+fun PlaybackUiEntity.toPlaylist(playlists: List<Playlist>) = playlists.find { it.mediaId == mediaId }

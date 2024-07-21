@@ -54,7 +54,7 @@ object SignInScreen : NavigationItem("sign_in") {
                 Text(text = stringResource(R.string.dont_have_account_question))
                 Text(
                     text = stringResource(R.string.register),
-                    modifier = Modifier.clickable { navController.navigate(RegisterScreen.route) })
+                    modifier = Modifier.clickable { navController.navigate(RegisterScreen.route()) })
             }
 
             if (error != null) {

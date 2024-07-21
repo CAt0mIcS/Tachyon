@@ -13,9 +13,12 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -27,6 +30,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavOptionsBuilder
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
@@ -35,6 +40,7 @@ import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.entry.SwipingStates
+import com.tachyonmusic.presentation.library.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.AdmobBanner
@@ -52,6 +58,7 @@ object LibraryScreen :
     @Composable
     operator fun invoke(
         draggable: AnchoredDraggableState<SwipingStates>,
+        navController: NavController,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
         var sortOptionsExpanded by rememberSaveable { mutableStateOf(false) }
@@ -141,16 +148,20 @@ object LibraryScreen :
                         tween(Theme.animation.short)
                     )
 
-                    Box {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_sort),
+                        contentDescription = "Open Sorting Options",
+                        tint = iconAndTextColor,
+                        modifier = Modifier
+                            .scale(1.3f)
+                            .align(Alignment.CenterVertically)
+                    )
 
-                        Icon(
-                            painter = painterResource(R.drawable.ic_sort),
-                            contentDescription = "Open Sorting Options",
-                            tint = iconAndTextColor,
-                            modifier = Modifier.scale(1.3f)
-                        )
-
-
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .weight(1f)
+                    ) {
                         DropdownMenu(
                             modifier = Modifier
                                 .widthIn(max = with(LocalDensity.current) { rowSize.width.toDp() - Theme.padding.extraSmall }),
@@ -168,16 +179,34 @@ object LibraryScreen :
                                 )
                             }
                         }
+
+                        val sortParams by viewModel.sortParams.collectAsState()
+
+                        Text(
+                            modifier = Modifier.padding(
+                                start = Theme.padding.large,
+                                end = Theme.padding.medium
+                            ),
+                            text = sortParams.type.asString(sortParams.order),
+                            fontSize = 18.sp,
+                            color = iconAndTextColor
+                        )
                     }
 
-                    val sortParams by viewModel.sortParams.collectAsState()
-
-                    Text(
-                        modifier = Modifier.padding(start = Theme.padding.medium),
-                        text = sortParams.type.asString(sortParams.order),
-                        fontSize = 18.sp,
-                        color = iconAndTextColor
-                    )
+                    IconButton(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        onClick = {
+                            navController.navigate(
+                                PlaybackSearchScreen.route(mapOf("playbackType" to filterPlaybackType.toString()))
+                            )
+                        } // TODO: Correct animation like in contacts app
+                    ) {
+                        Icon(
+                            Icons.Default.Search,
+                            "Search Playbacks",
+                            modifier = Modifier.scale(1.3f)
+                        )
+                    }
                 }
             }
 
@@ -313,7 +342,7 @@ object LibraryScreen :
                                     var title by remember { mutableStateOf(playback.title) }
                                     var artist by remember { mutableStateOf(playback.artist) }
                                     var name by remember { mutableStateOf(playback.displayTitle) }
-                                    var album by remember {mutableStateOf(playback.album)}
+                                    var album by remember { mutableStateOf(playback.album) }
 
                                     val playbackType = playback.mediaId.playbackType
 
@@ -325,7 +354,7 @@ object LibraryScreen :
                                         TextField(value = artist, onValueChange = { artist = it })
 
                                         Text("Album")
-                                        TextField(value = album,  onValueChange = {album = it})
+                                        TextField(value = album, onValueChange = { album = it })
                                     }
                                     if (playbackType is PlaybackType.Remix || playbackType is PlaybackType.Playlist) {
                                         Text("Name")
@@ -335,7 +364,13 @@ object LibraryScreen :
                                     Button(
                                         onClick = {
                                             showMetadataDialog = false
-                                            viewModel.updateMetadata(playback, title, artist, name, album)
+                                            viewModel.updateMetadata(
+                                                playback,
+                                                title,
+                                                artist,
+                                                name,
+                                                album
+                                            )
                                         }
                                     ) {
                                         Text("Confirm")

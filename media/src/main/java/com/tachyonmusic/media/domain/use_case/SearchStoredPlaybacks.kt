@@ -1,65 +1,175 @@
 package com.tachyonmusic.media.domain.use_case
 
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
-import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import java.util.Arrays
+
+data class PlaybackSearchResult(
+    val playback: Playback,
+    val titleHighlightIndices: List<Int> = emptyList(),
+    val artistHighlightIndices: List<Int> = emptyList(),
+    val albumHighlightIndices: List<Int> = emptyList(),
+    val nameHighlightIndices: List<Int> = emptyList(),
+    var score: Float = 0f,
+)
 
 /**
  * Searches through all playbacks that don't come from Spotify/Soundcloud/...
  */
 class SearchStoredPlaybacks(
-    private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
     private val playbackRepository: PlaybackRepository
 ) {
-    // TODO: Optimize
-    suspend operator fun invoke(query: String?): List<Playback> {
-        val playbacks =
-            predefinedPlaylistsRepository.songPlaylist.value.filter { it.mediaId.isLocalSong } +
-                    predefinedPlaylistsRepository.remixPlaylist.value + playbackRepository.getPlaylists()
-
-        if (query.isNullOrEmpty())
-            return playbacks
-
-        // TODO: Better string searches?
-        val coefficientMap = mutableMapOf<Double, Playback>()
-        for (playback in playbacks) {
-            var coefficient =
-                diceCoefficient(if (playback is Playlist) playback.name else playback.title, query)
-            while (coefficientMap.containsKey(1.0 - coefficient))
-                coefficient -= .00000000001
-            coefficientMap[1.0 - coefficient] = playback
-        }
-        return coefficientMap.toSortedMap().values.toList()
-    }
-
-    fun byTitleArtist(title: String?, artist: String?): List<SinglePlayback> {
-        val items =
-            predefinedPlaylistsRepository.songPlaylist.value.filter { it.mediaId.isLocalSong } +
-                    predefinedPlaylistsRepository.remixPlaylist.value
-
-        if (title.isNullOrBlank() || artist.isNullOrBlank())
-            return items
-
-        return items.filter {
-            it.title.lowercase() == title.lowercase() && it.artist.lowercase() == artist.lowercase()
+    suspend operator fun invoke(
+        query: String,
+        playbackType: PlaybackType
+    ): List<PlaybackSearchResult> {
+        return when (playbackType) {
+            is PlaybackType.Song -> searchSongs(query)
+            is PlaybackType.Remix -> searchRemixes(query)
+            is PlaybackType.Playlist -> searchPlaylists(query)
+            is PlaybackType.Ad -> {
+                emptyList()
+            }
         }
     }
 
-    suspend fun byPlaylist(playlistName: String?): List<Playlist> {
-        if (playlistName.isNullOrBlank())
-            return playbackRepository.getPlaylists()
+    suspend fun byPlaylist(name: String?): List<PlaybackSearchResult> {
+        if (name == null)
+            return emptyList()
+        return searchPlaylists(name)
+    }
 
-        return playbackRepository.getPlaylists().filter {
-            it.name.lowercase() == playlistName.lowercase()
+    suspend fun byTitleArtist(title: String?, artist: String?): List<PlaybackSearchResult> {
+        if (title == null && artist == null)
+            return emptyList()
+
+        return (searchSongs("$title $artist") + searchRemixes("$title $artist")).sortedByDescending { it.score }
+    }
+
+
+    private suspend fun searchSongs(query: String): List<PlaybackSearchResult> {
+        if (query.isBlank()) return emptyList()
+
+        val songs = playbackRepository.getSongs()
+
+        return List(songs.size) { i ->
+            val song = songs[i]
+
+            if (song.title.containsEqual(query))
+                PlaybackSearchResult(song, findHighlights(query, song.title), score = 1f)
+            else if (song.artist.containsEqual(query))
+                PlaybackSearchResult(
+                    song,
+                    artistHighlightIndices = findHighlights(query, song.artist),
+                    score = .99f
+                )
+            else if (song.album?.containsEqual(query) == true)
+                PlaybackSearchResult(
+                    song,
+                    albumHighlightIndices = findHighlights(query, song.album ?: ""),
+                    score = .9f
+                )
+            else
+                PlaybackSearchResult(
+                    song,
+                    score = computeScore(query, "${song.title} ${song.artist} ${song.album ?: ""}")
+                )
+        }.sortedByDescending { it.score }.filter { it.score != 0f }
+    }
+
+    private suspend fun searchRemixes(query: String): List<PlaybackSearchResult> {
+        if (query.isBlank()) return emptyList()
+
+        val remixes = playbackRepository.getRemixes()
+
+        return List(remixes.size) { i ->
+            val remix = remixes[i]
+
+            if (remix.name.containsEqual(query))
+                PlaybackSearchResult(
+                    remix,
+                    nameHighlightIndices = findHighlights(query, remix.name),
+                    score = 1f
+                )
+            else if (remix.title.containsEqual(query))
+                PlaybackSearchResult(remix, findHighlights(query, remix.title), score = 1f)
+            else if (remix.artist.containsEqual(query))
+                PlaybackSearchResult(
+                    remix,
+                    artistHighlightIndices = findHighlights(query, remix.artist),
+                    score = .99f
+                )
+            else if (remix.album?.containsEqual(query) == true)
+                PlaybackSearchResult(
+                    remix,
+                    albumHighlightIndices = findHighlights(query, remix.album ?: ""),
+                    score = .9f
+                )
+            else
+                PlaybackSearchResult(
+                    remix, score = computeScore(
+                        query,
+                        "${remix.name} ${remix.title} ${remix.artist} ${remix.album ?: ""}"
+                    )
+                )
+        }.sortedByDescending { it.score }.filter { it.score != 0f }
+    }
+
+    private suspend fun searchPlaylists(query: String): List<PlaybackSearchResult> {
+        if (query.isBlank()) return emptyList()
+
+        val playlists = playbackRepository.getPlaylists()
+
+        return List(playlists.size) { i ->
+            val playlist = playlists[i]
+
+            var result: PlaybackSearchResult?
+
+            if (playlist.name.containsEqual(query))
+                result = PlaybackSearchResult(
+                    playlist,
+                    nameHighlightIndices = findHighlights(query, playlist.name),
+                    score = 1f
+                )
+
+            result = PlaybackSearchResult(playlist)
+            // TODO: Do the same for album, artist, name, ...?
+            val titles = playlist.playbacks.map { it.title }
+            for (title in titles) {
+                if (title.containsEqual(query)) {
+                    result.score += 1f / titles.size
+                }
+            }
+
+            if (result.score <= .1f)
+                result.score = computeScore(query, playlist.name)
+            result
+        }.sortedByDescending { it.score }.filter { it.score != 0f }
+    }
+
+
+    // TODO: Take portions into account, so that e.g. Ashanaha doesn't highlight all letters 'a' and only the part that is searched for
+    private fun findHighlights(query: String, evaluate: String): List<Int> {
+        val highlights = mutableListOf<Int>()
+
+        evaluate.forEachIndexed { index, letter ->
+            if (query.contains(letter))
+                highlights.add(index)
         }
+
+        return highlights
     }
 }
 
-// TODO: Move somewhere else
-fun diceCoefficient(s: String?, t: String?): Double {
+// TODO: needs to be better
+private fun computeScore(query: String, evaluate: String): Float {
+    return diceCoefficient(evaluate, query).toFloat()
+}
+
+
+private fun diceCoefficient(s: String?, t: String?): Double {
     // Verifying the input:
     if (s == null || t == null) return 0.0
     // Quick check to catch identical objects:
@@ -100,3 +210,6 @@ fun diceCoefficient(s: String?, t: String?): Double {
     }
     return matches.toDouble() / (n + m)
 }
+
+private fun String.containsEqual(other: String) =
+    contains(other, ignoreCase = true) || other.contains(this, ignoreCase = true)
