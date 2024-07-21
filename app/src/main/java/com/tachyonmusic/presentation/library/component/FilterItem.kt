@@ -2,6 +2,7 @@ package com.tachyonmusic.presentation.library.component
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -11,8 +12,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.presentation.theme.NoRippleTheme
 import com.tachyonmusic.presentation.theme.Theme
@@ -36,20 +39,30 @@ fun FilterItem(textId: Int, modifier: Modifier = Modifier, selected: Boolean = f
     )
 
     CompositionLocalProvider(LocalRippleTheme provides NoRippleTheme) {
-        Button(
-            modifier = modifier,
-            shape = Theme.shapes.medium,
-            colors = ButtonDefaults.buttonColors().copy(
-                containerColor = backgroundColor,
-                contentColor = contentColor
-            ),
-            onClick = onClick,
-            contentPadding = ButtonDefaults.ContentPadding.copy(
-                start = Theme.padding.medium,
-                end = Theme.padding.medium
-            )
-        ) {
-            Text(stringResource(textId), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+
+        SubcomposeLayout {
+            val button = subcompose("button") {
+                Button(
+                    modifier = modifier,
+                    shape = Theme.shapes.medium,
+                    colors = ButtonDefaults.buttonColors().copy(
+                        containerColor = backgroundColor,
+                        contentColor = contentColor
+                    ),
+                    onClick = onClick,
+                    contentPadding = ButtonDefaults.ContentPadding.copy(
+                        start = Theme.padding.medium,
+                        end = Theme.padding.medium
+                    )
+                ) {
+                    Text(stringResource(textId), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                }
+            }.first().measure(Constraints())
+
+            val width = button.width
+            layout(width, button.height) {
+                button.placeRelative(0, 0)
+            }
         }
     }
 }
