@@ -91,7 +91,7 @@ class PlaybackSearchViewModel @Inject constructor(
     }
 
     fun increaseLoadingRange() {
-        itemDisplayRange.update { it + 10 }
+        itemDisplayRange.update { searchResults.value.size + 10 }
     }
 
     fun resetLoadingRange() {

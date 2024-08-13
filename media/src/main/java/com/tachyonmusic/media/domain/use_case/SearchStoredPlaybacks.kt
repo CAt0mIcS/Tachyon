@@ -3,13 +3,14 @@ package com.tachyonmusic.media.domain.use_case
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.util.removeFirst
 import java.util.Arrays
 
 /**
  * If [diceCoefficient] returns a value >= than [DICE_COEFFICIENT_GUARANTEED_RESULT_THRESHOLD] then
  * the playback is seen as a guaranteed hit and will be added to the range of counted returns
  */
-private const val DICE_COEFFICIENT_GUARANTEED_RESULT_THRESHOLD = .65f
+private const val DICE_COEFFICIENT_GUARANTEED_RESULT_THRESHOLD = .55f
 
 data class PlaybackSearchResult(
     val playback: Playback,
@@ -61,11 +62,12 @@ class SearchStoredPlaybacks(
     ): List<PlaybackSearchResult> {
         if (query.isBlank()) return emptyList()
 
-        val songs = playbackRepository.getSongs()
+        var songs = playbackRepository.getSongs()
         var guaranteedResults = 0.0f
 
         val results = mutableListOf<PlaybackSearchResult>()
-        for (song in songs) {
+
+        songs = songs.filter { song ->
             val result = if (song.title.containsEqual(query)) {
                 guaranteedResults += 1
                 PlaybackSearchResult(song, findHighlights(query, song.title), score = 1f)
@@ -83,19 +85,22 @@ class SearchStoredPlaybacks(
                     albumHighlightIndices = findHighlights(query, song.album ?: ""),
                     score = .9f
                 )
-            } else {
-                val score = computeScore(query, "${song.title} ${song.artist} ${song.album ?: ""}")
-                if (score >= DICE_COEFFICIENT_GUARANTEED_RESULT_THRESHOLD)
-                    guaranteedResults += .8f
+            } else null
 
-                PlaybackSearchResult(song, score = score)
-            }
+            results.add(result ?: return@filter true)
+            false
+        }
 
-            results.add(result)
-
+        for (song in songs) {
             if (guaranteedResults >= range) {
                 break
             }
+
+            val score = computeScore(query, "${song.title} ${song.artist} ${song.album ?: ""}")
+            if (score >= DICE_COEFFICIENT_GUARANTEED_RESULT_THRESHOLD)
+                guaranteedResults += .8f
+
+            results.add(PlaybackSearchResult(song, score = score))
         }
 
         return results.sortedByDescending { it.score }.filter { it.score != 0f }
@@ -107,11 +112,11 @@ class SearchStoredPlaybacks(
     ): List<PlaybackSearchResult> {
         if (query.isBlank()) return emptyList()
 
-        val remixes = playbackRepository.getRemixes()
+        var remixes = playbackRepository.getRemixes()
         var guaranteedResults = 0.0f
-
         val results = mutableListOf<PlaybackSearchResult>()
-        for (remix in remixes) {
+
+        remixes = remixes.filter { remix ->
             val result = if (remix.name.containsEqual(query)) {
                 guaranteedResults += 1f
                 PlaybackSearchResult(
@@ -136,22 +141,26 @@ class SearchStoredPlaybacks(
                     albumHighlightIndices = findHighlights(query, remix.album ?: ""),
                     score = .9f
                 )
-            } else {
-                val score = computeScore(
-                    query,
-                    "${remix.name} ${remix.title} ${remix.artist} ${remix.album ?: ""}"
-                )
-                if (score >= DICE_COEFFICIENT_GUARANTEED_RESULT_THRESHOLD)
-                    guaranteedResults += .8f
+            } else
+                null
 
-                PlaybackSearchResult(remix, score = score)
-            }
+            results.add(result ?: return@filter true)
+            false
+        }
 
-            results.add(result)
-
+        for (remix in remixes) {
             if (guaranteedResults >= range) {
                 break
             }
+
+            val score = computeScore(
+                query,
+                "${remix.name} ${remix.title} ${remix.artist} ${remix.album ?: ""}"
+            )
+            if (score >= DICE_COEFFICIENT_GUARANTEED_RESULT_THRESHOLD)
+                guaranteedResults += .8f
+
+            results.add(PlaybackSearchResult(remix, score = score))
         }
         return results.sortedByDescending { it.score }.filter { it.score != 0f }
     }
@@ -162,21 +171,19 @@ class SearchStoredPlaybacks(
     ): List<PlaybackSearchResult> {
         if (query.isBlank()) return emptyList()
 
-        val playlists = playbackRepository.getPlaylists()
+        var playlists = playbackRepository.getPlaylists()
         var guaranteedResults = 0.0f
-
         val results = mutableListOf<PlaybackSearchResult>()
-        for(playlist in playlists) {
 
-            val result =  if (playlist.name.containsEqual(query)) {
+        playlists = playlists.filter { playlist ->
+            val result = if (playlist.name.containsEqual(query)) {
                 guaranteedResults += 1f
                 PlaybackSearchResult(
                     playlist,
                     nameHighlightIndices = findHighlights(query, playlist.name),
                     score = 1f
                 )
-            }
-            else
+            } else
                 PlaybackSearchResult(playlist)
 
             // TODO: Do the same for album, artist, name, ...?
@@ -188,18 +195,22 @@ class SearchStoredPlaybacks(
                 }
             }
 
-            if (result.score <= .1f) {
-                result.score = computeScore(query, playlist.name)
+            results.add(if (result.score >= .1f) result else return@filter true)
+            false
+        }
 
-                if(result.score >= DICE_COEFFICIENT_GUARANTEED_RESULT_THRESHOLD)
-                    guaranteedResults += 1f
-            }
-
-            results.add(result)
-
+        for (playlist in playlists) {
             if (guaranteedResults >= range) {
                 break
             }
+
+            val result = PlaybackSearchResult(playlist)
+            result.score = computeScore(query, playlist.name)
+
+            if (result.score >= DICE_COEFFICIENT_GUARANTEED_RESULT_THRESHOLD)
+                guaranteedResults += 1f
+
+            results.add(result)
         }
 
         return results.sortedByDescending { it.score }.filter { it.score != 0f }
