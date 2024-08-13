@@ -209,7 +209,7 @@ object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
                                 playback = searchResult.playback,
                                 modifier = Modifier
                                     .isEnabled(searchResult.playback.isPlayable)
-                                    .padding(top = Theme.padding.small),
+                                    .padding(top = Theme.padding.extraSmall),
                                 artwork = searchResult.playback.artwork
                                     ?: PlaceholderArtwork
                             ) {
