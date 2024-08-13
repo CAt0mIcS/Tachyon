@@ -1,6 +1,7 @@
 package com.tachyonmusic.presentation.core_components
 
 import android.net.Uri
+import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -17,6 +18,6 @@ fun UriPermissionDialog(show: Boolean, onPermission: (Uri?) -> Unit) {
     )
 
     LaunchedEffect(Unit) {
-        launcher.launch(null)
+        launcher.launch(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)
     }
 }
