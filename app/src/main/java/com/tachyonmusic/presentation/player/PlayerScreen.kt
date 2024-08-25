@@ -42,7 +42,6 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.github.krottv.compose.sliders.DefaultThumb
 import com.github.krottv.compose.sliders.DefaultTrack
 import com.github.krottv.compose.sliders.SliderValueHorizontal
@@ -58,7 +57,7 @@ import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
-import com.tachyonmusic.presentation.player.component.TimingDataEditor
+import com.tachyonmusic.presentation.player.component.RemixEditor
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.presentation.util.isEnabled
@@ -349,7 +348,7 @@ fun PlayerScreen(
             item {
                 HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
 
-                TimingDataEditor(
+                RemixEditor(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = Theme.padding.medium)

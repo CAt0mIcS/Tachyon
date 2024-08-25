@@ -18,6 +18,7 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.tachyonmusic.app.R
+import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
@@ -37,17 +38,16 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     @Inject
     lateinit var uriPermissionRepository: UriPermissionRepository
 
+    @Inject
+    lateinit var adInterface: AdInterface
+
     private var castContext: CastContext? = null
     private lateinit var appUpdateManager: AppUpdateManager
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        MobileAds.initialize(this)
-        MobileAds.setRequestConfiguration(
-            RequestConfiguration.Builder().setTestDeviceIds(listOf("TEST_EMULATOR")).build()
-        )
+        adInterface.initialize(this)
 
         // Initialize the Cast context. This is required so that the media route button can be
         // created in the AppBar

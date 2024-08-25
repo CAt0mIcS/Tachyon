@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.domain.SongMetadataExtractor
+import com.tachyonmusic.data.repository.AndroidAdInterface
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
 import com.tachyonmusic.data.repository.StateRepository
@@ -14,6 +15,7 @@ import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.repository.StateRepositoryImpl
@@ -39,6 +41,7 @@ import com.tachyonmusic.domain.use_case.player.GetPlaybackChildren
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.RemovePlaybackFromPlaylist
 import com.tachyonmusic.domain.use_case.player.SavePlaybackToPlaylist
+import com.tachyonmusic.domain.use_case.player.SaveRemixToDatabase
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.domain.use_case.profile.ExportDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
@@ -148,6 +151,14 @@ object AppUseCaseModule {
     @Singleton
     fun provideCreateNewRemixUseCase(audioEffectController: AudioEffectController) =
         CreateRemix(audioEffectController)
+
+    @Provides
+    @Singleton
+    fun provideSaveRemixToDatabaseUseCase(
+        remixRepository: RemixRepository,
+        dataRepository: DataRepository,
+        adInterface: AdInterface
+    ) = SaveRemixToDatabase(remixRepository, dataRepository, adInterface)
 
     @Provides
     @Singleton
@@ -287,6 +298,10 @@ object AppRepositoryModule {
             predefinedPlaylistsRepository,
             logger
         )
+
+    @Provides
+    @Singleton
+    fun provideAdInterface(logger: Logger): AdInterface = AndroidAdInterface(logger)
 
     @Provides
     @Singleton

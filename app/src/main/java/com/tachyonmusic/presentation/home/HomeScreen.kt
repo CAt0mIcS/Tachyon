@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
@@ -92,22 +91,22 @@ object HomeScreen :
                         fontWeight = FontWeight.Bold
                     )
 
-//                    Column(
-//                        modifier = Modifier.fillMaxSize(),
-//                        horizontalAlignment = Alignment.End,
-//                        verticalArrangement = Arrangement.Center
-//                    ) {
-//                        TextButton(
-//                            onClick = { viewModel.refreshArtwork() },
-//                        ) {
-//                            Text(
-//                                "View All",
-//                                color = MaterialTheme.colorScheme.tertiary,
-//                                fontSize = 16.sp,
-//                                fontWeight = FontWeight.Bold
-//                            )
-//                        }
-//                    }
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        TextButton(
+                            onClick = { viewModel.debugAction() },
+                        ) {
+                            Text(
+                                "Debug Action",
+                                color = MaterialTheme.colorScheme.tertiary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
             }
 

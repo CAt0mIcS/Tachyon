@@ -24,6 +24,7 @@ class RoomDataRepository(
 
     override suspend fun update(
         recentlyPlayed: RecentlyPlayed?,
+        maxRemixCount: Int?,
         repeatMode: RepeatMode?
     ) {
         if (recentlyPlayed != null)
@@ -34,6 +35,9 @@ class RoomDataRepository(
                 recentlyPlayed.artworkType,
                 recentlyPlayed.artworkUrl
             )
+
+        if(maxRemixCount != null)
+            dao.setMaxRemixCount(maxRemixCount)
 
         if (repeatMode != null)
             dao.setRepeatMode(repeatMode)

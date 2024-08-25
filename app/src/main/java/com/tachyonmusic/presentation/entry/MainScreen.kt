@@ -79,11 +79,11 @@ fun MainScreen(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .clip(Theme.shapes.large)
+                            .background(MaterialTheme.colorScheme.background, Theme.shapes.large)
                             .border(
                                 BorderStroke(2.dp, MaterialTheme.colorScheme.surfaceContainer),
                                 Theme.shapes.large
                             )
-                            .background(MaterialTheme.colorScheme.background, Theme.shapes.large)
                     ) {
                         Column {
                             CircularProgressIndicator(
