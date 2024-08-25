@@ -70,7 +70,7 @@ class UpdateSongDatabase(
             for (pathChunks in songsToAddToDatabase.chunked(chunkSize)) {
                 songs += async(Dispatchers.IO) {
                     pathChunks.map { path ->
-                        loadMetadata(path)
+                        loadMetadata(path, settings)
                     }
                 }
             }
@@ -84,59 +84,62 @@ class UpdateSongDatabase(
         /**
          * FIND MISSING ARTWORK
          */
-        val songsWithUnknownArtwork =
-            songRepo.getSongs().filter { it.artworkType == ArtworkType.UNKNOWN }
-        log.debug("Trying to find artwork for ${songsWithUnknownArtwork.size} unknowns...")
-        if (songsWithUnknownArtwork.isEmpty())
-            stateRepository.finishLoadingTask("UpdateSongDatabase::loadingNewSongs")
-        else {
-            /**
-             * Load new artwork for newly found [entity]
-             */
+        if (settings.autoDownloadAlbumArtwork) {
+            val songsWithUnknownArtwork =
+                songRepo.getSongs().filter { it.artworkType == ArtworkType.UNKNOWN }
+            log.debug("Trying to find artwork for ${songsWithUnknownArtwork.size} unknowns...")
+            if (songsWithUnknownArtwork.isNotEmpty()) {
+                /**
+                 * Load new artwork for newly found [entity]
+                 */
 
-            val chunkSize = ceil(songsWithUnknownArtwork.size * .05f).toInt()
-            songsWithUnknownArtwork.chunked(chunkSize).map { entityChunk ->
-                async {
-                    entityChunk.map { entity ->
-                        loadArtworkForEntity(entity) { entityToUpdate ->
-                            assignArtworkToPlayback(
-                                entityToUpdate.mediaId,
-                                entityToUpdate.artworkType,
-                                entityToUpdate.artworkUrl
-                            )
+                val chunkSize = ceil(songsWithUnknownArtwork.size * .05f).toInt()
+                songsWithUnknownArtwork.chunked(chunkSize).map { entityChunk ->
+                    async {
+                        entityChunk.map { entity ->
+                            loadArtworkForEntity(entity) { entityToUpdate ->
+                                assignArtworkToPlayback(
+                                    entityToUpdate.mediaId,
+                                    entityToUpdate.artworkType,
+                                    entityToUpdate.artworkUrl
+                                )
+                            }
                         }
                     }
-                }
-            }.awaitAll()
-
-            stateRepository.finishLoadingTask("UpdateSongDatabase::loadingNewSongs")
+                }.awaitAll()
+            }
         }
+
+        stateRepository.finishLoadingTask("UpdateSongDatabase::loadingNewSongs")
     }
 
-    private suspend fun loadMetadata(path: DocumentFile) = withContext(Dispatchers.IO) {
-        val metadata = metadataExtractor.loadMetadata(
-            path.uri,
-            path.name ?: "Unknown Title"
-        )
-
-        if (metadata == null)
-            null
-        else {
-            val entity = SongEntity(
-                MediaId.ofLocalSong(path.uri),
-                metadata.title,
-                metadata.artist,
-                metadata.duration,
-                album = metadata.album
+    private suspend fun loadMetadata(path: DocumentFile, settings: SettingsEntity) =
+        withContext(Dispatchers.IO) {
+            val metadata = metadataExtractor.loadMetadata(
+                path.uri,
+                path.name ?: "Unknown Title"
             )
 
-            loadArtworkForEntity(entity) { toUpdate ->
-                entity.artworkType = toUpdate.artworkType
-                entity.artworkUrl = toUpdate.artworkUrl
+            if (metadata == null)
+                null
+            else {
+                val entity = SongEntity(
+                    MediaId.ofLocalSong(path.uri),
+                    metadata.title,
+                    metadata.artist,
+                    metadata.duration,
+                    album = metadata.album
+                )
+
+                if (settings.autoDownloadAlbumArtwork) {
+                    loadArtworkForEntity(entity) { toUpdate ->
+                        entity.artworkType = toUpdate.artworkType
+                        entity.artworkUrl = toUpdate.artworkUrl
+                    }
+                }
+                entity
             }
-            entity
         }
-    }
 
     private suspend fun loadArtworkForEntity(
         entity: SongEntity,
