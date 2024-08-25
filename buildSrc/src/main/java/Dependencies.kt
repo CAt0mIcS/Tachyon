@@ -46,8 +46,10 @@ object Dependency {
     }
 
     object Coroutine {
-        const val ANDROID = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
-        const val GUAVA = "org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.6.4"
+        const val CORE = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
+        const val ANDROID = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
+        const val GUAVA = "org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.8.1"
+        const val STDLIB = "org.jetbrains.kotlin:kotlin-stdlib:${Index.KOTLIN}"
     }
 
     object DaggerHilt {
@@ -162,8 +164,10 @@ fun DependencyHandler.lifecycle() {
 }
 
 fun DependencyHandler.coroutines() {
+    implementation(Dependency.Coroutine.CORE)
     implementation(Dependency.Coroutine.ANDROID)
     implementation(Dependency.Coroutine.GUAVA)
+    implementation(Dependency.Coroutine.STDLIB)
 }
 
 fun DependencyHandler.dagger() {

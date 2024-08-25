@@ -29,9 +29,8 @@ class HomeViewModel @Inject constructor(
     playbackRepository: PlaybackRepository,
     private val loadArtworkForPlayback: LoadArtworkForPlayback,
     mediaBrowser: MediaBrowserController,
-    dataRepository: DataRepository,
+    private val dataRepository: DataRepository,
     private val playPlayback: PlayPlayback,
-    private val unloadArtworks: UnloadArtworks
 ) : ViewModel() {
 
     private val historyArtworkLoadingRange = MutableStateFlow(0..0)
@@ -71,9 +70,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun refreshArtwork() {
+    fun debugAction() {
         viewModelScope.launch(Dispatchers.IO) {
-            unloadArtworks()
+            dataRepository.update(maxRemixCount = 0)
         }
     }
 

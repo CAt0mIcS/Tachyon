@@ -2,6 +2,8 @@ package com.tachyonmusic.database.data.data_source.room
 
 import androidx.room.AutoMigration
 import androidx.room.TypeConverters
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.tachyonmusic.database.data.data_source.DataDao
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.database.data.data_source.HistoryDao
@@ -10,6 +12,7 @@ import com.tachyonmusic.database.data.data_source.RemixDao
 import com.tachyonmusic.database.data.data_source.SettingsDao
 import com.tachyonmusic.database.data.data_source.SongDao
 import com.tachyonmusic.database.domain.Converters
+import com.tachyonmusic.database.domain.model.DATA_DATABASE_TABLE_NAME
 import com.tachyonmusic.database.domain.model.DataEntity
 import com.tachyonmusic.database.domain.model.HistoryEntity
 import com.tachyonmusic.database.domain.model.PlaybackEntity
@@ -34,12 +37,13 @@ import kotlinx.serialization.json.encodeToJsonElement
         HistoryEntity::class,
         DataEntity::class
     ],
-    version = 4,
+    version = 6,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
-        AutoMigration(from = 3, to = 4)
+        AutoMigration(from = 3, to = 4),
+        AutoMigration(from = 4, to = 5)
     ]
 )
 @TypeConverters(Converters::class)
@@ -95,4 +99,11 @@ abstract class RoomDatabase : androidx.room.RoomDatabase(), Database {
 
     override val readableDatabasePath: String
         get() = openHelper.readableDatabase.path!!
+}
+
+
+internal val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE $DATA_DATABASE_TABLE_NAME ADD COLUMN maxRemixCount INTEGER NOT NULL DEFAULT 10")
+    }
 }

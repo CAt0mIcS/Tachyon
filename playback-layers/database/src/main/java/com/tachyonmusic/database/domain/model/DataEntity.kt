@@ -1,5 +1,6 @@
 package com.tachyonmusic.database.domain.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.tachyonmusic.core.ArtworkType
@@ -31,6 +32,12 @@ data class DataEntity(
 
     var repeatMode: RepeatMode = RepeatMode.All,
 
+    /**
+     * Presents the maximum allowed number of stored remixes. This number can be increased by watching
+     * an ad
+     */
+    var maxRemixCount: Int = 10,
+
     @PrimaryKey var id: Int = 0
 )
 
@@ -43,6 +50,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
         element<String>("RecentlyPlayedArtworkType", isOptional = true)
         element<String>("RecentlyPlayedArtworkUrl", isOptional = true)
         element<Int>("RepeatMode", isOptional = true)
+        element<Int>("MaxRemixCount", isOptional = true)
         element<Int>("Id", isOptional = true)
     }
 
@@ -53,6 +61,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
         var recentlyPlayedArtworkType: String = ArtworkType.UNKNOWN
         var recentlyPlayedArtworkUrl: String? = null
         var repeatMode: RepeatMode = RepeatMode.All
+        var maxRemixCount = 0
         var id = 0
 
         loop@ while (true) {
@@ -72,7 +81,8 @@ object DataEntitySerializer : KSerializer<DataEntity> {
                 3 -> recentlyPlayedArtworkType = decodeStringElement(descriptor, 3)
                 4 -> recentlyPlayedArtworkUrl = decodeStringElement(descriptor, 4).ifEmpty { null }
                 5 -> repeatMode = RepeatMode.fromId(decodeIntElement(descriptor, 5))
-                6 -> id = decodeIntElement(descriptor, 6)
+                6 -> maxRemixCount = decodeIntElement(descriptor, 6)
+                7 -> id = decodeIntElement(descriptor, 7)
 
                 else -> throw SerializationException("Unexpected index $index")
             }
@@ -85,6 +95,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
             recentlyPlayedArtworkType,
             recentlyPlayedArtworkUrl,
             repeatMode,
+            maxRemixCount,
             id
         )
     }
@@ -101,7 +112,8 @@ object DataEntitySerializer : KSerializer<DataEntity> {
             encodeStringElement(descriptor, 3, value.recentlyPlayedArtworkType)
             encodeStringElement(descriptor, 4, value.recentlyPlayedArtworkUrl ?: "")
             encodeIntElement(descriptor, 5, value.repeatMode.id)
-            encodeIntElement(descriptor, 6, value.id)
+            encodeIntElement(descriptor, 6, value.maxRemixCount)
+            encodeIntElement(descriptor, 7, value.id)
         }
     }
 }

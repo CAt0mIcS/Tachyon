@@ -1,7 +1,10 @@
 package com.tachyonmusic.presentation.player.component
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -34,22 +37,25 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.presentation.core_components.ErrorDialog
-import com.tachyonmusic.presentation.player.TimingDataEditorViewModel
+import com.tachyonmusic.presentation.player.RemixEditorViewModel
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
 
 @Composable
-fun TimingDataEditor(
+fun RemixEditor(
     modifier: Modifier = Modifier,
-    viewModel: TimingDataEditorViewModel = hiltViewModel()
+    viewModel: RemixEditorViewModel = hiltViewModel()
 ) {
     val timingData = viewModel.timingData
     val error by viewModel.remixError.collectAsState()
@@ -288,9 +294,11 @@ fun TimingDataEditor(
             Spacer(modifier = Modifier.padding(top = 6.dp))
         }
 
-        var openAlertDialog by remember { mutableStateOf(false) }
+        var openRemixSaveDialog by remember { mutableStateOf(false) }
+        var openWatchAdDialog by remember { mutableStateOf(false) }
         val currentName by viewModel.currentRemixName.collectAsState()
         var remixName by rememberSaveable { mutableStateOf(currentName ?: "") }
+        val remixError by viewModel.remixError.collectAsState()
 
         // TODO: Is this a good way to keep states synced?
         LaunchedEffect(currentName) {
@@ -298,17 +306,16 @@ fun TimingDataEditor(
         }
 
         Button(onClick = {
-            openAlertDialog = true
+            openRemixSaveDialog = true
         }) {
             Text("Save")
         }
 
-        if (openAlertDialog) {
+        if (openRemixSaveDialog) {
             // TODO: Show error
-            val remixError by viewModel.remixError.collectAsState()
 
             BasicAlertDialog(
-                onDismissRequest = { openAlertDialog = false },
+                onDismissRequest = { openRemixSaveDialog = false },
             ) {
                 Column {
                     TextField(
@@ -316,12 +323,64 @@ fun TimingDataEditor(
                         onValueChange = { remixName = it })
                     Button(
                         onClick = {
-                            viewModel.saveNewRemix(remixName)
-                            if (remixError == null)
-                                openAlertDialog = false
+                            if (viewModel.requiresRemixCountIncrease()) {
+                                openRemixSaveDialog = false
+                                openWatchAdDialog = true
+                            } else {
+                                viewModel.saveNewRemix(remixName)
+                                if (remixError == null)
+                                    openRemixSaveDialog = false
+                            }
                         }
                     ) {
                         Text("Save")
+                    }
+                }
+            }
+        }
+
+        if (openWatchAdDialog) {
+            Dialog(
+                onDismissRequest = { openWatchAdDialog = false },
+                DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true, usePlatformDefaultWidth = false)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth(.8f)
+                        .clip(Theme.shapes.large)
+                        .background(MaterialTheme.colorScheme.background, Theme.shapes.large)
+                        .border(
+                            BorderStroke(2.dp, MaterialTheme.colorScheme.surfaceContainer),
+                            Theme.shapes.large
+                        )
+                        .padding(
+                            horizontal = Theme.padding.large,
+                            vertical = Theme.padding.medium
+                        )
+                ) {
+                    Column {
+                        Text("Watch one short ad to permanently allow you to save 10 more remixes")
+                        Row(
+                            modifier = Modifier.padding(top = Theme.padding.medium).fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceAround
+                        ) {
+                            Button(onClick = {
+                                viewModel.saveNewRemix(remixName)
+                                openWatchAdDialog = false
+
+                                if (remixError != null) {
+                                    openRemixSaveDialog =
+                                        true // Display error message here in the name text
+                                }
+                            }) {
+                                Text("Watch Ad")
+                            }
+
+                            Button(onClick = { openWatchAdDialog = false }) {
+                                Text("Cancel")
+                            }
+                        }
                     }
                 }
             }

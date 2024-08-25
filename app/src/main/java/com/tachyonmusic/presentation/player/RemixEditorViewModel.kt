@@ -11,12 +11,15 @@ import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.isNullOrEmpty
 import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.database.domain.model.SettingsEntity
+import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
+import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.player.CreateRemix
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
+import com.tachyonmusic.domain.use_case.player.SaveRemixToDatabase
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.toRemix
@@ -39,12 +42,14 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
 @HiltViewModel
-class TimingDataEditorViewModel @Inject constructor(
+class RemixEditorViewModel @Inject constructor(
     private val mediaBrowser: MediaBrowserController,
     private val seekToPosition: SeekToPosition,
     private val createRemix: CreateRemix,
@@ -52,6 +57,9 @@ class TimingDataEditorViewModel @Inject constructor(
     private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
     settingsRepository: SettingsRepository,
     private val pauseResumePlayback: PauseResumePlayback,
+    private val saveRemix: SaveRemixToDatabase,
+    private val adInterface: AdInterface,
+    private val dataRepository: DataRepository,
     private val remixRepository: RemixRepository
 ) : ViewModel() {
     private val _remixError = MutableStateFlow<UiText?>(null)
@@ -62,7 +70,7 @@ class TimingDataEditorViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
     val currentRemixName = mediaBrowser.currentPlayback.map {
-        if(it is Remix) it.name else null
+        if (it is Remix) it.name else null
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     val timingData = mutableStateListOf<TimingData>()
@@ -70,7 +78,11 @@ class TimingDataEditorViewModel @Inject constructor(
         private set
 
     val settings = settingsRepository.observe()
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SettingsEntity())
+        .stateIn(
+            viewModelScope + Dispatchers.IO,
+            SharingStarted.WhileSubscribed(),
+            SettingsEntity()
+        )
 
     init {
         mediaBrowser.currentPlayback.onEach {
@@ -140,7 +152,7 @@ class TimingDataEditorViewModel @Inject constructor(
                 removeAt(i)
 
                 // Add default back if last timingData was deleted
-                if(i == 0 && isEmpty())
+                if (i == 0 && isEmpty())
                     add(TimingData(0.ms, duration.value))
             },
             currentIndex
@@ -150,7 +162,7 @@ class TimingDataEditorViewModel @Inject constructor(
     fun moveTimingData(from: Int, to: Int) {
         mediaBrowser.currentPlaybackTimingData = TimingDataController(
             timingData.toMutableList().apply {
-                if(isValidTimingDataMove(from, to)) {
+                if (isValidTimingDataMove(from, to)) {
                     val tdToMove = removeAt(from)
                     add(to, tdToMove)
                 }
@@ -169,7 +181,7 @@ class TimingDataEditorViewModel @Inject constructor(
             if (createRes is Resource.Success) {
                 _remixError.update { null }
                 withContext(Dispatchers.IO) {
-                    val dbRes = remixRepository.add(createRes.data!!)
+                    val dbRes = saveRemix(createRes.data!!)
 
                     if (dbRes is Resource.Success) {
                         if (settings.value.playNewlyCreatedRemix) {
@@ -178,7 +190,7 @@ class TimingDataEditorViewModel @Inject constructor(
                                 // TODO: Some way to wait for predefined playlists repository to update
                                 //  playPlayback is not working because new remix is not in predefined playlists yet
                                 while (predefinedPlaylistsRepository.remixPlaylist.value.size <= sizeBefore) {
-                                    delay(50.ms)
+                                    delay(100.ms)
                                 }
 
                                 playPlayback(
@@ -195,12 +207,21 @@ class TimingDataEditorViewModel @Inject constructor(
         }
     }
 
-
     fun isValidTimingDataMove(from: Int, to: Int): Boolean {
-        if(timingData.size <= 1) return false
-        if(timingData.size == to) return false
-        if(from < 0 || to < 0) return false
+        if (timingData.size <= 1) return false
+        if (timingData.size == to) return false
+        if (from < 0 || to < 0) return false
 
         return true
+    }
+
+    // TODO: Optimize?
+    fun requiresRemixCountIncrease(): Boolean {
+        return runBlocking {
+            val currentMax = dataRepository.getData().maxRemixCount
+            val remixCount = remixRepository.getRemixes().size
+
+            remixCount >= currentMax
+        }
     }
 }

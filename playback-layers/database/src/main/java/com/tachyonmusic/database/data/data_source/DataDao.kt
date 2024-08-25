@@ -41,6 +41,9 @@ interface DataDao {
         artworkUrl: String? = null
     )
 
+    @Query("UPDATE $DATA_DATABASE_TABLE_NAME SET maxRemixCount=:remixCount")
+    suspend fun setMaxRemixCount(remixCount: Int)
+
     @Query("UPDATE $DATA_DATABASE_TABLE_NAME SET repeatMode=:repeatMode")
     suspend fun setRepeatMode(repeatMode: RepeatMode)
 }
