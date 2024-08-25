@@ -13,12 +13,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.presentation.core_components.AnimatedText
-import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.theme.Theme
 
 @Composable
 fun VerticalPlaybackView(
-    playback: PlaybackUiEntity,
+    displayTitle: String,
+    displaySubtitle: String,
     artwork: Artwork,
     modifier: Modifier = Modifier
 ) {
@@ -37,7 +37,7 @@ fun VerticalPlaybackView(
         AnimatedText(
             modifier = Modifier
                 .padding(start = Theme.padding.small, end = Theme.padding.small),
-            text = playback.displayTitle,
+            text = displayTitle,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
             gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainerHigh
@@ -50,7 +50,7 @@ fun VerticalPlaybackView(
                     bottom = Theme.padding.small,
                     end = Theme.padding.small
                 ),
-            text = playback.displaySubtitle,
+            text = displaySubtitle,
             fontSize = 12.sp,
             gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainerHigh
         )

@@ -28,7 +28,7 @@ class RemoteArtwork(
         val url = try {
             uri.toURL().toString()
         } catch (e: java.lang.IllegalArgumentException) {
-            TODO("Invalid URI: $uri: ${e.localizedMessage}")
+            TODO("Invalid Uri: $uri: ${e.localizedMessage}")
         }
 
         Box(modifier) {

@@ -21,7 +21,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
-import java.net.URI
+import android.net.Uri
 
 
 @Suppress("TestFunctionName")
@@ -80,7 +80,7 @@ internal class ArtworkLoaderImplTest {
 
         res = artworkLoader.requestLoad(getEntity(ArtworkType.REMOTE, "www.example.com"))
         assertResource(res)
-        assertEquals(res.data!!.artwork, RemoteArtwork(URI("www.example.com")))
+        assertEquals(res.data!!.artwork, RemoteArtwork(Uri.parse("www.example.com")))
         assertEquals(res.data!!.entityToUpdate, null)
     }
 
@@ -120,7 +120,7 @@ internal class ArtworkLoaderImplTest {
 
         res = artworkLoader.requestLoad(getEntity(ArtworkType.UNKNOWN))
         assertResource(res)
-        assertEquals(res.data!!.artwork, RemoteArtwork(URI(url)))
+        assertEquals(res.data!!.artwork, RemoteArtwork(Uri.parse(url)))
         assertEquals(res.data!!.entityToUpdate!!.artworkType, ArtworkType.REMOTE)
     }
 

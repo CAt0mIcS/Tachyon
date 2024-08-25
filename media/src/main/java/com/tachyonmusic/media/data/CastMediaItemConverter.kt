@@ -14,11 +14,9 @@ import com.google.android.gms.common.images.WebImage
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.ext.toBoolean
 import com.tachyonmusic.core.data.ext.toInt
-import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.util.duration
-import com.tachyonmusic.media.util.name
 import org.json.JSONObject
 
 @UnstableApi
@@ -41,8 +39,9 @@ class CastMediaItemConverter(
         if (oldMetadata.isPlayable != null) {
             metadata.putInt(KEY_IS_PLAYABLE, oldMetadata.isPlayable!!.toInt())
         }
-        if (oldMetadata.name != null) {
-            metadata.putString(KEY_NAME, oldMetadata.name!!)
+        val oldName = metadata.getString(MetadataKeys.Name)
+        if (oldName != null) {
+            metadata.putString(KEY_NAME, oldName)
         }
         if (oldMetadata.folderType != null) {
             metadata.putInt(KEY_FOLDER_TYPE, oldMetadata.folderType!!)
@@ -80,7 +79,7 @@ class CastMediaItemConverter(
                 putString(MetadataKeys.Name, metadata.getString(KEY_NAME))
                 putLong(MetadataKeys.Duration, mediaInfo.streamDuration)
                 putParcelable(MetadataKeys.TimingData, customData?.timingData)
-                putParcelable(MetadataKeys.Playback, customData?.playback)
+                putBundle(MetadataKeys.Playback, customData?.toBundle())
             })
         }.build()
 
@@ -99,7 +98,7 @@ class CastMediaItemConverter(
         return null
     }
 
-    private fun parseCustomData(json: JSONObject?): CustomData? {
+    private fun parseCustomData(json: JSONObject?): Playback? {
         return null
     }
 
@@ -109,9 +108,4 @@ class CastMediaItemConverter(
         const val KEY_MEDIA_ID = "com.tachyonmusic.MEDIA_ID"
         const val KEY_FOLDER_TYPE = "com.tachyonmusic.FOLDER_TYPE"
     }
-
-    private data class CustomData(
-        val timingData: TimingDataController,
-        val playback: Playback
-    )
 }

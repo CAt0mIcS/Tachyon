@@ -24,13 +24,13 @@ import androidx.compose.ui.unit.sp
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.presentation.core_components.AnimatedText
-import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
+import com.tachyonmusic.presentation.player.model.PlayerEntity
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.theme.interpolate
 
 @Composable
 fun MiniPlayer(
-    playback: PlaybackUiEntity?,
+    playback: PlayerEntity?,
     currentPosition: Float,
     isPlaying: Boolean,
     onClick: () -> Unit,

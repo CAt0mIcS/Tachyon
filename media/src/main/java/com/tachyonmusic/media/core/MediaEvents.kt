@@ -5,16 +5,13 @@ package com.tachyonmusic.media.core
 import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.media3.common.Bundleable
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.MetadataKeys
-import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.media.util.parcelable
+import com.tachyonmusic.core.domain.playback.Playback
 
 private const val actionPrefix = "com.tachyonmusic."
 
@@ -27,42 +24,6 @@ sealed interface MediaEvent : Bundleable {
  * Events sent to the MediaPlaybackService by the MediaBrowserController
  */
 sealed interface MediaBrowserEvent : MediaEvent
-
-data class SetTimingDataEvent(
-    val timingData: TimingDataController
-) : MediaBrowserEvent {
-    override val command: SessionCommand
-        get() = Companion.command
-
-    override fun toBundle() = Bundle().apply {
-        putParcelable(MetadataKeys.TimingData, timingData)
-    }
-
-    companion object {
-        fun fromBundle(bundle: Bundle) =
-            SetTimingDataEvent(bundle.parcelable(MetadataKeys.TimingData)!!)
-
-        val command = SessionCommand("${actionPrefix}SET_TIMING_DATA", Bundle.EMPTY)
-    }
-}
-
-data class SeekToTimingDataIndexEvent(
-    val index: Int
-) : MediaBrowserEvent {
-    override val command: SessionCommand
-        get() = Companion.command
-
-    override fun toBundle() = Bundle().apply {
-        putInt(MetadataKeys.TimingData, index)
-    }
-
-    companion object {
-        fun fromBundle(bundle: Bundle) =
-            SeekToTimingDataIndexEvent(bundle.getInt(MetadataKeys.TimingData))
-
-        val command = SessionCommand("${actionPrefix}SEEK_TO_TIMING_DATA_INDEX", Bundle.EMPTY)
-    }
-}
 
 data class SetRepeatModeEvent(
     val repeatMode: RepeatMode
@@ -100,26 +61,9 @@ fun MediaBrowser.dispatchMediaEvent(event: MediaBrowserEvent) {
  */
 sealed interface MediaSessionEvent : MediaEvent
 
-data class TimingDataUpdatedEvent(
-    val timingData: TimingDataController?
-) : MediaSessionEvent {
-    override val command: SessionCommand
-        get() = Companion.command
 
-    override fun toBundle() = Bundle().apply {
-        putParcelable(MetadataKeys.TimingData, timingData)
-    }
-
-    companion object {
-        fun fromBundle(bundle: Bundle) =
-            TimingDataUpdatedEvent(bundle.parcelable(MetadataKeys.TimingData))
-
-        val command = SessionCommand("${actionPrefix}TIMING_DATA_UPDATED", Bundle.EMPTY)
-    }
-}
-
-data class StateUpdateEvent(
-    val currentPlayback: SinglePlayback?,
+data class SessionSyncEvent(
+    val currentPlayback: Playback?,
     val currentPlaylist: Playlist?,
     val playWhenReady: Boolean,
     val repeatMode: RepeatMode
@@ -128,22 +72,22 @@ data class StateUpdateEvent(
         get() = Companion.command
 
     override fun toBundle() = Bundle().apply {
-        putParcelable(MetadataKeys.Playback, currentPlayback)
-        putParcelable(MetadataKeys.Playlist, currentPlaylist)
+        putBundle(MetadataKeys.Playback, currentPlayback?.toBundle())
+        putBundle(MetadataKeys.Playlist, currentPlaylist?.toBundle())
         putBoolean(MetadataKeys.IsPlaying, playWhenReady)
         putInt(MetadataKeys.RepeatMode, repeatMode.id)
     }
 
     companion object {
         fun fromBundle(bundle: Bundle) =
-            StateUpdateEvent(
-                bundle.parcelable(MetadataKeys.Playback),
-                bundle.parcelable(MetadataKeys.Playlist),
+            SessionSyncEvent(
+                bundle.getBundle(MetadataKeys.Playback)?.let { Playback.fromBundle(it) },
+                bundle.getBundle(MetadataKeys.Playlist)?.let { Playlist.fromBundle(it) },
                 bundle.getBoolean(MetadataKeys.IsPlaying),
                 RepeatMode.fromId(bundle.getInt(MetadataKeys.RepeatMode))
             )
 
-        val command = SessionCommand("${actionPrefix}STATE_UPDATE_COMMAND", Bundle.EMPTY)
+        val command = SessionCommand("${actionPrefix}SESSION_SYNC_EVENT", Bundle.EMPTY)
     }
 }
 
@@ -169,21 +113,57 @@ data class AudioSessionIdChangedEvent(
 }
 
 
+/**
+ * Events sent both ways
+ */
+
+/**
+ * This event is called after already setting the media items ([browser.setMediaItems]) so
+ * the currently loaded playlist in the [currentPlayer] is already up to date. This also
+ * won't be used to transition between playbacks in the current playlist. Only to update
+ * audio effects or timing data.
+ *
+ * When sending this event from the [MediaPlaybackService] to the [MediaBrowserController] it is
+ * used to update the information in the [MediaBrowserController] in case it was destroyed (during reconfigurations)
+ */
+data class PlaybackUpdateEvent(
+    val currentPlayback: Playback?,
+    val currentPlaylist: Playlist?,
+) : MediaBrowserEvent, MediaSessionEvent {
+    override val command: SessionCommand
+        get() = Companion.command
+
+    override fun toBundle() = Bundle().apply {
+        putBundle(MetadataKeys.Playback, currentPlayback?.toBundle())
+        putBundle(MetadataKeys.Playlist, currentPlaylist?.toBundle())
+    }
+
+    companion object {
+        fun fromBundle(bundle: Bundle) =
+            PlaybackUpdateEvent(
+                bundle.getBundle(MetadataKeys.Playback)?.let { Playback.fromBundle(it) },
+                bundle.getBundle(MetadataKeys.Playlist)?.let { Playlist.fromBundle(it) },
+            )
+
+        val command = SessionCommand("${actionPrefix}PLAYBACK_UPDATE_EVENT", Bundle.EMPTY)
+    }
+}
+
+
 internal fun MediaSession.dispatchMediaEvent(event: MediaSessionEvent) {
     broadcastCustomCommand(event.command, event.toBundle())
 }
 
 
 internal fun SessionCommand.toMediaBrowserEvent(bundle: Bundle): MediaBrowserEvent = when (this) {
-    SetTimingDataEvent.command -> SetTimingDataEvent.fromBundle(bundle)
-    SeekToTimingDataIndexEvent.command -> SeekToTimingDataIndexEvent.fromBundle(bundle)
     SetRepeatModeEvent.command -> SetRepeatModeEvent.fromBundle(bundle)
+    PlaybackUpdateEvent.command -> PlaybackUpdateEvent.fromBundle(bundle)
     else -> TODO("Invalid session command $customAction")
 }
 
 fun SessionCommand.toMediaSessionEvent(bundle: Bundle): MediaSessionEvent = when (this) {
-    TimingDataUpdatedEvent.command -> TimingDataUpdatedEvent.fromBundle(bundle)
-    StateUpdateEvent.command -> StateUpdateEvent.fromBundle(bundle)
+    SessionSyncEvent.command -> SessionSyncEvent.fromBundle(bundle)
+    PlaybackUpdateEvent.command -> PlaybackUpdateEvent.fromBundle(bundle)
     AudioSessionIdChangedEvent.command -> AudioSessionIdChangedEvent.fromBundle(bundle)
     else -> TODO("Invalid session command $customAction")
 }

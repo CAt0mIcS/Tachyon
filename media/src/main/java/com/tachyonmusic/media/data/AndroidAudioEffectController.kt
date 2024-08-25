@@ -53,13 +53,6 @@ class AndroidAudioEffectController : AudioEffectController {
         get() = if(equalizerEnabled.value) bands.value else null
 
     /**************************************************************************
-     ********** [PlaybackParameters]
-     *************************************************************************/
-
-    private var _playbackParams = MutableStateFlow(PlaybackParameters())
-    override val playbackParams = _playbackParams.asStateFlow()
-
-    /**************************************************************************
      ********** Bass
      *************************************************************************/
 
@@ -109,11 +102,6 @@ class AndroidAudioEffectController : AudioEffectController {
     override val bands = _bands.asStateFlow()
     override val reverbAudioEffectId: Int?
         get() = if (reverbEnabled.value) environmentalReverb?.id else null
-
-    override fun setPlaybackParameters(value: PlaybackParameters) {
-        // TODO: Volume
-        _playbackParams.update { value }
-    }
 
     override fun setBass(value: Int) {
         assert(bassEnabled.value) { "Bass is not enabled" }

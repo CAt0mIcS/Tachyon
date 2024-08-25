@@ -3,7 +3,7 @@ package com.tachyonmusic.core
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.domain.Logger
 
@@ -23,6 +23,6 @@ object ArtworkType {
         }
     }
 
-    fun getType(playback: SinglePlayback, log: Logger = LoggerImpl()) =
+    fun getType(playback: Playback, log: Logger = LoggerImpl()) =
         getType(playback.artwork, log)
 }

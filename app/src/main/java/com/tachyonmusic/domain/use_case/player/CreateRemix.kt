@@ -2,26 +2,22 @@ package com.tachyonmusic.domain.use_case.player
 
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.database.domain.model.RemixEntity
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
-import com.tachyonmusic.util.runOnUiThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.contracts.contract
 
-class CreateRemix(
-    private val audioEffectController: AudioEffectController
-) {
+class CreateRemix
+{
     suspend operator fun invoke(
         name: String,
-        playback: SinglePlayback?,
-        timingData: TimingDataController?
+        playback: Playback?
     ) = withContext(Dispatchers.IO) {
-        if (!isValidPlayback(playback, timingData)) {
+        if (!isValidPlayback(playback)) {
             Resource.Error(
                 UiText.StringResource(
                     R.string.cannot_create_remix,
@@ -31,30 +27,29 @@ class CreateRemix(
                 )
             )
         } else {
-            val song = playback.underlyingSong
-            val remix = runOnUiThread {
-                RemixEntity(
-                    MediaId.ofLocalRemix(name, song.mediaId),
-                    song.title,
-                    song.artist,
-                    song.duration,
-                    playback.timingData?.timingData,
-                    currentTimingDataIndex = 0,
-                    audioEffectController.bassValue,
-                    audioEffectController.virtualizerValue,
-                    audioEffectController.equalizerBandValues,
-                    audioEffectController.playbackParams.value,
-                    audioEffectController.reverbValue
-                )
-            }
+            val remix = RemixEntity(
+                MediaId.ofLocalRemix(
+                    name,
+                    if (playback.isRemix) playback.mediaId.underlyingMediaId!! else playback.mediaId
+                ),
+                playback.title,
+                playback.artist,
+                playback.duration,
+                playback.timingData.timingData,
+                currentTimingDataIndex = 0,
+                playback.bassBoost,
+                playback.virtualizerStrength,
+                playback.equalizerBands,
+                playback.playbackParameters,
+                playback.reverb
+            )
 
             Resource.Success(remix)
         }
     }
 
     private fun isValidPlayback(
-        playback: SinglePlayback?,
-        timingData: TimingDataController?
+        playback: Playback?
     ): Boolean {
         contract {
             returns(true) implies (playback != null)

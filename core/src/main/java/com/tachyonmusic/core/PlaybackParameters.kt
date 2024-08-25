@@ -22,17 +22,10 @@ data class PlaybackParameters(
         parcel.writeFloat(volume)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents() = 0
 
     companion object CREATOR : Parcelable.Creator<PlaybackParameters> {
-        override fun createFromParcel(parcel: Parcel): PlaybackParameters {
-            return PlaybackParameters(parcel)
-        }
-
-        override fun newArray(size: Int): Array<PlaybackParameters?> {
-            return arrayOfNulls(size)
-        }
+        override fun createFromParcel(parcel: Parcel)=PlaybackParameters(parcel)
+        override fun newArray(size: Int): Array<PlaybackParameters?> =arrayOfNulls(size)
     }
 }

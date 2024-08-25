@@ -407,7 +407,8 @@ fun PlayerScreen(
                         onClick = { viewModel.removeFromCurrentPlaylist(updatedPlayback) }
                     ) {
                         HorizontalPlaybackView(
-                            playback,
+                            playback.displayTitle,
+                            playback.displaySubtitle,
                             playback.artwork ?: PlaceholderArtwork,
                             onClick = {
                                 if (playback.isPlayable) viewModel.play(

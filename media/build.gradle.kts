@@ -38,8 +38,7 @@ android {
         jvmTarget = Index.JVM_TARGET
 
         freeCompilerArgs = listOf(
-            "-Xopt-in=kotlin.contracts.ExperimentalContracts",
-            "-Xopt-in=androidx.media3.common.util.UnstableApi",
+            "-opt-in=kotlin.contracts.ExperimentalContracts"
         )
     }
 

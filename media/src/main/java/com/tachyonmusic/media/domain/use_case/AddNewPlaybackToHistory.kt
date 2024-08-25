@@ -1,6 +1,6 @@
 package com.tachyonmusic.media.domain.use_case
 
-import com.tachyonmusic.core.domain.playback.SinglePlayback
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.util.toEntity
@@ -11,7 +11,7 @@ class AddNewPlaybackToHistory(
     private val repository: HistoryRepository,
     private val settingsRepository: SettingsRepository
 ) {
-    suspend operator fun invoke(playback: SinglePlayback?) = withContext(Dispatchers.IO) {
+    suspend operator fun invoke(playback: Playback?) = withContext(Dispatchers.IO) {
         if (playback == null)
             return@withContext
 

@@ -149,8 +149,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideCreateNewRemixUseCase(audioEffectController: AudioEffectController) =
-        CreateRemix(audioEffectController)
+    fun provideCreateNewRemixUseCase() = CreateRemix()
 
     @Provides
     @Singleton
@@ -164,8 +163,9 @@ object AppUseCaseModule {
     @Singleton
     fun provideSavePlaybackToPlaylistUseCase(
         playlistRepository: PlaylistRepository,
-        playbackRepository: PlaybackRepository
-    ) = SavePlaybackToPlaylist(playlistRepository, playbackRepository)
+        playbackRepository: PlaybackRepository,
+        mediaBrowserController: MediaBrowserController
+    ) = SavePlaybackToPlaylist(playlistRepository, playbackRepository, mediaBrowserController)
 
     @Provides
     @Singleton
@@ -215,13 +215,15 @@ object AppUseCaseModule {
     @Singleton
     fun provideDeletePlaybackUseCase(
         remixRepository: RemixRepository,
-        playlistRepository: PlaylistRepository,
         playbackRepository: PlaybackRepository,
+        playlistRepository: PlaylistRepository,
+        removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
         historyRepository: HistoryRepository
     ) = DeletePlayback(
         remixRepository,
-        playlistRepository,
         playbackRepository,
+        playlistRepository,
+        removePlaybackFromPlaylist,
         historyRepository
     )
 
@@ -291,12 +293,14 @@ object AppRepositoryModule {
     fun provideMediaBrowserController(
         getPlaylistForPlayback: GetPlaylistForPlayback,
         predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
-        logger: Logger
+        logger: Logger,
+        playbackRepository: PlaybackRepository
     ): MediaBrowserController =
         MediaPlaybackServiceMediaBrowserController(
             getPlaylistForPlayback,
             predefinedPlaylistsRepository,
-            logger
+            logger,
+            playbackRepository
         )
 
     @Provides

@@ -8,7 +8,7 @@ import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
-import java.net.URI
+import android.net.Uri
 
 class AmazonDigitalArtworkSource(
     private val urlEncoder: UrlEncoder = UrlEncoderImpl()
@@ -69,7 +69,7 @@ class AmazonDigitalArtworkSource(
 
         val imageUrl = srcSetWithoutLastSpace.substring(lastSpaceIndex + 1)
 
-        if (!URI(imageUrl).isAbsolute)
+        if (!Uri.parse(imageUrl).isAbsolute)
             return Resource.Error(
                 UiText.StringResource(
                     R.string.src_set_parsing_failed,

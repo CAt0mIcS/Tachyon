@@ -114,9 +114,10 @@ fun EqualizerEditor(
             TextField(
                 value = playbackParams.speed,
                 onValueChange = {
-                    viewModel.setSpeed(it)
                     if (syncSpeedPitch)
-                        viewModel.setPitch(it)
+                        viewModel.setPlaybackParams(it, it)
+                    else
+                        viewModel.setSpeed(it)
                 },
                 modifier = Modifier.padding(horizontal = Theme.padding.medium)
             )
@@ -125,9 +126,10 @@ fun EqualizerEditor(
             TextField(
                 value = playbackParams.pitch,
                 onValueChange = {
-                    viewModel.setPitch(it)
                     if (syncSpeedPitch)
-                        viewModel.setSpeed(it)
+                        viewModel.setPlaybackParams(it, it)
+                    else
+                        viewModel.setPitch(it)
                 },
                 modifier = Modifier.padding(horizontal = Theme.padding.medium)
             )

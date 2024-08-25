@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.model.SearchLocation
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
@@ -12,11 +11,9 @@ import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.media.domain.use_case.PlaybackSearchResult
 import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
-import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
-import com.tachyonmusic.presentation.core_components.model.toPlaylist
-import com.tachyonmusic.presentation.core_components.model.toRemix
-import com.tachyonmusic.presentation.core_components.model.toSong
-import com.tachyonmusic.presentation.core_components.model.toUiEntity
+import com.tachyonmusic.presentation.library.model.LibraryEntity
+import com.tachyonmusic.presentation.library.model.toLibraryEntity
+import com.tachyonmusic.util.Config
 import com.tachyonmusic.util.copy
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -29,12 +26,13 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 // TODO: Highlights from [PlaybackSearchResult.*highlightIndices]
 //    https://stackoverflow.com/questions/68981311/is-there-a-way-to-change-the-background-color-of-a-specific-word-in-outlined-tex
 data class SearchResultUiEntity(
-    val playback: PlaybackUiEntity,
+    val playback: LibraryEntity,
     val score: Float
 )
 
@@ -61,14 +59,13 @@ class PlaybackSearchViewModel @Inject constructor(
         combine(searchQuery, searchLocation, itemDisplayRange) { query, location, itemRange ->
             when (location) {
                 SearchLocation.Local -> {
-                    val quality = 50
                     loadArtwork(
                         searchStoredPlaybacks(query, playbackType, itemRange),
                         0..Int.MAX_VALUE,
-                        quality
-                    ).map {
+                        Config.SEARCH_ARTWORK_LOAD_QUALITY
+                    ).mapNotNull {
                         SearchResultUiEntity(
-                            it.playback.toUiEntity(),
+                            it.playback?.toLibraryEntity() ?: return@mapNotNull null,
                             it.score
                         )
                     } // TODO: playback type
@@ -98,20 +95,32 @@ class PlaybackSearchViewModel @Inject constructor(
         itemDisplayRange.update { 10 }
     }
 
-    fun onItemClicked(entity: PlaybackUiEntity) {
+    fun onItemClicked(entity: LibraryEntity) {
         viewModelScope.launch(Dispatchers.IO) {
-            playPlayback(
-                entity.toPlayback(),
-                playbackLocation = PlaybackLocation.PREDEFINED_PLAYLIST
-            )
+            if (entity.playbackType is PlaybackType.Playlist)
+                playPlayback(entity.toPlaylist())
+            else
+                playPlayback(
+                    entity.toPlayback(),
+                    playbackLocation = PlaybackLocation.PREDEFINED_PLAYLIST
+                )
         }
     }
 
-    private suspend fun PlaybackUiEntity.toPlayback() = when (playbackType) {
-        is PlaybackType.Song -> toSong(playbackRepository.getSongs())
-        is PlaybackType.Remix -> toRemix(playbackRepository.getRemixes())
-        is PlaybackType.Playlist -> toPlaylist(playbackRepository.getPlaylists())
-        is PlaybackType.Ad -> TODO("Cannot convert Ad to Playback")
+    private suspend fun LibraryEntity.toPlayback() = withContext(Dispatchers.IO) {
+        when (playbackType) {
+            is PlaybackType.Song -> playbackRepository.getSongs().find { it.mediaId == mediaId }
+            is PlaybackType.Remix -> playbackRepository.getRemixes().find { it.mediaId == mediaId }
+            is PlaybackType.Ad -> error("Cannot find ad from playback type")
+            is PlaybackType.Playlist -> error("Invalid function for Playlist")
+        }
+    }
+
+    private suspend fun LibraryEntity.toPlaylist(): Playlist? {
+        assert(playbackType is PlaybackType.Playlist)
+        return withContext(Dispatchers.IO) {
+            playbackRepository.getPlaylists().find { it.mediaId == mediaId }
+        }
     }
 
     private fun loadArtwork(
@@ -119,20 +128,7 @@ class PlaybackSearchViewModel @Inject constructor(
         range: IntRange,
         quality: Int
     ): List<PlaybackSearchResult> {
-        val artworks = loadArtworkForPlayback(searches.map { it.playback }, range, quality)
-        return artworks.mapIndexed { i, loadedPlayback ->
-            searches[i].apply {
-                when (playback) {
-                    is SinglePlayback -> {
-                        (playback as SinglePlayback).artwork =
-                            (loadedPlayback as SinglePlayback).artwork
-                    }
-
-                    is Playlist -> {
-                        // TODO
-                    }
-                }
-            }
-        }
+        return searches
+        // TODO: Artwork loading when searching
     }
 }

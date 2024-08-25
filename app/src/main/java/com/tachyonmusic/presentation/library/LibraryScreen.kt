@@ -236,7 +236,8 @@ object LibraryScreen :
                     }
                 ) {
                     HorizontalPlaybackView(
-                        playback,
+                        playback.displayTitle,
+                        playback.displaySubtitle,
                         playback.artwork ?: PlaceholderArtwork,
                         modifier = Modifier.isEnabled(playback.isPlayable),
                         showDropDownMenu,

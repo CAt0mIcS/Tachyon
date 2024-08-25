@@ -9,7 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.isNullOrEmpty
-import com.tachyonmusic.core.domain.playback.Remix
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.RemixRepository
@@ -22,15 +21,15 @@ import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.SaveRemixToDatabase
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
-import com.tachyonmusic.playback_layers.toRemix
+import com.tachyonmusic.playback_layers.toPlayback
 import com.tachyonmusic.presentation.util.update
+import com.tachyonmusic.util.Config
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
-import com.tachyonmusic.util.sec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -70,7 +69,7 @@ class RemixEditorViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), Long.MAX_VALUE.ms)
 
     val currentRemixName = mediaBrowser.currentPlayback.map {
-        if (it is Remix) it.name else null
+        if (it?.isRemix == true) it.name!! else null
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     val timingData = mutableStateListOf<TimingData>()
@@ -89,7 +88,7 @@ class RemixEditorViewModel @Inject constructor(
             val newTimingData = if (it == null)
                 null
             else if (it.timingData.isNullOrEmpty())
-                TimingDataController(listOf(TimingData(0.ms, it.duration)))
+                TimingDataController.default(it.duration)
             else
                 it.timingData
 
@@ -99,14 +98,12 @@ class RemixEditorViewModel @Inject constructor(
     }
 
     fun playTimingDataAt(i: Int, startFromEnd: Boolean = false) {
-        // TODO: Should be setting: If timing data is started from end we seek back this value to allow user to listen to the last few seconds
-        val endTimeAdjustmentTime = 3.sec
-
-        mediaBrowser.seekToTimingDataIndex(i)
-        if (startFromEnd) {
-            seekToPosition(timingData[i].endTime - endTimeAdjustmentTime)
-        }
         currentIndex = i
+        setNewTimingData()
+
+        if (startFromEnd) {
+            seekToPosition(timingData[i].endTime - Config.TIMING_DATA_END_TIME_ADJUSTMENT)
+        }
         pauseResumePlayback(PauseResumePlayback.Action.Resume)
     }
 
@@ -133,50 +130,56 @@ class RemixEditorViewModel @Inject constructor(
     }
 
     fun setNewTimingData() {
-        mediaBrowser.currentPlaybackTimingData =
-            TimingDataController(timingData.toMutableList(), currentIndex)
+        mediaBrowser.updatePlayback {
+            it?.copy(
+                timingData = TimingDataController(timingData.toMutableList(), currentIndex)
+            )
+        }
     }
 
     fun addNewTimingData(i: Int) {
-        mediaBrowser.currentPlaybackTimingData = TimingDataController(
-            timingData.toMutableList().apply {
-                add(i, TimingData(0.ms, duration.value))
-            },
-            currentIndex
-        )
+        mediaBrowser.updatePlayback {
+            it?.copy(
+                timingData = TimingDataController(timingData.toMutableList().apply {
+                    add(i, TimingData(0.ms, duration.value))
+                }, currentIndex)
+            )
+        }
     }
 
     fun removeTimingData(i: Int) {
-        mediaBrowser.currentPlaybackTimingData = TimingDataController(
-            timingData.toMutableList().apply {
-                removeAt(i)
+        mediaBrowser.updatePlayback {
+            it?.copy(
+                timingData = TimingDataController(timingData.toMutableList().apply {
+                    removeAt(i)
 
-                // Add default back if last timingData was deleted
-                if (i == 0 && isEmpty())
-                    add(TimingData(0.ms, duration.value))
-            },
-            currentIndex
-        )
+                    // Add default back if last timingData was deleted
+                    if (i == 0 && isEmpty())
+                        add(TimingData(0.ms, duration.value))
+                }, currentIndex)
+            )
+        }
     }
 
     fun moveTimingData(from: Int, to: Int) {
-        mediaBrowser.currentPlaybackTimingData = TimingDataController(
-            timingData.toMutableList().apply {
-                if (isValidTimingDataMove(from, to)) {
-                    val tdToMove = removeAt(from)
-                    add(to, tdToMove)
-                }
-            },
-            currentIndex
-        )
+        mediaBrowser.updatePlayback {
+            it?.copy(
+                timingData = TimingDataController(timingData.toMutableList().apply {
+                    if (isValidTimingDataMove(from, to)) {
+                        val tdToMove = removeAt(from)
+                        add(to, tdToMove)
+                    }
+                }, currentIndex)
+            )
+        }
     }
 
     fun saveNewRemix(name: String) {
         viewModelScope.launch {
             val sizeBefore = predefinedPlaylistsRepository.remixPlaylist.value.size
             val mediaPosBefore = mediaBrowser.currentPosition
-            val playback = mediaBrowser.currentPlayback.value
-            val createRes = createRemix(name, playback, playback?.timingData)
+            val currentPlayback = mediaBrowser.currentPlayback.value
+            val createRes = createRemix(name, currentPlayback)
 
             if (createRes is Resource.Success) {
                 _remixError.update { null }
@@ -194,7 +197,7 @@ class RemixEditorViewModel @Inject constructor(
                                 }
 
                                 playPlayback(
-                                    createRes.data!!.toRemix(playback?.underlyingSong),
+                                    createRes.data!!.toPlayback(currentPlayback!!),
                                     mediaPosBefore
                                 )
                             }

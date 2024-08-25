@@ -7,8 +7,8 @@ import com.tachyonmusic.core.domain.model.SoundFrequency
 import com.tachyonmusic.core.domain.model.SoundLevel
 import kotlinx.coroutines.flow.StateFlow
 
+// TODO: Remove unnecessary
 interface AudioEffectController {
-    val playbackParams: StateFlow<PlaybackParameters>
     val bass: StateFlow<Int>
     val virtualizerStrength: StateFlow<Int>
     val reverb: StateFlow<ReverbConfig>
@@ -32,7 +32,6 @@ interface AudioEffectController {
 
     val reverbAudioEffectId: Int?
 
-    fun setPlaybackParameters(value: PlaybackParameters)
     fun setBass(value: Int)
     fun setVirtualizerStrength(value: Int)
     fun setReverb(value: ReverbConfig)

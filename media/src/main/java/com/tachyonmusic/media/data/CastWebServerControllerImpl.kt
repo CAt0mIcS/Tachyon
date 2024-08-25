@@ -50,7 +50,7 @@ class CastWebServerControllerImpl(
     private inner class WebServer : NanoHTTPD(PORT) {
         override fun serve(session: IHTTPSession?): Response {
             /**
-             * We fail reading the Uri if we parse [session.uri] using [Uri.parse] because we're
+             * We fail reading the Uri if we parse [session.uri] using [Uri] because we're
              * apparently reading a directory. But using the Uri from the media items works. Thus the
              * Url will contain the index of the Uri in [items]
              */

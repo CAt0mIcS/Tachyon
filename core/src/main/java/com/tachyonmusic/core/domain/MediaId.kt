@@ -67,6 +67,15 @@ data class MediaId(
             return underlyingMediaId?.uri
         }
 
+    val name: String?
+        get() {
+            if (isLocalRemix)
+                return source.replace(PlaybackType.Remix.Local().toString(), "")
+            if (isLocalPlaylist)
+                return source.replace(PlaybackType.Playlist.Local().toString(), "")
+            return null
+        }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is MediaId) return false

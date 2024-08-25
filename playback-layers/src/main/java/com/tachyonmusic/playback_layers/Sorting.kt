@@ -2,8 +2,6 @@ package com.tachyonmusic.playback_layers
 
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.Remix
-import com.tachyonmusic.core.domain.playback.Song
 
 enum class SortOrder {
     Ascending, Descending;
@@ -31,7 +29,7 @@ data class SortingPreferences(
 
 
 @JvmName("sortedByPlayback")
-fun <T : Playback> Collection<T>.sortedBy(sortType: SortType, sortOrder: SortOrder): List<T> =
+fun Collection<Playback>.sortedBy(sortType: SortType, sortOrder: SortOrder): List<Playback> =
     when (sortType) {
         SortType.DateCreatedOrEdited -> {
             sortWithOrder(sortOrder) {
@@ -48,7 +46,29 @@ fun <T : Playback> Collection<T>.sortedBy(sortType: SortType, sortOrder: SortOrd
 
 
 @JvmName("sortedByPb")
-fun <T : Playback> Collection<T>.sortedBy(sortParams: SortingPreferences) =
+fun Collection<Playback>.sortedBy(sortParams: SortingPreferences) =
+    sortedBy(sortParams.type, sortParams.order)
+
+
+@JvmName("sortedByPlaylist")
+fun Collection<Playlist>.sortedBy(sortType: SortType, sortOrder: SortOrder): List<Playlist> =
+    when (sortType) {
+        SortType.DateCreatedOrEdited -> {
+            sortWithOrder(sortOrder) {
+                -it.getComparedString(sortType).toLong()
+            }
+        }
+
+        else -> {
+            sortWithOrder(sortOrder) {
+                it.getComparedString(sortType)
+            }
+        }
+    }
+
+
+@JvmName("sortedByPl")
+fun Collection<Playlist>.sortedBy(sortParams: SortingPreferences) =
     sortedBy(sortParams.type, sortParams.order)
 
 
@@ -60,32 +80,27 @@ private inline fun <T, R : Comparable<R>> Collection<T>.sortWithOrder(
     SortOrder.Descending -> sortedByDescending(selector)
 }
 
-private fun Playback.getComparedString(type: SortType) = when (this) {
-    is Song -> {
+private fun Playback.getComparedString(type: SortType) =
+    if (isSong) {
         when (type) {
             SortType.TitleAlphabetically, SortType.SubtitleAlphabetically -> title + artist
             SortType.ArtistAlphabetically -> artist + title
             SortType.DateCreatedOrEdited -> timestampCreatedAddedEdited.toString()
         }
-    }
-
-    is Remix -> {
+    } else if (isRemix) {
         when (type) {
             SortType.TitleAlphabetically -> name + title + artist
             SortType.ArtistAlphabetically -> artist + name + title
             SortType.SubtitleAlphabetically -> title + name + artist
             SortType.DateCreatedOrEdited -> timestampCreatedAddedEdited.toString()
         }
-    }
+    } else
+        TODO("Invalid playback type ${this::javaClass.name}")
 
-    is Playlist -> {
-        when (type) {
-            SortType.TitleAlphabetically -> name + title + artist
-            SortType.ArtistAlphabetically -> artist + name + title
-            SortType.SubtitleAlphabetically -> title + name + artist
-            SortType.DateCreatedOrEdited -> timestampCreatedAddedEdited.toString()
-        }
-    }
 
-    else -> TODO("Invalid playback type ${this::javaClass.name}")
+private fun Playlist.getComparedString(type: SortType) = when (type) {
+    SortType.TitleAlphabetically -> name + playbacks[0].title + playbacks[0].artist
+    SortType.ArtistAlphabetically -> playbacks[0].artist + name + playbacks[0].title
+    SortType.SubtitleAlphabetically -> playbacks[0].title + name + playbacks[0].artist
+    SortType.DateCreatedOrEdited -> timestampCreatedAddedEdited.toString()
 }

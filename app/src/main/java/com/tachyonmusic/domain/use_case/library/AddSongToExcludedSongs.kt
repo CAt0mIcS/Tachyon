@@ -1,6 +1,6 @@
 package com.tachyonmusic.domain.use_case.library
 
-import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import kotlinx.coroutines.Dispatchers
@@ -10,9 +10,11 @@ class AddSongToExcludedSongs(
     private val settingsRepository: SettingsRepository,
     private val songRepository: SongRepository
 ) {
-    suspend operator fun invoke(song: Song) = withContext(Dispatchers.IO) {
-        settingsRepository.addExcludedFilesRange(listOf(song.uri))
-        songRepository.updateIsHidden(song.mediaId, isHidden = true)
+    suspend operator fun invoke(playback: Playback) = withContext(Dispatchers.IO) {
+        assert(playback.isSong)
+
+        settingsRepository.addExcludedFilesRange(listOf(playback.uri!!))
+        songRepository.updateIsHidden(playback.mediaId, isHidden = true)
 
         // TODO: Decide below
 

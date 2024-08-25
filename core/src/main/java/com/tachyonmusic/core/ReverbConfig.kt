@@ -67,7 +67,7 @@ data class ReverbConfig(
 
     override fun describeContents() = 0
 
-    fun toPresetStringId() = when(this) {
+    fun toPresetStringId() = when (this) {
         PRESET_GENERIC -> R.string.reverb_generic_name
         PRESET_PADDEDCELL -> R.string.reverb_paddedcell_name
         PRESET_ROOM -> R.string.reverb_room_name
@@ -183,13 +183,8 @@ data class ReverbConfig(
 
         @JvmField
         val CREATOR = object : Parcelable.Creator<ReverbConfig> {
-            override fun createFromParcel(parcel: Parcel): ReverbConfig {
-                return ReverbConfig(parcel)
-            }
-
-            override fun newArray(size: Int): Array<ReverbConfig?> {
-                return arrayOfNulls(size)
-            }
+            override fun createFromParcel(parcel: Parcel) = ReverbConfig(parcel)
+            override fun newArray(size: Int): Array<ReverbConfig?> = arrayOfNulls(size)
         }
     }
 }

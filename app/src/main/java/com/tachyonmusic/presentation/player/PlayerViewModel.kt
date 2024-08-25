@@ -22,10 +22,10 @@ import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.isPredefined
-import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
-import com.tachyonmusic.presentation.core_components.model.toUiEntity
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.player.data.SeekIncrements
+import com.tachyonmusic.presentation.player.model.PlayerEntity
+import com.tachyonmusic.presentation.player.model.toPlayerEntity
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
@@ -50,7 +50,7 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val mediaBrowser: MediaBrowserController,
-    private val playbackRepository: PlaybackRepository,
+    playbackRepository: PlaybackRepository,
     loadArtworkForPlayback: LoadArtworkForPlayback,
     settingsRepository: SettingsRepository,
 
@@ -71,26 +71,15 @@ class PlayerViewModel @Inject constructor(
     /**************************************************************************
      ********** CURRENT PLAYBACK
      *************************************************************************/
-    private val _playback = mediaBrowser.currentPlayback.map {
-        (it ?: playbackRepository.getHistory().firstOrNull())?.copy()
-    }.stateIn(viewModelScope, SharingStarted.Lazily, null)
+    private val _playback = mediaBrowser.currentPlayback
 
     val playback = _playback.map {
-        loadArtworkForPlayback(it!!).toUiEntity()
+        it?.let { pb -> loadArtworkForPlayback(pb).toPlayerEntity() }
+            ?: PlayerEntity("", "", 0.ms, MediaId.EMPTY, false)
     }.stateIn(
         viewModelScope + Dispatchers.IO,
         SharingStarted.Lazily,
-        PlaybackUiEntity(
-            "",
-            "",
-            "",
-            "",
-            0.ms,
-            MediaId.EMPTY,
-            PlaybackType.Song.Local(),
-            null,
-            false
-        )
+        PlayerEntity("", "", 0.ms, MediaId.EMPTY, false)
     )
 
     val shouldShowPlayer = _playback.map {
@@ -160,7 +149,7 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun play(entity: PlaybackUiEntity, playbackLocation: PlaybackLocation? = null) {
+    fun play(entity: PlayerEntity, playbackLocation: PlaybackLocation? = null) {
         viewModelScope.launch {
             val playback = when (playbackType.value) {
                 is PlaybackType.Playlist -> // Currently playing a custom playlist (not predefined)
@@ -195,10 +184,11 @@ class PlayerViewModel @Inject constructor(
     private val currentPlaylist = mediaBrowser.currentPlaylist
 
     val playbackType = combine(_playback, currentPlaylist) { playback, playlist ->
-        if (playlist?.isPredefined == true)
-            PlaybackType.build(playback)
+        val type = if (playlist?.isPredefined == true)
+            playback?.playbackType
         else
-            PlaybackType.build(playlist)
+            playlist?.playbackType
+        type ?: PlaybackType.Song.Local()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlaybackType.Song.Local())
 
     val subPlaybackItems = combine(
@@ -207,13 +197,14 @@ class PlayerViewModel @Inject constructor(
         repeatMode,
         playbackType,
     ) { playback, playlist, repeatMode, playbackType ->
-        getPlaybackChildren(
-            if (playbackType is PlaybackType.Playlist) playlist else playback,
-            repeatMode,
-            playlist?.mediaId
-        ).map {
-            loadArtworkForPlayback(it).toUiEntity()
-        }
+        val children = if (playbackType is PlaybackType.Playlist)
+            getPlaybackChildren(playlist)
+        else
+            getPlaybackChildren(playback, repeatMode, playback?.mediaId)
+
+        children?.map {
+            loadArtworkForPlayback(it).toPlayerEntity()
+        } ?: emptyList()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
@@ -247,7 +238,7 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun removeFromCurrentPlaylist(toRemove: PlaybackUiEntity) {
+    fun removeFromCurrentPlaylist(toRemove: PlayerEntity) {
         viewModelScope.launch {
             removePlaybackFromPlaylist(
                 currentPlaylist.value?.playbacks?.find { it.mediaId == toRemove.mediaId },
