@@ -8,7 +8,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
@@ -19,16 +18,14 @@ import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.core.AudioSessionIdChangedEvent
-import com.tachyonmusic.media.core.SetRepeatModeEvent
 import com.tachyonmusic.media.core.PlaybackUpdateEvent
 import com.tachyonmusic.media.core.SessionSyncEvent
+import com.tachyonmusic.media.core.SetRepeatModeEvent
 import com.tachyonmusic.media.core.dispatchMediaEvent
 import com.tachyonmusic.media.core.toMediaSessionEvent
 import com.tachyonmusic.media.service.MediaPlaybackService
@@ -43,6 +40,7 @@ import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.runOnUiThread
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -140,7 +138,7 @@ class MediaPlaybackServiceMediaBrowserController(
             position?.inWholeMilliseconds ?: 0
         )
         _currentPlaylist.update { playlist }
-        _currentPlayback.update { playlist.current }
+        updatePlayback { playlist.current }
     }
 
     override fun updatePlayback(action: (Playback?) -> Playback?) {
@@ -221,7 +219,7 @@ class MediaPlaybackServiceMediaBrowserController(
          */
         if (index == 0) {
             val playback = browser?.getMediaItemAt(0)?.let { Playback.fromMediaItem(it) }
-            _currentPlayback.update { playback }
+            updatePlayback { playback }
         }
     }
 
@@ -237,7 +235,7 @@ class MediaPlaybackServiceMediaBrowserController(
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val playback = mediaItem?.let { Playback.fromMediaItem(it) }
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
-            _currentPlayback.update { playback }
+            updatePlayback { playback }
         invokeEvent { it.onMediaItemTransition(playback) }
     }
 
@@ -302,7 +300,7 @@ class MediaPlaybackServiceMediaBrowserController(
                 _isPlaying.update { event.playWhenReady }
                 _repeatMode.update { event.repeatMode }
 
-                updatePlayback { currentPlayback.value }
+                runOnUiThread { updatePlayback { currentPlayback.value } }
             }
 
             is AudioSessionIdChangedEvent -> {

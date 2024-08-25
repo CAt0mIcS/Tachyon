@@ -32,6 +32,7 @@ import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -95,15 +96,29 @@ class RemixEditorViewModel @Inject constructor(
             timingData.update { newTimingData?.timingData ?: emptyList() }
             currentIndex = newTimingData?.currentIndex ?: 0
         }.launchIn(viewModelScope)
+
+        /**
+         * TODO TODO TODO TODO
+         *  The currently playing timing data index is still not properly handled with the states
+         *  It always seems to be up to date without even setting it
+         */
+        viewModelScope.launch {
+            while (true) {
+                currentIndex = mediaBrowser.currentPlayback.value?.timingData?.currentIndex ?: 0
+                delay(500.ms)
+                ensureActive()
+            }
+        }
     }
 
-    fun playTimingDataAt(i: Int, startFromEnd: Boolean = false) {
+    fun setAndPlayTimingDataAt(i: Int, startFromEnd: Boolean = false) {
         currentIndex = i
         setNewTimingData()
 
-        if (startFromEnd) {
+        if (startFromEnd)
             seekToPosition(timingData[i].endTime - Config.TIMING_DATA_END_TIME_ADJUSTMENT)
-        }
+        else
+            seekToPosition(timingData[i].startTime)
         pauseResumePlayback(PauseResumePlayback.Action.Resume)
     }
 

@@ -244,7 +244,15 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         ): MediaSession.ConnectionResult = supportedCommands
 
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
-            val playback = currentPlayer.currentMediaItem?.let { Playback.fromMediaItem(it) }
+            /**
+             * TODO
+             *  When setting some playback parameters (speed, reverb, timing data), then closing
+             *  the app (swiping from backstack), and then pausing the playback through the media
+             *  notification: When opening the app again and starting the recently played, the
+             *  playback parameters will still be saved. When doing it the other way around, however,
+             *  the playback parameters will reset to default
+             */
+            val playback = currentPlayback ?: currentPlayer.currentMediaItem?.let { Playback.fromMediaItem(it) }
 
             log.info("Dispatching StateUpdateEvent with $playback, playWhenReady=${currentPlayer.playWhenReady}, and repeatMode=${currentPlayer.coreRepeatMode}")
             mediaSession.dispatchMediaEvent(
@@ -262,15 +270,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 controller,
                 buildCustomNotificationLayout(currentPlayer.coreRepeatMode)
             )
-        }
-
-        override fun onDisconnected(
-            session: MediaSession,
-            controller: MediaSession.ControllerInfo
-        ) {
-            super.onDisconnected(session, controller)
-            currentPlaylist = null
-            currentPlayback = null
         }
 
         override fun onGetLibraryRoot(

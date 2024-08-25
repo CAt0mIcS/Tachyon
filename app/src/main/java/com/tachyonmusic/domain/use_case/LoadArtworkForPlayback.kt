@@ -21,7 +21,7 @@ class LoadArtworkForPlayback(
         range: IntRange,
         quality: Int = 100
     ): List<Playback> {
-        assert(playbacks.all { it.isSong } || playbacks.all { it.isRemix })
+        assert(playbacks.all { it.isSong || it.isRemix })
 
         return playbacks.mapIndexed { i, pb ->
             val artwork =
