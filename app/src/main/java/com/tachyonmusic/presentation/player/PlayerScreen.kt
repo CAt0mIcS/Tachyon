@@ -64,6 +64,7 @@ import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
+import kotlinx.coroutines.isActive
 
 @Composable
 fun PlayerScreen(
@@ -80,7 +81,7 @@ fun PlayerScreen(
 
     var isSeeking by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        while (true) {
+        while (isActive) {
             if (!isSeeking)
                 currentPosition = viewModel.getCurrentPosition()
             delay(viewModel.audioUpdateInterval)

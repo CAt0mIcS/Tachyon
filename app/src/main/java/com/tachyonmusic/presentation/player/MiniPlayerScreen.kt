@@ -21,6 +21,7 @@ import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.player.component.MiniPlayer
 import com.tachyonmusic.util.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 @Composable
@@ -44,7 +45,7 @@ fun MiniPlayerScreen(
     var miniPlayerHeight by remember { mutableStateOf(0.dp) }
 
     LaunchedEffect(Unit) {
-        while (true) {
+        while (isActive) {
             currentPositionNormalized = viewModel.getCurrentPositionNormalized()
             delay(viewModel.audioUpdateInterval)
         }

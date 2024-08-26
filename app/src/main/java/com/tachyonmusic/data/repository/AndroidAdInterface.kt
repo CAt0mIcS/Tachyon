@@ -16,6 +16,7 @@ import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.min
 import com.tachyonmusic.util.runOnUiThread
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -116,7 +117,7 @@ class AndroidAdInterface(
     private fun restartLoadHandler() {
         adLoadHandler?.cancel()
         adLoadHandler = activity.lifecycleScope.launch {
-            while (true) {
+            while (isActive) {
                 loadRewardAdInternal()
                 delay(60.min) // Ads time out after 60 minutes
             }
