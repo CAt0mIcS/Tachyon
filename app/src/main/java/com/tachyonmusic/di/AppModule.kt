@@ -123,8 +123,17 @@ object AppUseCaseModule {
         database: Database,
         @ApplicationContext context: Context,
         settingsRepository: SettingsRepository,
-        uriPermissionRepository: UriPermissionRepository
-    ) = ImportDatabase(database, context, settingsRepository, uriPermissionRepository)
+        uriPermissionRepository: UriPermissionRepository,
+        mediaBrowserController: MediaBrowserController,
+        playbackRepository: PlaybackRepository
+    ) = ImportDatabase(
+        database,
+        context,
+        settingsRepository,
+        uriPermissionRepository,
+        mediaBrowserController,
+        playbackRepository
+    )
 
     @Provides
     @Singleton
