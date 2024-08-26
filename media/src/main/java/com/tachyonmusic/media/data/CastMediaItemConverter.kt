@@ -78,7 +78,7 @@ class CastMediaItemConverter(
             setExtras(Bundle().apply {
                 putString(MetadataKeys.Name, metadata.getString(KEY_NAME))
                 putLong(MetadataKeys.Duration, mediaInfo.streamDuration)
-                putParcelable(MetadataKeys.TimingData, customData?.timingData)
+                putParcelable(MetadataKeys.TimingData, customData?.timingData?.deepCopy())
                 putBundle(MetadataKeys.Playback, customData?.toBundle())
             })
         }.build()

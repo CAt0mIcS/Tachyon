@@ -96,30 +96,17 @@ class RemixEditorViewModel @Inject constructor(
             timingData.update { newTimingData?.timingData ?: emptyList() }
             currentIndex = newTimingData?.currentIndex ?: 0
         }.launchIn(viewModelScope)
-
-        /**
-         * TODO TODO TODO TODO
-         *  The currently playing timing data index is still not properly handled with the states
-         *  It always seems to be up to date without even setting it
-         */
-        viewModelScope.launch {
-            while (true) {
-                currentIndex = mediaBrowser.currentPlayback.value?.timingData?.currentIndex ?: 0
-                delay(500.ms)
-                ensureActive()
-            }
-        }
     }
 
     fun setAndPlayTimingDataAt(i: Int, startFromEnd: Boolean = false) {
-        currentIndex = i
-        setNewTimingData()
-
         if (startFromEnd)
             seekToPosition(timingData[i].endTime - Config.TIMING_DATA_END_TIME_ADJUSTMENT)
         else
             seekToPosition(timingData[i].startTime)
         pauseResumePlayback(PauseResumePlayback.Action.Resume)
+
+        currentIndex = i
+        setNewTimingData()
     }
 
     fun updateTimingData(i: Int, startTime: Duration, endTime: Duration) {
@@ -147,7 +134,7 @@ class RemixEditorViewModel @Inject constructor(
     fun setNewTimingData() {
         mediaBrowser.updatePlayback {
             it?.copy(
-                timingData = TimingDataController(timingData.toMutableList(), currentIndex)
+                timingData = TimingDataController(timingData.toList(), currentIndex)
             )
         }
     }

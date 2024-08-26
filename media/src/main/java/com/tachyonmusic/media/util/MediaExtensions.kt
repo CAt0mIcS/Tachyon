@@ -13,5 +13,5 @@ val MediaMetadata.duration: Duration?
 var MediaMetadata.timingData: TimingDataController?
     get() = extras?.getParcelable(MetadataKeys.TimingData)
     set(value) {
-        extras?.putParcelable(MetadataKeys.TimingData, value)
+        extras?.putParcelable(MetadataKeys.TimingData, value?.deepCopy())
     }

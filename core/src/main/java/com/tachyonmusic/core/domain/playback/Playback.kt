@@ -41,8 +41,6 @@ data class Playback(
     val timestampCreatedAddedEdited: Long = System.currentTimeMillis()
 ) {
 
-    val timingDataLoopingEnabled: Boolean
-        get() = !timingData.isNullOrEmpty()
     val bassBoostEnabled: Boolean
         get() = bassBoost != 0
     val virtualizerEnabled: Boolean
@@ -100,7 +98,7 @@ data class Playback(
         setAlbumTitle(album)
         setExtras(Bundle().apply {
             putLong(MetadataKeys.Duration, duration.inWholeMilliseconds)
-            putParcelable(MetadataKeys.TimingData, timingData)
+            putParcelable(MetadataKeys.TimingData, timingData.deepCopy())
             putLong(MetadataKeys.TimestampCreatedAddedEdited, timestampCreatedAddedEdited)
             putBoolean(MetadataKeys.IsHidden, isHidden)
 

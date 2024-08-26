@@ -88,6 +88,14 @@ data class TimingDataController(
     override fun toString() =
         currentIndex.toString() + "--" + timingData.joinToString(separator = ";") { it.toString() }
 
+    fun deepCopy(
+        timingData: List<TimingData> = this.timingData,
+        currentIndex: Int = this.currentIndex
+    ) = TimingDataController(
+        timingData.map { it.copy() }.toList(),
+        currentIndex
+    )
+
     companion object {
         @JvmField
         val CREATOR = object : Parcelable.Creator<TimingDataController> {

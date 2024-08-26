@@ -43,7 +43,6 @@ class MiniPlayerViewModel @Inject constructor(
     private val _playback = mediaBrowser.currentPlayback
 
     val playback = _playback.map {
-        println("[PB] $it")
         loadArtworkForPlayback(it ?: return@map null).toPlayerEntity()
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
