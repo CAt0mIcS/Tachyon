@@ -252,16 +252,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
              *  playback parameters will still be saved. When doing it the other way around, however,
              *  the playback parameters will reset to default
              */
-            val playback = currentPlayback ?: currentPlayer.currentMediaItem?.let { Playback.fromMediaItem(it) }
+            val playback = currentPlayback
+                ?: currentPlayer.currentMediaItem?.let { Playback.fromMediaItem(it) }
 
             log.info("Dispatching StateUpdateEvent with $playback, playWhenReady=${currentPlayer.playWhenReady}, and repeatMode=${currentPlayer.coreRepeatMode}")
             mediaSession.dispatchMediaEvent(
-                SessionSyncEvent(
-                    playback,
-                    currentPlaylist,
-                    currentPlayer.playWhenReady,
-                    currentPlayer.coreRepeatMode
-                )
+                SessionSyncEvent(playback, currentPlaylist, currentPlayer.playWhenReady)
             )
 
             mediaSession.dispatchMediaEvent(AudioSessionIdChangedEvent(exoPlayer.audioSessionId))
@@ -392,8 +388,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     launch {
                         addNewPlaybackToHistory(playlist.current)
                     }
+                    val repeatMode = dataRepository.getData().repeatMode
                     runOnUiThread {
-                        handleSetRepeatModeEvent(SetRepeatModeEvent(dataRepository.getData().repeatMode))
+                        handleSetRepeatModeEvent(SetRepeatModeEvent(repeatMode))
                     }
 
                     MediaSession.MediaItemsWithStartPosition(

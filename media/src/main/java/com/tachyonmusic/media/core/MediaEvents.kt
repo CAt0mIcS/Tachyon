@@ -65,8 +65,7 @@ sealed interface MediaSessionEvent : MediaEvent
 data class SessionSyncEvent(
     val currentPlayback: Playback?,
     val currentPlaylist: Playlist?,
-    val playWhenReady: Boolean,
-    val repeatMode: RepeatMode
+    val playWhenReady: Boolean
 ) : MediaSessionEvent {
     override val command: SessionCommand
         get() = Companion.command
@@ -75,7 +74,6 @@ data class SessionSyncEvent(
         putBundle(MetadataKeys.Playback, currentPlayback?.toBundle())
         putBundle(MetadataKeys.Playlist, currentPlaylist?.toBundle())
         putBoolean(MetadataKeys.IsPlaying, playWhenReady)
-        putInt(MetadataKeys.RepeatMode, repeatMode.id)
     }
 
     companion object {
@@ -83,8 +81,7 @@ data class SessionSyncEvent(
             SessionSyncEvent(
                 bundle.getBundle(MetadataKeys.Playback)?.let { Playback.fromBundle(it) },
                 bundle.getBundle(MetadataKeys.Playlist)?.let { Playlist.fromBundle(it) },
-                bundle.getBoolean(MetadataKeys.IsPlaying),
-                RepeatMode.fromId(bundle.getInt(MetadataKeys.RepeatMode))
+                bundle.getBoolean(MetadataKeys.IsPlaying)
             )
 
         val command = SessionCommand("${actionPrefix}SESSION_SYNC_EVENT", Bundle.EMPTY)

@@ -298,7 +298,6 @@ class MediaPlaybackServiceMediaBrowserController(
                 }
                 _currentPlaylist.update { event.currentPlaylist }
                 _isPlaying.update { event.playWhenReady }
-                _repeatMode.update { event.repeatMode }
 
                 runOnUiThread { updatePlayback { currentPlayback.value } }
             }
