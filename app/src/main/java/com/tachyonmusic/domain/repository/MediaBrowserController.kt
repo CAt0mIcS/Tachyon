@@ -68,6 +68,8 @@ interface MediaBrowserController : DefaultLifecycleObserver,
 
     interface EventListener {
         fun onConnected() {}
+
+        // TODO: REmove
         fun onAudioSessionIdChanged(audioSessionId: Int) {}
         fun onMediaItemTransition(playback: Playback?) {}
     }

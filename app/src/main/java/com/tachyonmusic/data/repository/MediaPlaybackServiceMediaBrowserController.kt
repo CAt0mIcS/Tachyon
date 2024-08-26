@@ -231,14 +231,6 @@ class MediaPlaybackServiceMediaBrowserController(
         browser?.seekToPrevious()
     }
 
-    // TODO: Update automatically using [MediaPlaybackService.onMediaItemTransition] to send a [PlaybackUpdateEvent] to [MediaBrowserController]
-    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        val playback = mediaItem?.let { Playback.fromMediaItem(it) }
-        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
-            updatePlayback { playback }
-        invokeEvent { it.onMediaItemTransition(playback) }
-    }
-
     override fun onPlaybackStateChanged(playbackState: Int) {
         if (playbackState == Player.STATE_READY) {
             prepareJob?.complete()
@@ -290,16 +282,15 @@ class MediaPlaybackServiceMediaBrowserController(
             is SessionSyncEvent -> {
                 log.info("Received state update event with playWhenReady=${event.playWhenReady}")
                 val latest = playbackRepository.getHistory().find { it.isPlayable }
-                _currentPlayback.update {
+                val newPlayback =
                     if (event.currentPlayback != null && event.currentPlayback?.mediaId == latest?.mediaId)
                         event.currentPlayback
                     else
                         latest
-                }
                 _currentPlaylist.update { event.currentPlaylist }
                 _isPlaying.update { event.playWhenReady }
 
-                runOnUiThread { updatePlayback { currentPlayback.value } }
+                runOnUiThread { updatePlayback { newPlayback } }
             }
 
             is AudioSessionIdChangedEvent -> {

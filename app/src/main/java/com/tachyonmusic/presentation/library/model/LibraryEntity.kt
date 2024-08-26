@@ -44,7 +44,7 @@ fun Playlist.toLibraryEntity(): LibraryEntity {
         firstPlayable?.title ?: "",
         firstPlayable?.artist ?: "",
         name,
-        "${playbacks.size} Item(s)",
+        "${playbacks.size} Item${if(playbacks.size == 1)"" else "s"}",
         mediaId,
         firstPlayable != null,
         album ?: "",

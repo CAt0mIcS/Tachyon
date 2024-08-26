@@ -127,31 +127,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     private var currentPlayback: Playback? = null
     private var currentPlaylist: Playlist? = null
-//        get() {
-//            val items = currentPlayer.mediaItems
-//            if (items.isEmpty())
-//                return null
-//
-//            val mediaId =
-//                when (val mediaIds = items.map { MediaId.deserialize(it.mediaId) }) {
-//                    predefinedPlaylistsRepository.songPlaylist.value.map { it.mediaId } ->
-//                        predefinedSongPlaylistMediaId
-//
-//                    predefinedPlaylistsRepository.remixPlaylist.value.map { it.mediaId } ->
-//                        predefinedRemixPlaylistMediaId
-//
-//                    else -> runBlocking {
-//                        playlistRepository.getPlaylists().find { it.items == mediaIds }?.mediaId
-//                    }
-//                } ?: return null
-//
-//            return Playlist(
-//                mediaId,
-//                items.map { Playback.fromMediaItem(it) },
-//                currentPlayer.currentMediaItemIndex,
-//                timestampCreatedAddedEdited = 0L
-//            )
-//        }
+
 
     override fun onCreate() {
         super.onCreate()
@@ -169,16 +145,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         ).apply {
             registerEventListener(CustomPlayerEventListener())
         }
-
-//        audioEffectController.playbackParams.onEach { params ->
-//            exoPlayer.playbackParameters = androidx.media3.common.PlaybackParameters(
-//                params.speed,
-//                params.pitch
-//            )
-//            exoPlayer.volume = params.volume
-//            castPlayer?.playbackParameters = exoPlayer.playbackParameters
-//            castPlayer?.volume = exoPlayer.volume
-//        }.launchIn(ioScope + Dispatchers.Main)
 
         audioEffectController.reverbEnabled.onEach { enabled ->
             if (enabled) {
@@ -454,6 +420,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             ioScope.launch {
                 addNewPlaybackToHistory(playback)
             }
+            updatePlayback { playback }
         }
     }
 
@@ -541,7 +508,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
         if (audioEffectController.setEqualizerEnabled(playback.equalizerEnabled)) {
 
-            if(playback.equalizerPreset != null) {
+            if (playback.equalizerPreset != null && audioEffectController.currentPreset != playback.equalizerPreset) {
                 audioEffectController.setEqualizerPreset(playback.equalizerPreset!!)
                 updatePlayback {
                     playback.copy(equalizerBands = audioEffectController.bands.value)
@@ -595,6 +562,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     private inner class CustomPlayerEventListener : CustomPlayer.Listener {
         override fun onTimingDataUpdated(controller: TimingDataController?) {
+            if (controller == currentPlayback?.timingData)
+                return
+
             mediaSession.dispatchMediaEvent(
                 PlaybackUpdateEvent(
                     currentPlayback?.copy(
