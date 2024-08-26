@@ -57,12 +57,14 @@ class PlaybackLayerRepositoryModule {
         remixRepository: RemixRepository,
         playlistRepository: PlaylistRepository,
         historyRepository: HistoryRepository,
+        uriPermissionRepository: UriPermissionRepository,
         @ApplicationContext context: Context,
     ): PlaybackRepository = PlaybackRepositoryImpl(
         songRepository,
         remixRepository,
         playlistRepository,
         historyRepository,
+        uriPermissionRepository,
         context
     )
 

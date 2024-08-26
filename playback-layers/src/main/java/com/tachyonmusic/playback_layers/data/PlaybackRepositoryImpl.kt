@@ -1,6 +1,7 @@
 package com.tachyonmusic.playback_layers.data
 
 import android.content.Context
+import android.net.Uri
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
@@ -9,20 +10,27 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.database.domain.model.HistoryEntity
 import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.RemixEntity
+import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.playback_layers.SortingPreferences
-import com.tachyonmusic.playback_layers.checkIfPlayable
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import com.tachyonmusic.playback_layers.sortedBy
 import com.tachyonmusic.playback_layers.toPlayback
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import java.io.FileNotFoundException
 import java.net.URI
 
 class PlaybackRepositoryImpl(
@@ -31,8 +39,24 @@ class PlaybackRepositoryImpl(
     private val playlistRepository: PlaylistRepository,
     private val historyRepository: HistoryRepository,
 
+    uriPermissionRepository: UriPermissionRepository,
+
     private val context: Context,
 ) : PlaybackRepository {
+
+    // PlaybackRepository is alive until the end of the program, so it doesn't need to be cancelled
+    private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var cacheLock = Any()
+    private val permissionCache = mutableMapOf<Uri, Boolean>()
+
+    init {
+        // Invalidate the isPlayable cache every time the permissions change
+        uriPermissionRepository.permissions.onEach {
+            synchronized(cacheLock) {
+                permissionCache.clear()
+            }
+        }.launchIn(ioScope)
+    }
 
     private val _sortingPreferences = MutableStateFlow(SortingPreferences())
     override val sortingPreferences = _sortingPreferences.asStateFlow()
@@ -165,6 +189,27 @@ class PlaybackRepositoryImpl(
         return entities.mapNotNull { historyItem ->
             songs.find { historyItem.mediaId == it.mediaId }
                 ?: remixes.find { historyItem.mediaId == it.mediaId }
+        }
+    }
+    
+
+    private fun Uri.isPlayable(context: Context) = try {
+        context.contentResolver.openInputStream(this)?.close() ?: false
+        true
+    } catch (e: Exception) {
+        when(e) {
+            is FileNotFoundException, is IllegalArgumentException -> false
+            else -> throw e
+        }
+    }
+
+    private fun SinglePlaybackEntity.checkIfPlayable(context: Context): Boolean {
+        val key = mediaId.uri ?: return false
+
+        return synchronized(cacheLock) {
+            permissionCache.getOrPut(key) {
+                key.isPlayable(context)
+            }
         }
     }
 }
