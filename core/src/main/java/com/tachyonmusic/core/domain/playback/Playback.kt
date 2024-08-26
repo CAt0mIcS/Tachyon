@@ -35,6 +35,7 @@ data class Playback(
     val bassBoost: Int = 0,
     val virtualizerStrength: Int = 0,
     val equalizerBands: List<EqualizerBand>? = null,
+    val equalizerPreset: String? = null,
     val playbackParameters: PlaybackParameters = PlaybackParameters(),
     val reverb: ReverbConfig? = null,
 
@@ -108,6 +109,7 @@ data class Playback(
                 MetadataKeys.EqualizerBands,
                 ArrayList(equalizerBands ?: emptyList())
             )
+            putString(MetadataKeys.EqualizerPreset, equalizerPreset)
             putParcelable(MetadataKeys.PlaybackParameters, playbackParameters)
             putParcelable(MetadataKeys.Reverb, reverb)
 
@@ -150,6 +152,7 @@ data class Playback(
                 extras.getInt(MetadataKeys.VirtualizerStrength),
                 extras.getParcelableArrayList<EqualizerBand>(MetadataKeys.EqualizerBands)!!.toList()
                     .ifEmpty { null },
+                extras.getString(MetadataKeys.EqualizerPreset),
                 extras.getParcelable(MetadataKeys.PlaybackParameters)!!,
                 extras.getParcelable(MetadataKeys.Reverb),
                 extras.getLong(MetadataKeys.TimestampCreatedAddedEdited)

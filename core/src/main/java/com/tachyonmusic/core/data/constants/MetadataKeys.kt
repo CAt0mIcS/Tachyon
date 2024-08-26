@@ -20,6 +20,7 @@ object MetadataKeys {
     const val BassBoost = "com.tachyonmusic.BASS_BOOST"
     const val VirtualizerStrength = "com.tachyonmusic.VIRTUALIZER_STRENGTH"
     const val EqualizerBands = "com.tachyonmusic.EQUALIZER_BANDS"
+    const val EqualizerPreset = "com.tachyonmusic.EQUALIZER_PRESET"
     const val PlaybackParameters = "com.tachyonmusic.PLAYBACK_PARAMS"
     const val Reverb = "com.tachyonmusic.REVERB"
 }

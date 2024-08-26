@@ -39,6 +39,7 @@ fun RemixEntity.toPlayback(song: Playback?) =
         bassBoost ?: 0,
         virtualizerStrength ?: 0,
         equalizerBands,
+        equalizerPreset = null,
         playbackParameters ?: PlaybackParameters(),
         reverb,
         timestampCreatedAddedEdited

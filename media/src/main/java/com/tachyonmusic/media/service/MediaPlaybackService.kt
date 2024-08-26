@@ -541,6 +541,14 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
         if (audioEffectController.setEqualizerEnabled(playback.equalizerEnabled)) {
 
+            if(playback.equalizerPreset != null) {
+                audioEffectController.setEqualizerPreset(playback.equalizerPreset!!)
+                updatePlayback {
+                    playback.copy(equalizerBands = audioEffectController.bands.value)
+                }
+                return
+            }
+
             playback.equalizerBands?.forEach { equalizerBand ->
                 // TODO: Do we need all this information to differentiate different bands?
                 audioEffectController.getEqualizerBandIndex(
@@ -552,6 +560,12 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 }
             }
         }
+    }
+
+    private fun updatePlayback(action: () -> Playback) {
+        val newPlayback = action()
+        currentPlayback = newPlayback
+        mediaSession.dispatchMediaEvent(PlaybackUpdateEvent(newPlayback, currentPlaylist))
     }
 
     private suspend fun executeSearch(query: String, extras: Bundle): List<MediaItem> {

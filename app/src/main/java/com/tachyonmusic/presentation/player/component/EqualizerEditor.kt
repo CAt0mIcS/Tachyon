@@ -63,7 +63,7 @@ fun EqualizerEditor(
             text = "Virtualizer"
         )
         CheckboxText(
-            checked = equalizerEnabled && !equalizer?.bands.isNullOrEmpty(),
+            checked = equalizerEnabled && equalizer.bands.isNotEmpty(),
             onCheckedChange = viewModel::setEqualizerEnabled,
             text = "Equalizer"
         )
@@ -176,10 +176,10 @@ fun EqualizerEditor(
 
             HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
-            if (equalizer!!.presets.isNotEmpty()) {
+            if (equalizer.presets.isNotEmpty()) {
                 var equalizerPresetMenuExpanded by remember { mutableStateOf(false) }
 
-                val selectedReverbText by viewModel.selectedEqualizerText.collectAsState()
+                val selectedEqualizerText by viewModel.selectedEqualizerText.collectAsState()
 
                 ExposedDropdownMenuBox(
                     expanded = equalizerPresetMenuExpanded,
@@ -187,7 +187,7 @@ fun EqualizerEditor(
                 ) {
 
                     TextField(
-                        value = selectedReverbText,
+                        value = selectedEqualizerText,
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = equalizerPresetMenuExpanded) },
@@ -198,7 +198,7 @@ fun EqualizerEditor(
                         expanded = equalizerPresetMenuExpanded,
                         onDismissRequest = { equalizerPresetMenuExpanded = false }
                     ) {
-                        for (preset in equalizer!!.presets) {
+                        for (preset in equalizer.presets) {
                             DropdownMenuItem(
                                 text = {
                                     Text(
@@ -216,8 +216,8 @@ fun EqualizerEditor(
                 }
             }
 
-            for (bandNumber in equalizer!!.bands!!.indices) {
-                val band = equalizer!!.bands!![bandNumber]
+            for (bandNumber in equalizer.bands.indices) {
+                val band = equalizer.bands[bandNumber]
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -236,7 +236,7 @@ fun EqualizerEditor(
                             onValueChange = {
                                 viewModel.setBandLevel(bandNumber, it.toInt().mDb)
                             },
-                            valueRange = equalizer!!.minBandLevel.inmDb.toFloat()..equalizer!!.maxBandLevel.inmDb.toFloat(),
+                            valueRange = equalizer.minBandLevel.inmDb.toFloat()..equalizer.maxBandLevel.inmDb.toFloat(),
                         )
                     }
 

@@ -7,6 +7,8 @@ import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.core.domain.model.SoundLevel
+import com.tachyonmusic.core.domain.model.mDb
+import com.tachyonmusic.core.domain.model.mHz
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.domain.AudioEffectController
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,7 +28,7 @@ import javax.inject.Inject
 data class EqualizerState(
     val minBandLevel: SoundLevel,
     val maxBandLevel: SoundLevel,
-    val bands: List<EqualizerBand>?,
+    val bands: List<EqualizerBand>,
     val presets: List<String>
 )
 
@@ -59,32 +61,29 @@ class EqualizerViewModel @Inject constructor(
     val equalizerEnabled = audioEffectController.equalizerEnabled
     val reverbEnabled = audioEffectController.reverbEnabled
 
-    val equalizer = combine(
-        audioEffectController.equalizerEnabled,
-        audioEffectController.bands
-    ) { _, bands ->
+    val equalizer = mediaBrowser.currentPlayback.map {
         EqualizerState(
             audioEffectController.minBandLevel,
             audioEffectController.maxBandLevel,
-            bands,
+            it?.equalizerBands ?: emptyList(),
             audioEffectController.presets
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(),
+        EqualizerState(0.mDb, 0.mDb, emptyList(), emptyList())
+    )
 
     private var _playbackParameters = MutableStateFlow(PlaybackParametersState())
     val playbackParameters = _playbackParameters.asStateFlow()
-
-    val playback = combine(mediaBrowser.currentPlayback, _playbackParameters) { playback, params ->
-        TODO()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     val selectedReverbText: StateFlow<Int> = reverb.map {
         it.toPresetStringId()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), R.string.nothing)
 
-    val selectedEqualizerText: StateFlow<String> = equalizer.map {
-        audioEffectController.currentPreset
-            ?: "" // TODO R.string.custom in [audioEffectController.currentPreset]
+    val selectedEqualizerText: StateFlow<String> = mediaBrowser.currentPlayback.map {
+        it?.equalizerPreset ?: audioEffectController.currentPreset
+        ?: "" // TODO R.string.custom in [audioEffectController.currentPreset]
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "")
 
     init {
@@ -113,16 +112,19 @@ class EqualizerViewModel @Inject constructor(
     }
 
     fun setBandLevel(band: Int, level: SoundLevel) {
-        TODO()
-        if (audioEffectController.setEqualizerEnabled(true)) {
-            audioEffectController.setEqualizerBandLevel(band, level)
+        mediaBrowser.updatePlayback {
+            it?.copy(
+                equalizerBands = it.equalizerBands?.toMutableList()?.apply {
+                    this[band] = this[band].copy(level = level)
+                },
+                equalizerPreset = null
+            )
         }
     }
 
     fun setEqualizerPreset(preset: String) {
-        TODO()
-        if (audioEffectController.setEqualizerEnabled(true)) {
-            audioEffectController.setEqualizerPreset(preset)
+        mediaBrowser.updatePlayback {
+            it?.copy(equalizerPreset = preset)
         }
     }
 
@@ -175,7 +177,14 @@ class EqualizerViewModel @Inject constructor(
     }
 
     fun setEqualizerEnabled(enabled: Boolean) {
-        audioEffectController.setEqualizerEnabled(enabled)
+        if (audioEffectController.setEqualizerEnabled(enabled))
+            mediaBrowser.updatePlayback {
+                it?.copy(equalizerBands = audioEffectController.bands.value)
+            }
+        else
+            mediaBrowser.updatePlayback {
+                it?.copy(equalizerBands = null)
+            }
     }
 
     fun setReverbEnabled(enabled: Boolean) {
