@@ -16,11 +16,17 @@ import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.playback_layers.R
 import com.tachyonmusic.playback_layers.SortingPreferences
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
+import com.tachyonmusic.playback_layers.domain.events.InvalidPlaylistItemEvent
+import com.tachyonmusic.playback_layers.domain.events.PlaybackNotFoundEvent
 import com.tachyonmusic.playback_layers.sortedBy
 import com.tachyonmusic.playback_layers.toPlayback
+import com.tachyonmusic.util.EventSeverity
+import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.domain.EventChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -42,6 +48,7 @@ class PlaybackRepositoryImpl(
     uriPermissionRepository: UriPermissionRepository,
 
     private val context: Context,
+    private val eventChannel: EventChannel
 ) : PlaybackRepository {
 
     // PlaybackRepository is alive until the end of the program, so it doesn't need to be cancelled
@@ -139,9 +146,23 @@ class PlaybackRepositoryImpl(
     ): List<Playback> {
         assert(songs.all { it.isSong })
 
-        return entities.mapNotNull { entity ->
-            entity.toPlayback(songs.find { it.mediaId == entity.mediaId.underlyingMediaId }
-                ?: return@mapNotNull null)
+        return entities.map { entity ->
+            val underlyingSong = songs.find { it.mediaId == entity.mediaId.underlyingMediaId }
+
+            if (underlyingSong == null) {
+                eventChannel.push(
+                    PlaybackNotFoundEvent(
+                        UiText.StringResource(
+                            R.string.playback_for_remix_not_found,
+                            entity.songTitle,
+                            entity.title
+                        ),
+                        EventSeverity.Warning
+                    )
+                )
+            }
+
+            entity.toPlayback(underlyingSong)
         }.sortedBy(sorting)
     }
 
@@ -157,13 +178,28 @@ class PlaybackRepositoryImpl(
         return entities.map { entity ->
             // TODO: Somehow display deleted songs and remixes
             val items = entity.items.mapNotNull { playlistItem ->
-                if (playlistItem.isLocalSong) {
+                val foundItem = if (playlistItem.isLocalSong) {
                     songs.find { playlistItem == it.mediaId }
                 } else if (playlistItem.isLocalRemix) {
                     remixes.find { playlistItem == it.mediaId }
                 } else {
                     TODO("Invalid playlist item $playlistItem")
                 }
+
+                if (foundItem == null) {
+                    eventChannel.push(
+                        InvalidPlaylistItemEvent(
+                            UiText.StringResource(
+                                R.string.playback_for_playlist_not_found,
+                                playlistItem.uri?.path ?: "Unknown",
+                                entity.name
+                            ),
+                            EventSeverity.Warning
+                        )
+                    )
+                }
+
+                foundItem
             }
 
             if (entity.mediaId.isLocalPlaylist)
@@ -187,17 +223,31 @@ class PlaybackRepositoryImpl(
         assert(remixes.all { it.isRemix })
 
         return entities.mapNotNull { historyItem ->
-            songs.find { historyItem.mediaId == it.mediaId }
+            val item = songs.find { historyItem.mediaId == it.mediaId }
                 ?: remixes.find { historyItem.mediaId == it.mediaId }
+
+            if (item == null) {
+                eventChannel.push(
+                    PlaybackNotFoundEvent(
+                        UiText.StringResource(
+                            R.string.playback_not_found,
+                            historyItem.mediaId.uri?.path ?: "Unknown"
+                        ),
+                        EventSeverity.Info
+                    )
+                )
+            }
+
+            item
         }
     }
-    
+
 
     private fun Uri.isPlayable(context: Context) = try {
         context.contentResolver.openInputStream(this)?.close() ?: false
         true
     } catch (e: Exception) {
-        when(e) {
+        when (e) {
             is FileNotFoundException, is IllegalArgumentException -> false
             else -> throw e
         }

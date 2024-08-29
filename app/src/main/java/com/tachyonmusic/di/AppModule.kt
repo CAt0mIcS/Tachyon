@@ -58,6 +58,7 @@ import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
+import com.tachyonmusic.util.domain.EventChannel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -250,12 +251,14 @@ object AppUseCaseModule {
         browser: MediaBrowserController,
         getPlaylistForPlayback: GetPlaylistForPlayback,
         addNewPlaybackToHistory: AddNewPlaybackToHistory,
-        logger: Logger
+        logger: Logger,
+        eventChannel: EventChannel
     ) = PlayPlayback(
         browser,
         getPlaylistForPlayback,
         addNewPlaybackToHistory,
-        logger
+        logger,
+        eventChannel
     )
 
     @Provides

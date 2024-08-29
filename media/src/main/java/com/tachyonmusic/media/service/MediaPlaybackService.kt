@@ -43,6 +43,10 @@ import com.tachyonmusic.media.util.*
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
+import com.tachyonmusic.playback_layers.domain.events.PlayerMessageEvent
+import com.tachyonmusic.util.EventSeverity
+import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.domain.EventChannel
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -104,6 +108,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     lateinit var searchStoredPlaybacks: SearchStoredPlaybacks
+
+    @Inject
+    lateinit var eventChannel: EventChannel
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -447,18 +454,29 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
 
     override fun onPlayerError(error: PlaybackException) {
-        var message = R.string.generic_error
-        log.error("Player error: ${error.errorCodeName} (${error.errorCode}): ${error.message}")
+        val errorStr =
+            "Player error: ${error.errorCodeName} (${error.errorCode}): ${error.localizedMessage}"
+        log.error(errorStr)
         if (error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
             || error.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
         ) {
-            message = R.string.error_media_not_found
+            eventChannel.push(
+                PlayerMessageEvent(
+                    UiText.StringResource(
+                        R.string.error_media_not_found,
+                        currentPlayback?.title ?: "Unknown"
+                    ),
+                    EventSeverity.Error
+                )
+            )
+        } else {
+            eventChannel.push(
+                PlayerMessageEvent(
+                    UiText.DynamicString(errorStr),
+                    EventSeverity.Error
+                )
+            )
         }
-        Toast.makeText(
-            applicationContext,
-            message,
-            Toast.LENGTH_LONG
-        ).show()
     }
 
 

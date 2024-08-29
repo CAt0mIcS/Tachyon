@@ -9,6 +9,8 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.util.data.EventChannelImpl
+import com.tachyonmusic.util.domain.EventChannel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,4 +36,8 @@ class CoreModule {
         @ApplicationContext context: Context,
         logger: Logger
     ): SongMetadataExtractor = FileSongMetadataExtractor(context.contentResolver, logger)
+
+    @Provides
+    @Singleton
+    fun provideErrorChannel(): EventChannel = EventChannelImpl()
 }

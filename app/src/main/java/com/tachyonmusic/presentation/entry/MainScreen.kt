@@ -20,9 +20,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -42,12 +47,15 @@ import androidx.constraintlayout.compose.ConstraintSet
 import androidx.constraintlayout.compose.MotionLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.tachyonmusic.app.R
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.presentation.core_components.UriPermissionDialog
 import com.tachyonmusic.presentation.player.PlayerLayout
 import com.tachyonmusic.presentation.profile.component.OpenDocumentDialog
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.asString
+import com.tachyonmusic.util.EventSeverity
 
 enum class SwipingStates {
     EXPANDED,
@@ -68,7 +76,6 @@ fun MainScreen(
     var databaseImported by remember { mutableStateOf(false) }
 
     TachyonTheme(settings = settings) {
-
         Surface {
             if (isLoading) {
                 Dialog(
@@ -79,7 +86,10 @@ fun MainScreen(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .clip(Theme.shapes.large)
-                            .background(MaterialTheme.colorScheme.background, Theme.shapes.large)
+                            .background(
+                                MaterialTheme.colorScheme.background,
+                                Theme.shapes.large
+                            )
                             .border(
                                 BorderStroke(2.dp, MaterialTheme.colorScheme.surfaceContainer),
                                 Theme.shapes.large
@@ -93,7 +103,7 @@ fun MainScreen(
                             )
 
                             Text(
-                                stringResource(androidx.media3.cast.R.string.cast_expanded_controller_loading),
+                                stringResource(R.string.loading),
                                 modifier = Modifier
                                     .padding(
                                         start = 80.dp,
@@ -118,9 +128,9 @@ fun MainScreen(
 
                     Text("Please select a directory with all your music to continue")
 
-                    if(requiredMusicPathsAfterDatabaseImport.isNotEmpty()) {
+                    if (requiredMusicPathsAfterDatabaseImport.isNotEmpty()) {
                         Text("The following directories are required by the imported database")
-                        for(dir in requiredMusicPathsAfterDatabaseImport)
+                        for (dir in requiredMusicPathsAfterDatabaseImport)
                             Text(dir)
                     }
 
@@ -163,7 +173,27 @@ fun MainScreen(
                 )
             }
 
+            /***************************************************************************************
+             * Show Messages from [EventChannel]
+             **************************************************************************************/
+            val snackbarHostState = remember { SnackbarHostState() }
+
+            val context = LocalContext.current
+            LaunchedEffect(key1 = true) {
+                viewModel.eventChannel.collect { event ->
+                    snackbarHostState.showSnackbar(
+                        event.message.asString(context),
+                        withDismissAction = true,
+                        duration = when (event.severity) {
+                            EventSeverity.Error, EventSeverity.Fatal -> SnackbarDuration.Long
+                            else -> SnackbarDuration.Short
+                        }
+                    )
+                }
+            }
+
             Scaffold(
+                snackbarHost = { SnackbarHost(snackbarHostState) },
                 bottomBar = {
                     BottomNavigation(anchoredDraggableState, navController)
                 }

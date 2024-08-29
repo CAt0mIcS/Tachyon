@@ -3,4 +3,7 @@
     <string name="no_artwork_found">No artwork found for playback \"%1$s\"</string>
     <string name="invalid_uri">Invalid uri \"%1$s\"</string>
     <string name="unknown_error">An unknown error occurred</string>
+    <string name="playback_for_remix_not_found">Underlying Song (\"%1$s\") for Remix \"%2$s\" could not be found</string>
+    <string name="playback_for_playlist_not_found">Underlying Playback (\"%1$s\") for Playlist \"%2$s\" could not be found</string>
+    <string name="playback_not_found">Playback \"%1$s\" could not be found</string>
 </resources>

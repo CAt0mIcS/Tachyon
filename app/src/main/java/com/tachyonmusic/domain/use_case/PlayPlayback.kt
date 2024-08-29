@@ -1,12 +1,17 @@
 package com.tachyonmusic.domain.use_case
 
+import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
+import com.tachyonmusic.playback_layers.domain.events.PlaybackNotFoundEvent
 import com.tachyonmusic.util.Duration
+import com.tachyonmusic.util.EventSeverity
+import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.domain.EventChannel
 import com.tachyonmusic.util.replaceWith
 import com.tachyonmusic.util.runOnUiThread
 
@@ -19,7 +24,8 @@ class PlayPlayback(
     private val browser: MediaBrowserController,
     private val getPlaylistForPlayback: GetPlaylistForPlayback,
     private val addNewPlaybackToHistory: AddNewPlaybackToHistory,
-    private val log: Logger
+    private val log: Logger,
+    private val eventChannel: EventChannel
 ) {
     @JvmName("invokePlayback")
     suspend operator fun invoke(
@@ -27,6 +33,13 @@ class PlayPlayback(
         position: Duration? = null,
         playbackLocation: PlaybackLocation? = null
     ) = runOnUiThread {
+        eventChannel.push(
+            PlaybackNotFoundEvent(
+                UiText.StringResource(R.string.cannot_create_remix, "", "", ""),
+                EventSeverity.Error
+            )
+        )
+
         if (playback == null)
             return@runOnUiThread
 
