@@ -10,6 +10,19 @@ fun <T> MutableList<T>.removeFirst(predicate: (T) -> Boolean): Boolean {
     return false
 }
 
+fun <T> MutableList<T>.replaceAt(i: Int, value: T): List<T> {
+    removeAt(i)
+    add(i, value)
+    return this
+}
+
+fun <T> MutableList<T>.replaceWith(newValue: T, operator: (T) -> Boolean): List<T> {
+    for(i in indices) {
+        if(operator(this[i]))
+            return replaceAt(i, newValue)
+    }
+    return this
+}
 
 fun <E> Collection<E>.indexOfOrNull(element: E): Int? {
     val i = indexOf(element)

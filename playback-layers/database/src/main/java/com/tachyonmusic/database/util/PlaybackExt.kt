@@ -4,29 +4,18 @@ import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.Remix
-import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.core.domain.playback.Song
-import com.tachyonmusic.database.domain.model.PlaybackEntity
 import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.RemixEntity
 import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 
-fun Playback.toEntity(): PlaybackEntity = when (this) {
-    is Song -> toEntity()
-    is Remix -> toEntity()
-    is Playlist -> toEntity()
-    else -> TODO("Invalid playback type ${this::class.java.name}")
-}
+fun Playback.toEntity(): SinglePlaybackEntity =
+    if (isSong) toSongEntity()
+    else if (isRemix) toRemixEntity()
+    else TODO("Invalid playback type ${this::class.java.name}")
 
-fun SinglePlayback.toEntity(): SinglePlaybackEntity = when (this) {
-    is Song -> toEntity()
-    is Remix -> toEntity()
-    else -> TODO("Invalid SinglePlayback type ${this::class.java.name}")
-}
 
-fun Song.toEntity(): SongEntity {
+fun Playback.toSongEntity(): SongEntity {
     val artworkType = ArtworkType.getType(this)
     return SongEntity(
         mediaId,
@@ -41,14 +30,14 @@ fun Song.toEntity(): SongEntity {
     )
 }
 
-fun Remix.toEntity(): RemixEntity {
+fun Playback.toRemixEntity(): RemixEntity {
     return RemixEntity(
         mediaId,
         title,
         artist,
         duration,
-        timingData?.timingData,
-        timingData?.currentIndex ?: 0,
+        timingData.timingData,
+        timingData.currentIndex,
         bassBoost, virtualizerStrength, equalizerBands, playbackParameters, reverb
     )
 }
@@ -57,5 +46,6 @@ fun Playlist.toEntity() = PlaylistEntity(
     name,
     mediaId,
     playbacks.map { it.mediaId },
-    currentPlaylistIndex
+    currentPlaylistIndex,
+    timestampCreatedAddedEdited
 )

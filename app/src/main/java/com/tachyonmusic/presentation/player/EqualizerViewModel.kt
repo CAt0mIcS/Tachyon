@@ -7,6 +7,9 @@ import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.core.domain.model.SoundLevel
+import com.tachyonmusic.core.domain.model.mDb
+import com.tachyonmusic.core.domain.model.mHz
+import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.domain.AudioEffectController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +28,7 @@ import javax.inject.Inject
 data class EqualizerState(
     val minBandLevel: SoundLevel,
     val maxBandLevel: SoundLevel,
-    val bands: List<EqualizerBand>?,
+    val bands: List<EqualizerBand>,
     val presets: List<String>
 )
 
@@ -37,77 +40,103 @@ data class PlaybackParametersState(
 
 @HiltViewModel
 class EqualizerViewModel @Inject constructor(
-    private val audioEffectController: AudioEffectController
+    private val audioEffectController: AudioEffectController,
+    private val mediaBrowser: MediaBrowserController
 ) : ViewModel() {
+
+    val bass = mediaBrowser.currentPlayback.map {
+        it?.bassBoost ?: 0
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
+
+    val virtualizer = mediaBrowser.currentPlayback.map {
+        it?.virtualizerStrength ?: 0
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), 0)
+
+    val reverb = mediaBrowser.currentPlayback.map {
+        it?.reverb ?: ReverbConfig()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), ReverbConfig())
 
     val bassEnabled = audioEffectController.bassEnabled
     val virtualizerEnabled = audioEffectController.virtualizerEnabled
     val equalizerEnabled = audioEffectController.equalizerEnabled
     val reverbEnabled = audioEffectController.reverbEnabled
 
-    val bass = audioEffectController.bass
-    val virtualizer = audioEffectController.virtualizerStrength
-    val reverb = audioEffectController.reverb
-
-    val equalizer = combine(
-        audioEffectController.equalizerEnabled,
-        audioEffectController.bands
-    ) { _, bands ->
+    val equalizer = mediaBrowser.currentPlayback.map {
         EqualizerState(
             audioEffectController.minBandLevel,
             audioEffectController.maxBandLevel,
-            bands,
+            it?.equalizerBands ?: emptyList(),
             audioEffectController.presets
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(),
+        EqualizerState(0.mDb, 0.mDb, emptyList(), emptyList())
+    )
 
     private var _playbackParameters = MutableStateFlow(PlaybackParametersState())
     val playbackParameters = _playbackParameters.asStateFlow()
-
 
     val selectedReverbText: StateFlow<Int> = reverb.map {
         it.toPresetStringId()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), R.string.nothing)
 
-    val selectedEqualizerText: StateFlow<String> = equalizer.map {
-        audioEffectController.currentPreset
-            ?: "" // TODO R.string.custom in [audioEffectController.currentPreset]
+    val selectedEqualizerText: StateFlow<String> = mediaBrowser.currentPlayback.map {
+        it?.equalizerPreset ?: audioEffectController.currentPreset
+        ?: "" // TODO R.string.custom in [audioEffectController.currentPreset]
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "")
 
     init {
-        audioEffectController.playbackParams.onEach { params ->
+        mediaBrowser.currentPlayback.onEach { playback ->
             val uiTextSpeed = playbackParameters.value.speed.toFloatOrNull() ?: return@onEach
             val uiTextPitch = playbackParameters.value.pitch.toFloatOrNull() ?: return@onEach
 
-            if (uiTextSpeed != params.speed || uiTextPitch != params.pitch) {
-                _playbackParameters.update { _ -> params.toUiState() }
+            if (uiTextSpeed != playback?.playbackParameters?.speed || uiTextPitch != playback.playbackParameters.pitch) {
+                _playbackParameters.update {
+                    playback?.playbackParameters?.toUiState() ?: PlaybackParametersState()
+                }
             }
         }.launchIn(viewModelScope)
     }
 
     fun setBass(bass: Int?) {
-        if (audioEffectController.setBassEnabled(true) && bass != null)
-            audioEffectController.setBass(bass)
-        else
-            audioEffectController.setBassEnabled(false)
+        mediaBrowser.updatePlayback {
+            it?.copy(bassBoost = bass ?: 0)
+        }
     }
 
     fun setVirtualizerStrength(strength: Int?) {
-        if (audioEffectController.setVirtualizerEnabled(true) && strength != null)
-            audioEffectController.setVirtualizerStrength(strength)
-        else
-            audioEffectController.setVirtualizerEnabled(false)
+        mediaBrowser.updatePlayback {
+            it?.copy(virtualizerStrength = strength ?: 0)
+        }
     }
 
     fun setBandLevel(band: Int, level: SoundLevel) {
-        if (audioEffectController.setEqualizerEnabled(true)) {
-            audioEffectController.setEqualizerBandLevel(band, level)
+        mediaBrowser.updatePlayback {
+            it?.copy(
+                equalizerBands = it.equalizerBands?.toMutableList()?.apply {
+                    this[band] = this[band].copy(level = level)
+                },
+                equalizerPreset = null
+            )
         }
     }
 
     fun setEqualizerPreset(preset: String) {
-        if (audioEffectController.setEqualizerEnabled(true)) {
-            audioEffectController.setEqualizerPreset(preset)
+        mediaBrowser.updatePlayback {
+            it?.copy(equalizerPreset = preset)
+        }
+    }
+
+    fun setPlaybackParams(speed: String, pitch: String) {
+        _playbackParameters.update { it.copy(speed = speed, pitch = pitch) }
+
+        val speedNum = speed.toFloatOrNull() ?: return
+        val pitchNum = pitch.toFloatOrNull() ?: return
+        if (speedNum > 0f && pitchNum > 0f) {
+            mediaBrowser.updatePlayback {
+                it?.copy(playbackParameters = it.playbackParameters.copy(speedNum, pitchNum))
+            }
         }
     }
 
@@ -116,9 +145,9 @@ class EqualizerViewModel @Inject constructor(
 
         val num = speed.toFloatOrNull() ?: return
         if (num > 0f) {
-            audioEffectController.setPlaybackParameters(
-                audioEffectController.playbackParams.value.copy(speed = num)
-            )
+            mediaBrowser.updatePlayback {
+                it?.copy(playbackParameters = it.playbackParameters.copy(speed = num))
+            }
         }
     }
 
@@ -127,17 +156,16 @@ class EqualizerViewModel @Inject constructor(
 
         val num = pitch.toFloatOrNull() ?: return
         if (num > 0f) {
-            audioEffectController.setPlaybackParameters(
-                audioEffectController.playbackParams.value.copy(pitch = num)
-            )
+            mediaBrowser.updatePlayback {
+                it?.copy(playbackParameters = it.playbackParameters.copy(pitch = num))
+            }
         }
     }
 
-    fun setReverb(reverbConfig: ReverbConfig) {
-        if (audioEffectController.setReverbEnabled(true))
-            audioEffectController.setReverb(reverbConfig)
-        else
-            audioEffectController.setReverbEnabled(false)
+    fun setReverb(reverbConfig: ReverbConfig?) {
+        mediaBrowser.updatePlayback {
+            it?.copy(reverb = reverbConfig)
+        }
     }
 
     fun setBassBoostEnabled(enabled: Boolean) {
@@ -149,7 +177,14 @@ class EqualizerViewModel @Inject constructor(
     }
 
     fun setEqualizerEnabled(enabled: Boolean) {
-        audioEffectController.setEqualizerEnabled(enabled)
+        if (audioEffectController.setEqualizerEnabled(enabled))
+            mediaBrowser.updatePlayback {
+                it?.copy(equalizerBands = audioEffectController.bands.value)
+            }
+        else
+            mediaBrowser.updatePlayback {
+                it?.copy(equalizerBands = null)
+            }
     }
 
     fun setReverbEnabled(enabled: Boolean) {

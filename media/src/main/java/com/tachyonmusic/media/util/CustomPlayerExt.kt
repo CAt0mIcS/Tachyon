@@ -9,7 +9,7 @@ import com.tachyonmusic.util.UiText
 
 // TODO: Should only be one function in CustomPlayer?
 fun CustomPlayer.updateTimingDataOfCurrentPlayback(timingData: TimingDataController?): Resource<Unit> {
-    if (timingData == null)
+    if (timingData == null || mediaMetadata.timingData == timingData)
         return Resource.Error(UiText.StringResource(R.string.invalid_arguments))
 
     updateTimingData(timingData)

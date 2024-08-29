@@ -58,6 +58,7 @@ import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
+import com.tachyonmusic.util.domain.EventChannel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -123,8 +124,17 @@ object AppUseCaseModule {
         database: Database,
         @ApplicationContext context: Context,
         settingsRepository: SettingsRepository,
-        uriPermissionRepository: UriPermissionRepository
-    ) = ImportDatabase(database, context, settingsRepository, uriPermissionRepository)
+        uriPermissionRepository: UriPermissionRepository,
+        mediaBrowserController: MediaBrowserController,
+        playbackRepository: PlaybackRepository
+    ) = ImportDatabase(
+        database,
+        context,
+        settingsRepository,
+        uriPermissionRepository,
+        mediaBrowserController,
+        playbackRepository
+    )
 
     @Provides
     @Singleton
@@ -149,8 +159,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideCreateNewRemixUseCase(audioEffectController: AudioEffectController) =
-        CreateRemix(audioEffectController)
+    fun provideCreateNewRemixUseCase() = CreateRemix()
 
     @Provides
     @Singleton
@@ -164,8 +173,9 @@ object AppUseCaseModule {
     @Singleton
     fun provideSavePlaybackToPlaylistUseCase(
         playlistRepository: PlaylistRepository,
-        playbackRepository: PlaybackRepository
-    ) = SavePlaybackToPlaylist(playlistRepository, playbackRepository)
+        playbackRepository: PlaybackRepository,
+        mediaBrowserController: MediaBrowserController
+    ) = SavePlaybackToPlaylist(playlistRepository, playbackRepository, mediaBrowserController)
 
     @Provides
     @Singleton
@@ -215,13 +225,15 @@ object AppUseCaseModule {
     @Singleton
     fun provideDeletePlaybackUseCase(
         remixRepository: RemixRepository,
-        playlistRepository: PlaylistRepository,
         playbackRepository: PlaybackRepository,
+        playlistRepository: PlaylistRepository,
+        removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
         historyRepository: HistoryRepository
     ) = DeletePlayback(
         remixRepository,
-        playlistRepository,
         playbackRepository,
+        playlistRepository,
+        removePlaybackFromPlaylist,
         historyRepository
     )
 
@@ -239,12 +251,14 @@ object AppUseCaseModule {
         browser: MediaBrowserController,
         getPlaylistForPlayback: GetPlaylistForPlayback,
         addNewPlaybackToHistory: AddNewPlaybackToHistory,
-        logger: Logger
+        logger: Logger,
+        eventChannel: EventChannel
     ) = PlayPlayback(
         browser,
         getPlaylistForPlayback,
         addNewPlaybackToHistory,
-        logger
+        logger,
+        eventChannel
     )
 
     @Provides
@@ -291,12 +305,14 @@ object AppRepositoryModule {
     fun provideMediaBrowserController(
         getPlaylistForPlayback: GetPlaylistForPlayback,
         predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
-        logger: Logger
+        logger: Logger,
+        playbackRepository: PlaybackRepository
     ): MediaBrowserController =
         MediaPlaybackServiceMediaBrowserController(
             getPlaylistForPlayback,
             predefinedPlaylistsRepository,
-            logger
+            logger,
+            playbackRepository
         )
 
     @Provides

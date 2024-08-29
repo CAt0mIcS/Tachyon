@@ -161,11 +161,7 @@ class CustomPlayerImpl(
                 0.ms,
                 duration.ms
             )
-        ) {
-            currentMediaItem?.mediaMetadata?.timingData = null
-            invokeEvent { it.onTimingDataUpdated(null) }
-            return
-        }
+        ) return
 
         newTimingData.advanceToCurrentPosition(currentPosition.ms)
         postRemixMessage(

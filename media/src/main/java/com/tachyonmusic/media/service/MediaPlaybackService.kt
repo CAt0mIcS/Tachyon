@@ -16,15 +16,15 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.ArtworkType
-import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.core.data.playback.LocalPlaylist
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
-import com.tachyonmusic.core.domain.playback.Remix
+import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.RecentlyPlayed
@@ -43,8 +43,10 @@ import com.tachyonmusic.media.util.*
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
-import com.tachyonmusic.playback_layers.predefinedRemixPlaylistMediaId
-import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
+import com.tachyonmusic.playback_layers.domain.events.PlayerMessageEvent
+import com.tachyonmusic.util.EventSeverity
+import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.domain.EventChannel
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -107,6 +109,9 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     @Inject
     lateinit var searchStoredPlaybacks: SearchStoredPlaybacks
 
+    @Inject
+    lateinit var eventChannel: EventChannel
+
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private lateinit var mediaSession: MediaLibrarySession
@@ -127,6 +132,10 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }
     }
 
+    private var currentPlayback: Playback? = null
+    private var currentPlaylist: Playlist? = null
+
+
     override fun onCreate() {
         super.onCreate()
 
@@ -143,16 +152,6 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         ).apply {
             registerEventListener(CustomPlayerEventListener())
         }
-
-        audioEffectController.playbackParams.onEach { params ->
-            exoPlayer.playbackParameters = androidx.media3.common.PlaybackParameters(
-                params.speed,
-                params.pitch
-            )
-            exoPlayer.volume = params.volume
-            castPlayer?.playbackParameters = exoPlayer.playbackParameters
-            castPlayer?.volume = exoPlayer.volume
-        }.launchIn(ioScope + Dispatchers.Main)
 
         audioEffectController.reverbEnabled.onEach { enabled ->
             if (enabled) {
@@ -218,16 +217,20 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         ): MediaSession.ConnectionResult = supportedCommands
 
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
-            val playback = currentPlayer.mediaMetadata.playback
+            /**
+             * TODO
+             *  When setting some playback parameters (speed, reverb, timing data), then closing
+             *  the app (swiping from backstack), and then pausing the playback through the media
+             *  notification: When opening the app again and starting the recently played, the
+             *  playback parameters will still be saved. When doing it the other way around, however,
+             *  the playback parameters will reset to default
+             */
+            val playback = currentPlayback
+                ?: currentPlayer.currentMediaItem?.let { Playback.fromMediaItem(it) }
 
             log.info("Dispatching StateUpdateEvent with $playback, playWhenReady=${currentPlayer.playWhenReady}, and repeatMode=${currentPlayer.coreRepeatMode}")
             mediaSession.dispatchMediaEvent(
-                StateUpdateEvent(
-                    playback,
-                    getCurrentPlaylist(),
-                    currentPlayer.playWhenReady,
-                    currentPlayer.coreRepeatMode
-                )
+                SessionSyncEvent(playback, currentPlaylist, currentPlayer.playWhenReady)
             )
 
             mediaSession.dispatchMediaEvent(AudioSessionIdChangedEvent(exoPlayer.audioSessionId))
@@ -311,7 +314,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         ): ListenableFuture<List<MediaItem>> = future(Dispatchers.IO) {
             mediaItems.mapNotNull {
                 it.buildUpon()
-                    .setUri(it.mediaMetadata.playback?.uri ?: return@mapNotNull null)
+                    .setUri(MediaId.deserialize(it.mediaId).uri ?: return@mapNotNull null)
                     .build()
             }
         }
@@ -324,8 +327,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         ): ListenableFuture<SessionResult> {
             when (val event = customCommand.toMediaBrowserEvent(args)) {
                 is SetRepeatModeEvent -> handleSetRepeatModeEvent(event)
-                is SetTimingDataEvent -> handleSetTimingDataEvent(event)
-                is SeekToTimingDataIndexEvent -> handleSeekToTimingDataIndexEvent(event)
+                is PlaybackUpdateEvent -> handlePlaybackUpdateEvent(event)
             }
 
             return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
@@ -359,12 +361,13 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                     launch {
                         addNewPlaybackToHistory(playlist.current)
                     }
+                    val repeatMode = dataRepository.getData().repeatMode
                     runOnUiThread {
-                        handleSetRepeatModeEvent(SetRepeatModeEvent(dataRepository.getData().repeatMode))
+                        handleSetRepeatModeEvent(SetRepeatModeEvent(repeatMode))
                     }
 
                     MediaSession.MediaItemsWithStartPosition(
-                        playlist.playbacks.toMediaItems(),
+                        playlist.playbacks.map { it.toMediaItem() },
                         playlist.currentPlaylistIndex,
                         startPositionMs
                     )
@@ -389,12 +392,11 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             mediaSession.setCustomLayout(buildCustomNotificationLayout(event.repeatMode))
         }
 
-        private fun handleSetTimingDataEvent(event: SetTimingDataEvent) {
-            currentPlayer.updateTimingDataOfCurrentPlayback(event.timingData)
-        }
-
-        private fun handleSeekToTimingDataIndexEvent(event: SeekToTimingDataIndexEvent) {
-            currentPlayer.seekToTimingDataIndex(event.index)
+        private fun handlePlaybackUpdateEvent(event: PlaybackUpdateEvent) {
+            currentPlayback = event.currentPlayback
+            currentPlaylist = event.currentPlaylist
+            setPlaybackAudioEffects(event.currentPlayback ?: return)
+            currentPlayer.updateTimingDataOfCurrentPlayback(event.currentPlayback.timingData)
         }
     }
 
@@ -418,55 +420,21 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
      ********** [Player.Listener]
      *************************************************************************/
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        val playback = mediaItem?.mediaMetadata?.playback ?: return
-
-        when (playback) {
-            is Remix -> {
-                if (audioEffectController.setBassEnabled(playback.bassBoostEnabled))
-                    audioEffectController.setBass(playback.bassBoost!!)
-                if (audioEffectController.setVirtualizerEnabled(playback.virtualizerEnabled))
-                    audioEffectController.setVirtualizerStrength(playback.virtualizerStrength!!)
-                if (audioEffectController.setReverbEnabled(playback.reverbEnabled))
-                    audioEffectController.setReverb(playback.reverb!!)
-
-                audioEffectController.setPlaybackParameters(
-                    playback.playbackParameters ?: PlaybackParameters()
-                )
-
-                if (audioEffectController.setEqualizerEnabled(playback.equalizerEnabled)) {
-
-                    playback.equalizerBands?.forEach { equalizerBand ->
-                        // TODO: Do we need all this information to differentiate different bands?
-                        audioEffectController.getEqualizerBandIndex(
-                            equalizerBand.lowerBandFrequency,
-                            equalizerBand.upperBandFrequency,
-                            equalizerBand.centerFrequency
-                        )?.let { band ->
-                            audioEffectController.setEqualizerBandLevel(band, equalizerBand.level)
-                        }
-                    }
-                }
-            }
-
-            else -> {
-                audioEffectController.setBassEnabled(false)
-                audioEffectController.setVirtualizerEnabled(false)
-                audioEffectController.setReverbEnabled(false)
-                audioEffectController.setPlaybackParameters(PlaybackParameters())
-                audioEffectController.setEqualizerEnabled(false)
-            }
-        }
+        val playback = mediaItem?.let { Playback.fromMediaItem(it) } ?: return
+        setPlaybackAudioEffects(playback)
 
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
             ioScope.launch {
                 addNewPlaybackToHistory(playback)
             }
+            updatePlayback { playback }
         }
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
         if (!isPlaying) {
-            val playback = currentPlayer.currentMediaItem?.mediaMetadata?.playback ?: return
+            val playback =
+                currentPlayer.currentMediaItem?.let { Playback.fromMediaItem(it) } ?: return
             val currentPos = currentPlayer.currentPosition.ms
             ioScope.launch {
                 saveRecentlyPlayed(
@@ -476,7 +444,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                         playback.duration,
                         ArtworkType.getType(playback),
                         if (playback.artwork is RemoteArtwork)
-                            (playback.artwork as RemoteArtwork).uri.toURL()
+                            (playback.artwork as RemoteArtwork).uri
                                 .toString() else null
                     )
                 )
@@ -486,18 +454,29 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
 
     override fun onPlayerError(error: PlaybackException) {
-        var message = R.string.generic_error
-        log.error("Player error: ${error.errorCodeName} (${error.errorCode}): ${error.message}")
+        val errorStr =
+            "Player error: ${error.errorCodeName} (${error.errorCode}): ${error.localizedMessage}"
+        log.error(errorStr)
         if (error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
             || error.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
         ) {
-            message = R.string.error_media_not_found
+            eventChannel.push(
+                PlayerMessageEvent(
+                    UiText.StringResource(
+                        R.string.error_media_not_found,
+                        currentPlayback?.title ?: "Unknown"
+                    ),
+                    EventSeverity.Error
+                )
+            )
+        } else {
+            eventChannel.push(
+                PlayerMessageEvent(
+                    UiText.DynamicString(errorStr),
+                    EventSeverity.Error
+                )
+            )
         }
-        Toast.makeText(
-            applicationContext,
-            message,
-            Toast.LENGTH_LONG
-        ).show()
     }
 
 
@@ -532,58 +511,88 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }.build()
     )
 
-    private fun getCurrentPlaylist(): LocalPlaylist? {
-        val items = currentPlayer.mediaItems
-        if (items.isEmpty())
-            return null
+    private fun setPlaybackAudioEffects(playback: Playback) {
+        if (audioEffectController.setBassEnabled(playback.bassBoostEnabled))
+            audioEffectController.setBass(playback.bassBoost)
+        if (audioEffectController.setVirtualizerEnabled(playback.virtualizerEnabled))
+            audioEffectController.setVirtualizerStrength(playback.virtualizerStrength)
+        if (audioEffectController.setReverbEnabled(playback.reverbEnabled))
+            audioEffectController.setReverb(playback.reverb!!)
 
-        val mediaId =
-            when (val mediaIds = items.map { MediaId.deserialize(it.mediaId) }) {
-                predefinedPlaylistsRepository.songPlaylist.value.map { it.mediaId } ->
-                    predefinedSongPlaylistMediaId
+        playback.playbackParameters.let { params ->
+            currentPlayer.playbackParameters = PlaybackParameters(params.speed, params.pitch)
+            currentPlayer.volume = params.volume // TODO: Volume boosting (higher than 1)
+        }
 
-                predefinedPlaylistsRepository.remixPlaylist.value.map { it.mediaId } ->
-                    predefinedRemixPlaylistMediaId
+        if (audioEffectController.setEqualizerEnabled(playback.equalizerEnabled)) {
 
-                else -> findPlaylistWithPlaybacks(mediaIds)
-            } ?: return null
+            if (playback.equalizerPreset != null && audioEffectController.currentPreset != playback.equalizerPreset) {
+                audioEffectController.setEqualizerPreset(playback.equalizerPreset!!)
+                updatePlayback {
+                    playback.copy(equalizerBands = audioEffectController.bands.value)
+                }
+                return
+            }
 
-        return LocalPlaylist(
-            mediaId,
-            items.mapNotNull { it.mediaMetadata.playback }.toMutableList(),
-            currentPlayer.currentMediaItemIndex,
-            timestampCreatedAddedEdited = 0L
-        )
+            playback.equalizerBands?.forEach { equalizerBand ->
+                // TODO: Do we need all this information to differentiate different bands?
+                audioEffectController.getEqualizerBandIndex(
+                    equalizerBand.lowerBandFrequency,
+                    equalizerBand.upperBandFrequency,
+                    equalizerBand.centerFrequency
+                )?.let { band ->
+                    audioEffectController.setEqualizerBandLevel(band, equalizerBand.level)
+                }
+            }
+        }
     }
 
-    private fun findPlaylistWithPlaybacks(mediaIds: List<MediaId>): MediaId? = runBlocking {
-        playlistRepository.getPlaylists().find { it.items == mediaIds }?.mediaId
+    private fun updatePlayback(action: () -> Playback) {
+        val newPlayback = action()
+        currentPlayback = newPlayback
+        mediaSession.dispatchMediaEvent(PlaybackUpdateEvent(newPlayback, currentPlaylist))
     }
 
     private suspend fun executeSearch(query: String, extras: Bundle): List<MediaItem> {
         return when (extras.getString(MediaStore.EXTRA_MEDIA_FOCUS)) {
             MediaStore.Audio.Playlists.ENTRY_CONTENT_TYPE -> {
                 val playlist = extras.getString(MediaStore.EXTRA_MEDIA_ALBUM)
-                searchStoredPlaybacks.byPlaylist(playlist).map { it.playback.toMediaItem() }
+                searchStoredPlaybacks.byPlaylist(playlist).map { it.playlist!!.toMediaItem() }
             }
 
             MediaStore.Audio.Media.ENTRY_CONTENT_TYPE -> {
                 val title = extras.getString(MediaStore.EXTRA_MEDIA_TITLE)
                 val artist = extras.getString(MediaStore.EXTRA_MEDIA_ARTIST)
-                searchStoredPlaybacks.byTitleArtist(title, artist).map { it.playback.toMediaItem() }
+                searchStoredPlaybacks.byTitleArtist(title, artist)
+                    .map { it.playback!!.toMediaItem() }
             }
 
             else -> {
                 // if query is blank search will return all playbacks (for commands like "play some music")
                 // using a random playback type to select music search location
-                searchStoredPlaybacks(query, PlaybackType.build("*${Random.nextInt(0, 3)}*")).map { it.playback.toMediaItem() }
+                searchStoredPlaybacks(
+                    query,
+                    PlaybackType.build("*${Random.nextInt(0, 3)}*")
+                ).map { it.playback?.toMediaItem() ?: it.playlist!!.toMediaItem() }
             }
         }
     }
 
     private inner class CustomPlayerEventListener : CustomPlayer.Listener {
         override fun onTimingDataUpdated(controller: TimingDataController?) {
-            mediaSession.dispatchMediaEvent(TimingDataUpdatedEvent(controller))
+            if (controller == currentPlayback?.timingData)
+                return
+
+            mediaSession.dispatchMediaEvent(
+                PlaybackUpdateEvent(
+                    currentPlayback?.copy(
+                        timingData = controller ?: TimingDataController(
+                            listOf(TimingData(0.ms, currentPlayback!!.duration))
+                        )
+                    ) ?: return,
+                    currentPlaylist
+                )
+            )
         }
     }
 }

@@ -7,10 +7,9 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
-import com.tachyonmusic.domain.use_case.home.UnloadArtworks
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
-import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
-import com.tachyonmusic.presentation.core_components.model.toUiEntity
+import com.tachyonmusic.presentation.home.model.HomeEntity
+import com.tachyonmusic.presentation.home.model.toHomeEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,7 +45,7 @@ class HomeViewModel @Inject constructor(
         historyArtworkLoadingRange
     ) { history, artworkLoadingRange ->
         loadArtworkForPlayback(history, artworkLoadingRange).map {
-            it.toUiEntity()
+            it.toHomeEntity()
         }
     }.stateIn(
         viewModelScope + Dispatchers.IO,
@@ -61,7 +60,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun onItemClicked(entity: PlaybackUiEntity) {
+    fun onItemClicked(entity: HomeEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             val playback = _history.value.find { it.mediaId == entity.mediaId }
                 ?: return@launch

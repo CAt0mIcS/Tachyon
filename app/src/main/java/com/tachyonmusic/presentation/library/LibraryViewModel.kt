@@ -2,11 +2,10 @@ package com.tachyonmusic.presentation.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.ads.AdView
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Song
+import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.DeletePlayback
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
@@ -18,11 +17,8 @@ import com.tachyonmusic.domain.use_case.library.QueryArtworkForPlayback
 import com.tachyonmusic.domain.use_case.library.UpdatePlaybackMetadata
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
-import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
-import com.tachyonmusic.presentation.core_components.model.toPlaylist
-import com.tachyonmusic.presentation.core_components.model.toRemix
-import com.tachyonmusic.presentation.core_components.model.toSong
-import com.tachyonmusic.presentation.core_components.model.toUiEntity
+import com.tachyonmusic.presentation.library.model.LibraryEntity
+import com.tachyonmusic.presentation.library.model.toLibraryEntity
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.copy
@@ -119,7 +115,7 @@ class LibraryViewModel @Inject constructor(
             val quality = 50
             when (filterType) {
                 is PlaybackType.Song -> loadArtworkForPlayback(songs, itemsToLoad, quality).map {
-                    it.toUiEntity()
+                    it.toLibraryEntity()
                 }
 
                 is PlaybackType.Remix -> loadArtworkForPlayback(
@@ -127,7 +123,7 @@ class LibraryViewModel @Inject constructor(
                     itemsToLoad,
                     quality
                 ).map {
-                    it.toUiEntity()
+                    it.toLibraryEntity()
                 }
 
                 is PlaybackType.Playlist -> loadArtworkForPlayback(
@@ -135,7 +131,7 @@ class LibraryViewModel @Inject constructor(
                     itemsToLoad,
                     quality
                 ).map {
-                    it.toUiEntity()
+                    it.toLibraryEntity()
                 }
 
                 else -> emptyList()
@@ -166,19 +162,22 @@ class LibraryViewModel @Inject constructor(
         playbackRepository.setSortingPreferences(sortParams.value.copy(type = type))
     }
 
-    fun onItemClicked(entity: PlaybackUiEntity) {
+    fun onItemClicked(entity: LibraryEntity) {
         viewModelScope.launch {
-            playPlayback(
-                entity.toPlayback(),
-                playbackLocation = PlaybackLocation.PREDEFINED_PLAYLIST
-            )
+            if (entity.playbackType is PlaybackType.Playlist)
+                playPlayback(entity.toPlaylist())
+            else
+                playPlayback(
+                    entity.toPlayback(),
+                    playbackLocation = PlaybackLocation.PREDEFINED_PLAYLIST
+                )
         }
     }
 
-    fun excludePlayback(entity: PlaybackUiEntity) {
+    fun excludePlayback(entity: LibraryEntity) {
         viewModelScope.launch {
-            val playback = entity.toPlayback()
-            if (playback is Song)
+            val playback = entity.toPlayback() ?: return@launch
+            if (playback.isSong)
                 addSongToExcludedSongs(playback)
             else {
                 if (browser.currentPlayback.value == playback)
@@ -198,9 +197,12 @@ class LibraryViewModel @Inject constructor(
     /**
      * Starts loading all artwork we can find for [playback] into [queriedArtwork]
      */
-    fun queryArtwork(playback: PlaybackUiEntity, searchQuery: String? = null) {
+    fun queryArtwork(playback: LibraryEntity, searchQuery: String? = null) {
         _queriedArtwork.update { emptyList() }
-        queryArtworkForPlayback(playback, searchQuery).onEach { res ->
+        queryArtworkForPlayback(
+            playback,
+            searchQuery ?: playback.albumArtworkSearchQuery
+        ).onEach { res ->
             if (res is Resource.Success)
                 _queriedArtwork.update { (it + res.data!!).copy() }
             else if (res is Resource.Error)
@@ -208,14 +210,14 @@ class LibraryViewModel @Inject constructor(
         }.launchIn(viewModelScope + Dispatchers.IO)
     }
 
-    fun assignArtworkToPlayback(artwork: Artwork, playback: PlaybackUiEntity) {
+    fun assignArtworkToPlayback(artwork: Artwork, playback: LibraryEntity) {
         viewModelScope.launch {
             assignArtworkToPlayback(playback.mediaId, artwork)
         }
     }
 
     fun updateMetadata(
-        playback: PlaybackUiEntity,
+        playback: LibraryEntity,
         title: String?,
         artist: String?,
         name: String?,
@@ -236,20 +238,16 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    private fun PlaybackUiEntity.toPlayback() = when (playbackType) {
-        is PlaybackType.Song -> toSong(songs.value)
-        is PlaybackType.Remix -> toRemix(remixes.value)
-        is PlaybackType.Playlist -> toPlaylist(playlists.value)
-        is PlaybackType.Ad -> TODO("Cannot convert Ad to Playback")
-    }
-
-    private fun <E> List<E>.insertBeforeEvery(insertBeforeIdx: Int, elem: (i: Int) -> E): List<E> {
-        val result = mutableListOf<E>()
-        for (i in indices) {
-            if (i % insertBeforeIdx == 0)
-                result.add(elem(i))
-            result.add(this[i])
+    private fun LibraryEntity.toPlayback() =
+        when (playbackType) {
+            is PlaybackType.Song -> songs.value.find { it.mediaId == mediaId }
+            is PlaybackType.Remix -> remixes.value.find { it.mediaId == mediaId }
+            is PlaybackType.Ad -> error("Cannot find ad from playback type")
+            is PlaybackType.Playlist -> error("Invalid function for Playlist")
         }
-        return result
+
+    private fun LibraryEntity.toPlaylist(): Playlist? {
+        assert(playbackType is PlaybackType.Playlist)
+        return playlists.value.find { it.mediaId == mediaId }
     }
 }

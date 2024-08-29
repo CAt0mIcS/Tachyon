@@ -8,7 +8,6 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaBrowser
@@ -19,24 +18,20 @@ import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.TimingDataController
+import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.SinglePlayback
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.core.AudioSessionIdChangedEvent
-import com.tachyonmusic.media.core.SeekToTimingDataIndexEvent
+import com.tachyonmusic.media.core.PlaybackUpdateEvent
+import com.tachyonmusic.media.core.SessionSyncEvent
 import com.tachyonmusic.media.core.SetRepeatModeEvent
-import com.tachyonmusic.media.core.SetTimingDataEvent
-import com.tachyonmusic.media.core.StateUpdateEvent
-import com.tachyonmusic.media.core.TimingDataUpdatedEvent
 import com.tachyonmusic.media.core.dispatchMediaEvent
 import com.tachyonmusic.media.core.toMediaSessionEvent
 import com.tachyonmusic.media.service.MediaPlaybackService
 import com.tachyonmusic.media.util.fromMedia
-import com.tachyonmusic.media.util.playback
-import com.tachyonmusic.media.util.toMediaItems
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
+import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.predefinedRemixPlaylistMediaId
 import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
@@ -45,6 +40,7 @@ import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
+import com.tachyonmusic.util.runOnUiThread
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -61,7 +57,8 @@ import kotlinx.coroutines.launch
 class MediaPlaybackServiceMediaBrowserController(
     private val getPlaylistForPlayback: GetPlaylistForPlayback,
     private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
-    private val log: Logger
+    private val log: Logger,
+    private val playbackRepository: PlaybackRepository
 ) : MediaBrowserController, Player.Listener,
     MediaBrowser.Listener, IListenable<MediaBrowserController.EventListener> by Listenable() {
 
@@ -128,20 +125,26 @@ class MediaPlaybackServiceMediaBrowserController(
     private val _currentPlaylist = MutableStateFlow<Playlist?>(null)
     override val currentPlaylist: StateFlow<Playlist?> = _currentPlaylist.asStateFlow()
 
-    private val _currentPlayback = MutableStateFlow<SinglePlayback?>(null)
-    override val currentPlayback: StateFlow<SinglePlayback?> = _currentPlayback.asStateFlow()
+    private val _currentPlayback = MutableStateFlow<Playback?>(null)
+    override val currentPlayback: StateFlow<Playback?> = _currentPlayback.asStateFlow()
 
     private val _isPlaying = MutableStateFlow(false)
     override val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
     override fun setPlaylist(playlist: Playlist, position: Duration?) {
         browser?.setMediaItems(
-            playlist.playbacks.toMediaItems(),
+            playlist.playbacks.map { it.toMediaItem() },
             playlist.currentPlaylistIndex,
             position?.inWholeMilliseconds ?: 0
         )
         _currentPlaylist.update { playlist }
-        _currentPlayback.update { playlist.current }
+        updatePlayback { playlist.current }
+    }
+
+    override fun updatePlayback(action: (Playback?) -> Playback?) {
+        val newPlayback = action(currentPlayback.value)
+        _currentPlayback.update { newPlayback }
+        browser?.dispatchMediaEvent(PlaybackUpdateEvent(newPlayback, currentPlaylist.value))
     }
 
     override val currentPosition: Duration?
@@ -149,40 +152,21 @@ class MediaPlaybackServiceMediaBrowserController(
             null
         else browser?.currentPosition?.ms
 
-    override var currentPlaybackTimingData: TimingDataController?
-        get() = currentPlayback.value?.timingData
-        set(value) {
-            if (value != null)
-                browser?.dispatchMediaEvent(SetTimingDataEvent(value))
-        }
-
     override val canPrepare: Boolean
         get() = browser?.isConnected == true
                 && browser?.playbackState == Player.STATE_IDLE
                 && (browser?.mediaItemCount ?: -1) > 0
                 && currentPlaylist.value != null
 
-    override var playbackParameters: PlaybackParameters
-        get() = browser?.playbackParameters ?: PlaybackParameters.DEFAULT
-        set(value) {
-            browser?.playbackParameters = value
-        }
-
-    override var volume: Float
-        get() = browser?.volume ?: 1f
-        set(value) {
-            browser?.volume = value
-        }
-
     override var audioSessionId: Int? = null
         private set
 
-    override val nextPlayback: SinglePlayback?
+    override val nextPlayback: Playback?
         get() {
             val idx = browser?.nextMediaItemIndex
             if (idx == null || idx >= browser!!.mediaItemCount || idx < 0)
                 return null
-            return browser?.getMediaItemAt(idx)?.mediaMetadata?.playback
+            return browser?.getMediaItemAt(idx)?.let { Playback.fromMediaItem(it) }
         }
 
     private val _repeatMode = MutableStateFlow<RepeatMode>(RepeatMode.All)
@@ -190,10 +174,6 @@ class MediaPlaybackServiceMediaBrowserController(
 
     override fun setRepeatMode(repeatMode: RepeatMode) {
         browser?.dispatchMediaEvent(SetRepeatModeEvent(repeatMode))
-    }
-
-    override fun seekToTimingDataIndex(index: Int) {
-        browser?.dispatchMediaEvent(SeekToTimingDataIndexEvent(index))
     }
 
     private var prepareJob: CompletableJob? = null
@@ -238,7 +218,8 @@ class MediaPlaybackServiceMediaBrowserController(
          * with [Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED] and [currentPlayback] won't be updated
          */
         if (index == 0) {
-            _currentPlayback.update { browser?.getMediaItemAt(0)?.mediaMetadata?.playback }
+            val playback = browser?.getMediaItemAt(0)?.let { Playback.fromMediaItem(it) }
+            updatePlayback { playback }
         }
     }
 
@@ -248,13 +229,6 @@ class MediaPlaybackServiceMediaBrowserController(
 
     override fun seekToPrevious() {
         browser?.seekToPrevious()
-    }
-
-
-    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-        if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)
-            _currentPlayback.update { mediaItem?.mediaMetadata?.playback }
-        invokeEvent { it.onMediaItemTransition(mediaItem?.mediaMetadata?.playback) }
     }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
@@ -299,21 +273,24 @@ class MediaPlaybackServiceMediaBrowserController(
         args: Bundle
     ): ListenableFuture<SessionResult> = future(Dispatchers.IO) {
         when (val event = command.toMediaSessionEvent(args)) {
-            is TimingDataUpdatedEvent -> {
-                log.info("Received timing data updated event with ${event.timingData} for playback: ${currentPlayback.value}")
-                _currentPlayback.update {
-                    it?.copy()?.apply {
-                        timingData = event.timingData
-                    }
-                }
+            is PlaybackUpdateEvent -> {
+                log.info("Received state update event with ${event.currentPlayback}")
+                _currentPlayback.update { event.currentPlayback }
+                _currentPlaylist.update { event.currentPlaylist }
             }
 
-            is StateUpdateEvent -> {
-                log.info("Received state update event with ${event.currentPlayback}, playWhenReady=${event.playWhenReady}")
-                _currentPlayback.update { event.currentPlayback }
-                _isPlaying.update { event.playWhenReady }
+            is SessionSyncEvent -> {
+                log.info("Received state update event with playWhenReady=${event.playWhenReady}")
+                val latest = playbackRepository.getHistory().find { it.isPlayable }
+                val newPlayback =
+                    if (event.currentPlayback != null && event.currentPlayback?.mediaId == latest?.mediaId)
+                        event.currentPlayback
+                    else
+                        latest
                 _currentPlaylist.update { event.currentPlaylist }
-                _repeatMode.update { event.repeatMode }
+                _isPlaying.update { event.playWhenReady }
+
+                runOnUiThread { updatePlayback { newPlayback } }
             }
 
             is AudioSessionIdChangedEvent -> {

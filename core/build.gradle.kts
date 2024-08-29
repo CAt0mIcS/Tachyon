@@ -48,8 +48,8 @@ android {
         jvmTarget = Index.JVM_TARGET
 
         freeCompilerArgs = listOf(
-            "-Xopt-in=androidx.media3.common.util.UnstableApi",
-            "-Xopt-in=kotlin.contracts.ExperimentalContracts",
+            "-opt-in=androidx.media3.common.util.UnstableApi",
+            "-opt-in=kotlin.contracts.ExperimentalContracts",
         )
     }
     namespace = "com.tachyonmusic.core"

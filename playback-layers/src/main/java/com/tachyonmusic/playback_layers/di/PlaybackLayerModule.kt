@@ -20,6 +20,7 @@ import com.tachyonmusic.playback_layers.domain.GetIsInternetConnectionMetered
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
+import com.tachyonmusic.util.domain.EventChannel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -57,13 +58,17 @@ class PlaybackLayerRepositoryModule {
         remixRepository: RemixRepository,
         playlistRepository: PlaylistRepository,
         historyRepository: HistoryRepository,
+        uriPermissionRepository: UriPermissionRepository,
         @ApplicationContext context: Context,
+        eventChannel: EventChannel
     ): PlaybackRepository = PlaybackRepositoryImpl(
         songRepository,
         remixRepository,
         playlistRepository,
         historyRepository,
-        context
+        uriPermissionRepository,
+        context,
+        eventChannel
     )
 
     @Provides

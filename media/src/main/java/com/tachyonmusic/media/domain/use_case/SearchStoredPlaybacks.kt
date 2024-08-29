@@ -2,6 +2,7 @@ package com.tachyonmusic.media.domain.use_case
 
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.util.removeFirst
 import java.util.Arrays
@@ -13,7 +14,8 @@ import java.util.Arrays
 private const val DICE_COEFFICIENT_GUARANTEED_RESULT_THRESHOLD = .55f
 
 data class PlaybackSearchResult(
-    val playback: Playback,
+    val playback: Playback? = null,
+    val playlist: Playlist? = null,
     val titleHighlightIndices: List<Int> = emptyList(),
     val artistHighlightIndices: List<Int> = emptyList(),
     val albumHighlightIndices: List<Int> = emptyList(),
@@ -70,7 +72,7 @@ class SearchStoredPlaybacks(
         songs = songs.filter { song ->
             val result = if (song.title.containsEqual(query)) {
                 guaranteedResults += 1
-                PlaybackSearchResult(song, findHighlights(query, song.title), score = 1f)
+                PlaybackSearchResult(song, null, findHighlights(query, song.title), score = 1f)
             } else if (song.artist.containsEqual(query)) {
                 guaranteedResults += .9f
                 PlaybackSearchResult(
@@ -117,16 +119,16 @@ class SearchStoredPlaybacks(
         val results = mutableListOf<PlaybackSearchResult>()
 
         remixes = remixes.filter { remix ->
-            val result = if (remix.name.containsEqual(query)) {
+            val result = if (remix.name!!.containsEqual(query)) {
                 guaranteedResults += 1f
                 PlaybackSearchResult(
                     remix,
-                    nameHighlightIndices = findHighlights(query, remix.name),
+                    nameHighlightIndices = findHighlights(query, remix.name!!),
                     score = 1f
                 )
             } else if (remix.title.containsEqual(query)) {
                 guaranteedResults += 1f
-                PlaybackSearchResult(remix, findHighlights(query, remix.title), score = 1f)
+                PlaybackSearchResult(remix, null, findHighlights(query, remix.title), score = 1f)
             } else if (remix.artist.containsEqual(query)) {
                 guaranteedResults += .9f
                 PlaybackSearchResult(
@@ -179,12 +181,13 @@ class SearchStoredPlaybacks(
             val result = if (playlist.name.containsEqual(query)) {
                 guaranteedResults += 1f
                 PlaybackSearchResult(
+                    null,
                     playlist,
                     nameHighlightIndices = findHighlights(query, playlist.name),
                     score = 1f
                 )
             } else
-                PlaybackSearchResult(playlist)
+                PlaybackSearchResult(null, playlist)
 
             // TODO: Do the same for album, artist, name, ...?
             val titles = playlist.playbacks.map { it.title }
@@ -204,7 +207,7 @@ class SearchStoredPlaybacks(
                 break
             }
 
-            val result = PlaybackSearchResult(playlist)
+            val result = PlaybackSearchResult(null, playlist)
             result.score = computeScore(query, playlist.name)
 
             if (result.score >= DICE_COEFFICIENT_GUARANTEED_RESULT_THRESHOLD)

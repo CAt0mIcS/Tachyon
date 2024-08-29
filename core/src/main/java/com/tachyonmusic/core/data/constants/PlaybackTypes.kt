@@ -1,10 +1,5 @@
 package com.tachyonmusic.core.data.constants
 
-import com.tachyonmusic.core.data.playback.LocalPlaylist
-import com.tachyonmusic.core.data.playback.LocalRemix
-import com.tachyonmusic.core.data.playback.LocalSong
-import com.tachyonmusic.core.domain.playback.Playback
-
 sealed class PlaybackType(val value: Int) {
     sealed class Song(value: Int) : PlaybackType(value) {
         class Local : Song(0)
@@ -30,15 +25,6 @@ sealed class PlaybackType(val value: Int) {
                 "*2*" -> Playlist.Local()
                 "*3*" -> Ad.Banner()
                 else -> TODO("Unsupported value $value for playback type")
-            }
-        }
-
-        fun build(playback: Playback?): PlaybackType {
-            return when (playback) {
-                is LocalSong? -> Song.Local()
-                is LocalRemix? -> Remix.Local()
-                is LocalPlaylist? -> Playlist.Local()
-                else -> TODO("Unknown playback type ${playback?.javaClass?.name}")
             }
         }
     }

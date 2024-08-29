@@ -42,9 +42,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.presentation.BottomNavigationItem
-import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.home.component.VerticalPlaybackView
+import com.tachyonmusic.presentation.home.model.HomeEntity
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
@@ -144,12 +144,13 @@ object HomeScreen :
 
 
 private fun LazyListScope.playbacksView(
-    playbacks: List<PlaybackUiEntity>,
-    onClick: (PlaybackUiEntity) -> Unit
+    playbacks: List<HomeEntity>,
+    onClick: (HomeEntity) -> Unit
 ) {
     items(playbacks) { playback ->
-
         VerticalPlaybackView(
+            playback.displayTitle,
+            playback.displaySubtitle,
             modifier = Modifier
                 .padding(
                     start = Theme.padding.extraSmall / 2f,
@@ -167,7 +168,6 @@ private fun LazyListScope.playbacksView(
                     shape = Theme.shapes.medium
                 )
                 .background(MaterialTheme.colorScheme.surfaceContainerHigh, Theme.shapes.medium),
-            playback = playback,
             artwork = playback.artwork ?: PlaceholderArtwork,
         )
     }

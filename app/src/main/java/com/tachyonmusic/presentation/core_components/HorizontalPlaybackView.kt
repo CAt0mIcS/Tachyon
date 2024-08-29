@@ -23,12 +23,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.presentation.core_components.model.PlaybackUiEntity
 import com.tachyonmusic.presentation.theme.Theme
 
 @Composable
 fun HorizontalPlaybackView(
-    playback: PlaybackUiEntity,
+    displayTitle: String,
+    displaySubtitle: String,
     artwork: Artwork,
     modifier: Modifier = Modifier,
     dropDownMenuExpanded: Boolean = false,
@@ -62,7 +62,7 @@ fun HorizontalPlaybackView(
                 AnimatedText(
                     modifier = Modifier
                         .padding(top = Theme.padding.small),
-                    text = playback.displayTitle,
+                    text = displayTitle,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
                     gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer
@@ -74,7 +74,7 @@ fun HorizontalPlaybackView(
                             start = Theme.padding.small,
                             bottom = Theme.padding.small
                         ),
-                    text = playback.displaySubtitle,
+                    text = displaySubtitle,
                     fontSize = 14.sp,
                     gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer
                 )

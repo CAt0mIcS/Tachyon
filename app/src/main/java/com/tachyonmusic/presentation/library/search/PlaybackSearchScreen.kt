@@ -206,7 +206,8 @@ object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
                     } else {
                         items(searchResults) { searchResult ->
                             HorizontalPlaybackView(
-                                playback = searchResult.playback,
+                                searchResult.playback.displayTitle,
+                                searchResult.playback.displaySubtitle,
                                 modifier = Modifier
                                     .isEnabled(searchResult.playback.isPlayable)
                                     .padding(top = Theme.padding.extraSmall),

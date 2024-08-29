@@ -4,9 +4,6 @@ import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.core.domain.playback.Remix
-import com.tachyonmusic.core.domain.playback.SinglePlayback
-import com.tachyonmusic.core.domain.playback.Song
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
@@ -20,61 +17,56 @@ class GetPlaybackChildren(
     private val predefinedPlaylists: PredefinedPlaylistsRepository,
     private val log: Logger
 ) {
+    @JvmName("invokePlayback")
     operator fun invoke(
         playback: Playback?,
         repeatMode: RepeatMode,
         currentPlaylistMediaId: MediaId?
-    ): List<SinglePlayback> {
+    ): List<Playback> {
         log.debug("Getting children for $playback with $repeatMode")
 
         if (playback == null)
             return emptyList()
 
-        return when (playback) {
-            is SinglePlayback -> {
-                when (repeatMode) {
-                    is RepeatMode.One -> listOf(playback)
-                    is RepeatMode.All -> getPlaylistAll(playback)
-                    is RepeatMode.Shuffle -> getPlaylistShuffle()
-                    is RepeatMode.Off -> getPlaylistOff(playback, currentPlaylistMediaId)
-                }
-            }
-
-            is Playlist -> playback.playbacks
-            else -> emptyList()
+        return when (repeatMode) {
+            is RepeatMode.One -> listOf(playback)
+            is RepeatMode.All -> getPlaylistAll(playback)
+            is RepeatMode.Shuffle -> getPlaylistShuffle()
+            is RepeatMode.Off -> getPlaylistOff(playback, currentPlaylistMediaId)
         }
     }
 
-    private fun getPlaylistAll(playback: SinglePlayback): List<SinglePlayback> {
-        return when (playback) {
-            is Song -> {
-                val idx =
-                    predefinedPlaylists.songPlaylist.value.indexOf { playback.mediaId == it.mediaId }
-                        ?: return emptyList()
-                listOfNotNull(predefinedPlaylists.songPlaylist.value.cycle(idx + 1))
-            }
-            is Remix -> {
-                val idx =
-                    predefinedPlaylists.remixPlaylist.value.indexOf { playback.mediaId == it.mediaId }
-                        ?: return emptyList()
-                listOfNotNull(predefinedPlaylists.remixPlaylist.value.cycle(idx + 1))
-            }
-            else -> TODO("Invalid playback type ${playback.javaClass.name}")
-        }
+    @JvmName("invokePlaylist")
+    operator fun invoke(playlist: Playlist?) = playlist?.playbacks
+
+    private fun getPlaylistAll(playback: Playback): List<Playback> {
+        return if (playback.isSong) {
+            val idx =
+                predefinedPlaylists.songPlaylist.value.indexOf { playback.mediaId == it.mediaId }
+                    ?: return emptyList()
+            listOfNotNull(predefinedPlaylists.songPlaylist.value.cycle(idx + 1))
+        } else if (playback.isRemix) {
+            val idx =
+                predefinedPlaylists.remixPlaylist.value.indexOf { playback.mediaId == it.mediaId }
+                    ?: return emptyList()
+            listOfNotNull(predefinedPlaylists.remixPlaylist.value.cycle(idx + 1))
+        } else
+            TODO("Invalid playback type ${playback.javaClass.name}")
     }
 
     private fun getPlaylistShuffle() =
         if (browser.nextPlayback != null) listOf(browser.nextPlayback!!) else emptyList()
 
     private fun getPlaylistOff(
-        playback: SinglePlayback,
+        playback: Playback,
         currentPlaylistMediaId: MediaId?
-    ): List<SinglePlayback> {
+    ): List<Playback> {
         when (currentPlaylistMediaId) {
             predefinedSongPlaylistMediaId -> {
                 if (predefinedPlaylists.songPlaylist.value.lastOrNull()?.mediaId == playback.mediaId)
                     return emptyList()
             }
+
             predefinedRemixPlaylistMediaId -> {
                 if (predefinedPlaylists.remixPlaylist.value.lastOrNull()?.mediaId == playback.mediaId)
                     return emptyList()

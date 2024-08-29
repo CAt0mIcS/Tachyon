@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableList
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.media.util.getItemsOnPageWithPageSize
-import com.tachyonmusic.media.util.toMediaItems
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import kotlinx.coroutines.*
 
@@ -33,7 +32,8 @@ class BrowserTree(
         get() = MediaItem.Builder().apply {
             setMediaId(ROOT)
             setMediaMetadata(MediaMetadata.Builder().apply {
-                setFolderType(MediaMetadata.FOLDER_TYPE_MIXED)
+                setIsBrowsable(true)
+                setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
                 setIsPlayable(false)
             }.build())
         }.build()
@@ -46,7 +46,8 @@ class BrowserTree(
                         MediaItem.Builder().apply {
                             setMediaId(SONG_ROOT)
                             setMediaMetadata(MediaMetadata.Builder().apply {
-                                setFolderType(MediaMetadata.FOLDER_TYPE_TITLES)
+                                setIsBrowsable(true)
+                                setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
                                 setIsPlayable(false)
                                 setTitle("Songs") // TODO: Resources for titles v
                             }.build())
@@ -55,16 +56,18 @@ class BrowserTree(
                         MediaItem.Builder().apply {
                             setMediaId(LOOP_ROOT)
                             setMediaMetadata(MediaMetadata.Builder().apply {
-                                setFolderType(MediaMetadata.FOLDER_TYPE_TITLES)
+                                setIsBrowsable(true)
+                                setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
                                 setIsPlayable(false)
-                                setTitle("remixes")
+                                setTitle("Remixes")
                             }.build())
                         }.build(),
 
                         MediaItem.Builder().apply {
                             setMediaId(PLAYLIST_ROOT)
                             setMediaMetadata(MediaMetadata.Builder().apply {
-                                setFolderType(MediaMetadata.FOLDER_TYPE_PLAYLISTS)
+                                setIsBrowsable(true)
+                                setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS)
                                 setIsPlayable(false)
                                 setTitle("Playlists")
                             }.build())
@@ -85,7 +88,7 @@ class BrowserTree(
                             playbackRepository.getPlaylists().find { it.mediaId == mediaId }
                         if (playback != null)
                             return@withContext constraintItems(
-                                playback.playbacks.toMediaItems(),
+                                playback.playbacks.map { it.toMediaItem() },
                                 page,
                                 pageSize
                             )

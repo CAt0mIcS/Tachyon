@@ -94,8 +94,7 @@ fun RemixEditor(
                                     timingData[i].startTime - deltaDuration,
                                     timingData[i].endTime
                                 )
-                                viewModel.setNewTimingData()
-                                viewModel.playTimingDataAt(i)
+                                viewModel.setAndPlayTimingDataAt(i)
                             },
                             contentPadding = PaddingValues(0.dp)
                         ) {
@@ -111,8 +110,7 @@ fun RemixEditor(
                                     timingData[i].startTime + deltaDuration,
                                     timingData[i].endTime
                                 )
-                                viewModel.setNewTimingData()
-                                viewModel.playTimingDataAt(i)
+                                viewModel.setAndPlayTimingDataAt(i)
                             },
                             contentPadding = PaddingValues(0.dp)
                         ) {
@@ -135,7 +133,7 @@ fun RemixEditor(
 
                     item {
                         IconButton(
-                            onClick = { viewModel.playTimingDataAt(i) },
+                            onClick = { viewModel.setAndPlayTimingDataAt(i) },
                             modifier = Modifier.fillMaxHeight()
                         ) {
                             Icon(
@@ -263,8 +261,7 @@ fun RemixEditor(
                                     timingData[i].startTime,
                                     timingData[i].endTime - deltaDuration
                                 )
-                                viewModel.setNewTimingData()
-                                viewModel.playTimingDataAt(i, startFromEnd = true)
+                                viewModel.setAndPlayTimingDataAt(i, startFromEnd = true)
                             },
                             contentPadding = PaddingValues(0.dp)
                         ) {
@@ -280,8 +277,7 @@ fun RemixEditor(
                                     timingData[i].startTime,
                                     timingData[i].endTime + deltaDuration
                                 )
-                                viewModel.setNewTimingData()
-                                viewModel.playTimingDataAt(i, startFromEnd = true)
+                                viewModel.setAndPlayTimingDataAt(i, startFromEnd = true)
                             },
                             contentPadding = PaddingValues(0.dp)
                         ) {

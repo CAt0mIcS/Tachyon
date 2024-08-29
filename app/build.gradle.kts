@@ -63,13 +63,12 @@ android {
         jvmTarget = Index.JVM_TARGET
 
         freeCompilerArgs = listOf(
-            "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-            "-Xopt-in=androidx.compose.foundation.ExperimentalFoundationApi",
-            "-Xopt-in=androidx.constraintlayout.compose.ExperimentalMotionApi",
-            "-Xopt-in=androidx.compose.animation.ExperimentalAnimationApi",
-            "-Xopt-in=androidx.compose.material3.ExperimentalMaterial3Api",
-            "-Xopt-in=kotlin.contracts.ExperimentalContracts",
-            "-Xopt-in=androidx.media3.common.util.UnstableApi"
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+            "-opt-in=androidx.compose.foundation.ExperimentalFoundationApi",
+            "-opt-in=androidx.constraintlayout.compose.ExperimentalMotionApi",
+            "-opt-in=androidx.compose.animation.ExperimentalAnimationApi",
+            "-opt-in=androidx.compose.material3.ExperimentalMaterial3Api",
+            "-opt-in=kotlin.contracts.ExperimentalContracts"
         )
     }
 

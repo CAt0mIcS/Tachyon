@@ -12,6 +12,7 @@ import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.presentation.theme.ComposeSettings
+import com.tachyonmusic.util.domain.EventChannel
 import com.tachyonmusic.util.sec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val stateRepository: StateRepository,
 
+    eventChannel: EventChannel,
     settingsRepository: SettingsRepository,
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
@@ -58,6 +60,8 @@ class MainViewModel @Inject constructor(
     ) { settings, requiredPathsAfterImport ->
         settings.musicDirectories.isEmpty() || requiredPathsAfterImport.isNotEmpty()
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), false)
+
+    val eventChannel = eventChannel.listen()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {

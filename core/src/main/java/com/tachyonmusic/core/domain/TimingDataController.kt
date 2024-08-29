@@ -88,15 +88,28 @@ data class TimingDataController(
     override fun toString() =
         currentIndex.toString() + "--" + timingData.joinToString(separator = ";") { it.toString() }
 
-    companion object CREATOR : Parcelable.Creator<TimingDataController> {
-        override fun createFromParcel(parcel: Parcel): TimingDataController {
-            val timingData = parcel.createTypedArray(TimingData.CREATOR)!!
+    fun deepCopy(
+        timingData: List<TimingData> = this.timingData,
+        currentIndex: Int = this.currentIndex
+    ) = TimingDataController(
+        timingData.map { it.copy() }.toList(),
+        currentIndex
+    )
 
-            val index = parcel.readInt()
-            return TimingDataController(timingData.toList(), index)
+    companion object {
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<TimingDataController> {
+            override fun createFromParcel(parcel: Parcel): TimingDataController {
+                val timingData = parcel.createTypedArray(TimingData.CREATOR)!!
+
+                val index = parcel.readInt()
+                return TimingDataController(timingData.toList(), index)
+            }
+
+            override fun newArray(size: Int): Array<TimingDataController?> = arrayOfNulls(size)
         }
 
-        override fun newArray(size: Int): Array<TimingDataController?> = arrayOfNulls(size)
+        fun default(end: Duration) = TimingDataController(listOf(TimingData(0.ms, end)))
     }
 
     fun getOrNull(index: Int) = timingData.getOrNull(index)
