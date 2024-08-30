@@ -22,6 +22,7 @@ class UpdateSettingsDatabase(
         val toRemove = mutableListOf<Uri>()
         val settings = repository.getSettings()
 
+        // TODO: Optimize for many [settings.excludedSongFiles]
         for (excluded in settings.excludedSongFiles) {
             if (!DocumentFile.fromTreeUri(context, excluded)!!.exists())
                 toRemove += excluded

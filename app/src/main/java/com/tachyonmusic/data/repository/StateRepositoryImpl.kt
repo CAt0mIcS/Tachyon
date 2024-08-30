@@ -1,6 +1,6 @@
-package com.tachyonmusic.domain.repository
+package com.tachyonmusic.data.repository
 
-import com.tachyonmusic.data.repository.StateRepository
+import com.tachyonmusic.domain.repository.StateRepository
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.delay

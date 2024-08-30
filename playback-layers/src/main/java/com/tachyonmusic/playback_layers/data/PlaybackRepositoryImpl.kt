@@ -248,7 +248,7 @@ class PlaybackRepositoryImpl(
         true
     } catch (e: Exception) {
         when (e) {
-            is FileNotFoundException, is IllegalArgumentException -> false
+            is FileNotFoundException, is IllegalArgumentException, is SecurityException -> false
             else -> throw e
         }
     }

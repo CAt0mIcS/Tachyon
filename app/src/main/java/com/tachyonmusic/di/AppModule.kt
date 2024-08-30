@@ -7,7 +7,7 @@ import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.repository.AndroidAdInterface
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
-import com.tachyonmusic.data.repository.StateRepository
+import com.tachyonmusic.domain.repository.StateRepository
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.HistoryRepository
@@ -18,7 +18,7 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.domain.repository.StateRepositoryImpl
+import com.tachyonmusic.data.repository.StateRepositoryImpl
 import com.tachyonmusic.domain.use_case.DeletePlayback
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
@@ -49,7 +49,6 @@ import com.tachyonmusic.logger.LoggerImpl
 import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
@@ -87,7 +86,8 @@ object AppUseCaseModule {
         artworkCodex: ArtworkCodex,
         assignArtworkToPlayback: AssignArtworkToPlayback,
         stateRepository: StateRepository,
-        logger: Logger
+        logger: Logger,
+        eventChannel: EventChannel
     ) = UpdateSongDatabase(
         songRepository,
         fileRepository,
@@ -95,7 +95,8 @@ object AppUseCaseModule {
         artworkCodex,
         assignArtworkToPlayback,
         stateRepository,
-        logger
+        logger,
+        eventChannel
     )
 
     @Provides
@@ -115,8 +116,11 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideExportDatabaseUseCase(database: Database, @ApplicationContext context: Context) =
-        ExportDatabase(database, context)
+    fun provideExportDatabaseUseCase(
+        database: Database,
+        @ApplicationContext context: Context,
+        eventChannel: EventChannel
+    ) = ExportDatabase(database, context, eventChannel)
 
     @Provides
     @Singleton

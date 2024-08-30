@@ -3,7 +3,7 @@ package com.tachyonmusic.presentation.profile
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.data.repository.StateRepository
+import com.tachyonmusic.domain.repository.StateRepository
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission

@@ -1,4 +1,4 @@
-package com.tachyonmusic.data.repository
+package com.tachyonmusic.domain.repository
 
 import com.tachyonmusic.util.Duration
 import kotlinx.coroutines.flow.StateFlow

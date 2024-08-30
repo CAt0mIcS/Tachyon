@@ -33,15 +33,15 @@ class PlayPlayback(
         position: Duration? = null,
         playbackLocation: PlaybackLocation? = null
     ) = runOnUiThread {
-        eventChannel.push(
-            PlaybackNotFoundEvent(
-                UiText.StringResource(R.string.cannot_create_remix, "", "", ""),
-                EventSeverity.Error
+        if (playback == null) {
+            eventChannel.push(
+                PlaybackNotFoundEvent(
+                    UiText.StringResource(R.string.invalid_playback, "null"),
+                    EventSeverity.Error
+                )
             )
-        )
-
-        if (playback == null)
             return@runOnUiThread
+        }
 
         if (playbackLocation == PlaybackLocation.CUSTOM_PLAYLIST)
             browser.seekTo(playback.mediaId)

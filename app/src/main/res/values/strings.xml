@@ -35,5 +35,9 @@
     <string name="warning">Warning!</string>
     <string name="nothing" />
     <string name="cast">Cast</string>
-    <string name="loading">Loading...</string>
+    <string name="loading">Loading…</string>
+    <string name="invalid_playback">Trying to use invalid playback \"%1$s\"</string>
+    <string name="database_export_destination_empty">The destination to export the database to is empty</string>
+    <string name="database_export_error">Error occurred exporting database: %1$s</string>
+    <string name="database_export_success">The database was exported successfully</string>
 </resources>
