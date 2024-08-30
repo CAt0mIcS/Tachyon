@@ -137,7 +137,11 @@ class PlayerViewModel @Inject constructor(
             viewModelScope.launch(Dispatchers.IO) {
                 val recentlyPlayed = getRecentlyPlayed()
                 runOnUiThreadAsync {
-                    playPlayback(_playback.value, recentlyPlayed?.position)
+                    playPlayback(
+                        _playback.value,
+                        recentlyPlayed?.position,
+                        if (currentPlaylist.value?.isPredefined == true) PlaybackLocation.PREDEFINED_PLAYLIST else PlaybackLocation.CUSTOM_PLAYLIST
+                    )
                 }
             }
         }

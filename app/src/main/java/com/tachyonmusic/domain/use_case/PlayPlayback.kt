@@ -44,7 +44,7 @@ class PlayPlayback(
         }
 
         if (playbackLocation == PlaybackLocation.CUSTOM_PLAYLIST)
-            browser.seekTo(playback.mediaId)
+            browser.seekTo(playback.mediaId, position)
         else
             invokeOnNewPlaylist(playback, position)
         browser.play()
