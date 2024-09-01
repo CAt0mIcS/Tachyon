@@ -93,8 +93,8 @@ data class Playback(
             is RemoteArtwork -> setArtworkUri(Uri.parse(artworkVal.uri.toString()))
         }
 
-        setTitle(title)
-        setDisplayTitle(if (isRemix) "$name - $title" else title)
+        setTitle(if (isRemix) "$name - $title" else title)
+        setDisplayTitle(title)
         setArtist(artist)
         setAlbumTitle(album)
         setExtras(Bundle().apply {
@@ -134,7 +134,7 @@ data class Playback(
 
             return Playback(
                 MediaId.deserialize(mediaItem.mediaId),
-                mediaItem.mediaMetadata.title!!.toString(),
+                mediaItem.mediaMetadata.displayTitle!!.toString(),
                 mediaItem.mediaMetadata.artist!!.toString(),
                 extras.getLong(MetadataKeys.Duration).ms,
                 mediaItem.mediaMetadata.isPlayable!!,
