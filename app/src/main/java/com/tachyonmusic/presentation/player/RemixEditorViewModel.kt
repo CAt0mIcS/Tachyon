@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.player
 
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -176,7 +177,7 @@ class RemixEditorViewModel @Inject constructor(
         }
     }
 
-    fun saveNewRemix(name: String) {
+    fun saveNewRemix(name: String, activity: ComponentActivity?) {
         viewModelScope.launch {
             val sizeBefore = predefinedPlaylistsRepository.remixPlaylist.value.size
             val mediaPosBefore = mediaBrowser.currentPosition
@@ -186,24 +187,30 @@ class RemixEditorViewModel @Inject constructor(
             if (createRes is Resource.Success) {
                 _remixError.update { null }
                 withContext(Dispatchers.IO) {
-                    val dbRes = saveRemix(createRes.data!!)
+                    val dbRes = saveRemix(createRes.data!!, ignoreMaxRemixes = activity == null)
 
-                    if (dbRes is Resource.Success) {
-                        if (settings.value.playNewlyCreatedRemix) {
-                            runOnUiThread {
-                                pauseResumePlayback(PauseResumePlayback.Action.Pause)
-                                // TODO: Some way to wait for predefined playlists repository to update
-                                //  playPlayback is not working because new remix is not in predefined playlists yet
-                                while (predefinedPlaylistsRepository.remixPlaylist.value.size <= sizeBefore) {
-                                    delay(100.ms)
-                                }
-
-                                playPlayback(
-                                    createRes.data!!.toPlayback(currentPlayback!!),
-                                    mediaPosBefore
-                                )
+                    if (dbRes is Resource.Success && settings.value.playNewlyCreatedRemix) {
+                        runOnUiThread {
+                            pauseResumePlayback(PauseResumePlayback.Action.Pause)
+                            // TODO: Some way to wait for predefined playlists repository to update
+                            //  playPlayback is not working because new remix is not in predefined playlists yet
+                            while (predefinedPlaylistsRepository.remixPlaylist.value.size <= sizeBefore) {
+                                delay(100.ms)
                             }
+
+                            playPlayback(
+                                createRes.data!!.toPlayback(currentPlayback!!),
+                                mediaPosBefore
+                            )
                         }
+                    } else if (dbRes is Resource.Error && dbRes.code == SaveRemixToDatabase.ERROR_NEEDS_TO_SHOW_AD) {
+                        runOnUiThread { pauseResumePlayback(PauseResumePlayback.Action.Pause) }
+                        adInterface.showRewardAdSuspend(activity!!) { _, amount ->
+                            val numStoredRemixes = dataRepository.getData().maxRemixCount
+                            dataRepository.update(maxRemixCount = numStoredRemixes + amount)
+                            saveNewRemix(name, activity)
+                        }
+                        runOnUiThread { pauseResumePlayback(PauseResumePlayback.Action.Resume) }
                     } else
                         _remixError.update { dbRes.message }
                 }

@@ -1,5 +1,6 @@
 package com.tachyonmusic.domain.use_case.player
 
+import androidx.activity.ComponentActivity
 import com.tachyonmusic.database.domain.model.RemixEntity
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.RemixRepository
@@ -11,30 +12,34 @@ import kotlinx.coroutines.withContext
 
 class SaveRemixToDatabase(
     private val remixRepository: RemixRepository,
-    private val dataRepository: DataRepository,
-    private val adInterface: AdInterface
+    private val dataRepository: DataRepository
 ) {
-    suspend operator fun invoke(remix: RemixEntity): Resource<Unit> = withContext(Dispatchers.IO) {
-        val maxRemixes = dataRepository.getData().maxRemixCount
-
-        // TODO: Too slow?
-        val numStoredRemixes = remixRepository.getRemixes().size
-        if (numStoredRemixes >= maxRemixes) {
-            adInterface.showRewardAdSuspend {
-                withContext(Dispatchers.IO) {
-                    dataRepository.update(maxRemixCount = numStoredRemixes + Config.MAX_REMIX_INCREMENT_AMOUNT)
-                    remixRepository.add(remix)
-                }
-            }
-        } else {
+    suspend operator fun invoke(
+        remix: RemixEntity,
+        ignoreMaxRemixes: Boolean = false
+    ): Resource<Unit> = withContext(Dispatchers.IO) {
+        if (ignoreMaxRemixes)
             remixRepository.add(remix)
-        }
+        else {
+            val maxRemixes = dataRepository.getData().maxRemixCount
 
-        /**
-         * TODO
-         *  Manage ad not loaded
-         *  manage saving error (return it here)
-         */
-        Resource.Success()
+            // TODO: Too slow?
+            val numStoredRemixes = remixRepository.getRemixes().size
+            if (numStoredRemixes >= maxRemixes) {
+                Resource.Error(code = ERROR_NEEDS_TO_SHOW_AD)
+            } else {
+                remixRepository.add(remix)
+            }
+
+            /**
+             * TODO
+             *  Manage ad not loaded
+             */
+        }
+    }
+
+
+    companion object {
+        const val ERROR_NEEDS_TO_SHOW_AD = 1
     }
 }

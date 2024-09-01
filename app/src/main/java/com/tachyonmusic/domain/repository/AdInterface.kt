@@ -1,10 +1,11 @@
 package com.tachyonmusic.domain.repository
 
-import com.tachyonmusic.presentation.entry.ActivityMain
+import androidx.activity.ComponentActivity
+import com.tachyonmusic.domain.model.RewardAd
 
 interface AdInterface {
-    fun initialize(activity: ActivityMain)
+    fun initialize(activity: ComponentActivity)
     fun release()
-    fun showRewardAd(onUserReward: (Int) -> Unit)
-    suspend fun showRewardAdSuspend(onUserReward: suspend (Int) -> Unit)
+    fun <T> showRewardAd(activity: ComponentActivity, onUserReward: (RewardAd.Type, Int) -> T): T
+    suspend fun <T> showRewardAdSuspend(activity: ComponentActivity, onUserReward: suspend (RewardAd.Type, Int) -> T): T
 }

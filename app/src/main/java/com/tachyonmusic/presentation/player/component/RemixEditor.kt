@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.player.component
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -307,6 +309,7 @@ fun RemixEditor(
             Text("Save")
         }
 
+        val activity = LocalContext.current as? ComponentActivity
         if (openRemixSaveDialog) {
             // TODO: Show error
 
@@ -323,7 +326,7 @@ fun RemixEditor(
                                 openRemixSaveDialog = false
                                 openWatchAdDialog = true
                             } else {
-                                viewModel.saveNewRemix(remixName)
+                                viewModel.saveNewRemix(remixName, activity)
                                 if (remixError == null)
                                     openRemixSaveDialog = false
                             }
@@ -338,7 +341,11 @@ fun RemixEditor(
         if (openWatchAdDialog) {
             Dialog(
                 onDismissRequest = { openWatchAdDialog = false },
-                DialogProperties(dismissOnBackPress = true, dismissOnClickOutside = true, usePlatformDefaultWidth = false)
+                DialogProperties(
+                    dismissOnBackPress = true,
+                    dismissOnClickOutside = true,
+                    usePlatformDefaultWidth = false
+                )
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -358,11 +365,13 @@ fun RemixEditor(
                     Column {
                         Text("Watch one short ad to permanently allow you to save 10 more remixes")
                         Row(
-                            modifier = Modifier.padding(top = Theme.padding.medium).fillMaxWidth(),
+                            modifier = Modifier
+                                .padding(top = Theme.padding.medium)
+                                .fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceAround
                         ) {
                             Button(onClick = {
-                                viewModel.saveNewRemix(remixName)
+                                viewModel.saveNewRemix(remixName, activity)
                                 openWatchAdDialog = false
 
                                 if (remixError != null) {

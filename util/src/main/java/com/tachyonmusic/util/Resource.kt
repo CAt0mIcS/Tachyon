@@ -9,7 +9,8 @@ sealed class Resource<T>(val data: T? = null, val message: UiText? = null) {
     class Error<T>(
         message: UiText? = null,
         data: T? = null,
-        val exception: Throwable? = null
+        val exception: Throwable? = null,
+        val code: Int? = null
     ) : Resource<T>(data, message) {
 
         constructor(res: Error<*>, data: T? = null) : this(res.message, data, res.exception)

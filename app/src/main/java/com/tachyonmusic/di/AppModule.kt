@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.domain.SongMetadataExtractor
+import com.tachyonmusic.data.model.GoogleRewardAd
 import com.tachyonmusic.data.repository.AndroidAdInterface
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
@@ -19,6 +20,7 @@ import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.data.repository.StateRepositoryImpl
+import com.tachyonmusic.domain.model.RewardAd
 import com.tachyonmusic.domain.use_case.DeletePlayback
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
@@ -169,9 +171,8 @@ object AppUseCaseModule {
     @Singleton
     fun provideSaveRemixToDatabaseUseCase(
         remixRepository: RemixRepository,
-        dataRepository: DataRepository,
-        adInterface: AdInterface
-    ) = SaveRemixToDatabase(remixRepository, dataRepository, adInterface)
+        dataRepository: DataRepository
+    ) = SaveRemixToDatabase(remixRepository, dataRepository)
 
     @Provides
     @Singleton
@@ -321,7 +322,9 @@ object AppRepositoryModule {
 
     @Provides
     @Singleton
-    fun provideAdInterface(logger: Logger): AdInterface = AndroidAdInterface(logger)
+    fun provideAdInterface(
+        @ApplicationContext context: Context, logger: Logger
+    ): AdInterface = AndroidAdInterface(logger, GoogleRewardAd(context, logger))
 
     @Provides
     @Singleton
