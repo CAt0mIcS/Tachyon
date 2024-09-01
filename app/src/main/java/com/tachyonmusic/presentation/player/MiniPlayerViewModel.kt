@@ -11,6 +11,7 @@ import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.home.NormalizeCurrentPosition
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import com.tachyonmusic.presentation.player.model.toPlayerEntity
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.delay
@@ -21,6 +22,7 @@ import com.tachyonmusic.util.sec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -33,6 +35,7 @@ import javax.inject.Inject
 class MiniPlayerViewModel @Inject constructor(
     loadArtworkForPlayback: LoadArtworkForPlayback,
     mediaBrowser: MediaBrowserController,
+    uriPermissionRepository: UriPermissionRepository,
     private val normalizeCurrentPosition: NormalizeCurrentPosition,
     dataRepository: DataRepository,
     private val pauseResumePlayback: PauseResumePlayback,
@@ -42,8 +45,8 @@ class MiniPlayerViewModel @Inject constructor(
 
     private val _playback = mediaBrowser.currentPlayback
 
-    val playback = _playback.map {
-        loadArtworkForPlayback(it ?: return@map null).toPlayerEntity()
+    val playback = combine(_playback, uriPermissionRepository.permissions) { playback, _ ->
+        loadArtworkForPlayback(playback ?: return@combine null).toPlayerEntity()
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     val isPlaying = mediaBrowser.isPlaying
