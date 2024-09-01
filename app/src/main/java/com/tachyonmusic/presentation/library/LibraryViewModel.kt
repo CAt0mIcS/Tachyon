@@ -22,6 +22,7 @@ import com.tachyonmusic.presentation.library.model.toLibraryEntity
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.copy
+import com.tachyonmusic.util.findAndSkip
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +36,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -183,8 +185,13 @@ class LibraryViewModel @Inject constructor(
                 if (browser.currentPlayback.value == playback)
                     if ((browser.currentPlaylist.value?.playbacks?.size ?: 0) > 1)
                         browser.seekToNext()
-                    else
+                    else {
                         browser.stop()
+                        val newPlayback = withContext(Dispatchers.IO) {
+                            playbackRepository.getHistory().findAndSkip(skip = 1) { it.isPlayable }
+                        }
+                        browser.updatePlayback { newPlayback }
+                    }
                 deletePlayback(playback)
             }
         }

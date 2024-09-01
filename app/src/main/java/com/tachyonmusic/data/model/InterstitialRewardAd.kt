@@ -6,8 +6,8 @@ import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback
 import com.tachyonmusic.domain.model.RewardAd
 import com.tachyonmusic.logger.domain.Logger
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -16,19 +16,18 @@ class InterstitialRewardAd(
     @ApplicationContext private val context: Context,
     private val log: Logger
 ) : RewardAd {
-    private var interstitialAd: InterstitialAd? = null
-    private var onRewardGrantedCallback: ((RewardAd.Type, Int) -> Unit)? = null
+    private var interstitialAd: RewardedInterstitialAd? = null
 
     override fun load() {
         val adRequest = AdRequest.Builder().build()
 
-        InterstitialAd.load(context, AD_UNIT_ID, adRequest, object : InterstitialAdLoadCallback() {
+        RewardedInterstitialAd.load(context, AD_UNIT_ID, adRequest, object : RewardedInterstitialAdLoadCallback() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
                 log.debug("[TAdInt] Load error: ${adError.message}")
                 interstitialAd = null
             }
 
-            override fun onAdLoaded(ad: InterstitialAd) {
+            override fun onAdLoaded(ad: RewardedInterstitialAd) {
                 log.debug("[TAdInt] Reward ad loaded successfully")
                 interstitialAd = ad
 
@@ -42,16 +41,13 @@ class InterstitialRewardAd(
                         // Called when ad is dismissed.
                         // Set the ad reference to null so you don't show the ad a second time.
                         log.debug("[TAdInt] Ad dismissed fullscreen content.")
-                        onRewardGrantedCallback?.invoke(RewardAd.Type.NewRemixes10, 1)
                         interstitialAd = null
-                        onRewardGrantedCallback = null
                     }
 
                     override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                         // Called when ad fails to show.
                         log.debug("[TAdInt] Ad failed to show fullscreen content.")
                         interstitialAd = null
-                        onRewardGrantedCallback = null
                     }
 
                     override fun onAdImpression() {
@@ -70,17 +66,17 @@ class InterstitialRewardAd(
 
     override fun unload() {
         interstitialAd = null
-        onRewardGrantedCallback = null
         log.debug("[TAdInt] Ad unloaded successfully")
     }
 
     override fun show(activity: ComponentActivity, onRewardGranted: (RewardAd.Type, Int) -> Unit) {
-        interstitialAd?.show(activity)
-        onRewardGrantedCallback = onRewardGranted
+        interstitialAd?.show(activity) { rewardItem ->
+            onRewardGranted(RewardAd.Type.fromString(rewardItem.type), rewardItem.amount)
+        }
     }
 
     companion object {
-        private const val TEST_AD_UNIT_ID = "ca-app-pub-3940256099942544/1033173712"
-        private const val AD_UNIT_ID = "ca-app-pub-7145716621236451/1758456415"
+        private const val TEST_AD_UNIT_ID = "ca-app-pub-3940256099942544/5354046379"
+        private const val AD_UNIT_ID = "ca-app-pub-7145716621236451/5191931827"
     }
 }

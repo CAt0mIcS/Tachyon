@@ -24,6 +24,16 @@ fun <T> MutableList<T>.replaceWith(newValue: T, operator: (T) -> Boolean): List<
     return this
 }
 
+inline fun <T> Iterable<T>.findAndSkip(skip: Int = 0, predicate: (T) -> Boolean): T? {
+    var index = 0
+    for (element in this) {
+        if (predicate(element) && index++ == skip)
+            return element
+    }
+
+    return null
+}
+
 fun <E> Collection<E>.indexOfOrNull(element: E): Int? {
     val i = indexOf(element)
     return if (i == -1) null else i
