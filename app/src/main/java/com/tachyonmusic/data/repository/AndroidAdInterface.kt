@@ -25,7 +25,7 @@ class AndroidAdInterface(
     private val log: Logger
 ) : AdInterface {
     private var rewardedAd: RewardedAd? = null
-    private lateinit var activity: ActivityMain // TODO: Get out of here
+    private var activity: ActivityMain? = null // TODO: Get out of here
 
     private var adLoadHandler: Job? = null
     private var initialized = false
@@ -44,8 +44,12 @@ class AndroidAdInterface(
         }
     }
 
+    override fun release() {
+        this.activity = null
+    }
+
     override fun showRewardAd(onUserReward: (Int) -> Unit) {
-        rewardedAd?.show(activity) { rewardItem ->
+        rewardedAd?.show(activity ?: return) { rewardItem ->
             onUserReward(rewardItem.amount)
         }
         restartLoadHandler()
@@ -54,7 +58,7 @@ class AndroidAdInterface(
     override suspend fun showRewardAdSuspend(onUserReward: suspend (Int) -> Unit) {
         val pair = runOnUiThread {
             suspendCoroutine { cont ->
-                rewardedAd?.show(activity) { rewardItem ->
+                rewardedAd?.show(activity ?: return@suspendCoroutine) { rewardItem ->
                     cont.resume(onUserReward to rewardItem.amount)
                 }
             }
@@ -68,7 +72,7 @@ class AndroidAdInterface(
     private fun loadRewardAdInternal() {
         val adRequest = AdRequest.Builder().build()
         RewardedAd.load(
-            activity,
+            activity ?: return,
             "ca-app-pub-7145716621236451~4657802755",
             adRequest,
             object : RewardedAdLoadCallback() {
@@ -116,7 +120,7 @@ class AndroidAdInterface(
 
     private fun restartLoadHandler() {
         adLoadHandler?.cancel()
-        adLoadHandler = activity.lifecycleScope.launch {
+        adLoadHandler = activity?.lifecycleScope?.launch {
             while (isActive) {
                 loadRewardAdInternal()
                 delay(60.min) // Ads time out after 60 minutes

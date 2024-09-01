@@ -47,7 +47,7 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        adInterface.initialize(this)
+        adInterface.initialize(this) // TODO: Memory leak?
 
         // Initialize the Cast context. This is required so that the media route button can be
         // created in the AppBar
@@ -75,6 +75,10 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
             }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        adInterface.release()
+    }
 
     override fun onConnected() {
         setupUi()
