@@ -5,6 +5,7 @@ import android.content.Context
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.model.GoogleRewardAd
+import com.tachyonmusic.data.model.InterstitialRewardAd
 import com.tachyonmusic.data.repository.AndroidAdInterface
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
@@ -324,7 +325,7 @@ object AppRepositoryModule {
     @Singleton
     fun provideAdInterface(
         @ApplicationContext context: Context, logger: Logger
-    ): AdInterface = AndroidAdInterface(logger, GoogleRewardAd(context, logger))
+    ): AdInterface = AndroidAdInterface(logger, InterstitialRewardAd(context, logger))
 
     @Provides
     @Singleton

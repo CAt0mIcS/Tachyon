@@ -195,7 +195,7 @@ class RemixEditorViewModel @Inject constructor(
                             // TODO: Some way to wait for predefined playlists repository to update
                             //  playPlayback is not working because new remix is not in predefined playlists yet
                             while (predefinedPlaylistsRepository.remixPlaylist.value.size <= sizeBefore) {
-                                delay(100.ms)
+                                delay(1000.ms)
                             }
 
                             playPlayback(

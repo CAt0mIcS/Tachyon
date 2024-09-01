@@ -26,45 +26,45 @@ class GoogleRewardAd(
             adRequest,
             object : RewardedAdLoadCallback() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    log.warning("[TAdRew] Error " + adError.message)
+                    log.warning("[TAdRew] Load Error: " + adError.message)
                     rewardedAd = null
                 }
 
                 override fun onAdLoaded(ad: RewardedAd) {
                     log.debug("[TAdRew] Reward ad loaded successfully")
                     rewardedAd = ad
+
+                    rewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+                        override fun onAdClicked() {
+                            // Called when a click is recorded for an ad.
+                            log.debug("[TAdRew] Ad was clicked.")
+                        }
+
+                        override fun onAdDismissedFullScreenContent() {
+                            // Called when ad is dismissed.
+                            // Set the ad reference to null so you don't show the ad a second time.
+                            log.debug("[TAdRew] Ad dismissed fullscreen content.")
+                            rewardedAd = null
+                        }
+
+                        override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                            // Called when ad fails to show.
+                            log.debug("[TAdRew] Ad failed to show fullscreen content.")
+                            rewardedAd = null
+                        }
+
+                        override fun onAdImpression() {
+                            // Called when an impression is recorded for an ad.
+                            log.debug("[TAdRew] Ad recorded an impression.")
+                        }
+
+                        override fun onAdShowedFullScreenContent() {
+                            // Called when ad is shown.
+                            log.debug("[TAdRew] Ad showed fullscreen content.")
+                        }
+                    }
                 }
             })
-
-        rewardedAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdClicked() {
-                // Called when a click is recorded for an ad.
-                log.debug("[TAdRew] Ad was clicked.")
-            }
-
-            override fun onAdDismissedFullScreenContent() {
-                // Called when ad is dismissed.
-                // Set the ad reference to null so you don't show the ad a second time.
-                log.debug("[TAdRew] Ad dismissed fullscreen content.")
-                rewardedAd = null
-            }
-
-            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                // Called when ad fails to show.
-                log.debug("[TAdRew] Ad failed to show fullscreen content.")
-                rewardedAd = null
-            }
-
-            override fun onAdImpression() {
-                // Called when an impression is recorded for an ad.
-                log.debug("[TAdRew] Ad recorded an impression.")
-            }
-
-            override fun onAdShowedFullScreenContent() {
-                // Called when ad is shown.
-                log.debug("[TAdRew] Ad showed fullscreen content.")
-            }
-        }
     }
 
     override fun unload() {

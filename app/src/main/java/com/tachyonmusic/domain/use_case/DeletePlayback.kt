@@ -23,15 +23,15 @@ class DeletePlayback(
             return@withContext
         assert(playback.isRemix)
 
-        remixRepository.remove(playback.mediaId)
-
+        historyRepository.removeHierarchical(playback.mediaId)
         val playlists = playbackRepository.getPlaylists()
         for (i in playlists.indices) {
             playlists[i].apply {
                 removePlaybackFromPlaylist(playback, this)
             }
         }
-        historyRepository.removeHierarchical(playback.mediaId)
+
+        remixRepository.remove(playback.mediaId)
     }
 
     @JvmName("invokePlaylist")
