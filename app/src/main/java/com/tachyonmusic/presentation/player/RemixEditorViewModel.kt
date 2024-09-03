@@ -28,15 +28,15 @@ import com.tachyonmusic.util.Config
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
-import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -179,43 +179,45 @@ class RemixEditorViewModel @Inject constructor(
 
     fun saveNewRemix(name: String, activity: ComponentActivity?) {
         viewModelScope.launch {
-            val sizeBefore = predefinedPlaylistsRepository.remixPlaylist.value.size
             val mediaPosBefore = mediaBrowser.currentPosition
             val currentPlayback = mediaBrowser.currentPlayback.value
-            val createRes = createRemix(name, currentPlayback)
+            val wasPlayingBefore = mediaBrowser.isPlaying.value
 
-            if (createRes is Resource.Success) {
-                _remixError.update { null }
-                withContext(Dispatchers.IO) {
-                    val dbRes = saveRemix(createRes.data!!, ignoreMaxRemixes = activity == null)
+            withContext(Dispatchers.IO) {
+                val createRes = createRemix(name, currentPlayback)
 
+                if (createRes is Resource.Success) {
+                    _remixError.update { null }
+
+                    val dbRes = saveRemix(
+                        createRes.data!!,
+                        settings.value.playNewlyCreatedRemix,
+                        ignoreMaxRemixes = activity == null
+                    )
                     if (dbRes is Resource.Success && settings.value.playNewlyCreatedRemix) {
                         runOnUiThread {
-                            pauseResumePlayback(PauseResumePlayback.Action.Pause)
-                            // TODO: Some way to wait for predefined playlists repository to update
-                            //  playPlayback is not working because new remix is not in predefined playlists yet
-                            while (predefinedPlaylistsRepository.remixPlaylist.value.size <= sizeBefore) {
-                                delay(1000.ms)
-                            }
-
                             playPlayback(
-                                createRes.data!!.toPlayback(currentPlayback!!),
+                                createRes.data?.toPlayback(currentPlayback),
                                 mediaPosBefore
                             )
                         }
-                    } else if (dbRes is Resource.Error && dbRes.code == SaveRemixToDatabase.ERROR_NEEDS_TO_SHOW_AD) {
-                        runOnUiThread { pauseResumePlayback(PauseResumePlayback.Action.Pause) }
-                        adInterface.showRewardAdSuspend(activity!!) { _, amount ->
-                            val numStoredRemixes = dataRepository.getData().maxRemixCount
-                            dataRepository.update(maxRemixCount = numStoredRemixes + amount)
-                            saveNewRemix(name, activity)
+                    } else if (dbRes is Resource.Error) {
+                        if (dbRes.code == SaveRemixToDatabase.ERROR_NEEDS_TO_SHOW_AD) {
+                            runOnUiThread { pauseResumePlayback(PauseResumePlayback.Action.Pause) }
+                            adInterface.showRewardAdSuspend(activity!!) { _, amount ->
+                                val numStoredRemixes = remixRepository.getRemixes().size
+                                dataRepository.update(maxRemixCount = numStoredRemixes + amount)
+                                saveNewRemix(name, activity)
+                            }
+                            if (wasPlayingBefore && !settings.value.playNewlyCreatedRemix)
+                                runOnUiThread { pauseResumePlayback(PauseResumePlayback.Action.Resume) }
+                        } else {
+                            _remixError.update { dbRes.message }
                         }
-                        runOnUiThread { pauseResumePlayback(PauseResumePlayback.Action.Resume) }
-                    } else
-                        _remixError.update { dbRes.message }
-                }
-            } else
-                _remixError.update { createRes.message }
+                    }
+                } else
+                    _remixError.update { createRes.message }
+            }
         }
     }
 

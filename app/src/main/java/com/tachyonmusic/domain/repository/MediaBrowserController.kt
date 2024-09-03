@@ -66,11 +66,10 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     fun seekToNext()
     fun seekToPrevious()
 
+    suspend fun updatePredefinedPlaylist()
+
     interface EventListener {
         fun onConnected() {}
-
-        // TODO: REmove
         fun onAudioSessionIdChanged(audioSessionId: Int) {}
-        fun onMediaItemTransition(playback: Playback?) {}
     }
 }

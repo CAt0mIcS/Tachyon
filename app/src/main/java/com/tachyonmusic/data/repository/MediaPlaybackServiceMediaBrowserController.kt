@@ -33,6 +33,7 @@ import com.tachyonmusic.media.util.fromMedia
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
+import com.tachyonmusic.playback_layers.isPredefined
 import com.tachyonmusic.playback_layers.predefinedRemixPlaylistMediaId
 import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.Duration
@@ -52,11 +53,11 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @UnstableApi
 class MediaPlaybackServiceMediaBrowserController(
     private val getPlaylistForPlayback: GetPlaylistForPlayback,
-    private val predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
     private val log: Logger,
     private val playbackRepository: PlaybackRepository
 ) : MediaBrowserController, Player.Listener,
@@ -89,31 +90,6 @@ class MediaPlaybackServiceMediaBrowserController(
                 it.onConnected()
             }
         }
-
-        /**
-         * Make sure that if the predefined playlists change the playlist in the player gets
-         * updated, too. For example when changing the combine songs and remixes in playlist
-         * setting
-         */
-        predefinedPlaylistsRepository.songPlaylist.onEach {
-            if (!canPrepare && currentPlaylist.value?.mediaId == predefinedSongPlaylistMediaId) {
-                log.info("Updating player with new predefined song playlist during playback")
-                val prevPosition = currentPosition
-                val prevPb = currentPlayback.value ?: return@onEach
-                setPlaylist(getPlaylistForPlayback(prevPb) ?: return@onEach)
-                seekTo(prevPb.mediaId, prevPosition)
-            }
-        }.launchIn(owner.lifecycleScope)
-
-        predefinedPlaylistsRepository.remixPlaylist.onEach {
-            if (!canPrepare && currentPlaylist.value?.mediaId == predefinedRemixPlaylistMediaId) {
-                log.info("Updating player with new predefined remix playlist during playback")
-                val prevPosition = currentPosition
-                val prevPb = currentPlayback.value ?: return@onEach
-                setPlaylist(getPlaylistForPlayback(prevPb) ?: return@onEach)
-                seekTo(prevPb.mediaId, prevPosition)
-            }
-        }.launchIn(owner.lifecycleScope)
     }
 
     override fun onDestroy(owner: LifecycleOwner) {
@@ -230,6 +206,19 @@ class MediaPlaybackServiceMediaBrowserController(
     override fun seekToPrevious() {
         browser?.seekToPrevious()
     }
+
+    override suspend fun updatePredefinedPlaylist() =
+        withContext(Dispatchers.Main) {
+            if (!canPrepare && currentPlaylist.value?.mediaId?.isPredefined == true) {
+                log.info("Updating player with new predefined song or remix playlist during playback")
+                val prevPosition = currentPosition
+                val prevPb = currentPlayback.value ?: return@withContext
+                val playlist = withContext(Dispatchers.IO) { getPlaylistForPlayback(prevPb) }
+                    ?: return@withContext
+                setPlaylist(playlist)
+                seekTo(prevPb.mediaId, prevPosition)
+            }
+        }
 
     override fun onPlaybackStateChanged(playbackState: Int) {
         if (playbackState == Player.STATE_READY) {

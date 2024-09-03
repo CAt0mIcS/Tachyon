@@ -10,4 +10,7 @@ val predefinedSongPlaylistMediaId =
     MediaId.ofLocalPlaylist("com.tachyonmusic.PREDEFINED_SONGS_PLAYLIST")
 
 val Playlist.isPredefined: Boolean
-    get() = mediaId == predefinedSongPlaylistMediaId || mediaId == predefinedRemixPlaylistMediaId
+    get() = mediaId.isPredefined
+
+val MediaId.isPredefined: Boolean
+    get() = this == predefinedSongPlaylistMediaId || this == predefinedRemixPlaylistMediaId

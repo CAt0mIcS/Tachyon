@@ -4,12 +4,11 @@ import android.app.Application
 import android.content.Context
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.data.model.GoogleRewardAd
 import com.tachyonmusic.data.model.InterstitialRewardAd
 import com.tachyonmusic.data.repository.AndroidAdInterface
 import com.tachyonmusic.data.repository.FileRepositoryImpl
 import com.tachyonmusic.data.repository.MediaPlaybackServiceMediaBrowserController
-import com.tachyonmusic.domain.repository.StateRepository
+import com.tachyonmusic.data.repository.StateRepositoryImpl
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.HistoryRepository
@@ -20,8 +19,7 @@ import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
-import com.tachyonmusic.data.repository.StateRepositoryImpl
-import com.tachyonmusic.domain.model.RewardAd
+import com.tachyonmusic.domain.repository.StateRepository
 import com.tachyonmusic.domain.use_case.DeletePlayback
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
@@ -30,7 +28,6 @@ import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.home.NormalizeCurrentPosition
-import com.tachyonmusic.domain.use_case.home.UnloadArtworks
 import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
@@ -145,13 +142,6 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideUnloadArtworksUseCase(
-        songRepository: SongRepository,
-        assignArtworkToPlayback: AssignArtworkToPlayback
-    ) = UnloadArtworks(songRepository, assignArtworkToPlayback)
-
-    @Provides
-    @Singleton
     fun provideLoadArtworkForPlaybackUseCase(
         metadataExtractor: SongMetadataExtractor,
         logger: Logger
@@ -172,8 +162,15 @@ object AppUseCaseModule {
     @Singleton
     fun provideSaveRemixToDatabaseUseCase(
         remixRepository: RemixRepository,
-        dataRepository: DataRepository
-    ) = SaveRemixToDatabase(remixRepository, dataRepository)
+        dataRepository: DataRepository,
+        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
+        mediaBrowserController: MediaBrowserController
+    ) = SaveRemixToDatabase(
+        remixRepository,
+        dataRepository,
+        predefinedPlaylistsRepository,
+        mediaBrowserController
+    )
 
     @Provides
     @Singleton
@@ -224,8 +221,15 @@ object AppUseCaseModule {
     @Singleton
     fun provideAddSongToExcludedSongsUseCase(
         settingsRepository: SettingsRepository,
-        songRepository: SongRepository
-    ) = AddSongToExcludedSongs(settingsRepository, songRepository)
+        songRepository: SongRepository,
+        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
+        mediaBrowserController: MediaBrowserController
+    ) = AddSongToExcludedSongs(
+        settingsRepository,
+        songRepository,
+        predefinedPlaylistsRepository,
+        mediaBrowserController
+    )
 
     @Provides
     @Singleton
@@ -234,13 +238,17 @@ object AppUseCaseModule {
         playbackRepository: PlaybackRepository,
         playlistRepository: PlaylistRepository,
         removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
-        historyRepository: HistoryRepository
+        historyRepository: HistoryRepository,
+        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
+        mediaBrowserController: MediaBrowserController
     ) = DeletePlayback(
         remixRepository,
         playbackRepository,
         playlistRepository,
         removePlaybackFromPlaylist,
-        historyRepository
+        historyRepository,
+        predefinedPlaylistsRepository,
+        mediaBrowserController
     )
 
 
@@ -310,13 +318,11 @@ object AppRepositoryModule {
     @Singleton
     fun provideMediaBrowserController(
         getPlaylistForPlayback: GetPlaylistForPlayback,
-        predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
         logger: Logger,
         playbackRepository: PlaybackRepository
     ): MediaBrowserController =
         MediaPlaybackServiceMediaBrowserController(
             getPlaylistForPlayback,
-            predefinedPlaylistsRepository,
             logger,
             playbackRepository
         )
