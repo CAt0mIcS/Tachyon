@@ -164,12 +164,14 @@ object AppUseCaseModule {
         remixRepository: RemixRepository,
         dataRepository: DataRepository,
         predefinedPlaylistsRepository: PredefinedPlaylistsRepository,
-        mediaBrowserController: MediaBrowserController
+        mediaBrowserController: MediaBrowserController,
+        logger: Logger
     ) = SaveRemixToDatabase(
         remixRepository,
         dataRepository,
         predefinedPlaylistsRepository,
-        mediaBrowserController
+        mediaBrowserController,
+        logger
     )
 
     @Provides

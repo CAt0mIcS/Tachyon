@@ -34,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,12 +48,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.app.R
+import com.tachyonmusic.domain.use_case.player.SaveRemixToDatabase
 import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.player.RemixEditorViewModel
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
+import kotlinx.coroutines.launch
 
 @Composable
 fun RemixEditor(
@@ -60,10 +63,14 @@ fun RemixEditor(
     viewModel: RemixEditorViewModel = hiltViewModel()
 ) {
     val timingData = viewModel.timingData
+    val scope = rememberCoroutineScope()
     val error by viewModel.remixError.collectAsState()
 
-    if (error != null)
-        ErrorDialog(title = stringResource(R.string.warning), subtitle = error.asString())
+    if (error != null && error?.code == -1)
+        ErrorDialog(
+            title = stringResource(R.string.warning),
+            subtitle = error?.message?.asString() ?: "Unknown"
+        )
 
     Column(modifier = modifier) {
         val duration by viewModel.duration.collectAsState()
@@ -293,7 +300,6 @@ fun RemixEditor(
         }
 
         var openRemixSaveDialog by remember { mutableStateOf(false) }
-        var openWatchAdDialog by remember { mutableStateOf(false) }
         val currentName by viewModel.currentRemixName.collectAsState()
         var remixName by rememberSaveable { mutableStateOf(currentName ?: "") }
         val remixError by viewModel.remixError.collectAsState()
@@ -322,14 +328,11 @@ fun RemixEditor(
                         onValueChange = { remixName = it })
                     Button(
                         onClick = {
-                            if (viewModel.requiresRemixCountIncrease()) {
-                                openRemixSaveDialog = false
-                                openWatchAdDialog = true
-                            } else {
-                                viewModel.saveNewRemix(remixName, activity)
-                                if (remixError == null)
-                                    openRemixSaveDialog = false
-                            }
+                            viewModel.saveNewRemix(
+                                remixName,
+                                ignoreMaxRemixCount = activity == null
+                            )
+                            openRemixSaveDialog = false
                         }
                     ) {
                         Text("Save")
@@ -338,9 +341,9 @@ fun RemixEditor(
             }
         }
 
-        if (openWatchAdDialog) {
+        if (remixError?.code == SaveRemixToDatabase.ERROR_NEEDS_TO_SHOW_AD) {
             Dialog(
-                onDismissRequest = { openWatchAdDialog = false },
+                onDismissRequest = { viewModel.clearRemixError() },
                 DialogProperties(
                     dismissOnBackPress = true,
                     dismissOnClickOutside = true,
@@ -363,7 +366,7 @@ fun RemixEditor(
                         )
                 ) {
                     Column {
-                        Text("Watch one short ad to permanently allow you to save 10 more remixes")
+                        Text("Watch one short ad to permanently allow you to save 3 more remixes")
                         Row(
                             modifier = Modifier
                                 .padding(top = Theme.padding.medium)
@@ -371,18 +374,69 @@ fun RemixEditor(
                             horizontalArrangement = Arrangement.SpaceAround
                         ) {
                             Button(onClick = {
-                                viewModel.saveNewRemix(remixName, activity)
-                                openWatchAdDialog = false
-
-                                if (remixError != null) {
-                                    openRemixSaveDialog =
-                                        true // Display error message here in the name text
+                                scope.launch {
+                                    viewModel.playAd(activity)
+                                    viewModel.saveNewRemix(
+                                        remixName,
+                                        ignoreMaxRemixCount = activity == null
+                                    )
                                 }
                             }) {
                                 Text("Watch Ad")
                             }
 
-                            Button(onClick = { openWatchAdDialog = false }) {
+                            Button(onClick = { viewModel.clearRemixError() }) {
+                                Text("Cancel")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        if (remixError?.code == SaveRemixToDatabase.ERROR_REMIX_ALREADY_EXISTS) {
+            Dialog(
+                onDismissRequest = { viewModel.clearRemixError() },
+                DialogProperties(
+                    dismissOnBackPress = true,
+                    dismissOnClickOutside = true,
+                    usePlatformDefaultWidth = false
+                )
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxWidth(.8f)
+                        .clip(Theme.shapes.large)
+                        .background(MaterialTheme.colorScheme.background, Theme.shapes.large)
+                        .border(
+                            BorderStroke(2.dp, MaterialTheme.colorScheme.surfaceContainer),
+                            Theme.shapes.large
+                        )
+                        .padding(
+                            horizontal = Theme.padding.large,
+                            vertical = Theme.padding.medium
+                        )
+                ) {
+                    Column {
+                        Text("Remix with name $remixName already exists")
+                        Row(
+                            modifier = Modifier
+                                .padding(top = Theme.padding.medium)
+                                .fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceAround
+                        ) {
+                            Button(onClick = {
+                                viewModel.saveNewRemix(
+                                    remixName,
+                                    replaceExisting = true
+                                )
+                            }) {
+                                Text("Replace")
+                            }
+
+                            Button(onClick = { viewModel.clearRemixError() }) {
                                 Text("Cancel")
                             }
                         }

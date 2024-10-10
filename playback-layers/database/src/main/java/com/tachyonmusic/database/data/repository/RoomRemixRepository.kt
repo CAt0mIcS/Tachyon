@@ -26,6 +26,15 @@ class RoomRemixRepository(
         }
     }
 
+    override suspend fun addOrReplace(newRemix: RemixEntity): Resource<Unit> {
+        return try {
+            dao.insertOrReplace(newRemix)
+            Resource.Success()
+        } catch (e: SQLiteException) {
+            Resource.Error(UiText.build(e.localizedMessage ?: R.string.database_insert_conflict))
+        }
+    }
+
     override suspend fun addAll(remixes: List<RemixEntity>): Resource<Unit> {
         return try {
             dao.addAll(remixes)

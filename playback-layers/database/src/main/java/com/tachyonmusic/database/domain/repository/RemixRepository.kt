@@ -11,6 +11,7 @@ interface RemixRepository {
 
     suspend fun getRemixes(): List<RemixEntity>
     suspend fun add(remix: RemixEntity): Resource<Unit>
+    suspend fun addOrReplace(newRemix: RemixEntity): Resource<Unit>
     suspend fun addAll(remixes: List<RemixEntity>): Resource<Unit>
 
     suspend fun remove(mediaId: MediaId)

@@ -21,6 +21,7 @@ import com.tachyonmusic.domain.use_case.player.CreateRemix
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.SaveRemixToDatabase
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.toPlayback
 import com.tachyonmusic.presentation.util.update
@@ -37,6 +38,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -47,6 +49,11 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
+data class RemixError(
+    val message: UiText?,
+    val code: Int
+)
 
 
 @HiltViewModel
@@ -61,9 +68,10 @@ class RemixEditorViewModel @Inject constructor(
     private val saveRemix: SaveRemixToDatabase,
     private val adInterface: AdInterface,
     private val dataRepository: DataRepository,
-    private val remixRepository: RemixRepository
+    private val remixRepository: RemixRepository,
+    private val log: Logger
 ) : ViewModel() {
-    private val _remixError = MutableStateFlow<UiText?>(null)
+    private val _remixError = MutableStateFlow<RemixError?>(null)
     val remixError = _remixError.asStateFlow()
 
     val duration = mediaBrowser.currentPlayback.map {
@@ -73,6 +81,11 @@ class RemixEditorViewModel @Inject constructor(
     val currentRemixName = mediaBrowser.currentPlayback.map {
         if (it?.isRemix == true) it.name!! else null
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+
+    val needsToShowAd =
+        combine(dataRepository.observe(), remixRepository.observe()) { data, remixes ->
+            remixes.size >= data.maxRemixCount
+        }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), false)
 
     val timingData = mutableStateListOf<TimingData>()
     var currentIndex by mutableIntStateOf(0)
@@ -177,11 +190,10 @@ class RemixEditorViewModel @Inject constructor(
         }
     }
 
-    fun saveNewRemix(name: String, activity: ComponentActivity?) {
+    fun saveNewRemix(name: String, ignoreMaxRemixCount: Boolean = false, replaceExisting: Boolean = false) {
         viewModelScope.launch {
             val mediaPosBefore = mediaBrowser.currentPosition
             val currentPlayback = mediaBrowser.currentPlayback.value
-            val wasPlayingBefore = mediaBrowser.isPlaying.value
 
             withContext(Dispatchers.IO) {
                 val createRes = createRemix(name, currentPlayback)
@@ -192,7 +204,8 @@ class RemixEditorViewModel @Inject constructor(
                     val dbRes = saveRemix(
                         createRes.data!!,
                         settings.value.playNewlyCreatedRemix,
-                        ignoreMaxRemixes = activity == null
+                        ignoreMaxRemixCount,
+                        replaceExisting
                     )
                     if (dbRes is Resource.Success && settings.value.playNewlyCreatedRemix) {
                         runOnUiThread {
@@ -202,21 +215,10 @@ class RemixEditorViewModel @Inject constructor(
                             )
                         }
                     } else if (dbRes is Resource.Error) {
-                        if (dbRes.code == SaveRemixToDatabase.ERROR_NEEDS_TO_SHOW_AD) {
-                            runOnUiThread { pauseResumePlayback(PauseResumePlayback.Action.Pause) }
-                            adInterface.showRewardAdSuspend(activity!!) { _, amount ->
-                                val numStoredRemixes = remixRepository.getRemixes().size
-                                dataRepository.update(maxRemixCount = numStoredRemixes + amount)
-                                saveNewRemix(name, activity)
-                            }
-                            if (wasPlayingBefore && !settings.value.playNewlyCreatedRemix)
-                                runOnUiThread { pauseResumePlayback(PauseResumePlayback.Action.Resume) }
-                        } else {
-                            _remixError.update { dbRes.message }
-                        }
+                        _remixError.update { RemixError(dbRes.message, dbRes.code ?: -1) }
                     }
                 } else
-                    _remixError.update { createRes.message }
+                    _remixError.update { RemixError(createRes.message, -1) }
             }
         }
     }
@@ -229,13 +231,21 @@ class RemixEditorViewModel @Inject constructor(
         return true
     }
 
-    // TODO: Optimize?
-    fun requiresRemixCountIncrease(): Boolean {
-        return runBlocking {
-            val currentMax = dataRepository.getData().maxRemixCount
-            val remixCount = remixRepository.getRemixes().size
+    fun clearRemixError() {
+        _remixError.update { null }
+    }
 
-            remixCount >= currentMax
+    suspend fun playAd(activity: ComponentActivity?) = withContext(Dispatchers.Main) {
+        val wasPlaying = mediaBrowser.isPlaying.value
+        pauseResumePlayback(PauseResumePlayback.Action.Pause)
+
+        adInterface.showRewardAdSuspend(activity!!) { _, amount ->
+            val numStoredRemixes = remixRepository.getRemixes().size
+            dataRepository.update(maxRemixCount = numStoredRemixes + amount)
+            log.info("Reward of $amount new remixes granted")
         }
+
+        if (wasPlaying && !settings.value.playNewlyCreatedRemix)
+            runOnUiThread { pauseResumePlayback(PauseResumePlayback.Action.Resume) }
     }
 }

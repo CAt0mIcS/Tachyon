@@ -24,6 +24,9 @@ interface RemixDao {
     @Throws(SQLiteException::class)
     suspend fun add(remix: RemixEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrReplace(newRemix: RemixEntity)
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     @Throws(SQLiteException::class)
     suspend fun addAll(remixes: List<RemixEntity>)
