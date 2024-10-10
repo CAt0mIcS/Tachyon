@@ -11,6 +11,7 @@ import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import com.tachyonmusic.presentation.theme.ComposeSettings
 import com.tachyonmusic.util.domain.EventChannel
 import com.tachyonmusic.util.sec
@@ -34,6 +35,7 @@ class MainViewModel @Inject constructor(
 
     eventChannel: EventChannel,
     settingsRepository: SettingsRepository,
+    uriPermissionRepository: UriPermissionRepository,
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
 
@@ -68,7 +70,10 @@ class MainViewModel @Inject constructor(
             cachedMusicDirectories = settingsRepository.getSettings().musicDirectories
             updateSettingsDatabase()
 
-            settingsRepository.observe().onEach { settings ->
+            combine(
+                settingsRepository.observe(),
+                uriPermissionRepository.permissions
+            ) { settings, _ ->
                 val loadingTaskRunning =
                     stateRepository.isLoadingTaskRunning(STATE_LOADING_TASK_STARTUP)
                 if (loadingTaskRunning ||
@@ -82,7 +87,13 @@ class MainViewModel @Inject constructor(
                         stateRepository.finishLoadingTask(STATE_LOADING_TASK_STARTUP)
                 }
 
-                _composeSettings.update { ComposeSettings(settings.animateText, settings.dynamicColors, settings.audioUpdateInterval) }
+                _composeSettings.update {
+                    ComposeSettings(
+                        settings.animateText,
+                        settings.dynamicColors,
+                        settings.audioUpdateInterval
+                    )
+                }
             }.collect()
         }
     }

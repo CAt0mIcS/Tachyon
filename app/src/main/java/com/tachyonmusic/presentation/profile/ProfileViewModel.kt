@@ -132,7 +132,8 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             stateRepository.queueLoadingTask("ProfileViewModel::importDatabase")
             if (importDatabase(uri) != null) { // TODO: Display required music paths
-                updateSongDatabase(settingsRepository.getSettings())
+//                updateSongDatabase(settingsRepository.getSettings())
+                // Done in [MainViewModel::init]
             }
             stateRepository.finishLoadingTask("ProfileViewModel::importDatabase")
         }
