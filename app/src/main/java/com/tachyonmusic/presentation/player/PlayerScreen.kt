@@ -60,7 +60,6 @@ import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
 import com.tachyonmusic.presentation.player.component.RemixEditor
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.asString
-import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.toReadableString
@@ -395,7 +394,6 @@ fun PlayerScreen(
                             end = Theme.padding.medium,
                             bottom = Theme.padding.extraSmall
                         )
-                        .isEnabled(playback.isPlayable)
                 ) {
                     SwipeDelete(
                         shape = Theme.shapes.medium,
@@ -416,7 +414,8 @@ fun PlayerScreen(
                                     playback,
                                     PlaybackLocation.CUSTOM_PLAYLIST
                                 )
-                            }
+                            },
+                            isEnabled = playback.isPlayable
                         )
                     }
                 }

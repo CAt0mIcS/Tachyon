@@ -99,8 +99,8 @@ private fun Playback.getComparedString(type: SortType) =
 
 
 private fun Playlist.getComparedString(type: SortType) = when (type) {
-    SortType.TitleAlphabetically -> name + playbacks[0].title + playbacks[0].artist
-    SortType.ArtistAlphabetically -> playbacks[0].artist + name + playbacks[0].title
-    SortType.SubtitleAlphabetically -> playbacks[0].title + name + playbacks[0].artist
+    SortType.TitleAlphabetically -> name + playbacks.firstOrNull()?.title + playbacks.firstOrNull()?.artist
+    SortType.ArtistAlphabetically -> playbacks.firstOrNull()?.artist + name + playbacks.firstOrNull()?.title
+    SortType.SubtitleAlphabetically -> playbacks.firstOrNull()?.title + name + playbacks.firstOrNull()?.artist
     SortType.DateCreatedOrEdited -> timestampCreatedAddedEdited.toString()
 }

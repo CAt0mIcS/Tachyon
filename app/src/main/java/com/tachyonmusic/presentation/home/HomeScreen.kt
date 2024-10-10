@@ -46,7 +46,6 @@ import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.home.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.home.model.HomeEntity
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import kotlinx.coroutines.launch
@@ -160,14 +159,16 @@ private fun LazyListScope.playbacksView(
                     if (playback.isPlayable)
                         onClick(playback)
                 }
-                .isEnabled(playback.isPlayable)
                 .shadow(Theme.shadow.small, shape = Theme.shapes.medium)
                 .clip(Theme.shapes.medium)
                 .border(
                     BorderStroke(1.dp, MaterialTheme.colorScheme.surfaceContainerHighest),
                     shape = Theme.shapes.medium
                 )
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh, Theme.shapes.medium),
+                .background(
+                    if (playback.isPlayable) MaterialTheme.colorScheme.surfaceContainerHigh else MaterialTheme.colorScheme.surfaceContainerLowest,
+                    Theme.shapes.medium
+                ),
             artwork = playback.artwork ?: PlaceholderArtwork,
         )
     }

@@ -31,6 +31,7 @@ fun HorizontalPlaybackView(
     displaySubtitle: String,
     artwork: Artwork,
     modifier: Modifier = Modifier,
+    isEnabled: Boolean = true,
     dropDownMenuExpanded: Boolean = false,
     onOptionsMenuClicked: () -> Unit = {},
     dropDownMenuContent: (@Composable ColumnScope.() -> Unit)? = null,
@@ -39,7 +40,10 @@ fun HorizontalPlaybackView(
     Row(
         modifier = modifier
             .shadow(Theme.shadow.extraSmall, shape = Theme.shapes.medium)
-            .background(MaterialTheme.colorScheme.surfaceContainer, shape = Theme.shapes.medium)
+            .background(
+                if (isEnabled) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainerLowest,
+                shape = Theme.shapes.medium
+            )
 //            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
             .clickable { onClick() },
         horizontalArrangement = Arrangement.SpaceBetween

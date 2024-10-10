@@ -43,7 +43,6 @@ import com.tachyonmusic.presentation.library.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.AdmobBanner
 import com.tachyonmusic.presentation.util.asString
-import com.tachyonmusic.presentation.util.isEnabled
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.sec
@@ -239,8 +238,8 @@ object LibraryScreen :
                         playback.displayTitle,
                         playback.displaySubtitle,
                         playback.artwork ?: PlaceholderArtwork,
-                        modifier = Modifier.isEnabled(playback.isPlayable),
-                        showDropDownMenu,
+                        isEnabled = playback.isPlayable,
+                        dropDownMenuExpanded = showDropDownMenu,
                         onOptionsMenuClicked = {
                             showDropDownMenu = !showDropDownMenu
                         },
@@ -263,9 +262,11 @@ object LibraryScreen :
                             )
                         },
                         onClick = {
-                            viewModel.onItemClicked(playback)
-                            scope.launch {
-                                draggable.animateTo(SwipingStates.EXPANDED)
+                            if (playback.isPlayable) {
+                                viewModel.onItemClicked(playback)
+                                scope.launch {
+                                    draggable.animateTo(SwipingStates.EXPANDED)
+                                }
                             }
                         })
                 }

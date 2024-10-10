@@ -62,7 +62,6 @@ import com.tachyonmusic.presentation.NavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.util.isEnabled
 import kotlinx.coroutines.launch
 
 object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
@@ -209,10 +208,10 @@ object PlaybackSearchScreen : NavigationItem("playback_search/{playbackType}") {
                                 searchResult.playback.displayTitle,
                                 searchResult.playback.displaySubtitle,
                                 modifier = Modifier
-                                    .isEnabled(searchResult.playback.isPlayable)
                                     .padding(top = Theme.padding.extraSmall),
                                 artwork = searchResult.playback.artwork
-                                    ?: PlaceholderArtwork
+                                    ?: PlaceholderArtwork,
+                                isEnabled = searchResult.playback.isPlayable
                             ) {
                                 viewModel.onItemClicked(searchResult.playback)
                                 scope.launch {
