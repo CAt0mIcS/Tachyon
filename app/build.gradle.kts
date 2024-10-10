@@ -6,6 +6,8 @@ plugins {
     id("kotlin-android")
     id("com.google.dagger.hilt.android")
     id("dagger.hilt.android.plugin")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 
@@ -93,6 +95,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.firebase:firebase-crashlytics:19.2.0")
     googleCast()
     googlePlay()
     json()
