@@ -1,6 +1,7 @@
 package com.tachyonmusic.media.service
 
 import android.app.PendingIntent
+import android.content.Intent
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Toast
@@ -199,6 +200,15 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession =
         mediaSession
 
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+
+        // Remove the notification if the playback is paused in the app and it's then swiped from the backstack
+        // to avoid stale notification
+        if (!exoPlayer.playWhenReady)
+            mediaSession.release()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         ioScope.coroutineContext.cancelChildren()
@@ -215,6 +225,20 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             session: MediaSession,
             controller: MediaSession.ControllerInfo
         ): MediaSession.ConnectionResult = supportedCommands
+
+        override fun onPlaybackResumption(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo
+        ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> = future(Dispatchers.IO) {
+            // TODO: Test
+            log.debug("onPlaybackResumption with playlist: $currentPlaylist")
+            val recentlyPlayed = dataRepository.getData().currentPositionInRecentlyPlayedPlayback
+            MediaSession.MediaItemsWithStartPosition(
+                currentPlaylist?.playbacks?.map { it.toMediaItem() }!!,
+                currentPlaylist?.currentPlaylistIndex!!,
+                recentlyPlayed.inWholeMilliseconds
+            )
+        }
 
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {
             /**
