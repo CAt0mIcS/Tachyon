@@ -8,6 +8,7 @@ import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
+import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.profile.ExportDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
 import com.tachyonmusic.util.Duration
@@ -26,7 +27,7 @@ class ProfileViewModel @Inject constructor(
     private val stateRepository: StateRepository,
     private val exportDatabase: ExportDatabase,
     private val importDatabase: ImportDatabase,
-    private val updateSongDatabase: UpdateSongDatabase,
+    private val pauseResumePlayback: PauseResumePlayback
 ) : ViewModel() {
 
     val settings = settingsRepository.observe().stateIn(
@@ -108,7 +109,7 @@ class ProfileViewModel @Inject constructor(
             settingsRepository.update(dynamicColors = enabled)
         }
     }
-    
+
     fun onUriPermissionResult(uri: Uri?) {
         viewModelScope.launch {
             stateRepository.queueLoadingTask("ProfileViewModel::registerNewUriPermission")
@@ -129,11 +130,12 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun onImportDatabase(uri: Uri?) {
+        pauseResumePlayback(PauseResumePlayback.Action.Pause)
         viewModelScope.launch(Dispatchers.IO) {
             stateRepository.queueLoadingTask("ProfileViewModel::importDatabase")
             if (importDatabase(uri) != null) { // TODO: Display required music paths
-//                updateSongDatabase(settingsRepository.getSettings())
-                // Done in [MainViewModel::init]
+//                updateSongDatabase(settingsRepository.getSettings)    Done in [MainViewModel::init]
+
             }
             stateRepository.finishLoadingTask("ProfileViewModel::importDatabase")
         }

@@ -181,14 +181,16 @@ fun MainScreen(
             val context = LocalContext.current
             LaunchedEffect(key1 = true) {
                 viewModel.eventChannel.collect { event ->
-                    snackbarHostState.showSnackbar(
-                        event.message.asString(context),
-                        withDismissAction = true,
-                        duration = when (event.severity) {
-                            EventSeverity.Error, EventSeverity.Fatal -> SnackbarDuration.Long
-                            else -> SnackbarDuration.Short
-                        }
-                    )
+                    if(event.severity > EventSeverity.Debug) {
+                        snackbarHostState.showSnackbar(
+                            event.message.asString(context),
+                            withDismissAction = true,
+                            duration = when (event.severity) {
+                                EventSeverity.Error, EventSeverity.Fatal -> SnackbarDuration.Long
+                                else -> SnackbarDuration.Short
+                            }
+                        )
+                    }
                 }
             }
 

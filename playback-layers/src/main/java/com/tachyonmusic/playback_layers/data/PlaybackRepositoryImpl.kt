@@ -233,7 +233,7 @@ class PlaybackRepositoryImpl(
                             R.string.playback_not_found,
                             historyItem.mediaId.uri?.path ?: "Unknown"
                         ),
-                        EventSeverity.Info
+                        EventSeverity.Debug
                     )
                 )
             }
