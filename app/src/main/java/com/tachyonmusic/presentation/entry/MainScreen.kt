@@ -207,7 +207,7 @@ fun MainScreen(
                     val heightInPx =
                         with(LocalDensity.current) { maxHeight.toPx() } // Get height of screen
                     val miniPlayerHeightInPx =
-                        with(LocalDensity.current) { if (miniPlayerHeight <= 0.dp) 70.dp.toPx() else miniPlayerHeight.toPx() }
+                        with(LocalDensity.current) { miniPlayerHeight.toPx() }
 
                     // https://www.strv.com/blog/collapsing-toolbar-using-jetpack-compose-motion-layout-engineering
                     // https://medium.com/@AungThiha3/jetpack-compose-anchored-draggable-item-in-motionlayout-part-1-8d5a1cde880f
