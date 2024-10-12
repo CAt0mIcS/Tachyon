@@ -81,7 +81,7 @@ class MainViewModel @Inject constructor(
                 ) {
                     log.info("Starting song database update due to new music directory or reload")
                     updateSongDatabase(settings)
-                    cachedMusicDirectories = settings.musicDirectories
+                    cachedMusicDirectories = settings.musicDirectories.filter { uriPermissionRepository.hasPermission(it) }
 
                     if (loadingTaskRunning)
                         stateRepository.finishLoadingTask(STATE_LOADING_TASK_STARTUP)
