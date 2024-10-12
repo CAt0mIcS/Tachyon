@@ -48,6 +48,7 @@ import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.database.domain.model.PlaybackEntity
 import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.ErrorDialog
@@ -58,6 +59,7 @@ import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
 import com.tachyonmusic.presentation.player.component.RemixEditor
+import com.tachyonmusic.presentation.player.model.PlayerEntity
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.util.delay
@@ -127,9 +129,10 @@ fun PlayerScreen(
                 .aspectRatio(1f)
                 .shadow(Theme.shadow.small, shape = Theme.shapes.large)
 
-            playback.artwork?.Image(modifier = artworkModifier, contentDescription = null) ?: Spacer(
-                modifier = Modifier.height(24.dp)
-            )
+            playback.artwork?.Image(modifier = artworkModifier, contentDescription = null)
+                ?: Spacer(
+                    modifier = Modifier.height(24.dp)
+                )
         }
 
         item {
@@ -395,31 +398,45 @@ fun PlayerScreen(
                             bottom = Theme.padding.extraSmall
                         )
                 ) {
-                    SwipeDelete(
-                        shape = Theme.shapes.medium,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(
-                                MaterialTheme.colorScheme.tertiaryContainer,
-                                Theme.shapes.medium
-                            ),
-                        onClick = { viewModel.removeFromCurrentPlaylist(updatedPlayback) }
-                    ) {
-                        HorizontalPlaybackView(
-                            playback.displayTitle,
-                            playback.displaySubtitle,
-                            playback.artwork ?: PlaceholderArtwork,
-                            onClick = {
-                                if (playback.isPlayable) viewModel.play(
-                                    playback,
-                                    PlaybackLocation.CUSTOM_PLAYLIST
-                                )
-                            },
-                            isEnabled = playback.isPlayable
-                        )
+                    if (playbackType !is PlaybackType.Playlist) {
+                        SubPlaybackView(viewModel, playback, PlaybackLocation.PREDEFINED_PLAYLIST)
+                    } else {
+                        SwipeDelete(
+                            shape = Theme.shapes.medium,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    MaterialTheme.colorScheme.tertiaryContainer,
+                                    Theme.shapes.medium
+                                ),
+                            onClick = { viewModel.removeFromCurrentPlaylist(updatedPlayback) }
+                        ) {
+                            SubPlaybackView(viewModel, playback, PlaybackLocation.CUSTOM_PLAYLIST)
+                        }
                     }
                 }
             }
         }
     }
+}
+
+
+@Composable
+private fun SubPlaybackView(
+    viewModel: PlayerViewModel,
+    playback: PlayerEntity,
+    playbackLocation: PlaybackLocation
+) {
+    HorizontalPlaybackView(
+        playback.displayTitle,
+        playback.displaySubtitle,
+        playback.artwork ?: PlaceholderArtwork,
+        onClick = {
+            if (playback.isPlayable) viewModel.play(
+                playback,
+                playbackLocation
+            )
+        },
+        isEnabled = playback.isPlayable
+    )
 }
