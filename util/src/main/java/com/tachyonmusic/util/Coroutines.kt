@@ -20,9 +20,7 @@ fun <T> future(
 ): ListenableFuture<T> =
     Futures.submit(Callable {
 
-        runBlocking {
-            action()
-        }
+        runBlocking(block = action)
 
     }, context.asExecutor())
 
@@ -35,15 +33,11 @@ suspend fun <T> runOnUiThread(block: suspend CoroutineScope.() -> T): T {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
 
-    return withContext(Dispatchers.Main) {
-        block()
-    }
+    return withContext(Dispatchers.Main, block = block)
 }
 
 /**
  * Dispatches [block] to UI thread without suspending current coroutine
  */
 fun CoroutineScope.runOnUiThreadAsync(block: suspend CoroutineScope.() -> Unit) =
-    launch(Dispatchers.Main) {
-        block()
-    }
+    launch(Dispatchers.Main, block = block)
