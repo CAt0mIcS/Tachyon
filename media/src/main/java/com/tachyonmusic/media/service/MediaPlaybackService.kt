@@ -231,13 +231,19 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             controller: MediaSession.ControllerInfo
         ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> = future(Dispatchers.IO) {
             // TODO: Test
-            log.debug("onPlaybackResumption with playlist: $currentPlaylist")
+            log.debug("onPlaybackResumption with playlist: $currentPlaylist, playback: $currentPlayback")
             val recentlyPlayed = dataRepository.getData().currentPositionInRecentlyPlayedPlayback
-            MediaSession.MediaItemsWithStartPosition(
-                currentPlaylist?.playbacks?.map { it.toMediaItem() }!!,
-                currentPlaylist?.currentPlaylistIndex!!,
-                recentlyPlayed.inWholeMilliseconds
-            )
+
+            if (currentPlaylist == null)
+                MediaSession.MediaItemsWithStartPosition(
+                    emptyList(), C.INDEX_UNSET, C.TIME_UNSET
+                )
+            else
+                MediaSession.MediaItemsWithStartPosition(
+                    currentPlaylist!!.playbacks.map { it.toMediaItem() },
+                    currentPlaylist!!.currentPlaylistIndex,
+                    recentlyPlayed.inWholeMilliseconds
+                )
         }
 
         override fun onPostConnect(session: MediaSession, controller: MediaSession.ControllerInfo) {

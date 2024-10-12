@@ -140,7 +140,7 @@ class PlayerViewModel @Inject constructor(
                     playPlayback(
                         _playback.value,
                         recentlyPlayed?.position,
-                        if (currentPlaylist.value?.isPredefined == true) PlaybackLocation.PREDEFINED_PLAYLIST else PlaybackLocation.CUSTOM_PLAYLIST
+                        if (currentPlaylist.value?.isPredefined != false) PlaybackLocation.PREDEFINED_PLAYLIST else PlaybackLocation.CUSTOM_PLAYLIST
                     )
                 }
             }
