@@ -6,13 +6,13 @@ import com.tachyonmusic.util.Duration
 
 interface SongMetadataExtractor {
     data class SongMetadata(
-        val title: String,
-        val artist: String,
+        val title: String?,
+        val artist: String?,
         val duration: Duration,
         val album: String?
     )
 
-    fun loadMetadata(uri: Uri, defaultTitle: String): SongMetadata?
+    fun loadMetadata(uri: Uri): SongMetadata?
 
     /**
      * Uses JPEG compression

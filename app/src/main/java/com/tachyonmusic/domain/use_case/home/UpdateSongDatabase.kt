@@ -1,5 +1,6 @@
 package com.tachyonmusic.domain.use_case.home
 
+import android.content.Context
 import androidx.documentfile.provider.DocumentFile
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.ArtworkType
@@ -18,6 +19,7 @@ import com.tachyonmusic.playback_layers.domain.events.PlaybackNotFoundEvent
 import com.tachyonmusic.util.EventSeverity
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.domain.EventChannel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -31,6 +33,7 @@ import kotlin.math.ceil
  * Checks if every song in all added directories are also saved in the database and adds missing ones
  */
 class UpdateSongDatabase(
+    @ApplicationContext private val context: Context,
     private val songRepo: SongRepository,
     private val fileRepository: FileRepository,
     private val metadataExtractor: SongMetadataExtractor,
@@ -134,18 +137,15 @@ class UpdateSongDatabase(
 
     private suspend fun loadMetadata(path: DocumentFile, settings: SettingsEntity) =
         withContext(Dispatchers.IO) {
-            val metadata = metadataExtractor.loadMetadata(
-                path.uri,
-                path.name ?: "Unknown Title"
-            )
+            val metadata = metadataExtractor.loadMetadata(path.uri)
 
             if (metadata == null)
                 null
             else {
                 val entity = SongEntity(
                     MediaId.ofLocalSong(path.uri),
-                    metadata.title,
-                    metadata.artist,
+                    metadata.title ?: path.name ?: context.getString(R.string.unknown_media_title),
+                    metadata.artist ?: context.getString(R.string.unknown_media_artist),
                     metadata.duration,
                     album = metadata.album
                 )

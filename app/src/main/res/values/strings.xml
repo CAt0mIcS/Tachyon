@@ -40,4 +40,6 @@
     <string name="database_export_destination_empty">The destination to export the database to is empty</string>
     <string name="database_export_error">Error occurred exporting database: %1$s</string>
     <string name="database_export_success">The database was exported successfully</string>
+    <string name="unknown_media_title">Unknown Title</string>
+    <string name="unknown_media_artist">Unknown Artist</string>
 </resources>

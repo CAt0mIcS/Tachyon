@@ -80,6 +80,7 @@ object AppUseCaseModule {
     @Provides
     @Singleton
     fun provideUpdateSongDatabaseUseCase(
+        @ApplicationContext context: Context,
         songRepository: SongRepository,
         fileRepository: FileRepository,
         metadataExtractor: SongMetadataExtractor,
@@ -89,6 +90,7 @@ object AppUseCaseModule {
         logger: Logger,
         eventChannel: EventChannel
     ) = UpdateSongDatabase(
+        context,
         songRepository,
         fileRepository,
         metadataExtractor,

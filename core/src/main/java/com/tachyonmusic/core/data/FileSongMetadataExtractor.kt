@@ -13,10 +13,7 @@ class FileSongMetadataExtractor(
     private val contentResolver: ContentResolver,
     private val log: Logger
 ) : SongMetadataExtractor {
-    override fun loadMetadata(
-        uri: Uri,
-        defaultTitle: String
-    ): SongMetadataExtractor.SongMetadata? {
+    override fun loadMetadata(uri: Uri): SongMetadataExtractor.SongMetadata? {
         val metaRetriever = MediaMetadataRetriever()
         try {
             val fd = contentResolver.openFileDescriptor(uri, "r")
@@ -24,15 +21,15 @@ class FileSongMetadataExtractor(
             fd?.close()
         } catch (e: IllegalArgumentException) {
             log.error(e.localizedMessage ?: e.stackTraceToString())
+            return null
         } catch (e: SecurityException) {
             log.error(e.localizedMessage ?: e.stackTraceToString())
+            return null
         }
 
         return SongMetadataExtractor.SongMetadata(
-            title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
-                ?: defaultTitle,
-            artist = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST)
-                ?: "Unknown Artist",
+            title = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE),
+            artist = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ARTIST),
             duration = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 ?.toLong()?.ms ?: 0.ms,
             album = metaRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
