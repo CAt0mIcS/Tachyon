@@ -113,6 +113,7 @@ fun PlayerScreen(
     var isEditingEqualizer by rememberSaveable { mutableStateOf(false) }
 
     val subPlaybackItems by viewModel.subPlaybackItems.collectAsState()
+    val recommendedItems by viewModel.recommendedItems.collectAsState()
     val playbackType by viewModel.playbackType.collectAsState()
 
     LazyColumn(
@@ -414,6 +415,38 @@ fun PlayerScreen(
                             SubPlaybackView(viewModel, playback, PlaybackLocation.CUSTOM_PLAYLIST)
                         }
                     }
+                }
+            }
+        }
+
+
+        if(recommendedItems.isNotEmpty()) {
+            item {
+                Text(
+                    modifier = Modifier.padding(
+                        start = Theme.padding.small,
+                        top = Theme.padding.medium,
+                        end = Theme.padding.medium,
+                        bottom = Theme.padding.extraSmall
+                    ),
+                    text = "Similar Items",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            items(recommendedItems, key = { it.mediaId.toString() }) { item ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(
+                            start = Theme.padding.medium,
+                            top = Theme.padding.medium,
+                            end = Theme.padding.medium,
+                            bottom = Theme.padding.extraSmall
+                        )
+                ) {
+                    SubPlaybackView(viewModel, item, PlaybackLocation.PREDEFINED_PLAYLIST)
                 }
             }
         }

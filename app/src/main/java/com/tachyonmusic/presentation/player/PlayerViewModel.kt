@@ -161,19 +161,16 @@ class PlayerViewModel @Inject constructor(
                         ?.find { it.mediaId == entity.mediaId }
 
                 else -> { // Playing predefined playlist
-                    when (repeatMode.value) {
-                        is RepeatMode.One -> _playback.value
-                        else -> when (entity.playbackType) {
-                            is PlaybackType.Song ->
-                                predefinedPlaylistsRepository.songPlaylist.value
-                                    .find { it.mediaId == entity.mediaId }
+                    when (entity.playbackType) {
+                        is PlaybackType.Song ->
+                            predefinedPlaylistsRepository.songPlaylist.value
+                                .find { it.mediaId == entity.mediaId }
 
-                            is PlaybackType.Remix ->
-                                predefinedPlaylistsRepository.remixPlaylist.value
-                                    .find { it.mediaId == entity.mediaId }
+                        is PlaybackType.Remix ->
+                            predefinedPlaylistsRepository.remixPlaylist.value
+                                .find { it.mediaId == entity.mediaId }
 
-                            else -> TODO("Can't have playlists inside playlists yet")
-                        }
+                        else -> TODO("Can't have playlists inside playlists yet")
                     }
                 }
             }
@@ -188,10 +185,10 @@ class PlayerViewModel @Inject constructor(
     private val currentPlaylist = mediaBrowser.currentPlaylist
 
     val playbackType = combine(_playback, currentPlaylist) { playback, playlist ->
-        val type = if (playlist?.isPredefined == true)
+        val type = if (playlist?.isPredefined != false)
             playback?.playbackType
         else
-            playlist?.playbackType
+            playlist.playbackType
         type ?: PlaybackType.Song.Local()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), PlaybackType.Song.Local())
 
@@ -210,6 +207,27 @@ class PlayerViewModel @Inject constructor(
             loadArtworkForPlayback(it).toPlayerEntity()
         } ?: emptyList()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
+    val recommendedItems =
+        combine(
+            _playback,
+            playbackRepository.songFlow,
+            playbackRepository.remixFlow,
+            playbackType
+        ) { currentPlayback, songs, remixes, playbackType ->
+            when (playbackType) {
+                is PlaybackType.Song -> remixes.filter { it.mediaId.underlyingMediaId == currentPlayback?.mediaId }
+                    .map { loadArtworkForPlayback(it).toPlayerEntity() }
+
+                is PlaybackType.Remix -> {
+                    val song = songs.find { it.mediaId == currentPlayback?.songMediaId }
+                        ?: return@combine emptyList()
+                    listOf(loadArtworkForPlayback(song).toPlayerEntity())
+                }
+
+                else -> emptyList()
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
     /**************************************************************************
