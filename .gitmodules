@@ -1,0 +1,3 @@
+[submodule "lib/eAlvaBrainz"]
+	path = lib/eAlvaBrainz
+	url = https://github.com/ealva-com/eAlvaBrainz
