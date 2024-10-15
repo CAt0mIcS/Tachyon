@@ -123,19 +123,19 @@ object ProfileScreen :
                 desc = "If enabled the app will try to find matching artwork to any songs that do not have any embedded in its .mp3 file"
             ) {
                 Switch(
-                    checked = settings.autoDownloadAlbumArtwork,
-                    onCheckedChange = viewModel::autoDownloadAlbumArtworkChanged
+                    checked = settings.autoDownloadSongMetadata,
+                    onCheckedChange = viewModel::autoDownloadSongMetadataChanged
                 )
             }
 
             Setting(
                 text = "WIFI-Only",
-                enabled = settings.autoDownloadAlbumArtwork,
+                enabled = settings.autoDownloadSongMetadata,
                 modifier = Modifier.padding(start = Theme.padding.large)
             ) {
                 Switch(
-                    checked = settings.autoDownloadAlbumArtworkWifiOnly,
-                    onCheckedChange = viewModel::autoDownloadAlbumArtworkWifiOnly
+                    checked = settings.autoDownloadSongMetadataWifiOnly,
+                    onCheckedChange = viewModel::autoDownloadSongMetadataWifiOnly
                 )
             }
 

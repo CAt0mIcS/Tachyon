@@ -29,10 +29,10 @@ interface SettingsDao {
     suspend fun setIgnoreAudioFocus(value: Boolean)
 
     @Query("UPDATE $SETTINGS_DATABASE_TABLE_NAME SET autoDownloadAlbumArtwork=:value")
-    suspend fun setAutoDownloadAlbumArtwork(value: Boolean)
+    suspend fun setAutoDownloadSongMetadata(value: Boolean)
 
     @Query("UPDATE $SETTINGS_DATABASE_TABLE_NAME SET autoDownloadAlbumArtworkWifiOnly=:value")
-    suspend fun setAutoDownloadAlbumArtworkWifiOnly(value: Boolean)
+    suspend fun setAutoDownloadSongMetadataWifiOnly(value: Boolean)
 
     @Query("UPDATE $SETTINGS_DATABASE_TABLE_NAME SET combineDifferentPlaybackTypes=:value")
     suspend fun setCombineDifferentPlaybackTypes(value: Boolean)

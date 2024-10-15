@@ -26,8 +26,10 @@ const val SETTINGS_DATABASE_TABLE_NAME = "Settings"
 @Entity(tableName = SETTINGS_DATABASE_TABLE_NAME)
 data class SettingsEntity(
     var ignoreAudioFocus: Boolean = false,
-    var autoDownloadAlbumArtwork: Boolean = false,
-    var autoDownloadAlbumArtworkWifiOnly: Boolean = true,
+    @ColumnInfo(name = "autoDownloadAlbumArtwork")
+    var autoDownloadSongMetadata: Boolean = false,
+    @ColumnInfo(name = "autoDownloadAlbumArtworkWifiOnly")
+    var autoDownloadSongMetadataWifiOnly: Boolean = true,
     var combineDifferentPlaybackTypes: Boolean = false,
 
     @ColumnInfo(defaultValue = "true")
@@ -150,8 +152,8 @@ object SettingsEntitySerializer : KSerializer<SettingsEntity> {
     override fun serialize(encoder: Encoder, value: SettingsEntity) {
         encoder.encodeStructure(descriptor) {
             encodeBooleanElement(descriptor, 0, value.ignoreAudioFocus)
-            encodeBooleanElement(descriptor, 1, value.autoDownloadAlbumArtwork)
-            encodeBooleanElement(descriptor, 2, value.autoDownloadAlbumArtworkWifiOnly)
+            encodeBooleanElement(descriptor, 1, value.autoDownloadSongMetadata)
+            encodeBooleanElement(descriptor, 2, value.autoDownloadSongMetadataWifiOnly)
             encodeBooleanElement(descriptor, 3, value.combineDifferentPlaybackTypes)
             encodeLongElement(descriptor, 4, value.audioUpdateInterval.inWholeMilliseconds)
             encodeIntElement(descriptor, 5, value.maxPlaybacksInHistory)

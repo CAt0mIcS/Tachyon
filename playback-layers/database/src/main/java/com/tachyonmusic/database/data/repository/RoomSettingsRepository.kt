@@ -34,8 +34,8 @@ class RoomSettingsRepository(
 
     override suspend fun update(
         ignoreAudioFocus: Boolean?,
-        autoDownloadAlbumArtwork: Boolean?,
-        autoDownloadAlbumArtworkWifiOnly: Boolean?,
+        autoDownloadSongMetadata: Boolean?,
+        autoDownloadSongMetadataWifiOnly: Boolean?,
         combineDifferentPlaybackTypes: Boolean?,
         dynamicColors: Boolean?,
         audioUpdateInterval: Duration?,
@@ -51,11 +51,11 @@ class RoomSettingsRepository(
         if (ignoreAudioFocus != null)
             dao.setIgnoreAudioFocus(ignoreAudioFocus)
 
-        if (autoDownloadAlbumArtwork != null)
-            dao.setAutoDownloadAlbumArtwork(autoDownloadAlbumArtwork)
+        if (autoDownloadSongMetadata != null)
+            dao.setAutoDownloadSongMetadata(autoDownloadSongMetadata)
 
-        if (autoDownloadAlbumArtworkWifiOnly != null)
-            dao.setAutoDownloadAlbumArtworkWifiOnly(autoDownloadAlbumArtworkWifiOnly)
+        if (autoDownloadSongMetadataWifiOnly != null)
+            dao.setAutoDownloadSongMetadataWifiOnly(autoDownloadSongMetadataWifiOnly)
 
         if (combineDifferentPlaybackTypes != null)
             dao.setCombineDifferentPlaybackTypes(combineDifferentPlaybackTypes)

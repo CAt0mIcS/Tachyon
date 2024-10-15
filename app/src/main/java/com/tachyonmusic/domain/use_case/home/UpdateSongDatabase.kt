@@ -14,7 +14,6 @@ import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
-import com.tachyonmusic.playback_layers.domain.events.InvalidPlaylistItemEvent
 import com.tachyonmusic.playback_layers.domain.events.PlaybackNotFoundEvent
 import com.tachyonmusic.util.EventSeverity
 import com.tachyonmusic.util.UiText
@@ -106,7 +105,7 @@ class UpdateSongDatabase(
         /**
          * FIND MISSING ARTWORK
          */
-        if (settings.autoDownloadAlbumArtwork) {
+        if (settings.autoDownloadSongMetadata) {
             val songsWithUnknownArtwork =
                 songRepo.getSongs().filter { it.artworkType == ArtworkType.UNKNOWN }
             log.debug("Trying to find artwork for ${songsWithUnknownArtwork.size} unknowns...")
@@ -150,7 +149,7 @@ class UpdateSongDatabase(
                     album = metadata.album
                 )
 
-                if (settings.autoDownloadAlbumArtwork) {
+                if (settings.autoDownloadSongMetadata) {
                     loadArtworkForEntity(entity) { toUpdate ->
                         entity.artworkType = toUpdate.artworkType
                         entity.artworkUrl = toUpdate.artworkUrl
