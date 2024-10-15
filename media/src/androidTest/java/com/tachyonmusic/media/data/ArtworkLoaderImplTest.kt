@@ -1,7 +1,7 @@
 package com.tachyonmusic.media.data
 
 import android.graphics.Bitmap
-import com.tachyonmusic.artworkfetcher.ArtworkFetcher
+import com.tachyonmusic.metadata_api.ArtworkFetcher
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork

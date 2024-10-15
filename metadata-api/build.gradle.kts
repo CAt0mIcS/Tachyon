@@ -1,14 +1,10 @@
 plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.android")
-
-    id("kotlin-kapt")
-
-    id("kotlinx-serialization")
 }
 
 android {
-    namespace = "com.tachyonmusic.database"
+    namespace = "com.tachyonmusic.metadata_api"
     compileSdk = Index.COMPILE_SDK
 
     defaultConfig {
@@ -16,14 +12,8 @@ android {
         targetSdk = Index.TARGET_SDK
 
         ndk.debugSymbolLevel = Index.DEBUG_SYMBOL_LEVEL
-        testInstrumentationRunner = "com.tachyonmusic.testutils.HiltTestRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments += "room.schemaLocation" to "$projectDir/schemas"
-            }
-        }
     }
 
     buildTypes {
@@ -36,6 +26,7 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = Index.JAVA
         targetCompatibility = Index.JAVA
@@ -44,31 +35,16 @@ android {
     kotlinOptions {
         jvmTarget = Index.JVM_TARGET
     }
-
-    packagingOptions {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-            excludes += "META-INF/LICENSE.md"
-            excludes += "META-INF/LICENSE-notice.md"
-        }
-    }
 }
 
 dependencies {
-    room()
-    dagger()
+    coroutines()
     json()
 
-    coroutines()
-    paging()
+    jsoup()
 
-    implementation(Dependency.Compose.UI)
-
-    projectCore()
-    projectMetadataApi()
     projectUtil()
     projectLogger()
 
     unitTest()
-    androidTest()
 }

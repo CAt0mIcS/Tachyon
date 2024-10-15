@@ -241,8 +241,8 @@ fun DependencyHandler.projectCore() {
     implementation(project(":core"))
 }
 
-fun DependencyHandler.projectArtworkFetcher() {
-    implementation(project(":artworkFetcher"))
+fun DependencyHandler.projectMetadataApi() {
+    implementation(project(":metadata-api"))
 }
 
 fun DependencyHandler.projectLogger() {

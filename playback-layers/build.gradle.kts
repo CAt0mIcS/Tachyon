@@ -51,5 +51,5 @@ dependencies {
     projectUtil()
     projectLogger()
     projectPlaybackLayerDatabase()
-    projectArtworkFetcher()
+    projectMetadataApi()
 }

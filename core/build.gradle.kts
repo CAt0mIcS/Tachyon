@@ -61,7 +61,7 @@ dependencies {
 
     landscapistGlide()
 
-    projectArtworkFetcher()
+    projectMetadataApi()
     projectUtil()
     projectLogger()
 

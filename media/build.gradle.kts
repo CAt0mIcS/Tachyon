@@ -67,7 +67,7 @@ dependencies {
     projectPlaybackLayers()
     projectUtil()
     projectLogger()
-    projectArtworkFetcher()
+    projectMetadataApi()
 
     unitTest()
     androidTest()

@@ -1,7 +1,7 @@
 package com.tachyonmusic.playback_layers.di
 
 import android.content.Context
-import com.tachyonmusic.artworkfetcher.ArtworkFetcher
+import com.tachyonmusic.metadata_api.ArtworkFetcher
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository

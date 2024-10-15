@@ -1,7 +1,7 @@
 package com.tachyonmusic.playback_layers.data
 
 import android.net.Uri
-import com.tachyonmusic.artworkfetcher.ArtworkFetcher
+import com.tachyonmusic.metadata_api.ArtworkFetcher
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
