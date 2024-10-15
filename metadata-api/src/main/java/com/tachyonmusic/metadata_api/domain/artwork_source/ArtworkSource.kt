@@ -26,7 +26,7 @@ abstract class ArtworkSource {
         val GSON: Gson = GsonBuilder().create()
     }
 
-    fun search(info: SearchInfo, imageSize: Int, pageSize: Int): Resource<String> {
+    suspend fun search(info: SearchInfo, imageSize: Int, pageSize: Int): Resource<String> {
         val url = getSearchUrl(info)
         if (url is Resource.Error)
             return url
@@ -34,7 +34,7 @@ abstract class ArtworkSource {
             return Resource.Error(UiText.StringResource(R.string.unknown_encoder_error, info.toString()))
 
         return try {
-            executeSearch(url.data!!, imageSize, pageSize)
+            executeSearch(info, imageSize, pageSize)
         } catch (e: FileNotFoundException) {
             requestFailed(e, url.data)
         } catch (e: UnknownHostException) {
@@ -51,7 +51,7 @@ abstract class ArtworkSource {
     }
 
     abstract fun getSearchUrl(info: SearchInfo): Resource<String>
-    abstract fun executeSearch(url: String, imageSize: Int, pageSize: Int): Resource<String>
+    abstract suspend fun executeSearch(info: SearchInfo, imageSize: Int, pageSize: Int): Resource<String>
 
     private fun requestFailed(e: Exception, url: String?) =
         Resource.Error<String>(

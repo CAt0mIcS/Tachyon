@@ -1,8 +1,11 @@
 package com.tachyonmusic.metadata_api
 
 import com.tachyonmusic.metadata_api.data.artwork_source.AmazonDigitalArtworkSource
+import com.tachyonmusic.metadata_api.data.artwork_source.CoverArtArchiveArtworkSource
 import com.tachyonmusic.metadata_api.data.artwork_source.ITunesArtworkSource
 import com.tachyonmusic.metadata_api.domain.artwork_source.ArtworkSource
+import com.tachyonmusic.metadata_api.domain.model.SearchInfo
+import com.tachyonmusic.metadata_api.domain.model.isNullOrBlank
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import kotlinx.coroutines.flow.flow
@@ -10,12 +13,13 @@ import kotlinx.coroutines.flow.flow
 
 class ArtworkFetcher(
     private val sources: List<ArtworkSource> = listOf(
+        CoverArtArchiveArtworkSource(),
         ITunesArtworkSource(),
         AmazonDigitalArtworkSource()
     )
 ) {
 
-    suspend fun query(query: String, imageSize: Int, pageSize: Int = 1) = flow {
+    suspend fun query(info: SearchInfo, imageSize: Int, pageSize: Int = 1) = flow {
         emit(Resource.Loading())
 
         if (imageSize <= 0) {
@@ -30,14 +34,14 @@ class ArtworkFetcher(
             return@flow
         }
 
-        if (query.isBlank()) {
-            emit(Resource.Error(UiText.StringResource(R.string.invalid_media_metadata, query)))
+        if (info.isNullOrBlank()) {
+            emit(Resource.Error(UiText.StringResource(R.string.invalid_media_metadata, info.toString())))
             return@flow
         }
 
         for (source in sources) {
             try {
-                val result = source.search(query, imageSize, pageSize)
+                val result = source.search(info, imageSize, pageSize)
                 emit(result)
             } catch (e: Exception) {
                 e.printStackTrace()

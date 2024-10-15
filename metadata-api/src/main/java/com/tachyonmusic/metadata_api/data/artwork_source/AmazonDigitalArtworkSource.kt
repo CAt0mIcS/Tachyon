@@ -29,7 +29,8 @@ class AmazonDigitalArtworkSource(
         return urlEncoder.encode(BASE_URL, urlParams)
     }
 
-    override fun executeSearch(url: String, imageSize: Int, pageSize: Int): Resource<String> {
+    override suspend fun executeSearch(info: SearchInfo, imageSize: Int, pageSize: Int): Resource<String> {
+        val url = getSearchUrl(info).data!!
         val doc = Jsoup.connect(url)
             .userAgent(USER_AGENT)
             .headers(

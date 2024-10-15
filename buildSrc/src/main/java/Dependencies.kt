@@ -229,6 +229,14 @@ fun DependencyHandler.jsoup() {
     implementation(Dependency.Jsoup.JSOUP)
 }
 
+fun DependencyHandler.eAlvaBrainz() {
+    implementation("com.ealva:ealvabrainz-service:0.10.3-0")
+    implementation("com.ealva:ealvabrainz:0.10.3-0")
+    implementation("com.github.bumptech.glide:glide:4.13.0")
+    implementation("com.github.bumptech.glide:okhttp3-integration:4.13.0")
+    implementation("com.michael-bull.kotlin-result:kotlin-result:1.1.14")
+}
+
 fun DependencyHandler.landscapistGlide() {
     implementation(Dependency.Landscapist.GLIDE)
 }
