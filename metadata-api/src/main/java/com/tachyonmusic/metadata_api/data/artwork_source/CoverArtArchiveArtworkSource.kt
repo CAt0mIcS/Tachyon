@@ -12,9 +12,9 @@ import com.tachyonmusic.metadata_api.domain.model.SearchInfo
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 
-val brainzModule = MusicBrainzService(
+internal val brainzModule = MusicBrainzService(
     appName = BuildConfig.LIBRARY_PACKAGE_NAME,
-    appVersion = "Dev 101",
+    appVersion = BuildConfig.VERSION_NAME,
     contactEmail = "c.simon.geier@gmail.com",
     addLoggingInterceptor = BuildConfig.DEBUG
 )

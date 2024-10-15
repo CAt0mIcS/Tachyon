@@ -13,6 +13,9 @@ android {
 
         ndk.debugSymbolLevel = Index.DEBUG_SYMBOL_LEVEL
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "VERSION_NAME", "\"${Index.APP_NAME}\"")
+
         consumerProguardFiles("consumer-rules.pro")
     }
 
