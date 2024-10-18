@@ -235,6 +235,8 @@ fun DependencyHandler.eAlvaBrainz() {
     implementation("com.github.bumptech.glide:glide:4.13.0")
     implementation("com.github.bumptech.glide:okhttp3-integration:4.13.0")
     implementation("com.michael-bull.kotlin-result:kotlin-result:1.1.14")
+    implementation("com.ealva:ealvalog:0.5.6-SNAPSHOT")
+    implementation("com.ealva:ealvalog-core:0.5.6-SNAPSHOT")
 }
 
 fun DependencyHandler.landscapistGlide() {

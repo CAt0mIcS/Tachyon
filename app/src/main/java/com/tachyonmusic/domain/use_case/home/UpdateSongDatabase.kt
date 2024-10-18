@@ -39,6 +39,7 @@ class UpdateSongDatabase(
     private val artworkCodex: ArtworkCodex,
     private val assignArtworkToPlayback: AssignArtworkToPlayback,
     private val stateRepository: StateRepository,
+    private val loadUUIDForSongEntity: LoadUUIDForSongEntity,
     private val log: Logger,
     private val eventChannel: EventChannel
 ) {
@@ -141,7 +142,7 @@ class UpdateSongDatabase(
             if (metadata == null)
                 null
             else {
-                val entity = SongEntity(
+                var entity = SongEntity(
                     MediaId.ofLocalSong(path.uri),
                     metadata.title ?: path.name ?: context.getString(R.string.unknown_media_title),
                     metadata.artist ?: context.getString(R.string.unknown_media_artist),
@@ -150,6 +151,10 @@ class UpdateSongDatabase(
                 )
 
                 if (settings.autoDownloadSongMetadata) {
+
+                    if (metadata.title != null && metadata.artist != null)
+                        entity = loadUUIDForSongEntity(entity) ?: entity
+
                     loadArtworkForEntity(entity) { toUpdate ->
                         entity.artworkType = toUpdate.artworkType
                         entity.artworkUrl = toUpdate.artworkUrl

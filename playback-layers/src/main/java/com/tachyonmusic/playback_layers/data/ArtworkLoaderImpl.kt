@@ -10,6 +10,7 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.metadata_api.di.brainzModule
 import com.tachyonmusic.metadata_api.domain.model.SearchInfo
 import com.tachyonmusic.playback_layers.R
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
@@ -151,7 +152,7 @@ internal class ArtworkLoaderImpl(
         var ret: Resource<Artwork> =
             Resource.Error(UiText.StringResource(R.string.unknown_error))
 
-        artworkFetcher.query(SearchInfo(entity.title, entity.artist, entity.album, entity.mbid), 1000)
+        artworkFetcher.query(SearchInfo(entity.title, entity.artist, entity.album), 1000)
             .onEach { res ->
                 if (res is Resource.Success) {
                     ret = Resource.Success(RemoteArtwork(URI(res.data!!)))

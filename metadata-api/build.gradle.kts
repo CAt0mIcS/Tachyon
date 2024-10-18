@@ -48,10 +48,6 @@ dependencies {
 
     eAlvaBrainz()
 
-    implementation("com.ealva:ealvalog:0.5.6-SNAPSHOT")
-    implementation("com.ealva:ealvalog-core:0.5.6-SNAPSHOT")
-
-
     projectUtil()
     projectLogger()
 

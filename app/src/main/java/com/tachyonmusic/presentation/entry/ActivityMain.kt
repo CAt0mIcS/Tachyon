@@ -6,8 +6,6 @@ import android.view.Menu
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.RequestConfiguration
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -18,11 +16,16 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.tachyonmusic.app.R
+import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.home.LoadUUIDForSongEntity
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
+import com.tachyonmusic.util.ms
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 
@@ -40,6 +43,9 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
     @Inject
     lateinit var adInterface: AdInterface
+
+    @Inject
+    lateinit var loadUUIDForSongEntity: LoadUUIDForSongEntity
 
     private var castContext: CastContext? = null
     private lateinit var appUpdateManager: AppUpdateManager
@@ -59,6 +65,19 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
         appUpdateManager = AppUpdateManagerFactory.create(this)
         performUpdateCheck()
+
+
+        runBlocking {
+            val e1 = SongEntity(
+                title = "Hallelujah",
+                artist = "Leonard Cohen",
+                duration = 0.ms,
+                mediaId = MediaId.EMPTY
+            )
+
+            val result = loadUUIDForSongEntity(e1)
+            println(result)
+        }
     }
 
     override fun onResume() {

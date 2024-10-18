@@ -107,6 +107,7 @@ dependencies {
     dagger()
     implementation(Dependency.DaggerHilt.NAVIGATION_COMPOSE)
     ads()
+    eAlvaBrainz()
 
     implementation(Dependency.Media3.MEDIA_SESSION)
     implementation(Dependency.Media3.CAST)
@@ -120,6 +121,7 @@ dependencies {
     projectPlaybackLayerDatabase()
     projectUtil()
     projectLogger()
+    projectMetadataApi()
 
     unitTest()
     androidTest()

@@ -40,12 +40,6 @@ class SongEntity(
     @ColumnInfo(defaultValue = "null")
     var mbid: String? = null,
 
-    @ColumnInfo(defaultValue = "null")
-    var artistMbid: String? = null,
-
-    @ColumnInfo(defaultValue = "null")
-    var albumMbid: String? = null,
-
     timestampCreatedAddedEdited: Long = System.currentTimeMillis(),
 ) : SinglePlaybackEntity(mediaId, title, artist, duration, timestampCreatedAddedEdited)
 
@@ -60,8 +54,6 @@ object SongEntitySerializer : KSerializer<SongEntity> {
         element<String>("ArtworkUrl", isOptional = true)
         element<String>("Album", isOptional = true)
         element<String>("MBID", isOptional = true)
-        element<String>("ArtistMBID", isOptional = true)
-        element<String>("AlbumMBID", isOptional = true)
         element<Long>("TimestampCreatedAddedEdited", isOptional = true)
     }
 
@@ -75,8 +67,6 @@ object SongEntitySerializer : KSerializer<SongEntity> {
         var artworkUrl: String? = null
         var album: String? = null
         var mbid: String? = null
-        var artistMbid: String? = null
-        var albumMbid: String? = null
         var timestampCreatedAddedEdited = 0L
 
         loop@ while (true) {
@@ -92,9 +82,7 @@ object SongEntitySerializer : KSerializer<SongEntity> {
                 6 -> artworkUrl = decodeStringElement(descriptor, 6).ifEmpty { null }
                 7 -> album = decodeStringElement(descriptor, 7).ifBlank { null }
                 8 -> mbid = decodeStringElement(descriptor, 8).ifBlank { null }
-                9 -> artistMbid = decodeStringElement(descriptor, 9).ifBlank { null }
-                10 -> albumMbid = decodeStringElement(descriptor, 10).ifBlank { null }
-                11 -> timestampCreatedAddedEdited = decodeLongElement(descriptor, 11)
+                9 -> timestampCreatedAddedEdited = decodeLongElement(descriptor, 9)
 
                 else -> throw SerializationException("Unexpected index $index")
             }
@@ -110,8 +98,6 @@ object SongEntitySerializer : KSerializer<SongEntity> {
             artworkUrl,
             album,
             mbid,
-            artistMbid,
-            albumMbid,
             timestampCreatedAddedEdited
         )
     }
@@ -127,9 +113,7 @@ object SongEntitySerializer : KSerializer<SongEntity> {
             encodeStringElement(descriptor, 6, value.artworkUrl ?: "")
             encodeStringElement(descriptor, 7, value.album ?: "")
             encodeStringElement(descriptor, 8, value.mbid ?: "")
-            encodeStringElement(descriptor, 9, value.artistMbid ?: "")
-            encodeStringElement(descriptor, 10, value.albumMbid ?: "")
-            encodeLongElement(descriptor, 11, value.timestampCreatedAddedEdited)
+            encodeLongElement(descriptor, 9, value.timestampCreatedAddedEdited)
         }
     }
 }
