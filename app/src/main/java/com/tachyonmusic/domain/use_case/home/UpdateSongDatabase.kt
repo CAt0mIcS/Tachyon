@@ -1,6 +1,7 @@
 package com.tachyonmusic.domain.use_case.home
 
 import android.content.Context
+import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.ArtworkType
@@ -47,20 +48,32 @@ class UpdateSongDatabase(
         // TODO: Support more extensions
         stateRepository.queueLoadingTask("UpdateSongDatabase::loadingNewSongs")
 
+        val startTime = System.nanoTime()
+
+        /**
+         * TODO: Disabled for now
+         *  Metadata should not be loaded when the song is first added because it is slow for many songs
+         *  (e.g. when opening the app the first time and loading 100+ songs). Instead find some
+         *  other place to load it! It also should only try loading if we have an internet connection! (currently gets stuck loading in offline mode)
+         */
+        settings.autoDownloadSongMetadata = false
+
         val songsToAddToDatabase = fileRepository.getFilesInDirectoriesWithExtensions(
             settings.musicDirectories,
             listOf("mp3")
         ).toMutableList()
 
+        log.debug("Found ${songsToAddToDatabase.size} files")
 
         /**
          * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
+         * TODO: Where do we even need to do this?
          */
         val songsInRepository = songRepo.getSongs()
-        songsInRepository.filter { it.isHidden }.forEach {
-            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
-                songRepo.updateIsHidden(it.mediaId, false)
-        }
+//        songsInRepository.filter { it.isHidden }.forEach {
+//            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
+//                songRepo.updateIsHidden(it.mediaId, false)
+//        }
 
         /**
          * Filter songs that are already in database
@@ -104,7 +117,7 @@ class UpdateSongDatabase(
 
 
         /**
-         * FIND MISSING ARTWORK
+         * Fetch Metadata and Artwork for new playbacks
          */
         if (settings.autoDownloadSongMetadata) {
             val songsWithUnknownArtwork =
@@ -131,6 +144,9 @@ class UpdateSongDatabase(
                 }.awaitAll()
             }
         }
+
+        val endTime = System.nanoTime()
+        log.debug("UpdateSongDatabase took ${(endTime - startTime).toFloat() / 1000000f} ms")
 
         stateRepository.finishLoadingTask("UpdateSongDatabase::loadingNewSongs")
     }

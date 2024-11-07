@@ -65,19 +65,6 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
         appUpdateManager = AppUpdateManagerFactory.create(this)
         performUpdateCheck()
-
-
-        runBlocking {
-            val e1 = SongEntity(
-                title = "Hallelujah",
-                artist = "Leonard Cohen",
-                duration = 0.ms,
-                mediaId = MediaId.EMPTY
-            )
-
-            val result = loadUUIDForSongEntity(e1)
-            println(result)
-        }
     }
 
     override fun onResume() {
