@@ -117,7 +117,7 @@ class UpdateSongDatabase(
 
 
         /**
-         * Fetch Metadata and Artwork for new playbacks
+         * Find artwork for all playbacks that have not previously tried to fetch some
          */
         if (settings.autoDownloadSongMetadata) {
             val songsWithUnknownArtwork =
@@ -132,7 +132,7 @@ class UpdateSongDatabase(
                 songsWithUnknownArtwork.chunked(chunkSize).map { entityChunk ->
                     async {
                         entityChunk.map { entity ->
-                            loadArtworkForEntity(entity) { entityToUpdate ->
+                            loadArtworkForEntity(entity, fetchOnline = true) { entityToUpdate ->
                                 assignArtworkToPlayback(
                                     entityToUpdate.mediaId,
                                     entityToUpdate.artworkType,
@@ -167,14 +167,16 @@ class UpdateSongDatabase(
                 )
 
                 if (settings.autoDownloadSongMetadata) {
-
                     if (metadata.title != null && metadata.artist != null)
                         entity = loadUUIDForSongEntity(entity) ?: entity
+                }
 
-                    loadArtworkForEntity(entity) { toUpdate ->
-                        entity.artworkType = toUpdate.artworkType
-                        entity.artworkUrl = toUpdate.artworkUrl
-                    }
+                loadArtworkForEntity(
+                    entity,
+                    fetchOnline = settings.autoDownloadSongMetadata
+                ) { toUpdate ->
+                    entity.artworkType = toUpdate.artworkType
+                    entity.artworkUrl = toUpdate.artworkUrl
                 }
                 entity
             }
@@ -182,9 +184,10 @@ class UpdateSongDatabase(
 
     private suspend fun loadArtworkForEntity(
         entity: SongEntity,
+        fetchOnline: Boolean,
         onArtworkUpdate: suspend (SongEntity) -> Unit
     ) = withContext(Dispatchers.IO) {
-        artworkCodex.awaitOrLoad(entity).onEach {
+        artworkCodex.awaitOrLoad(entity, fetchOnline).onEach {
             val entityToUpdate = it.data?.entityToUpdate
             if (entityToUpdate != null) {
                 onArtworkUpdate(entityToUpdate)

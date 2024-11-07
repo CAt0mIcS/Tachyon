@@ -49,9 +49,7 @@ class FileRepositoryImpl(
                     for (file in chunk) {
                         if (file.isDirectory)
                             newFiles += file.recurseFiles(extensions)
-                        else if (file.canRead() && file.name != null &&
-                            extensions.contains(File(file.name!!).extension)
-                        )
+                        else if (file.name != null && extensions.contains(File(file.name!!).extension))
                             newFiles += file
                     }
 
