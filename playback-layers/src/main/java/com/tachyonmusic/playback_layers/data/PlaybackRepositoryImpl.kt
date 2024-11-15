@@ -39,10 +39,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.net.URI
@@ -65,22 +68,16 @@ class PlaybackRepositoryImpl(
     private var cacheLock = Any()
     private val permissionCache = mutableMapOf<Uri, Boolean>()
 
-    init {
-        // Invalidate the isPlayable cache every time the permissions change
-        uriPermissionRepository.permissions.onEach {
-            synchronized(cacheLock) {
-                permissionCache.clear()
-            }
-        }.launchIn(ioScope)
-    }
-
     private val _sortingPreferences = MutableStateFlow(SortingPreferences())
     override val sortingPreferences = _sortingPreferences.asStateFlow()
 
     override val songFlow =
-        combine(songRepository.observe().distinctUntilChanged(), sortingPreferences) { songEntities, sorting ->
+        combine(
+            songRepository.observe().distinctUntilChanged(),
+            sortingPreferences
+        ) { songEntities, sorting ->
             transformSongs(songEntities, sorting)
-        }.stateIn(ioScope, SharingStarted.Lazily, emptyList())
+        }.shareIn(ioScope, SharingStarted.Eagerly, replay = 1)
 
     override val remixFlow =
         combine(
@@ -89,7 +86,7 @@ class PlaybackRepositoryImpl(
             sortingPreferences
         ) { remixEntities, songs, sorting ->
             transformRemixes(remixEntities, songs, sorting)
-        }.stateIn(ioScope, SharingStarted.Lazily, emptyList())
+        }.shareIn(ioScope, SharingStarted.Eagerly, replay = 1)
 
     override val playlistFlow = combine(
         playlistRepository.observe().distinctUntilChanged(),
@@ -98,27 +95,46 @@ class PlaybackRepositoryImpl(
         sortingPreferences
     ) { playlistEntities, songs, remixes, sorting ->
         transformPlaylists(playlistEntities, songs, remixes, sorting)
-    }.stateIn(ioScope, SharingStarted.Lazily, emptyList())
+    }.shareIn(ioScope, SharingStarted.Eagerly, replay = 1)
 
     override val historyFlow = combine(
-        historyRepository.observe(),
+        historyRepository.observe().distinctUntilChanged(),
         songFlow,
         remixFlow
     ) { historyEntities, songs, remixes ->
         transformHistory(historyEntities, songs, remixes)
-    }.stateIn(ioScope, SharingStarted.Lazily, emptyList())
+    }.shareIn(ioScope, SharingStarted.Eagerly, replay = 1)
 
     override val songs: List<Playback>
-        get() = songFlow.value
+        get() = songFlow.replayCache.first()
 
     override val remixes: List<Playback>
-        get() = remixFlow.value
+        get() = remixFlow.replayCache.first()
 
     override val playlists: List<Playlist>
-        get() = playlistFlow.value
+        get() = playlistFlow.replayCache.first()
 
+    /**
+     * TODO: When the remixFlow first loads the songs haven't finished yet then all remixes will be
+     *  set to isPlayable=false. When loading history it thinks the remix isn't playable and skips
+     *  it (MediaPlaybackServiceMediaBrowserController::onCustomCommand::(is SessionSyncEvent)). Now
+     *  that the songs are loaded the remixFlow reloads, but the historyFlow does not (for some reason)
+     *
+     *  TODO: Only load remixFlow when songFlow is fully loaded, only load playlistFlow when both
+     *      songFlow and remixFlow are fully loaded, only load historyFlow when songFlow and remixFlow are
+     *      both loaded
+     */
     override val history: List<Playback>
-        get() = historyFlow.value
+        get() = historyFlow.replayCache.first()
+
+    init {
+        // Invalidate the isPlayable cache every time the permissions change
+        uriPermissionRepository.permissions.onEach {
+            synchronized(cacheLock) {
+                permissionCache.clear()
+            }
+        }.launchIn(ioScope)
+    }
 
     override fun setSortingPreferences(sortPrefs: SortingPreferences) {
         _sortingPreferences.update { sortPrefs }
@@ -237,6 +253,8 @@ class PlaybackRepositoryImpl(
     ): List<Playback> {
         assert(songs.all { it.isSong })
         assert(remixes.all { it.isRemix })
+
+        // TODO: If remixes get loaded before songs then there will be many [items == null] and eventChannel calls
 
         return entities.mapNotNull { historyItem ->
             val item = songs.find { historyItem.mediaId == it.mediaId }

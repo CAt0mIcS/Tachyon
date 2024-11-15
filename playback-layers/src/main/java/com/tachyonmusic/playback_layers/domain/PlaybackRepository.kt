@@ -4,14 +4,15 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.playback_layers.SortingPreferences
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface PlaybackRepository {
-    val songFlow: Flow<List<Playback>>
-    val remixFlow: Flow<List<Playback>>
-    val playlistFlow: Flow<List<Playlist>>
+    val songFlow: SharedFlow<List<Playback>>
+    val remixFlow: SharedFlow<List<Playback>>
+    val playlistFlow: SharedFlow<List<Playlist>>
 
-    val historyFlow: Flow<List<Playback>>
+    val historyFlow: SharedFlow<List<Playback>>
 
     val songs: List<Playback>
     val remixes: List<Playback>

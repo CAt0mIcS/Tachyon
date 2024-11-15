@@ -48,6 +48,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -270,7 +271,7 @@ class MediaPlaybackServiceMediaBrowserController(
 
             is SessionSyncEvent -> {
                 log.info("Received state update event with playWhenReady=${event.playWhenReady}")
-                val latest = playbackRepository.history.find { it.isPlayable }
+                val latest = playbackRepository.historyFlow.first().find { it.isPlayable }
                 val newPlayback =
                     if (event.currentPlayback != null && event.currentPlayback?.mediaId == latest?.mediaId)
                         event.currentPlayback
