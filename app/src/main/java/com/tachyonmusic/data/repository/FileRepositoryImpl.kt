@@ -43,6 +43,9 @@ class FileRepositoryImpl(
             val chunkSize =
                 if (filesInDirectory.size < 50) filesInDirectory.size else ceil(filesInDirectory.size * .05f).toInt()
 
+            if(chunkSize == 0)
+                return@withContext emptyList()
+
             for (chunk in filesInDirectory.chunked(chunkSize)) {
                 readableFiles += async {
                     val newFiles = mutableListOf<DocumentFile>()
