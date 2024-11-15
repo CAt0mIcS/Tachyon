@@ -6,6 +6,7 @@ import androidx.documentfile.provider.DocumentFile
 import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.util.File
 import com.tachyonmusic.util.extension
+import com.tachyonmusic.util.maxAsyncChunked
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -40,13 +41,10 @@ class FileRepositoryImpl(
         withContext(Dispatchers.IO) {
             val readableFiles = mutableListOf<Deferred<List<DocumentFile>>>()
             val filesInDirectory = listFiles().toList()
-            val chunkSize =
-                if (filesInDirectory.size < 50) filesInDirectory.size else ceil(filesInDirectory.size * .05f).toInt()
+            if(filesInDirectory.isEmpty())
+                return@withContext  emptyList()
 
-            if(chunkSize == 0)
-                return@withContext emptyList()
-
-            for (chunk in filesInDirectory.chunked(chunkSize)) {
+            for (chunk in filesInDirectory.maxAsyncChunked(minChunkSize = 10)) {
                 readableFiles += async {
                     val newFiles = mutableListOf<DocumentFile>()
                     for (file in chunk) {

@@ -19,6 +19,7 @@ import com.tachyonmusic.playback_layers.domain.events.PlaybackNotFoundEvent
 import com.tachyonmusic.util.EventSeverity
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.domain.EventChannel
+import com.tachyonmusic.util.maxAsyncChunked
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -89,8 +90,7 @@ class UpdateSongDatabase(
             log.debug("Loading ${songsToAddToDatabase.size} songs...")
 
             val songs = mutableListOf<Deferred<List<SongEntity>>>()
-            val chunkSize = ceil(songsToAddToDatabase.size * .05f).toInt()
-            for (pathChunks in songsToAddToDatabase.chunked(chunkSize)) {
+            for (pathChunks in songsToAddToDatabase.maxAsyncChunked()) {
                 songs += async(Dispatchers.IO) {
                     pathChunks.mapNotNull { path ->
                         val newEntity = loadMetadata(path, settings)
@@ -128,8 +128,7 @@ class UpdateSongDatabase(
                  * Load new artwork for newly found [entity]
                  */
 
-                val chunkSize = ceil(songsWithUnknownArtwork.size * .05f).toInt()
-                songsWithUnknownArtwork.chunked(chunkSize).map { entityChunk ->
+                songsWithUnknownArtwork.maxAsyncChunked().map { entityChunk ->
                     async {
                         entityChunk.map { entity ->
                             loadArtworkForEntity(entity, fetchOnline = true) { entityToUpdate ->
@@ -141,7 +140,7 @@ class UpdateSongDatabase(
                             }
                         }
                     }
-                }.awaitAll()
+                }.awaitAll() // TODO: Do we need to await this?
             }
         }
 

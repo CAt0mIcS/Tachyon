@@ -27,6 +27,7 @@ import com.tachyonmusic.playback_layers.toPlayback
 import com.tachyonmusic.util.EventSeverity
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.domain.EventChannel
+import com.tachyonmusic.util.maxAsyncChunked
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -135,12 +136,10 @@ class PlaybackRepositoryImpl(
     ): List<Playback> = withContext(Dispatchers.IO) {
         val playbacks = mutableListOf<Deferred<List<Playback>>>()
 
-        val chunkSize =
-            if (entities.size <= 50) entities.size else ceil(entities.size * .05f).toInt()
-        if (chunkSize == 0)
+        if (entities.isEmpty())
             return@withContext emptyList()
 
-        for (entityChunk in entities.chunked(chunkSize)) {
+        for (entityChunk in entities.maxAsyncChunked()) {
             playbacks += async {
                 entityChunk.map { entity ->
                     if (entity.mediaId.isLocalSong) {

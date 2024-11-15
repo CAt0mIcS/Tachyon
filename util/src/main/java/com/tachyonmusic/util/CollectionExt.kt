@@ -1,5 +1,8 @@
 package com.tachyonmusic.util
 
+import kotlin.math.ceil
+import kotlin.math.max
+
 fun <T> MutableList<T>.removeFirst(predicate: (T) -> Boolean): Boolean {
     for (i in 0 until size) {
         if (predicate(this[i])) {
@@ -17,8 +20,8 @@ fun <T> MutableList<T>.replaceAt(i: Int, value: T): List<T> {
 }
 
 fun <T> MutableList<T>.replaceWith(newValue: T, operator: (T) -> Boolean): List<T> {
-    for(i in indices) {
-        if(operator(this[i]))
+    for (i in indices) {
+        if (operator(this[i]))
             return replaceAt(i, newValue)
     }
     return this
@@ -37,6 +40,13 @@ inline fun <T> Iterable<T>.findAndSkip(skip: Int = 0, predicate: (T) -> Boolean)
 fun <E> Collection<E>.indexOfOrNull(element: E): Int? {
     val i = indexOf(element)
     return if (i == -1) null else i
+}
+
+fun <E> List<E>.maxAsyncChunked(minChunkSize: Int = 0): List<List<E>> {
+    val cpuCores = Runtime.getRuntime().availableProcessors()
+    val maxConcurrentTasks = maxOf(64, cpuCores * 2)
+    val chunkSize = max(ceil((size.toFloat() / maxConcurrentTasks)).toInt(), minChunkSize)
+    return chunked(chunkSize)
 }
 
 fun <E> List<E>.indexOf(pred: (E) -> Boolean): Int? {
