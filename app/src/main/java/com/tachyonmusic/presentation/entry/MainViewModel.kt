@@ -66,6 +66,7 @@ class MainViewModel @Inject constructor(
     val eventChannel = eventChannel.listen()
 
     init {
+        log.debug("Initializing MainViewModel")
         viewModelScope.launch(Dispatchers.IO) {
             cachedMusicDirectories = settingsRepository.getSettings().musicDirectories
             updateSettingsDatabase()
@@ -74,6 +75,14 @@ class MainViewModel @Inject constructor(
                 settingsRepository.observe(),
                 uriPermissionRepository.permissions
             ) { settings, _ ->
+                _composeSettings.update {
+                    ComposeSettings(
+                        settings.animateText,
+                        settings.dynamicColors,
+                        settings.audioUpdateInterval
+                    )
+                }
+
                 val loadingTaskRunning =
                     stateRepository.isLoadingTaskRunning(STATE_LOADING_TASK_STARTUP)
                 if (loadingTaskRunning ||
@@ -85,14 +94,6 @@ class MainViewModel @Inject constructor(
 
                     if (loadingTaskRunning)
                         stateRepository.finishLoadingTask(STATE_LOADING_TASK_STARTUP)
-                }
-
-                _composeSettings.update {
-                    ComposeSettings(
-                        settings.animateText,
-                        settings.dynamicColors,
-                        settings.audioUpdateInterval
-                    )
                 }
             }.collect()
         }

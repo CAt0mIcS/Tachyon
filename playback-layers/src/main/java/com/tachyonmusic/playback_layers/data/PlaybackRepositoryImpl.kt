@@ -279,10 +279,15 @@ class PlaybackRepositoryImpl(
     private fun SinglePlaybackEntity.checkIfPlayable(context: Context): Boolean {
         val key = mediaId.uri ?: return false
 
+        var isPlayable = synchronized(cacheLock) { permissionCache[key] }
+        if (isPlayable != null)
+            return isPlayable
+
+        isPlayable = key.isPlayable(context)
+
         return synchronized(cacheLock) {
-            permissionCache.getOrPut(key) {
-                key.isPlayable(context)
-            }
+            permissionCache[key] = isPlayable
+            isPlayable
         }
     }
 }
