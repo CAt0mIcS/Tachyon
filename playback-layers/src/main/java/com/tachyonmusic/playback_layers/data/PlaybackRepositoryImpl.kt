@@ -28,16 +28,21 @@ import com.tachyonmusic.util.EventSeverity
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.domain.EventChannel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.net.URI
+import kotlin.math.ceil
 
 class PlaybackRepositoryImpl(
     private val songRepository: SongRepository,
@@ -124,20 +129,38 @@ class PlaybackRepositoryImpl(
         _sortingPreferences.update { sortPrefs }
     }
 
-    private fun transformSongs(entities: List<SongEntity>, sorting: SortingPreferences) =
-        entities.map { entity ->
-            if (entity.mediaId.isLocalSong) {
-                entity.toPlayback(
-                    when (entity.artworkType) {
-                        ArtworkType.REMOTE -> RemoteArtwork(URI(entity.artworkUrl))
-                        ArtworkType.EMBEDDED -> EmbeddedArtwork(null, entity.mediaId.uri!!)
-                        else -> null
-                    },
-                    entity.checkIfPlayable(context)
-                )
-            } else
-                TODO("Invalid media id ${entity.mediaId}")
-        }.sortedBy(sorting)
+    private suspend fun transformSongs(
+        entities: List<SongEntity>,
+        sorting: SortingPreferences
+    ): List<Playback> = withContext(Dispatchers.IO) {
+        val playbacks = mutableListOf<Deferred<List<Playback>>>()
+
+        val chunkSize =
+            if (entities.size <= 50) entities.size else ceil(entities.size * .05f).toInt()
+        if (chunkSize == 0)
+            return@withContext emptyList()
+
+        for (entityChunk in entities.chunked(chunkSize)) {
+            playbacks += async {
+                entityChunk.map { entity ->
+                    if (entity.mediaId.isLocalSong) {
+                        entity.toPlayback(
+                            when (entity.artworkType) {
+                                ArtworkType.REMOTE -> RemoteArtwork(URI(entity.artworkUrl))
+                                ArtworkType.EMBEDDED -> EmbeddedArtwork(null, entity.mediaId.uri!!)
+                                else -> null
+                            },
+                            entity.checkIfPlayable(context) // This takes long
+                        )
+                    } else
+                        TODO("Invalid media id ${entity.mediaId}")
+                }
+            }
+        }
+
+        playbacks.awaitAll().flatten().sortedBy(sorting)
+    }
+
 
     private fun transformRemixes(
         entities: List<RemixEntity>,
