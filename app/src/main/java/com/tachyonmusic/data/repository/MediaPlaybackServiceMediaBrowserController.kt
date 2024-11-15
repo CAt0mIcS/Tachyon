@@ -270,7 +270,7 @@ class MediaPlaybackServiceMediaBrowserController(
 
             is SessionSyncEvent -> {
                 log.info("Received state update event with playWhenReady=${event.playWhenReady}")
-                val latest = playbackRepository.getHistory().find { it.isPlayable }
+                val latest = playbackRepository.history.find { it.isPlayable }
                 val newPlayback =
                     if (event.currentPlayback != null && event.currentPlayback?.mediaId == latest?.mediaId)
                         event.currentPlayback

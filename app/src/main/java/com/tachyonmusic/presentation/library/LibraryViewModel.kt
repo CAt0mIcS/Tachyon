@@ -188,7 +188,7 @@ class LibraryViewModel @Inject constructor(
                     else {
                         browser.stop()
                         val newPlayback = withContext(Dispatchers.IO) {
-                            playbackRepository.getHistory().findAndSkip(skip = 1) { it.isPlayable }
+                            playbackRepository.history.findAndSkip(skip = 1) { it.isPlayable }
                         }
                         browser.updatePlayback { newPlayback }
                     }

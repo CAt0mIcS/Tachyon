@@ -32,7 +32,7 @@ class DeletePlayback(
         assert(playback.isRemix)
 
         historyRepository.removeHierarchical(playback.mediaId)
-        val playlists = playbackRepository.getPlaylists()
+        val playlists = playbackRepository.playlists
         for (i in playlists.indices) {
             playlists[i].apply {
                 removePlaybackFromPlaylist(playback, this)

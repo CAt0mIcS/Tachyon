@@ -35,10 +35,13 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
@@ -75,27 +78,27 @@ class PlaybackRepositoryImpl(
     override val sortingPreferences = _sortingPreferences.asStateFlow()
 
     override val songFlow =
-        combine(songRepository.observe(), sortingPreferences) { songEntities, sorting ->
+        combine(songRepository.observe().distinctUntilChanged(), sortingPreferences) { songEntities, sorting ->
             transformSongs(songEntities, sorting)
-        }
+        }.stateIn(ioScope, SharingStarted.Lazily, emptyList())
 
     override val remixFlow =
         combine(
-            remixRepository.observe(),
+            remixRepository.observe().distinctUntilChanged(),
             songFlow,
             sortingPreferences
         ) { remixEntities, songs, sorting ->
             transformRemixes(remixEntities, songs, sorting)
-        }
+        }.stateIn(ioScope, SharingStarted.Lazily, emptyList())
 
     override val playlistFlow = combine(
-        playlistRepository.observe(),
+        playlistRepository.observe().distinctUntilChanged(),
         songFlow,
         remixFlow,
         sortingPreferences
     ) { playlistEntities, songs, remixes, sorting ->
         transformPlaylists(playlistEntities, songs, remixes, sorting)
-    }
+    }.stateIn(ioScope, SharingStarted.Lazily, emptyList())
 
     override val historyFlow = combine(
         historyRepository.observe(),
@@ -103,28 +106,19 @@ class PlaybackRepositoryImpl(
         remixFlow
     ) { historyEntities, songs, remixes ->
         transformHistory(historyEntities, songs, remixes)
-    }
+    }.stateIn(ioScope, SharingStarted.Lazily, emptyList())
 
-    override suspend fun getSongs() =
-        transformSongs(songRepository.getSongs(), sortingPreferences.value)
+    override val songs: List<Playback>
+        get() = songFlow.value
 
-    override suspend fun getRemixes() =
-        transformRemixes(
-            remixRepository.getRemixes(),
-            getSongs(),
-            sortingPreferences.value
-        )
+    override val remixes: List<Playback>
+        get() = remixFlow.value
 
-    override suspend fun getPlaylists() =
-        transformPlaylists(
-            playlistRepository.getPlaylists(),
-            getSongs(),
-            getRemixes(),
-            sortingPreferences.value
-        )
+    override val playlists: List<Playlist>
+        get() = playlistFlow.value
 
-    override suspend fun getHistory() =
-        transformHistory(historyRepository.getHistory(), getSongs(), getRemixes())
+    override val history: List<Playback>
+        get() = historyFlow.value
 
     override fun setSortingPreferences(sortPrefs: SortingPreferences) {
         _sortingPreferences.update { sortPrefs }

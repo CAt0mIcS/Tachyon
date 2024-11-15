@@ -379,7 +379,7 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 future(Dispatchers.IO) {
                     val mediaId = MediaId.deserializeIfValid(mediaItems.first().mediaId)
                     val playlist = if (mediaId?.isLocalPlaylist == true) {
-                        playbackRepository.getPlaylists().find { it.mediaId == mediaId }
+                        playbackRepository.playlists.find { it.mediaId == mediaId }
                     } else {
                         getPlaylistForPlayback(mediaId)
                     } ?: return@future MediaSession.MediaItemsWithStartPosition(

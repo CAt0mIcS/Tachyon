@@ -32,7 +32,6 @@ class RemovePlaybackFromPlaylist(
             }
         }
 
-    suspend operator fun invoke(toRemove: Playback?, i: Int) = withContext(Dispatchers.IO) {
-        invoke(toRemove, playbackRepository.getPlaylists().getOrNull(i))
-    }
+    suspend operator fun invoke(toRemove: Playback?, i: Int) =
+        invoke(toRemove, playbackRepository.playlists.getOrNull(i))
 }

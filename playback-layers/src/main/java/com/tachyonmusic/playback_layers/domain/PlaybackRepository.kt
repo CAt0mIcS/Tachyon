@@ -13,11 +13,11 @@ interface PlaybackRepository {
 
     val historyFlow: Flow<List<Playback>>
 
-    suspend fun getSongs(): List<Playback>
-    suspend fun getRemixes(): List<Playback>
-    suspend fun getPlaylists(): List<Playlist>
+    val songs: List<Playback>
+    val remixes: List<Playback>
+    val playlists: List<Playlist>
 
-    suspend fun getHistory(): List<Playback>
+    val history: List<Playback>
 
     val sortingPreferences: StateFlow<SortingPreferences>
     fun setSortingPreferences(sortPrefs: SortingPreferences)
