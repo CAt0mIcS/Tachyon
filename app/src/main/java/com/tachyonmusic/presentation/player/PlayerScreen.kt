@@ -441,7 +441,6 @@ fun PlayerScreen(
                         .fillMaxWidth()
                         .padding(
                             start = Theme.padding.medium,
-                            top = Theme.padding.medium,
                             end = Theme.padding.medium,
                             bottom = Theme.padding.extraSmall
                         )
