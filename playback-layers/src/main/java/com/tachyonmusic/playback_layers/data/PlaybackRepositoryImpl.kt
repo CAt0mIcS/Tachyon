@@ -34,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -71,11 +72,25 @@ class PlaybackRepositoryImpl(
     private val _sortingPreferences = MutableStateFlow(SortingPreferences())
     override val sortingPreferences = _sortingPreferences.asStateFlow()
 
+    private val flowRecompute = MutableStateFlow(false)
+
+    init {
+        // Invalidate the isPlayable cache every time the permissions change
+        uriPermissionRepository.permissions.onEach {
+            synchronized(cacheLock) {
+                permissionCache.clear()
+            }
+
+            flowRecompute.update { !flowRecompute.value }
+        }.launchIn(ioScope)
+    }
+
     override val songFlow =
         combine(
             songRepository.observe().distinctUntilChanged(),
-            sortingPreferences
-        ) { songEntities, sorting ->
+            sortingPreferences,
+            flowRecompute
+        ) { songEntities, sorting, _ ->
             transformSongs(songEntities, sorting)
         }.shareIn(ioScope, SharingStarted.Eagerly, replay = 1)
 
@@ -127,14 +142,6 @@ class PlaybackRepositoryImpl(
     override val history: List<Playback>
         get() = historyFlow.replayCache.first()
 
-    init {
-        // Invalidate the isPlayable cache every time the permissions change
-        uriPermissionRepository.permissions.onEach {
-            synchronized(cacheLock) {
-                permissionCache.clear()
-            }
-        }.launchIn(ioScope)
-    }
 
     override fun setSortingPreferences(sortPrefs: SortingPreferences) {
         _sortingPreferences.update { sortPrefs }
