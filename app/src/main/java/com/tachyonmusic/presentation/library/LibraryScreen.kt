@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.library
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -66,7 +67,7 @@ object LibraryScreen :
         val playbackItems by viewModel.items.collectAsState()
 
         val listState = rememberLazyListState()
-        LaunchedEffect(listState.firstVisibleItemIndex) { // TODO: Optimize
+        LaunchedEffect(listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index) { // TODO: Optimize
             /**
              * If [listState.firstVisibleItemIndex] changes the coroutine will get cancelled and
              * relaunched. If it changes too fast we don't want to always load artwork, waiting for
@@ -75,9 +76,9 @@ object LibraryScreen :
             delay(200.ms)
             viewModel.loadArtwork(
                 kotlin.math.max(
-                    listState.firstVisibleItemIndex - (listState.layoutInfo.visibleItemsInfo.size + 4),
+                    listState.firstVisibleItemIndex - (listState.layoutInfo.visibleItemsInfo.size + 8),
                     0
-                )..listState.firstVisibleItemIndex + listState.layoutInfo.visibleItemsInfo.size + 4
+                )..listState.firstVisibleItemIndex + listState.layoutInfo.visibleItemsInfo.size + 8
             )
         }
 

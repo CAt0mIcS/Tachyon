@@ -27,7 +27,6 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     playbackRepository: PlaybackRepository,
     private val loadArtworkForPlayback: LoadArtworkForPlayback,
-    mediaBrowser: MediaBrowserController,
     private val dataRepository: DataRepository,
     private val playPlayback: PlayPlayback,
 ) : ViewModel() {
@@ -52,13 +51,6 @@ class HomeViewModel @Inject constructor(
         SharingStarted.Lazily,
         emptyList()
     )
-
-    init {
-        viewModelScope.launch {
-            // Make sure browser repeat mode is up to date with saved one
-            mediaBrowser.setRepeatMode(withContext(Dispatchers.IO) { dataRepository.getData().repeatMode })
-        }
-    }
 
     fun onItemClicked(entity: HomeEntity) {
         viewModelScope.launch(Dispatchers.IO) {

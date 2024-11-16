@@ -129,16 +129,6 @@ class PlaybackRepositoryImpl(
     override val playlists: List<Playlist>
         get() = playlistFlow.replayCache.first()
 
-    /**
-     * TODO: When the remixFlow first loads the songs haven't finished yet then all remixes will be
-     *  set to isPlayable=false. When loading history it thinks the remix isn't playable and skips
-     *  it (MediaPlaybackServiceMediaBrowserController::onCustomCommand::(is SessionSyncEvent)). Now
-     *  that the songs are loaded the remixFlow reloads, but the historyFlow does not (for some reason)
-     *
-     *  TODO: Only load remixFlow when songFlow is fully loaded, only load playlistFlow when both
-     *      songFlow and remixFlow are fully loaded, only load historyFlow when songFlow and remixFlow are
-     *      both loaded
-     */
     override val history: List<Playback>
         get() = historyFlow.replayCache.first()
 
