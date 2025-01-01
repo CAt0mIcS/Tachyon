@@ -116,6 +116,7 @@ dependencies {
     implementation(Dependency.JSON.GSON)
 
     projectCore()
+    projectNativeTemplates()
     projectMedia()
     projectPlaybackLayers()
     projectPlaybackLayerDatabase()

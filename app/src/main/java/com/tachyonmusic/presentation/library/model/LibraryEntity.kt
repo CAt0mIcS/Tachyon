@@ -9,20 +9,18 @@ import com.tachyonmusic.util.displaySubtitle
 import com.tachyonmusic.util.displayTitle
 
 data class LibraryEntity(
-    val title: String,
-    val artist: String,
-    val displayTitle: String,
-    val displaySubtitle: String,
+    val title: String = "",
+    val artist: String = "",
+    val displayTitle: String = "",
+    val displaySubtitle: String = "",
     val mediaId: MediaId,
-    val isPlayable: Boolean,
+    val isPlayable: Boolean = false,
     val album: String = "",
 
     val artwork: Artwork? = null,
-    val albumArtworkSearchQuery: String = ""
-) {
-    val playbackType: PlaybackType
-        get() = mediaId.playbackType
-}
+    val albumArtworkSearchQuery: String = "",
+    val playbackType: PlaybackType = mediaId.playbackType
+)
 
 fun Playback.toLibraryEntity() = LibraryEntity(
     title,
@@ -44,7 +42,7 @@ fun Playlist.toLibraryEntity(): LibraryEntity {
         firstPlayable?.title ?: "",
         firstPlayable?.artist ?: "",
         name,
-        "${playbacks.size} Item${if(playbacks.size == 1)"" else "s"}",
+        "${playbacks.size} Item${if (playbacks.size == 1) "" else "s"}",
         mediaId,
         firstPlayable != null,
         album ?: "",

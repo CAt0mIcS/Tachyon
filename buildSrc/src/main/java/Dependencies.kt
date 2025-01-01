@@ -62,6 +62,8 @@ object Dependency {
         const val CAST_FRAMEWORK = "com.google.android.gms:play-services-cast-framework:21.2.0"
         const val PLAY_UPDATE = "com.google.android.play:app-update:2.1.0"
         const val PLAY_UPDATE_KTX = "com.google.android.play:app-update-ktx:2.1.0"
+        const val BILLING = "com.android.billingclient:billing:7.1.1"
+        const val BILLING_KTX = "com.android.billingclient:billing-ktx:7.1.1"
     }
 
     object JSON {
@@ -114,7 +116,7 @@ object Dependency {
     }
 
     object Ads {
-        const val ADMOB = "com.google.android.gms:play-services-ads:23.1.0"
+        const val ADMOB = "com.google.android.gms:play-services-ads:23.6.0"
     }
 }
 
@@ -214,6 +216,8 @@ fun DependencyHandler.googleCast() {
 fun DependencyHandler.googlePlay() {
     implementation(Dependency.Google.PLAY_UPDATE)
     implementation(Dependency.Google.PLAY_UPDATE_KTX)
+    implementation(Dependency.Google.BILLING)
+    implementation(Dependency.Google.BILLING_KTX)
 }
 
 fun DependencyHandler.ads() {
@@ -249,6 +253,10 @@ fun DependencyHandler.projectMedia() {
 
 fun DependencyHandler.projectCore() {
     implementation(project(":core"))
+}
+
+fun DependencyHandler.projectNativeTemplates() {
+    implementation(project(":nativetemplates"))
 }
 
 fun DependencyHandler.projectMetadataApi() {
