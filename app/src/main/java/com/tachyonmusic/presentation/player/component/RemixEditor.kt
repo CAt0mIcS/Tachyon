@@ -366,7 +366,7 @@ fun RemixEditor(
                         )
                 ) {
                     Column {
-                        Text("Watch one short ad to permanently allow you to save 3 more remixes")
+                        Text("Watch a short ad to permanently allow you to save one more remix")
                         Row(
                             modifier = Modifier
                                 .padding(top = Theme.padding.medium)

@@ -17,3 +17,4 @@ app/release/*.*
 buildsrc/build/
 .idea/
 playback-layers/database/schemas
+nativetemplates/build

@@ -48,6 +48,7 @@ import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.sec
 import kotlinx.coroutines.launch
+import java.util.Random
 
 object LibraryScreen :
     BottomNavigationItem(R.string.btmNav_library, R.drawable.ic_library, "library") {
@@ -226,11 +227,10 @@ object LibraryScreen :
                     Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall)
+                val nativeAds = viewModel.nativeAppInstallAdCache
 
-                val context = LocalContext.current
                 if (playback.playbackType is PlaybackType.Ad.NativeAppInstall) {
-//                    AdmobNativeAppInstall(nativeAd = viewModel.loadAd(playback.mediaId, context))
-                    AdmobNativeAppInstallAd(contentModifier)
+                    AdmobNativeAppInstallAd(contentModifier, nativeAds.getOrNull((0..4).random()))
                 } else {
                     val updatedPlayback by rememberUpdatedState(playback)
                     var showArtworkSelectionDialog by remember { mutableStateOf(false) }

@@ -1,20 +1,13 @@
 package com.tachyonmusic.presentation.library
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdLoader
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdOptions
-import com.google.android.gms.ads.nativead.NativeAdView
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.data.model.NativeInstallAdCache
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.DeletePlayback
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
@@ -32,9 +25,7 @@ import com.tachyonmusic.presentation.library.model.toLibraryEntity
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.copy
-import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.findAndSkip
-import com.tachyonmusic.util.sec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,11 +39,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-private val AD_INSERT_INTERVAL = 10
+private const val AD_INSERT_INTERVAL = 15
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
@@ -69,7 +59,9 @@ class LibraryViewModel @Inject constructor(
     private val assignArtworkToPlayback: AssignArtworkToPlayback,
 
     private val updatePlaybackMetadata: UpdatePlaybackMetadata,
-    private val log: Logger
+    private val log: Logger,
+
+    private val adCache: NativeInstallAdCache
 ) : ViewModel() {
 
     val sortParams = playbackRepository.sortingPreferences
@@ -119,6 +111,9 @@ class LibraryViewModel @Inject constructor(
     private var _artworkLoadingError = MutableStateFlow<UiText?>(null)
     val artworkLoadingError = _artworkLoadingError.asStateFlow()
 
+    val nativeAppInstallAdCache: List<NativeAd>
+        get() = adCache.nativeAppInstallAdCache
+
     private val artworkLoadingRange = MutableStateFlow(0..10)
 
     val items =
@@ -130,6 +125,7 @@ class LibraryViewModel @Inject constructor(
             artworkLoadingRange
         ) { songs, remixes, playlists, filterType, itemsToLoad ->
             val quality = 50
+
             when (filterType) {
                 is PlaybackType.Song -> loadArtworkForPlayback(songs, itemsToLoad, quality).map {
                     it.toLibraryEntity()
@@ -152,12 +148,10 @@ class LibraryViewModel @Inject constructor(
                 }
 
                 else -> emptyList()
-            }.toMutableList().apply {
-                add(
-                    0, LibraryEntity(
-                        mediaId = MediaId("AD0"),
-                        playbackType = PlaybackType.Ad.NativeAppInstall()
-                    )
+            }.insertBeforeEvery(AD_INSERT_INTERVAL) {
+                LibraryEntity(
+                    mediaId = MediaId("Ad$it"),
+                    playbackType = PlaybackType.Ad.NativeAppInstall()
                 )
             }
         }.stateIn(
@@ -166,38 +160,14 @@ class LibraryViewModel @Inject constructor(
             emptyList()
         )
 
+    init {
+        adCache.loadNativeInstallAds()
+    }
 
-//    fun loadAd(mediaId: MediaId, context: Context): NativeAd {
-//        var nativeAdRet: NativeAd? = null
-//        val loader = AdLoader.Builder(context, "ca-app-pub-3940256099942544/2247696110")
-//            .forNativeAd { nativeAd ->
-//                if (nativeAd.mediaContent != null && nativeAd.mediaContent!!.hasVideoContent()
-//                        .not() && nativeAd.headline != null && nativeAd.callToAction != null
-//                ) {
-//                    nativeAdRet = nativeAd
-//                } else {
-//                    nativeAd.destroy()
-//                    log.error("[NativeAd] Ad destroyed due to wrong content")
-//                }
-//            }.withAdListener(object : AdListener() {
-//                override fun onAdFailedToLoad(p0: LoadAdError) {
-//                    log.error("[NativeAd] Failed to load ${p0.message}")
-//                }
-//
-//                override fun onAdLoaded() {
-//                    log.info("[NativeAd] Ad loaded")
-//                }
-//            }).withNativeAdOptions(
-//                NativeAdOptions.Builder().setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
-//                    .build()
-//            ).build()
-//
-//        viewModelScope.launch {
-//            loader.loadAd(AdRequest.Builder().build())
-//        }
-//        runBlocking { delay(10.sec) }
-//        return nativeAdRet!!
-//    }
+    override fun onCleared() {
+        super.onCleared()
+        adCache.unloadNativeInstallAds()
+    }
 
     fun onFilterSongs() {
         _filterType.value = PlaybackType.Song.Local()
@@ -252,7 +222,8 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun loadArtwork(range: IntRange) {
-        artworkLoadingRange.update { range }
+        val rangeToUpdate = removeAdIndices(range)
+        artworkLoadingRange.update { rangeToUpdate }
     }
 
     /**
@@ -320,5 +291,14 @@ class LibraryViewModel @Inject constructor(
             result.add(this[i])
         }
         return result
+    }
+
+    /**
+     * The range received from the UI includes all ad indices which we don't need for ranged
+     * loading of playback artwork. Function removes these unwanted indices
+     */
+    private fun removeAdIndices(range: IntRange): IntRange {
+        val numAds = range.last / AD_INSERT_INTERVAL + 1
+        return (range.first - numAds)..(range.last - numAds)
     }
 }
