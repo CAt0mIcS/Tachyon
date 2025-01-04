@@ -23,6 +23,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,8 +56,8 @@ import com.tachyonmusic.presentation.player.PlayerLayout
 import com.tachyonmusic.presentation.profile.component.OpenDocumentDialog
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.util.EventSeverity
+import kotlinx.coroutines.launch
 
 enum class SwipingStates {
     EXPANDED,
@@ -64,6 +66,8 @@ enum class SwipingStates {
 
 @Composable
 fun MainScreen(
+    updateReadyToInstall: Boolean,
+    updateSnackbarResult: (Boolean) -> Unit,
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val settings by viewModel.composeSettings.collectAsState()
@@ -77,6 +81,27 @@ fun MainScreen(
 
     TachyonTheme(settings = settings) {
         Surface {
+            /***************************************************************************************
+             * Show Messages from [EventChannel]
+             **************************************************************************************/
+            val snackbarHostState = remember { SnackbarHostState() }
+
+            val context = LocalContext.current
+            LaunchedEffect(key1 = true) {
+                viewModel.eventChannel.collect { event ->
+                    if (event.severity > EventSeverity.Debug) {
+                        snackbarHostState.showSnackbar(
+                            event.message.asString(context),
+                            withDismissAction = true,
+                            duration = when (event.severity) {
+                                EventSeverity.Error, EventSeverity.Fatal -> SnackbarDuration.Long
+                                else -> SnackbarDuration.Short
+                            }
+                        )
+                    }
+                }
+            }
+
             if (isLoading) {
                 Dialog(
                     onDismissRequest = { },
@@ -156,6 +181,19 @@ fun MainScreen(
                 }
 
                 return@Surface
+            } else if (updateReadyToInstall) {
+                val appRestartQuestionStr = stringResource(R.string.request_app_restart_for_update)
+                val restartStr = stringResource(R.string.restart)
+                LaunchedEffect(true) {
+                    val result = snackbarHostState.showSnackbar(
+                        appRestartQuestionStr,
+                        restartStr,
+                        true,
+                        SnackbarDuration.Indefinite
+                    )
+
+                    updateSnackbarResult(result == SnackbarResult.ActionPerformed)
+                }
             }
 
 
@@ -171,27 +209,6 @@ fun MainScreen(
                     velocityThreshold = { with(localDensity) { 100.dp.toPx() } },
                     animationSpec = tween(),
                 )
-            }
-
-            /***************************************************************************************
-             * Show Messages from [EventChannel]
-             **************************************************************************************/
-            val snackbarHostState = remember { SnackbarHostState() }
-
-            val context = LocalContext.current
-            LaunchedEffect(key1 = true) {
-                viewModel.eventChannel.collect { event ->
-                    if(event.severity > EventSeverity.Debug) {
-                        snackbarHostState.showSnackbar(
-                            event.message.asString(context),
-                            withDismissAction = true,
-                            duration = when (event.severity) {
-                                EventSeverity.Error, EventSeverity.Fatal -> SnackbarDuration.Long
-                                else -> SnackbarDuration.Short
-                            }
-                        )
-                    }
-                }
             }
 
             Scaffold(
