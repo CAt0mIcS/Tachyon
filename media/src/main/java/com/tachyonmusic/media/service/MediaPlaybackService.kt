@@ -224,15 +224,6 @@ open class MediaPlaybackService : MediaLibraryService(), Player.Listener {
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession =
         mediaSession
 
-//    override fun onTaskRemoved(rootIntent: Intent?) {
-//        super.onTaskRemoved(rootIntent)
-//
-//        // Remove the notification if the playback is paused in the app and it's then swiped from the backstack
-//        // to avoid stale notification
-//        if (!exoPlayer.playWhenReady)
-//            mediaSession.release()
-//    }
-
     override fun onDestroy() {
         getBackStackedActivity()?.let { mediaSession.setSessionActivity(it) }
         ioScope.coroutineContext.cancelChildren()
@@ -241,7 +232,6 @@ open class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         exoPlayer.release()
         castPlayer?.release()
         clearListener()
-
         super.onDestroy()
     }
 
