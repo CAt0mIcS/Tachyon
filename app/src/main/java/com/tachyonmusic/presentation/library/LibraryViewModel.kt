@@ -30,12 +30,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
@@ -111,8 +114,12 @@ class LibraryViewModel @Inject constructor(
     private var _artworkLoadingError = MutableStateFlow<UiText?>(null)
     val artworkLoadingError = _artworkLoadingError.asStateFlow()
 
-    val nativeAppInstallAdCache: List<NativeAd>
-        get() = adCache.nativeAppInstallAdCache
+    val nativeAppInstallAdCache: StateFlow<List<NativeAd>> =
+        adCache.nativeAppInstallAdCache.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            emptyList()
+        )
 
     private val artworkLoadingRange = MutableStateFlow(0..10)
 
@@ -159,15 +166,6 @@ class LibraryViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(),
             emptyList()
         )
-
-    init {
-        adCache.loadNativeInstallAds()
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        adCache.unloadNativeInstallAds()
-    }
 
     fun onFilterSongs() {
         _filterType.value = PlaybackType.Song.Local()

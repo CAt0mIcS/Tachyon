@@ -1,8 +1,6 @@
 package com.tachyonmusic.data.model
 
 import android.content.Context
-import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
@@ -11,15 +9,23 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.tachyonmusic.logger.domain.Logger
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.update
+import kotlin.time.Duration.Companion.milliseconds
 
 class NativeInstallAdCache(@ApplicationContext context: Context, private val log: Logger) {
     private var nativeInstallAdCounter = -1
     private var nativeInstallAdLock = Any()
-    val nativeAppInstallAdCache = mutableStateListOf<NativeAd>()
+
+    private var _nativeAppInstallAdCache = MutableStateFlow<List<NativeAd>>(emptyList())
+    val nativeAppInstallAdCache: Flow<List<NativeAd>> =
+        _nativeAppInstallAdCache.debounce(300.milliseconds)
 
     private val nativeAppInstallAdLoader: AdLoader = AdLoader.Builder(
         context,
-        NATIVE_INSTALL_AD_ID
+        NATIVE_INSTALL_AD_TEST_ID
     ).forNativeAd { nativeAd ->
         // Ensure the ad is of type App Install Ad before displaying
 
@@ -27,8 +33,8 @@ class NativeInstallAdCache(@ApplicationContext context: Context, private val log
 //            if (nativeAd.mediaContent != null && nativeAd.mediaContent!!.hasVideoContent()
 //                    .not() && nativeAd.headline != null && nativeAd.callToAction != null
 //            ) {
-                nativeAppInstallAdCache.add(nativeAd)
-                log.debug("[NativeAppInstallAdCache] Native Install Ad loaded")
+            _nativeAppInstallAdCache.update { it + nativeAd }
+            log.debug("[NativeAppInstallAdCache] Native Install Ad loaded")
 //            } else {
 //                nativeAd.destroy()
 //                log.debug("[NativeAppInstallAdCache] Native Install Ad destroyed due to wrong type")
@@ -49,7 +55,7 @@ class NativeInstallAdCache(@ApplicationContext context: Context, private val log
 
     fun loadNativeInstallAds() {
         synchronized(nativeInstallAdLock) {
-            if (isLoadingNativeInstallAd || nativeAppInstallAdCache.size == 10)
+            if (isLoadingNativeInstallAd || _nativeAppInstallAdCache.value.size == 5)
                 return
 
             log.debug("[NativeAppInstallAdCache] Loading 5 native install ads...")
@@ -62,10 +68,8 @@ class NativeInstallAdCache(@ApplicationContext context: Context, private val log
 
     fun unloadNativeInstallAds() {
         synchronized(nativeInstallAdLock) {
-            for (it in nativeAppInstallAdCache) {
-                it.destroy()
-                nativeAppInstallAdCache.remove(it)
-            }
+            _nativeAppInstallAdCache.value.forEach { it.destroy() }
+            _nativeAppInstallAdCache.update { emptyList() }
             log.debug("[NativeAppInstallAdCache] Unloaded native app install ads")
         }
     }

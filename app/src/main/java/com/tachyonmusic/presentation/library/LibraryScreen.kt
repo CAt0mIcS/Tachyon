@@ -227,7 +227,7 @@ object LibraryScreen :
                     Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall)
-                val nativeAds = viewModel.nativeAppInstallAdCache
+                val nativeAds by viewModel.nativeAppInstallAdCache.collectAsState()
 
                 if (playback.playbackType is PlaybackType.Ad.NativeAppInstall) {
                     AdmobNativeAppInstallAd(contentModifier, nativeAds.getOrNull((0..4).random()))

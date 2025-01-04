@@ -20,11 +20,13 @@ import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.ktx.requestCompleteUpdate
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.data.model.NativeInstallAdCache
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.home.LoadUUIDForSongEntity
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.util.isGoogleCastAvailable
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import com.tachyonmusic.util.ms
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,6 +54,9 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     @Inject
     lateinit var loadUUIDForSongEntity: LoadUUIDForSongEntity
 
+    @Inject
+    lateinit var adCache: NativeInstallAdCache
+
     private var castContext: CastContext? = null
     private lateinit var appUpdateManager: AppUpdateManager
 
@@ -60,10 +65,12 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         adInterface.initialize(this)
+        adCache.loadNativeInstallAds()
 
         // Initialize the Cast context. This is required so that the media route button can be
         // created in the AppBar
-        castContext = CastContext.getSharedInstance(this)
+        if (isGoogleCastAvailable(this))
+            castContext = CastContext.getSharedInstance(this)
 
         volumeControlStream = AudioManager.STREAM_MUSIC
         mediaBrowser.registerLifecycle(lifecycle)
@@ -89,6 +96,7 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        adCache.unloadNativeInstallAds()
         adInterface.release()
     }
 
