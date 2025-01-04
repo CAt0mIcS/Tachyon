@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.snapTo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -68,6 +69,8 @@ enum class SwipingStates {
 fun MainScreen(
     updateReadyToInstall: Boolean,
     updateSnackbarResult: (Boolean) -> Unit,
+    miniplayerSnapPosition: SwipingStates?,
+    onMiniplayerSnapCompleted: () -> Unit,
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val settings by viewModel.composeSettings.collectAsState()
@@ -210,6 +213,15 @@ fun MainScreen(
                     animationSpec = tween(),
                 )
             }
+
+            // Allow ActivityMain to override player position (extended, collapsed)
+            LaunchedEffect(miniplayerSnapPosition) {
+                miniplayerSnapPosition?.let {
+                    anchoredDraggableState.snapTo(it)
+                    onMiniplayerSnapCompleted()
+                }
+            }
+
 
             Scaffold(
                 snackbarHost = { SnackbarHost(snackbarHostState) },

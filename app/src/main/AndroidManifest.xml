@@ -37,6 +37,7 @@
 
         <activity
             android:name="com.tachyonmusic.presentation.entry.ActivityMain"
+            android:launchMode="singleInstance"
             android:exported="true">
 
             <intent-filter>
@@ -58,7 +59,7 @@
        with the Android Auto app.
         -->
         <service
-            android:name="com.tachyonmusic.media.service.MediaPlaybackService"
+            android:name="com.tachyonmusic.data.repository.AppMediaPlaybackService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback"
@@ -66,6 +67,7 @@
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaLibraryService" />
                 <action android:name="android.media.browse.MediaBrowserService" />
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH"/>
             </intent-filter>
 
         </service>

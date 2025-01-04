@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.entry
 
+import android.content.Intent
 import android.media.AudioManager
 import android.os.Bundle
 import android.view.Menu
@@ -39,6 +40,10 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
+    companion object {
+        const val INTENT_ACTION_SHOW_PLAYER = "com.tachyonmusic.ACTION_SHOW_PLAYER"
+    }
+
     @Inject
     lateinit var log: Logger
 
@@ -61,6 +66,7 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     private lateinit var appUpdateManager: AppUpdateManager
 
     private var updateReadyToInstall = MutableStateFlow(false)
+    private var miniplayerSnapPosition = MutableStateFlow<SwipingStates?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,6 +106,13 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
         adInterface.release()
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent?.action == INTENT_ACTION_SHOW_PLAYER) {
+            miniplayerSnapPosition.update { SwipingStates.EXPANDED }
+        }
+    }
+
     override fun onConnected() {
         setupUi()
     }
@@ -121,13 +134,16 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     private fun setupUi() {
         setContent {
             val shouldInstallUpdate by updateReadyToInstall.collectAsState()
+            val miniplayerSnapPos by miniplayerSnapPosition.collectAsState()
             MainScreen(
                 shouldInstallUpdate,
                 updateSnackbarResult = { shouldRestart ->
                     if (shouldRestart)
                         appUpdateManager.completeUpdate()
                     updateReadyToInstall.update { false }
-                }
+                },
+                miniplayerSnapPosition = miniplayerSnapPos,
+                onMiniplayerSnapCompleted = { miniplayerSnapPosition.update { null } }
             )
         }
     }

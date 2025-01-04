@@ -2,8 +2,10 @@ package com.tachyonmusic.core.domain.playback
 
 import android.net.Uri
 import android.os.Bundle
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.UnstableApi
 import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.data.EmbeddedArtwork
@@ -19,6 +21,7 @@ import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.ms
 import java.net.URI
 
+@OptIn(UnstableApi::class)
 data class Playback(
     val mediaId: MediaId,
     val title: String,
@@ -159,6 +162,6 @@ data class Playback(
             )
         }
 
-        fun fromBundle(bundle: Bundle) = fromMediaItem(MediaItem.CREATOR.fromBundle(bundle))
+        fun fromBundle(bundle: Bundle) = fromMediaItem(MediaItem.fromBundle(bundle))
     }
 }

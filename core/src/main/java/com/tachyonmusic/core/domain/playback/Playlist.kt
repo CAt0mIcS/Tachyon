@@ -1,12 +1,15 @@
 package com.tachyonmusic.core.domain.playback
 
 import android.os.Bundle
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.UnstableApi
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 
+@OptIn(UnstableApi::class)
 data class Playlist(
     val mediaId: MediaId,
     val playbacks: List<Playback>,
@@ -58,6 +61,6 @@ data class Playlist(
             )
         }
 
-        fun fromBundle(bundle: Bundle) = fromMediaItem(MediaItem.CREATOR.fromBundle(bundle))
+        fun fromBundle(bundle: Bundle) = fromMediaItem(MediaItem.fromBundle(bundle))
     }
 }

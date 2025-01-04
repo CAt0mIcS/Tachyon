@@ -1,10 +1,17 @@
 package com.tachyonmusic.media.service
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
-import android.widget.Toast
+import androidx.annotation.OptIn
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.media3.cast.CastPlayer
 import androidx.media3.cast.SessionAvailabilityListener
 import androidx.media3.common.*
@@ -66,7 +73,7 @@ import kotlin.random.Random
 
 @UnstableApi
 @AndroidEntryPoint
-class MediaPlaybackService : MediaLibraryService(), Player.Listener {
+open class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     private lateinit var exoPlayer: ExoPlayer
     private lateinit var currentPlayer: CustomPlayer
@@ -179,45 +186,63 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         exoPlayer.addListener(this)
         castPlayer?.addListener(this)
 
-        mediaSession = with(
-            MediaLibrarySession.Builder(this, currentPlayer, MediaLibrarySessionCallback())
-        ) {
-            setId(packageName)
-            packageManager?.getLaunchIntentForPackage(packageName)?.let { sessionIntent ->
-                setSessionActivity(
-                    PendingIntent.getActivity(
-                        this@MediaPlaybackService,
-                        0,
-                        sessionIntent,
-                        PendingIntent.FLAG_IMMUTABLE
-                    )
-                )
+        mediaSession =
+            with(MediaLibrarySession.Builder(this, currentPlayer, MediaLibrarySessionCallback())) {
+                getSingleTopActivity()?.let { setSessionActivity(it) }
+                build()
             }
-            build()
-        }
+
+        setListener(MediaSessionServiceListener())
     }
+
+    /**
+     * Returns the single top session activity. It is used by the notification when the app task is
+     * active and an activity is in the fore or background.
+     *
+     * Tapping the notification then typically should trigger a single top activity. This way, the
+     * user navigates to the previous activity when pressing back.
+     *
+     * If null is returned, [MediaSession.setSessionActivity] is not set by the demo service.
+     */
+    open fun getSingleTopActivity(): PendingIntent? = null
+
+    /**
+     * Returns a back stacked session activity that is used by the notification when the service is
+     * running standalone as a foreground service. This is typically the case after the app has been
+     * dismissed from the recent tasks, or after automatic playback resumption.
+     *
+     * Typically, a playback activity should be started with a stack of activities underneath. This
+     * way, when pressing back, the user doesn't land on the home screen of the device, but on an
+     * activity defined in the back stack.
+     *
+     * See [androidx.core.app.TaskStackBuilder] to construct a back stack.
+     *
+     * If null is returned, [MediaSession.setSessionActivity] is not set by the demo service.
+     */
+    open fun getBackStackedActivity(): PendingIntent? = null
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession =
         mediaSession
 
-    override fun onTaskRemoved(rootIntent: Intent?) {
-        super.onTaskRemoved(rootIntent)
-
-        // Remove the notification if the playback is paused in the app and it's then swiped from the backstack
-        // to avoid stale notification
-        if (!exoPlayer.playWhenReady)
-            mediaSession.release()
-    }
+//    override fun onTaskRemoved(rootIntent: Intent?) {
+//        super.onTaskRemoved(rootIntent)
+//
+//        // Remove the notification if the playback is paused in the app and it's then swiped from the backstack
+//        // to avoid stale notification
+//        if (!exoPlayer.playWhenReady)
+//            mediaSession.release()
+//    }
 
     override fun onDestroy() {
-        super.onDestroy()
+        getBackStackedActivity()?.let { mediaSession.setSessionActivity(it) }
         ioScope.coroutineContext.cancelChildren()
-
         audioEffectController.release()
-
+        mediaSession.release()
         exoPlayer.release()
         castPlayer?.release()
-        mediaSession.release()
+        clearListener()
+
+        super.onDestroy()
     }
 
     private inner class MediaLibrarySessionCallback : MediaLibrarySession.Callback {
@@ -509,6 +534,57 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }
     }
 
+    @OptIn(UnstableApi::class)
+    private inner class MediaSessionServiceListener : Listener {
+
+        /**
+         * This method is only required to be implemented on Android 12 or above when an attempt is made
+         * by a media controller to resume playback when the {@link MediaSessionService} is in the
+         * background.
+         */
+        override fun onForegroundServiceStartNotAllowedException() {
+            if (
+                Build.VERSION.SDK_INT >= 33 &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                // Notification permission is required but not granted
+                return
+            }
+            val notificationManagerCompat =
+                NotificationManagerCompat.from(this@MediaPlaybackService)
+            ensureNotificationChannel(notificationManagerCompat)
+            val builder =
+                NotificationCompat.Builder(this@MediaPlaybackService, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.play)
+                    .setContentTitle(getString(R.string.notification_content_title))
+                    .setStyle(
+                        NotificationCompat.BigTextStyle()
+                            .bigText(getString(R.string.notification_content_text))
+                    )
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+                    .also { builder -> getBackStackedActivity()?.let { builder.setContentIntent(it) } }
+            notificationManagerCompat.notify(NOTIFICATION_ID, builder.build())
+        }
+
+        private fun ensureNotificationChannel(notificationManagerCompat: NotificationManagerCompat) {
+            if (
+                Build.VERSION.SDK_INT < 26 ||
+                notificationManagerCompat.getNotificationChannel(CHANNEL_ID) != null
+            ) {
+                return
+            }
+
+            val channel =
+                NotificationChannel(
+                    CHANNEL_ID,
+                    getString(R.string.notification_content_title),
+                    NotificationManager.IMPORTANCE_DEFAULT,
+                )
+            notificationManagerCompat.createNotificationChannel(channel)
+        }
+    }
 
     /**************************************************************************
      ********** HELPER FUNCTIONS
@@ -624,5 +700,10 @@ class MediaPlaybackService : MediaLibraryService(), Player.Listener {
                 )
             )
         }
+    }
+
+    companion object {
+        private const val NOTIFICATION_ID = 1859
+        private const val CHANNEL_ID = "tachyon_foreground_unable_to_start_notification"
     }
 }
