@@ -54,8 +54,8 @@ object Dependency {
 
     object DaggerHilt {
         const val NAVIGATION_COMPOSE = "androidx.hilt:hilt-navigation-compose:1.0.0"
-        const val HILT_ANDROID = "com.google.dagger:hilt-android:2.50"
-        const val COMPILER = "com.google.dagger:hilt-compiler:2.50"
+        const val HILT_ANDROID = "com.google.dagger:hilt-android:${Index.DAGGER_HILT}"
+        const val COMPILER = "com.google.dagger:hilt-compiler:${Index.DAGGER_HILT}"
     }
 
     object Google {
@@ -295,10 +295,11 @@ fun DependencyHandler.unitTest(
 
 fun DependencyHandler.androidTest(
     configName: String = "androidTestImplementation",
-    addTestUtilsProject: Boolean = true
+    addTestUtilsProject: Boolean = true,
+    di: Boolean = true
 ) {
-
-    kaptAndroidTest(Dependency.Test.DAGGER_TEST_COMPILER)
+    if (di)
+        kaptAndroidTest(Dependency.Test.DAGGER_TEST_COMPILER)
 
     add(configName, Dependency.Test.JUNIT)
     add(configName, Dependency.Test.COMPOSE_TEST)

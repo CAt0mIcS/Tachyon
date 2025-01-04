@@ -184,7 +184,9 @@ fun MainScreen(
                 }
 
                 return@Surface
-            } else if (updateReadyToInstall) {
+            }
+
+            if (updateReadyToInstall) {
                 val appRestartQuestionStr = stringResource(R.string.request_app_restart_for_update)
                 val restartStr = stringResource(R.string.restart)
                 LaunchedEffect(true) {

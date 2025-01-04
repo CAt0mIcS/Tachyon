@@ -17,3 +17,4 @@ app/release/*.*
 buildsrc/build/
 .idea/
 nativetemplates/build
+app/release

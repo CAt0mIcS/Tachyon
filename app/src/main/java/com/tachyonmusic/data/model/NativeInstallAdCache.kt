@@ -25,7 +25,7 @@ class NativeInstallAdCache(@ApplicationContext context: Context, private val log
 
     private val nativeAppInstallAdLoader: AdLoader = AdLoader.Builder(
         context,
-        NATIVE_INSTALL_AD_TEST_ID
+        NATIVE_INSTALL_AD_ID
     ).forNativeAd { nativeAd ->
         // Ensure the ad is of type App Install Ad before displaying
 
