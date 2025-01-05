@@ -4,7 +4,6 @@ package com.tachyonmusic.media.core
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import androidx.media3.common.Bundleable
 import androidx.media3.session.MediaBrowser
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
@@ -16,8 +15,10 @@ import com.tachyonmusic.core.domain.playback.Playback
 private const val actionPrefix = "com.tachyonmusic."
 
 
-sealed interface MediaEvent : Bundleable {
+sealed interface MediaEvent {
     val command: SessionCommand
+
+    fun toBundle(): Bundle
 }
 
 /**

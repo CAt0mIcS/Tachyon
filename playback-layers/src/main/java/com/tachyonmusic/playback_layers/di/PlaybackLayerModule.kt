@@ -1,8 +1,14 @@
 package com.tachyonmusic.playback_layers.di
 
 import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.ToNumberPolicy
+import com.tachyonmusic.core.data.FileSongMetadataExtractor
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.metadata_api.ArtworkFetcher
 import com.tachyonmusic.core.domain.SongMetadataExtractor
+import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.RemixRepository
@@ -20,6 +26,7 @@ import com.tachyonmusic.playback_layers.domain.GetIsInternetConnectionMetered
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
+import com.tachyonmusic.util.data.EventChannelImpl
 import com.tachyonmusic.util.domain.EventChannel
 import dagger.Module
 import dagger.Provides
@@ -31,7 +38,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-class PlaybackLayerRepositoryModule {
+object PlaybackLayerRepositoryModule {
     @Provides
     @Singleton
     fun provideArtworkFetcher() = ArtworkFetcher()
@@ -85,12 +92,23 @@ class PlaybackLayerRepositoryModule {
     fun provideUriPermissionRepository(@ApplicationContext context: Context): UriPermissionRepository =
         UriPermissionRepositoryImpl(context)
 
+
+    @Provides
+    @Singleton
+    fun provideErrorChannel(): EventChannel = EventChannelImpl()
+
+    @Provides
+    @Singleton
+    fun provideSongMetadataExtractor(
+        @ApplicationContext context: Context,
+        logger: Logger
+    ): SongMetadataExtractor = FileSongMetadataExtractor(context.contentResolver, logger)
 }
 
 
 @Module
 @InstallIn(SingletonComponent::class)
-class PlaybackLayerUseCaseModule {
+object PlaybackLayerUseCaseModule {
     @Provides
     @Singleton
     fun provideGetIsInternetConnectionMeteredUseCase(@ApplicationContext context: Context) =

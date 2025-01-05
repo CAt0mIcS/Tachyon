@@ -48,6 +48,7 @@ android {
 //            isDebuggable = false
 //            isShrinkResources = true
             isMinifyEnabled = false
+            isShrinkResources = false
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -85,12 +86,16 @@ android {
         kotlinCompilerExtensionVersion = Index.COMPOSE_COMPILER
     }
 
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "META-INF/LICENSE.md"
             excludes += "META-INF/LICENSE-notice.md"
         }
+    }
+
+    lint {
+        abortOnError = false
     }
 }
 

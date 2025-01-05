@@ -330,36 +330,9 @@ abstract class ReplaceableForwardingPlayer(player: Player) : CustomPlayer {
         player.seekForward()
     }
 
-    /**
-     * Calls [Player.hasPrevious] on the delegate and returns the result.
-     *
-     */
-    @Deprecated("Use {@link #hasPreviousMediaItem()} instead.")
-    override fun hasPrevious(): Boolean {
-        return player.hasPrevious()
-    }
-
-    /**
-     * Calls [Player.hasPreviousWindow] on the delegate and returns the result.
-     *
-     */
-    @Deprecated("Use {@link #hasPreviousMediaItem()} instead.")
-    override fun hasPreviousWindow(): Boolean {
-        return player.hasPreviousWindow()
-    }
-
     /** Calls [Player.hasPreviousMediaItem] on the delegate and returns the result.  */
     override fun hasPreviousMediaItem(): Boolean {
         return player.hasPreviousMediaItem()
-    }
-
-    /**
-     * Calls [Player.previous] on the delegate.
-     *
-     */
-    @Deprecated("Use {@link #seekToPreviousMediaItem()} instead.")
-    override fun previous() {
-        player.previous()
     }
 
     /**

@@ -22,7 +22,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -53,6 +53,10 @@ android {
         )
     }
     namespace = "com.tachyonmusic.core"
+
+    packaging {
+        resources.excludes += "META-INF/gradle/incremental.annotation.processors"
+    }
 }
 
 dependencies {
@@ -70,5 +74,5 @@ dependencies {
     implementation(Dependency.Compose.COMPOSE_MATERIAL3)
 
     unitTest()
-    androidTest()
+    androidTest(di = false)
 }
