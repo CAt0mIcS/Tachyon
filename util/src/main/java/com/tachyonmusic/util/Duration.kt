@@ -1,5 +1,7 @@
 package com.tachyonmusic.util
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.debounce
 import kotlin.time.Duration.Companion.milliseconds
 
 
@@ -66,3 +68,6 @@ inline val Double.h get() = Duration((this * 1000 * 60 * 60).toLong())
 
 
 suspend fun delay(duration: Duration) = kotlinx.coroutines.delay(duration.inWholeMilliseconds)
+
+public fun <T> Flow<T>.debounce(timeout: Duration): Flow<T> =
+    debounce(timeout.inWholeMilliseconds)

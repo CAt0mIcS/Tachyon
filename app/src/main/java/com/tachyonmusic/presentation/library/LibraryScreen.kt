@@ -45,9 +45,13 @@ import com.tachyonmusic.presentation.library.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.AdmobNativeAppInstallAd
 import com.tachyonmusic.presentation.util.asString
+import com.tachyonmusic.util.debounce
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.sec
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.util.Random
 
@@ -60,28 +64,21 @@ object LibraryScreen :
         navController: NavController,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
-        var sortOptionsExpanded by rememberSaveable { mutableStateOf(false) }
-
         val scope = rememberCoroutineScope()
-
-        val filterPlaybackType by viewModel.filterType.collectAsState()
-        val availableSortTypes by viewModel.availableSortTypes.collectAsState()
         val playbackItems by viewModel.items.collectAsState()
 
         val listState = rememberLazyListState()
-        LaunchedEffect(listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index) { // TODO: Optimize
-            /**
-             * If [listState.firstVisibleItemIndex] changes the coroutine will get cancelled and
-             * relaunched. If it changes too fast we don't want to always load artwork, waiting for
-             * the value to stay the same before updating artwork
-             */
-            delay(200.ms)
-            viewModel.loadArtwork(
-                kotlin.math.max(
-                    listState.firstVisibleItemIndex - (listState.layoutInfo.visibleItemsInfo.size + 8),
-                    0
-                )..listState.firstVisibleItemIndex + listState.layoutInfo.visibleItemsInfo.size + 8
-            )
+        LaunchedEffect(listState) { // TODO: Optimize
+            snapshotFlow { listState.firstVisibleItemIndex }
+                .distinctUntilChanged()
+                .debounce(200.ms)
+                .collect { firstVisibleIndex ->
+                    viewModel.loadArtwork(
+                        kotlin.math.max(
+                            firstVisibleIndex - (listState.layoutInfo.visibleItemsInfo.size + 8), 0
+                        )..firstVisibleIndex + listState.layoutInfo.visibleItemsInfo.size + 8
+                    )
+                }
         }
 
         LazyColumn(
@@ -94,8 +91,8 @@ object LibraryScreen :
                     end = Theme.padding.medium
                 ), contentPadding = PaddingValues(bottom = Theme.padding.small)
         ) {
-
             item {
+                val filterPlaybackType by viewModel.filterType.collectAsState()
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -140,8 +137,10 @@ object LibraryScreen :
             }
 
             item {
+                val filterPlaybackType by viewModel.filterType.collectAsState()
+                val availableSortTypes by viewModel.availableSortTypes.collectAsState()
+                var sortOptionsExpanded by rememberSaveable { mutableStateOf(false) }
                 var rowSize by remember { mutableStateOf(Size.Zero) }
-
                 val interactionSource = remember { MutableInteractionSource() }
 
                 Row(modifier = Modifier
@@ -221,6 +220,7 @@ object LibraryScreen :
                     }
                 }
             }
+
 
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
 
