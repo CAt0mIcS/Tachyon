@@ -51,14 +51,6 @@ class UpdateSongDatabase(
 
         val startTime = System.nanoTime()
 
-        /**
-         * TODO: Disabled for now
-         *  Metadata should not be loaded when the song is first added because it is slow for many songs
-         *  (e.g. when opening the app the first time and loading 100+ songs). Instead find some
-         *  other place to load it! It also should only try loading if we have an internet connection! (currently gets stuck loading in offline mode)
-         */
-        settings.autoDownloadSongMetadata = false
-
         val songsToAddToDatabase = fileRepository.getFilesInDirectoriesWithExtensions(
             settings.musicDirectories,
             listOf("mp3")
@@ -84,8 +76,6 @@ class UpdateSongDatabase(
             mediaIdsInSongRepository.contains(MediaId.ofLocalSong(it.uri))
         }
 
-        // TODO: Better async song loading?
-        // TODO: Is chunked loading faster than creating a lot of async tasks
         if (songsToAddToDatabase.isNotEmpty()) {
             log.debug("Loading ${songsToAddToDatabase.size} songs...")
 
@@ -93,7 +83,7 @@ class UpdateSongDatabase(
             for (pathChunks in songsToAddToDatabase.maxAsyncChunked()) {
                 songs += async(Dispatchers.IO) {
                     pathChunks.mapNotNull { path ->
-                        val newEntity = loadMetadata(path, settings)
+                        val newEntity = loadMetadata(path)
                         if (newEntity == null) {
                             eventChannel.push(
                                 PlaybackNotFoundEvent(
@@ -115,49 +105,20 @@ class UpdateSongDatabase(
             log.debug("Loaded ${songsToAddToDatabase.size} songs")
         }
 
-
-        /**
-         * Find artwork for all playbacks that have not previously tried to fetch some
-         */
-        if (settings.autoDownloadSongMetadata) {
-            val songsWithUnknownArtwork =
-                songRepo.getSongs().filter { it.artworkType == ArtworkType.UNKNOWN }
-            log.debug("Trying to find artwork for ${songsWithUnknownArtwork.size} unknowns...")
-            if (songsWithUnknownArtwork.isNotEmpty()) {
-                /**
-                 * Load new artwork for newly found [entity]
-                 */
-
-                songsWithUnknownArtwork.maxAsyncChunked().map { entityChunk ->
-                    async {
-                        entityChunk.map { entity ->
-                            loadArtworkForEntity(entity, fetchOnline = true) { entityToUpdate ->
-                                assignArtworkToPlayback(
-                                    entityToUpdate.mediaId,
-                                    entityToUpdate.artworkType,
-                                    entityToUpdate.artworkUrl
-                                )
-                            }
-                        }
-                    }
-                }.awaitAll() // TODO: Do we need to await this?
-            }
-        }
-
         val endTime = System.nanoTime()
         log.debug("UpdateSongDatabase took ${(endTime - startTime).toFloat() / 1000000f} ms")
 
         stateRepository.finishLoadingTask("UpdateSongDatabase::loadingNewSongs")
     }
 
-    private suspend fun loadMetadata(path: DocumentFile, settings: SettingsEntity) =
+    private suspend fun loadMetadata(path: DocumentFile) =
         withContext(Dispatchers.IO) {
             val metadata = metadataExtractor.loadMetadata(path.uri)
 
             if (metadata == null)
                 null
             else {
-                var entity = SongEntity(
+                val entity = SongEntity(
                     MediaId.ofLocalSong(path.uri),
                     metadata.title ?: path.name ?: context.getString(R.string.unknown_media_title),
                     metadata.artist ?: context.getString(R.string.unknown_media_artist),
@@ -165,17 +126,12 @@ class UpdateSongDatabase(
                     album = metadata.album
                 )
 
-                if (settings.autoDownloadSongMetadata) {
-                    if (metadata.title != null && metadata.artist != null)
-                        entity = loadUUIDForSongEntity(entity) ?: entity
-                }
-
                 loadArtworkForEntity(
                     entity,
-                    fetchOnline = settings.autoDownloadSongMetadata
+                    fetchOnline = false
                 ) { toUpdate ->
-                    entity.artworkType = toUpdate.artworkType
-                    entity.artworkUrl = toUpdate.artworkUrl
+                    if (toUpdate.artworkType == ArtworkType.EMBEDDED)
+                        entity.artworkType = ArtworkType.EMBEDDED
                 }
                 entity
             }
