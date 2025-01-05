@@ -1,5 +1,6 @@
 package com.tachyonmusic.presentation.library
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -230,7 +231,10 @@ object LibraryScreen :
                 val nativeAds by viewModel.nativeAppInstallAdCache.collectAsState()
 
                 if (playback.playbackType is PlaybackType.Ad.NativeAppInstall) {
-                    AdmobNativeAppInstallAd(contentModifier, nativeAds.getOrNull(playback.mediaId.source.toIntOrNull() ?: Int.MAX_VALUE))
+                    AdmobNativeAppInstallAd(
+                        contentModifier,
+                        nativeAds.getOrNull(playback.mediaId.source.toIntOrNull() ?: Int.MAX_VALUE)
+                    )
                 } else {
                     val updatedPlayback by rememberUpdatedState(playback)
                     var showArtworkSelectionDialog by remember { mutableStateOf(false) }

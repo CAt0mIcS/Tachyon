@@ -43,7 +43,8 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-private const val AD_INSERT_INTERVAL = 15
+// TODO: Move
+const val AD_INSERT_INTERVAL = 15
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
@@ -154,9 +155,8 @@ class LibraryViewModel @Inject constructor(
 
                 else -> emptyList()
             }.insertBeforeEvery(AD_INSERT_INTERVAL) {
-                val idx = (0..4).random()
                 LibraryEntity(
-                    mediaId = MediaId("$idx"),
+                    mediaId = MediaId("${it / AD_INSERT_INTERVAL}"),
                     playbackType = PlaybackType.Ad.NativeAppInstall()
                 )
             }
