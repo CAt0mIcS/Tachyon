@@ -62,7 +62,7 @@ class LibraryViewModel @Inject constructor(
     private val updatePlaybackMetadata: UpdatePlaybackMetadata,
     private val log: Logger,
 
-    private val adInterface: AdInterface
+    adInterface: AdInterface
 ) : ViewModel() {
 
     val sortParams = playbackRepository.sortingPreferences
@@ -154,8 +154,9 @@ class LibraryViewModel @Inject constructor(
 
                 else -> emptyList()
             }.insertBeforeEvery(AD_INSERT_INTERVAL) {
+                val idx = (0..4).random()
                 LibraryEntity(
-                    mediaId = MediaId("Ad$it"),
+                    mediaId = MediaId("$idx"),
                     playbackType = PlaybackType.Ad.NativeAppInstall()
                 )
             }

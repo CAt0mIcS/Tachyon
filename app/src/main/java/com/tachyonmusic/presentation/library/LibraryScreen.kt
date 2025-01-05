@@ -230,7 +230,7 @@ object LibraryScreen :
                 val nativeAds by viewModel.nativeAppInstallAdCache.collectAsState()
 
                 if (playback.playbackType is PlaybackType.Ad.NativeAppInstall) {
-                    AdmobNativeAppInstallAd(contentModifier, nativeAds.getOrNull((0..4).random()))
+                    AdmobNativeAppInstallAd(contentModifier, nativeAds.getOrNull(playback.mediaId.source.toIntOrNull() ?: Int.MAX_VALUE))
                 } else {
                     val updatedPlayback by rememberUpdatedState(playback)
                     var showArtworkSelectionDialog by remember { mutableStateOf(false) }
