@@ -7,7 +7,7 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
-import com.tachyonmusic.data.model.NativeInstallAdCache
+import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.DeletePlayback
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
@@ -33,12 +33,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.forEach
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
@@ -64,7 +62,7 @@ class LibraryViewModel @Inject constructor(
     private val updatePlaybackMetadata: UpdatePlaybackMetadata,
     private val log: Logger,
 
-    private val adCache: NativeInstallAdCache
+    private val adInterface: AdInterface
 ) : ViewModel() {
 
     val sortParams = playbackRepository.sortingPreferences
@@ -115,7 +113,7 @@ class LibraryViewModel @Inject constructor(
     val artworkLoadingError = _artworkLoadingError.asStateFlow()
 
     val nativeAppInstallAdCache: StateFlow<List<NativeAd>> =
-        adCache.nativeAppInstallAdCache.stateIn(
+        adInterface.nativeAppInstallAdCache.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
             emptyList()

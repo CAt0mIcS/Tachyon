@@ -2,9 +2,10 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import android.content.Context
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.data.model.NativeInstallAdCache
 import com.tachyonmusic.data.model.InterstitialRewardAd
 import com.tachyonmusic.data.repository.AndroidAdInterface
 import com.tachyonmusic.data.repository.FileRepositoryImpl
@@ -327,6 +328,7 @@ object AppRepositoryModule {
     @Singleton
     fun provideStateRepository(logger: Logger): StateRepository = StateRepositoryImpl(logger)
 
+    @OptIn(UnstableApi::class)
     @Provides
     @Singleton
     fun provideMediaBrowserController(
@@ -354,11 +356,6 @@ object AppRepositoryModule {
             ConsoleUiTextLogger(context)
         )
     )
-
-    @Provides
-    @Singleton
-    fun provideAdCache(@ApplicationContext context: Context, logger: Logger): NativeInstallAdCache =
-        NativeInstallAdCache(context, logger)
 
     @Provides
     @Singleton

@@ -19,7 +19,6 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.tachyonmusic.app.R
-import com.tachyonmusic.data.model.NativeInstallAdCache
 import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.home.LoadUUIDForSongEntity
@@ -54,9 +53,6 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     @Inject
     lateinit var loadUUIDForSongEntity: LoadUUIDForSongEntity
 
-    @Inject
-    lateinit var adCache: NativeInstallAdCache
-
     private var castContext: CastContext? = null
     private lateinit var appUpdateManager: AppUpdateManager
 
@@ -71,7 +67,10 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         adInterface.initialize(this)
-        adCache.loadNativeInstallAds()
+
+        // TODO: Load ads only when they might be necessary
+        adInterface.loadNativeInstallAds(this)
+        adInterface.loadRewardAd(this)
 
         // Initialize the Cast context. This is required so that the media route button can be
         // created in the AppBar
@@ -102,7 +101,6 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        adCache.unloadNativeInstallAds()
         adInterface.release()
     }
 
