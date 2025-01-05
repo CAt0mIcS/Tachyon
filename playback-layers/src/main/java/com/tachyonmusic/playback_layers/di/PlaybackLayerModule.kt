@@ -1,20 +1,16 @@
 package com.tachyonmusic.playback_layers.di
 
 import android.content.Context
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.ToNumberPolicy
 import com.tachyonmusic.core.data.FileSongMetadataExtractor
-import com.tachyonmusic.core.domain.MediaId
-import com.tachyonmusic.metadata_api.ArtworkFetcher
 import com.tachyonmusic.core.domain.SongMetadataExtractor
-import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.metadata_api.ArtworkFetcher
+import com.tachyonmusic.playback_layers.data.AndroidNetworkMonitor
 import com.tachyonmusic.playback_layers.data.ArtworkCodexImpl
 import com.tachyonmusic.playback_layers.data.ArtworkLoaderImpl
 import com.tachyonmusic.playback_layers.data.PlaybackRepositoryImpl
@@ -22,7 +18,7 @@ import com.tachyonmusic.playback_layers.data.PredefinedPlaylistsRepositoryImpl
 import com.tachyonmusic.playback_layers.data.UriPermissionRepositoryImpl
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.playback_layers.domain.ArtworkLoader
-import com.tachyonmusic.playback_layers.domain.GetIsInternetConnectionMetered
+import com.tachyonmusic.playback_layers.domain.NetworkMonitor
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
@@ -103,15 +99,9 @@ object PlaybackLayerRepositoryModule {
         @ApplicationContext context: Context,
         logger: Logger
     ): SongMetadataExtractor = FileSongMetadataExtractor(context.contentResolver, logger)
-}
 
-
-@Module
-@InstallIn(SingletonComponent::class)
-object PlaybackLayerUseCaseModule {
     @Provides
     @Singleton
-    fun provideGetIsInternetConnectionMeteredUseCase(@ApplicationContext context: Context) =
-        GetIsInternetConnectionMetered(context)
-
+    fun provideNetworkMonitor(@ApplicationContext context: Context): NetworkMonitor =
+        AndroidNetworkMonitor(context)
 }

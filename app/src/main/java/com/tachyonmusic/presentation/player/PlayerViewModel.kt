@@ -2,16 +2,20 @@ package com.tachyonmusic.presentation.player
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.SettingsEntity
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
+import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
+import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.domain.use_case.player.CreateAndSaveNewPlaylist
 import com.tachyonmusic.domain.use_case.player.GetCurrentPosition
 import com.tachyonmusic.domain.use_case.player.GetPlaybackChildren
@@ -19,6 +23,9 @@ import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.player.RemovePlaybackFromPlaylist
 import com.tachyonmusic.domain.use_case.player.SavePlaybackToPlaylist
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
+import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.playback_layers.domain.ArtworkCodex
+import com.tachyonmusic.playback_layers.domain.NetworkMonitor
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.isPredefined
@@ -36,6 +43,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -44,6 +52,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -53,6 +62,10 @@ class PlayerViewModel @Inject constructor(
     playbackRepository: PlaybackRepository,
     loadArtworkForPlayback: LoadArtworkForPlayback,
     settingsRepository: SettingsRepository,
+    songRepository: SongRepository,
+    artworkCodex: ArtworkCodex,
+    assignArtworkToPlayback: AssignArtworkToPlayback,
+    networkMonitor: NetworkMonitor,
 
     private val getCurrentPlaybackPos: GetCurrentPosition,
     private val seekToPosition: SeekToPosition,
@@ -65,7 +78,9 @@ class PlayerViewModel @Inject constructor(
 
     private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
     private val removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
-    private val createAndSaveNewPlaylist: CreateAndSaveNewPlaylist
+    private val createAndSaveNewPlaylist: CreateAndSaveNewPlaylist,
+
+    private val log: Logger
 ) : ViewModel() {
 
     /**************************************************************************
@@ -98,11 +113,55 @@ class PlayerViewModel @Inject constructor(
     private val _error = MutableStateFlow<UiText?>(null)
     val error: StateFlow<UiText?> = _error
 
+    private val networkInfo = networkMonitor.networkConnectionState.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        NetworkMonitor.NetworkInfo(connectionStatus = NetworkMonitor.ConnectionStatus.Disconnected)
+    )
+
     init {
         settingsRepository.observe().onEach {
             showMillisecondsInPositionText = it.shouldMillisecondsBeShown
             audioUpdateInterval = it.audioUpdateInterval
         }.launchIn(viewModelScope)
+
+
+        viewModelScope.launch(Dispatchers.IO) {
+            recentlyPlayedPos = getRecentlyPlayed()?.position
+
+            _playback.onEach { pb ->
+                /**
+                 * TODO: Optimize
+                 * TODO: Load MusicBrainz MBID
+                 * TODO: Update _playback state when new artwork is found
+                 */
+
+                val settings = settingsRepository.getSettings()
+                if (pb == null || !settings.autoDownloadSongMetadata || pb.artwork != null)
+                    return@onEach
+                if (settings.autoDownloadSongMetadataWifiOnly && networkInfo.value.isMetered)
+                    return@onEach
+
+                val songEntity = songRepository.findByMediaId(pb.mediaId) ?: return@onEach
+                // Already searched artwork for playback before -> Ignore it
+                if(songEntity.artworkType == ArtworkType.NO_ARTWORK)
+                    return@onEach
+
+                log.info("[PlayerViewModel] Trying to find artwork for ${songEntity.mediaId}...")
+                artworkCodex.awaitOrLoad(songEntity, fetchOnline = true).onEach {
+                    val entityToUpdate = it.data?.entityToUpdate
+                    if (entityToUpdate != null) {
+                        log.info("[PlayerViewModel] Updating entity ${entityToUpdate.mediaId} with artwork type ${entityToUpdate.artworkType} and url ${entityToUpdate.artworkUrl}")
+                        assignArtworkToPlayback(
+                            entityToUpdate.mediaId,
+                            entityToUpdate.artworkType,
+                            entityToUpdate.artworkUrl
+                        )
+                    }
+                }.collect()
+
+            }.collect()
+        }
     }
 
 
@@ -123,12 +182,6 @@ class PlayerViewModel @Inject constructor(
     fun seekTo(pos: Duration) = seekToPosition(pos)
     fun seekBack() = seekToPosition(getCurrentPosition() - seekIncrements.value.back)
     fun seekForward() = seekToPosition(getCurrentPosition() + seekIncrements.value.forward)
-
-    init {
-        viewModelScope.launch(Dispatchers.IO) {
-            recentlyPlayedPos = getRecentlyPlayed()?.position
-        }
-    }
 
     fun pauseResume() {
         if (isPlaying.value)
