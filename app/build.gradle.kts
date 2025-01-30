@@ -100,7 +100,7 @@ android {
 }
 
 dependencies {
-    implementation("com.google.firebase:firebase-crashlytics:19.2.0")
+    firebaseAnalytics()
     googleCast()
     googlePlay()
     json()

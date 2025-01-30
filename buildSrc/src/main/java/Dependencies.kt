@@ -120,17 +120,12 @@ object Dependency {
     }
 }
 
-fun DependencyHandler.firebase() {
-    implementation(platform(Dependency.Firebase.BOM))
-    implementation(Dependency.Firebase.CORE)
-    implementation(Dependency.Firebase.AUTH)
-    implementation(Dependency.Firebase.FIRESTORE)
-}
-
 fun DependencyHandler.firebaseAnalytics() {
-    implementation(Dependency.Firebase.ANALYTICS)
-    implementation(Dependency.Firebase.CRASHLYTICS)
-    implementation(Dependency.Firebase.PERFORMANCE)
+    implementation(platform(Dependency.Firebase.BOM))
+
+    releaseImplementation(Dependency.Firebase.ANALYTICS)
+    releaseImplementation(Dependency.Firebase.CRASHLYTICS)
+    releaseImplementation(Dependency.Firebase.PERFORMANCE)
 }
 
 fun DependencyHandler.compose() {
@@ -336,6 +331,10 @@ fun DependencyHandler.implementation(dep: org.gradle.api.artifacts.Dependency) {
 
 private fun DependencyHandler.debugImplementation(depName: String) {
     add("debugImplementation", depName)
+}
+
+private fun DependencyHandler.releaseImplementation(depName: String) {
+    add("releaseImplementation", depName)
 }
 
 private fun DependencyHandler.kapt(depName: String) {
