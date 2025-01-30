@@ -37,8 +37,9 @@ data class DataEntity(
      * an ad
      */
     var maxRemixCount: Int = 10,
+    var onboardingCompleted: Boolean = false,
 
-    @PrimaryKey var id: Int = 0
+    @PrimaryKey var id: Int = 0,
 )
 
 
@@ -52,6 +53,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
         element<Int>("RepeatMode", isOptional = true)
         element<Int>("MaxRemixCount", isOptional = true)
         element<Int>("Id", isOptional = true)
+        element<Boolean>("OnboardingCompleted", isOptional = true)
     }
 
     override fun deserialize(decoder: Decoder) = decoder.decodeStructure(descriptor) {
@@ -63,6 +65,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
         var repeatMode: RepeatMode = RepeatMode.All
         var maxRemixCount = 0
         var id = 0
+        var onboardingCompleted = false
 
         loop@ while (true) {
             when (val index = decodeElementIndex(descriptor)) {
@@ -83,6 +86,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
                 5 -> repeatMode = RepeatMode.fromId(decodeIntElement(descriptor, 5))
                 6 -> maxRemixCount = decodeIntElement(descriptor, 6)
                 7 -> id = decodeIntElement(descriptor, 7)
+                8 -> onboardingCompleted = decodeBooleanElement(descriptor, 8)
 
                 else -> throw SerializationException("Unexpected index $index")
             }
@@ -96,6 +100,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
             recentlyPlayedArtworkUrl,
             repeatMode,
             maxRemixCount,
+            onboardingCompleted,
             id
         )
     }
@@ -114,6 +119,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
             encodeIntElement(descriptor, 5, value.repeatMode.id)
             encodeIntElement(descriptor, 6, value.maxRemixCount)
             encodeIntElement(descriptor, 7, value.id)
+            encodeBooleanElement(descriptor, 8, value.onboardingCompleted)
         }
     }
 }

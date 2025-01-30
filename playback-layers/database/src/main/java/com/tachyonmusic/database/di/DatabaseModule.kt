@@ -3,7 +3,6 @@ package com.tachyonmusic.database.di
 import android.app.Application
 import androidx.room.Room
 import com.tachyonmusic.database.data.data_source.Database
-import com.tachyonmusic.database.data.data_source.room.MIGRATION_5_6
 import com.tachyonmusic.database.data.data_source.room.RoomDatabase
 import com.tachyonmusic.database.data.repository.RoomDataRepository
 import com.tachyonmusic.database.data.repository.RoomHistoryRepository
@@ -32,7 +31,7 @@ object DatabaseModule {
         app,
         RoomDatabase::class.java,
         Database.NAME
-    ).addMigrations(MIGRATION_5_6).build()
+    ).addMigrations().build()
 }
 
 @Module

@@ -37,15 +37,9 @@ import kotlinx.serialization.json.encodeToJsonElement
         HistoryEntity::class,
         DataEntity::class
     ],
-    version = 7,
+    version = 1,
     exportSchema = true,
-    autoMigrations = [
-        AutoMigration(from = 1, to = 2),
-        AutoMigration(from = 2, to = 3),
-        AutoMigration(from = 3, to = 4),
-        AutoMigration(from = 4, to = 5),
-        AutoMigration(from = 6, to = 7)
-    ]
+    autoMigrations = []
 )
 @TypeConverters(Converters::class)
 abstract class RoomDatabase : androidx.room.RoomDatabase(), Database {
@@ -100,11 +94,4 @@ abstract class RoomDatabase : androidx.room.RoomDatabase(), Database {
 
     override val readableDatabasePath: String
         get() = openHelper.readableDatabase.path!!
-}
-
-
-internal val MIGRATION_5_6 = object : Migration(5, 6) {
-    override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("ALTER TABLE $DATA_DATABASE_TABLE_NAME ADD COLUMN maxRemixCount INTEGER NOT NULL DEFAULT 10")
-    }
 }

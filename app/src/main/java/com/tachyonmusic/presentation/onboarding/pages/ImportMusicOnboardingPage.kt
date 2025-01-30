@@ -31,6 +31,7 @@ import com.tachyonmusic.presentation.onboarding.AnimatedButton
 import com.tachyonmusic.presentation.onboarding.OnboardingPage
 import com.tachyonmusic.presentation.onboarding.OnboardingViewModel
 import com.tachyonmusic.presentation.profile.component.OpenDocumentDialog
+import com.tachyonmusic.presentation.theme.Theme
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
@@ -44,10 +45,18 @@ class ImportMusicOnboardingPage(override val index: Int) : OnboardingPage {
     ) {
         val requiredMusicDirsAfterDbImport by viewModel.requiredMusicDirectoriesAfterDatabaseImport.collectAsState()
         val musicImported by viewModel.musicDirectorySelected.collectAsState()
+        val readyToAdvance = musicImported && requiredMusicDirsAfterDbImport.isEmpty()
         LaunchedEffect(musicImported) {
             if (pagerState.currentPage == index) {
-                userScrollEnabledState.update { musicImported }
-                if (musicImported)
+                userScrollEnabledState.update { readyToAdvance }
+                if (readyToAdvance)
+                    pagerState.animateScrollToPage(index + 1)
+            }
+        }
+        LaunchedEffect(requiredMusicDirsAfterDbImport) {
+            if (pagerState.currentPage == index) {
+                userScrollEnabledState.update { readyToAdvance }
+                if (readyToAdvance)
                     pagerState.animateScrollToPage(index + 1)
             }
         }
@@ -93,16 +102,16 @@ class ImportMusicOnboardingPage(override val index: Int) : OnboardingPage {
                     textAlign = TextAlign.Center
                 )
 
-                Row(modifier = Modifier.weight(1f)) {
+                Row(modifier = Modifier.weight(1f).padding(horizontal = Theme.padding.large)) {
                     AnimatedButton(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.weight(1f),
                         visible = pagerState.currentPage == index,
                         onClick = { showUriPermissionDialog = true }) {
                         Text("Select Music Directory")
                     }
 
                     AnimatedButton(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.weight(1f),
                         visible = pagerState.currentPage == index,
                         onClick = { showImportDbDialog = true }) {
                         Text("Import Database")

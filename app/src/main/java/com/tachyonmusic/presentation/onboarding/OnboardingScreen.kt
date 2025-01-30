@@ -96,28 +96,21 @@ object OnboardingScreen {
 
 @Composable
 fun AnimatedButton(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     visible: Boolean,
     onClick: () -> Unit,
     content: @Composable RowScope.() -> Unit
 ) {
-    Row(
-        modifier = modifier
-            .padding(horizontal = 40.dp),
-        verticalAlignment = Alignment.Top,
-        horizontalArrangement = Arrangement.Center
+    AnimatedVisibility(
+        modifier = modifier,
+        visible = visible
     ) {
-        AnimatedVisibility(
-            modifier = Modifier.fillMaxWidth(),
-            visible = visible
-        ) {
-            Button(
-                onClick = onClick,
-                colors = ButtonDefaults.buttonColors(
-                    contentColor = Color.White
-                ),
-                content = content
-            )
-        }
+        Button(
+            onClick = onClick,
+            colors = ButtonDefaults.buttonColors(
+                contentColor = Color.White
+            ),
+            content = content
+        )
     }
 }

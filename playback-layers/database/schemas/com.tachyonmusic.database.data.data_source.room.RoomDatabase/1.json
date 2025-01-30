@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "33564fcb201368a3077283e85a712c8c",
+    "identityHash": "d3a1e654f0cfda5bf94b67855ab43954",
     "entities": [
       {
         "tableName": "Settings",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ignoreAudioFocus` INTEGER NOT NULL, `autoDownloadAlbumArtwork` INTEGER NOT NULL, `autoDownloadAlbumArtworkWifiOnly` INTEGER NOT NULL, `combineDifferentPlaybackTypes` INTEGER NOT NULL, `audioUpdateInterval` INTEGER NOT NULL, `maxPlaybacksInHistory` INTEGER NOT NULL, `seekForwardIncrement` INTEGER NOT NULL, `seekBackIncrement` INTEGER NOT NULL, `animateText` INTEGER NOT NULL, `shouldMillisecondsBeShown` INTEGER NOT NULL, `playNewlyCreatedCustomizedSong` INTEGER NOT NULL, `excludedSongFiles` TEXT NOT NULL, `musicDirectories` TEXT NOT NULL, `id` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ignoreAudioFocus` INTEGER NOT NULL, `autoDownloadAlbumArtwork` INTEGER NOT NULL, `autoDownloadAlbumArtworkWifiOnly` INTEGER NOT NULL, `combineDifferentPlaybackTypes` INTEGER NOT NULL, `dynamicColors` INTEGER NOT NULL DEFAULT true, `audioUpdateInterval` INTEGER NOT NULL, `maxPlaybacksInHistory` INTEGER NOT NULL, `seekForwardIncrement` INTEGER NOT NULL, `seekBackIncrement` INTEGER NOT NULL, `animateText` INTEGER NOT NULL, `shouldMillisecondsBeShown` INTEGER NOT NULL, `playNewlyCreatedCustomizedSong` INTEGER NOT NULL, `excludedSongFiles` TEXT NOT NULL, `musicDirectories` TEXT NOT NULL, `id` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "ignoreAudioFocus",
@@ -15,13 +15,13 @@
             "notNull": true
           },
           {
-            "fieldPath": "autoDownloadAlbumArtwork",
+            "fieldPath": "autoDownloadSongMetadata",
             "columnName": "autoDownloadAlbumArtwork",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "autoDownloadAlbumArtworkWifiOnly",
+            "fieldPath": "autoDownloadSongMetadataWifiOnly",
             "columnName": "autoDownloadAlbumArtworkWifiOnly",
             "affinity": "INTEGER",
             "notNull": true
@@ -31,6 +31,13 @@
             "columnName": "combineDifferentPlaybackTypes",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "dynamicColors",
+            "columnName": "dynamicColors",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "true"
           },
           {
             "fieldPath": "audioUpdateInterval",
@@ -69,7 +76,7 @@
             "notNull": true
           },
           {
-            "fieldPath": "playNewlyCreatedCustomizedSong",
+            "fieldPath": "playNewlyCreatedRemix",
             "columnName": "playNewlyCreatedCustomizedSong",
             "affinity": "INTEGER",
             "notNull": true
@@ -104,7 +111,7 @@
       },
       {
         "tableName": "Songs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`isHidden` INTEGER NOT NULL, `artworkType` TEXT NOT NULL, `artworkUrl` TEXT, `title` TEXT NOT NULL, `artist` TEXT NOT NULL, `duration` INTEGER NOT NULL, `mediaId` TEXT NOT NULL, PRIMARY KEY(`mediaId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`isHidden` INTEGER NOT NULL, `artworkType` TEXT NOT NULL, `artworkUrl` TEXT, `album` TEXT DEFAULT null, `mbid` TEXT DEFAULT null, `title` TEXT NOT NULL, `artist` TEXT NOT NULL, `duration` INTEGER NOT NULL, `mediaId` TEXT NOT NULL, `timestampCreatedAddedEdited` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`mediaId`))",
         "fields": [
           {
             "fieldPath": "isHidden",
@@ -123,6 +130,20 @@
             "columnName": "artworkUrl",
             "affinity": "TEXT",
             "notNull": false
+          },
+          {
+            "fieldPath": "album",
+            "columnName": "album",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "null"
+          },
+          {
+            "fieldPath": "mbid",
+            "columnName": "mbid",
+            "affinity": "TEXT",
+            "notNull": false,
+            "defaultValue": "null"
           },
           {
             "fieldPath": "title",
@@ -147,6 +168,13 @@
             "columnName": "mediaId",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "timestampCreatedAddedEdited",
+            "columnName": "timestampCreatedAddedEdited",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -160,7 +188,7 @@
       },
       {
         "tableName": "CustomizedSongs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`songTitle` TEXT NOT NULL, `songArtist` TEXT NOT NULL, `songDuration` INTEGER NOT NULL, `timingData` TEXT, `currentTimingDataIndex` INTEGER NOT NULL, `bassBoost` INTEGER, `virtualizerStrength` INTEGER, `equalizerBands` TEXT, `title` TEXT NOT NULL, `artist` TEXT NOT NULL, `duration` INTEGER NOT NULL, `mediaId` TEXT NOT NULL, `speed` REAL, `pitch` REAL, `volume` REAL, `roomLevel` INTEGER, `roomHFLevel` INTEGER, `decayTime` INTEGER, `decayHFRatio` INTEGER, `reflectionsLevel` INTEGER, `reflectionsDelay` INTEGER, `reverbLevel` INTEGER, `reverbDelay` INTEGER, `diffusion` INTEGER, `density` INTEGER, PRIMARY KEY(`mediaId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`songTitle` TEXT NOT NULL, `songArtist` TEXT NOT NULL, `songDuration` INTEGER NOT NULL, `timingData` TEXT, `currentTimingDataIndex` INTEGER NOT NULL, `bassBoost` INTEGER, `virtualizerStrength` INTEGER, `equalizerBands` TEXT, `title` TEXT NOT NULL, `artist` TEXT NOT NULL, `duration` INTEGER NOT NULL, `mediaId` TEXT NOT NULL, `timestampCreatedAddedEdited` INTEGER NOT NULL DEFAULT 0, `speed` REAL, `pitch` REAL, `volume` REAL, `roomLevel` INTEGER, `roomHFLevel` INTEGER, `decayTime` INTEGER, `decayHFRatio` INTEGER, `reflectionsLevel` INTEGER, `reflectionsDelay` INTEGER, `reverbLevel` INTEGER, `reverbDelay` INTEGER, `diffusion` INTEGER, `density` INTEGER, PRIMARY KEY(`mediaId`))",
         "fields": [
           {
             "fieldPath": "songTitle",
@@ -233,6 +261,13 @@
             "columnName": "mediaId",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "timestampCreatedAddedEdited",
+            "columnName": "timestampCreatedAddedEdited",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           },
           {
             "fieldPath": "playbackParameters.speed",
@@ -324,7 +359,7 @@
       },
       {
         "tableName": "Playlists",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `items` TEXT NOT NULL, `currentItemIndex` INTEGER NOT NULL, `mediaId` TEXT NOT NULL, PRIMARY KEY(`mediaId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`name` TEXT NOT NULL, `items` TEXT NOT NULL, `currentItemIndex` INTEGER NOT NULL, `mediaId` TEXT NOT NULL, `timestampCreatedAddedEdited` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`mediaId`))",
         "fields": [
           {
             "fieldPath": "name",
@@ -349,6 +384,13 @@
             "columnName": "mediaId",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "timestampCreatedAddedEdited",
+            "columnName": "timestampCreatedAddedEdited",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -362,13 +404,20 @@
       },
       {
         "tableName": "PlaybackEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`mediaId` TEXT NOT NULL, PRIMARY KEY(`mediaId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`mediaId` TEXT NOT NULL, `timestampCreatedAddedEdited` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`mediaId`))",
         "fields": [
           {
             "fieldPath": "mediaId",
             "columnName": "mediaId",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "timestampCreatedAddedEdited",
+            "columnName": "timestampCreatedAddedEdited",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -408,7 +457,7 @@
       },
       {
         "tableName": "Data",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recentlyPlayedMediaId` TEXT, `currentPositionInRecentlyPlayedPlayback` INTEGER NOT NULL, `recentlyPlayedDuration` INTEGER NOT NULL, `recentlyPlayedArtworkType` TEXT NOT NULL, `recentlyPlayedArtworkUrl` TEXT, `repeatMode` INTEGER NOT NULL, `id` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recentlyPlayedMediaId` TEXT, `currentPositionInRecentlyPlayedPlayback` INTEGER NOT NULL, `recentlyPlayedDuration` INTEGER NOT NULL, `recentlyPlayedArtworkType` TEXT NOT NULL, `recentlyPlayedArtworkUrl` TEXT, `repeatMode` INTEGER NOT NULL, `maxRemixCount` INTEGER NOT NULL, `onboardingCompleted` INTEGER NOT NULL, `id` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "recentlyPlayedMediaId",
@@ -447,6 +496,18 @@
             "notNull": true
           },
           {
+            "fieldPath": "maxRemixCount",
+            "columnName": "maxRemixCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "onboardingCompleted",
+            "columnName": "onboardingCompleted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "id",
             "columnName": "id",
             "affinity": "INTEGER",
@@ -466,7 +527,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '33564fcb201368a3077283e85a712c8c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd3a1e654f0cfda5bf94b67855ab43954')"
     ]
   }
 }

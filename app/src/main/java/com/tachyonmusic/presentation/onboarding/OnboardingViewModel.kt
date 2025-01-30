@@ -68,6 +68,10 @@ class OnboardingViewModel @Inject constructor(
     fun onImportDatabase(uri: Uri?) {
         viewModelScope.launch {
             stateRepository.queueLoadingTask("OnboardingViewModel::importDatabase")
+
+            // Place dummy item in here so that [readyToAdvance] doesn't become true for
+            // some milliseconds after [importDatabase] is run
+            _requiredMusicDirectoriesAfterDatabaseImport.update { listOf("") }
             val missingUri = importDatabase(uri)
 
             // TODO: Handle null case for missingUri ^ and it.path >

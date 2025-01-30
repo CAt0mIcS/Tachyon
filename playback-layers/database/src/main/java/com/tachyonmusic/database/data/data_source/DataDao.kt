@@ -47,6 +47,6 @@ interface DataDao {
     @Query("UPDATE $DATA_DATABASE_TABLE_NAME SET repeatMode=:repeatMode")
     suspend fun setRepeatMode(repeatMode: RepeatMode)
 
-//    @Query("UPDATE $DATA_DATABASE_TABLE_NAME SET onboardingCompleted=:completed")
-//    suspend fun setOnboarding(completed: Boolean)
+    @Query("UPDATE $DATA_DATABASE_TABLE_NAME SET onboardingCompleted=:completed")
+    suspend fun setOnboarding(completed: Boolean)
 }

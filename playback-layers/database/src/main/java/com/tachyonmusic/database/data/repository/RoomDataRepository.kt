@@ -43,7 +43,7 @@ class RoomDataRepository(
         if (repeatMode != null)
             dao.setRepeatMode(repeatMode)
 
-//        if(onboardingCompleted != null)
-//            dao.setOnboarding(onboardingCompleted)
+        if(onboardingCompleted != null)
+            dao.setOnboarding(onboardingCompleted)
     }
 }
