@@ -78,12 +78,7 @@ fun MainScreen(
     val settings by viewModel.composeSettings.collectAsState()
     val onboardingCompleted by viewModel.onboardingCompleted.collectAsState()
     val requiresMusicPathSelection by viewModel.requiresMusicPathSelection.collectAsState()
-    val requiredMusicPathsAfterDatabaseImport by viewModel.requiredMusicDirectoriesAfterDatabaseImport.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
-    var showUriPermissionDialog by remember { mutableStateOf(false) }
-    var showImportDbDialog by remember { mutableStateOf(false) }
-    var databaseImported by remember { mutableStateOf(false) }
 
     TachyonTheme(settings = settings) {
         Surface {

@@ -65,17 +65,10 @@ class MainViewModel @Inject constructor(
     private val _onboardingCompleted = MutableStateFlow(false)
     val onboardingCompleted = _onboardingCompleted.asStateFlow()
 
-    private val _requiredMusicDirectoriesAfterDatabaseImport = MutableStateFlow(emptyList<String>())
-    val requiredMusicDirectoriesAfterDatabaseImport =
-        _requiredMusicDirectoriesAfterDatabaseImport.asStateFlow()
-
     private var cachedMusicDirectories = emptyList<Uri>()
 
-    val requiresMusicPathSelection = combine(
-        settingsRepository.observe(),
-        requiredMusicDirectoriesAfterDatabaseImport
-    ) { settings, requiredPathsAfterImport ->
-        settings.musicDirectories.isEmpty() || requiredPathsAfterImport.isNotEmpty()
+    val requiresMusicPathSelection = settingsRepository.observe().map { settings ->
+        settings.musicDirectories.isEmpty()
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), false)
 
     val eventChannel = eventChannel.listen()
@@ -124,38 +117,6 @@ class MainViewModel @Inject constructor(
                         stateRepository.finishLoadingTask(STATE_LOADING_TASK_STARTUP)
                 }
             }.collect()
-        }
-    }
-
-    fun setNewMusicDirectory(uri: Uri?) {
-        viewModelScope.launch {
-            stateRepository.queueLoadingTask("MainViewModel::registerNewUriPermission")
-            if (registerNewUriPermission(uri)) { // TODO: Test if updated correctly
-                _requiredMusicDirectoriesAfterDatabaseImport.update {
-                    it.toMutableList().apply { removeAll { path -> uri!!.encodedPath == path } }
-                }
-            }
-            stateRepository.finishLoadingTask(
-                "MainViewModel::registerNewUriPermission",
-                timeout = .5.sec
-            )
-        }
-    }
-
-    fun onImportDatabase(uri: Uri?) {
-        viewModelScope.launch {
-            stateRepository.queueLoadingTask("MainViewModel::importDatabase")
-            val missingUri = importDatabase(uri)
-
-            // TODO: Handle null case for missingUri ^ and it.path >
-            if (missingUri != null) {
-                _requiredMusicDirectoriesAfterDatabaseImport.update { missingUri.mapNotNull { it.encodedPath } }
-            }
-
-            stateRepository.finishLoadingTask(
-                "MainViewModel::importDatabase",
-                timeout = .5.sec
-            )
         }
     }
 }
