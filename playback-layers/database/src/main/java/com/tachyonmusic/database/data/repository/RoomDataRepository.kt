@@ -25,7 +25,8 @@ class RoomDataRepository(
     override suspend fun update(
         recentlyPlayed: RecentlyPlayed?,
         maxRemixCount: Int?,
-        repeatMode: RepeatMode?
+        repeatMode: RepeatMode?,
+        onboardingCompleted: Boolean?
     ) {
         if (recentlyPlayed != null)
             dao.setRecentlyPlayed(
@@ -41,5 +42,8 @@ class RoomDataRepository(
 
         if (repeatMode != null)
             dao.setRepeatMode(repeatMode)
+
+//        if(onboardingCompleted != null)
+//            dao.setOnboarding(onboardingCompleted)
     }
 }

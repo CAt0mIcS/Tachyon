@@ -1,8 +1,11 @@
 package com.tachyonmusic.presentation.core_components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
@@ -58,12 +61,15 @@ fun SwipeDelete(
     content: @Composable RowScope.() -> Unit
 ) {
     val density = LocalDensity.current
+
+    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val state = remember {
         AnchoredDraggableState(
             SwipeState.COLLAPSED,
             positionalThreshold = { distance -> distance * .5f },
             velocityThreshold = { with(density) { 100.dp.toPx() } },
-            animationSpec = tween(),
+            snapAnimationSpec = tween(),
+            decayAnimationSpec = decayAnimationSpec,
             confirmValueChange = { true }
         )
     }

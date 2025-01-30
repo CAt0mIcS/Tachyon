@@ -1,6 +1,7 @@
 package com.tachyonmusic.presentation.entry
 
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,6 +54,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.presentation.core_components.UriPermissionDialog
+import com.tachyonmusic.presentation.onboarding.OnboardingScreen
 import com.tachyonmusic.presentation.player.PlayerLayout
 import com.tachyonmusic.presentation.profile.component.OpenDocumentDialog
 import com.tachyonmusic.presentation.theme.TachyonTheme
@@ -74,6 +76,7 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val settings by viewModel.composeSettings.collectAsState()
+    val onboardingCompleted by viewModel.onboardingCompleted.collectAsState()
     val requiresMusicPathSelection by viewModel.requiresMusicPathSelection.collectAsState()
     val requiredMusicPathsAfterDatabaseImport by viewModel.requiredMusicDirectoriesAfterDatabaseImport.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -145,46 +148,46 @@ fun MainScreen(
                 }
             }
 
-            if (requiresMusicPathSelection) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(Theme.padding.medium),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    Text("Please select a directory with all your music to continue")
-
-                    if (requiredMusicPathsAfterDatabaseImport.isNotEmpty()) {
-                        Text("The following directories are required by the imported database")
-                        for (dir in requiredMusicPathsAfterDatabaseImport)
-                            Text(dir)
-                    }
-
-                    Button(onClick = { showUriPermissionDialog = true }) {
-                        Text("Select...")
-                    }
-
-                    if (!databaseImported)
-                        Button(onClick = { showImportDbDialog = true }) {
-                            Text("Import Database")
-                        }
-                }
-
-                UriPermissionDialog(showUriPermissionDialog) {
-                    viewModel.setNewMusicDirectory(it)
-                    showUriPermissionDialog = false
-                }
-
-                OpenDocumentDialog(showImportDbDialog, Database.JSON_MIME_TYPE) {
-                    viewModel.onImportDatabase(it)
-                    databaseImported = it != null
-                    showImportDbDialog = false
-                }
-
-                return@Surface
-            }
+//            if (requiresMusicPathSelection) {
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .padding(Theme.padding.medium),
+//                    verticalArrangement = Arrangement.Center,
+//                    horizontalAlignment = Alignment.CenterHorizontally
+//                ) {
+//
+//                    Text("Please select a directory with all your music to continue")
+//
+//                    if (requiredMusicPathsAfterDatabaseImport.isNotEmpty()) {
+//                        Text("The following directories are required by the imported database")
+//                        for (dir in requiredMusicPathsAfterDatabaseImport)
+//                            Text(dir)
+//                    }
+//
+//                    Button(onClick = { showUriPermissionDialog = true }) {
+//                        Text("Select...")
+//                    }
+//
+//                    if (!databaseImported)
+//                        Button(onClick = { showImportDbDialog = true }) {
+//                            Text("Import Database")
+//                        }
+//                }
+//
+//                UriPermissionDialog(showUriPermissionDialog) {
+//                    viewModel.setNewMusicDirectory(it)
+//                    showUriPermissionDialog = false
+//                }
+//
+//                OpenDocumentDialog(showImportDbDialog, Database.JSON_MIME_TYPE) {
+//                    viewModel.onImportDatabase(it)
+//                    databaseImported = it != null
+//                    showImportDbDialog = false
+//                }
+//
+//                return@Surface
+//            }
 
             if (updateReadyToInstall) {
                 val appRestartQuestionStr = stringResource(R.string.request_app_restart_for_update)
@@ -201,18 +204,24 @@ fun MainScreen(
                 }
             }
 
+            if(!onboardingCompleted) {
+                OnboardingScreen()
+                return@Surface
+            }
 
             var miniPlayerHeight by remember { mutableStateOf(0.dp) }
             val navController = rememberAnimatedNavController()
             val localDensity = LocalDensity.current
 
+            val decayAnimationSpec = rememberSplineBasedDecay<Float>()
             val anchoredDraggableState = remember {
                 AnchoredDraggableState(
                     initialValue = SwipingStates.COLLAPSED,
                     anchors = DraggableAnchors {},
                     positionalThreshold = { distance: Float -> distance * 0.5f },
                     velocityThreshold = { with(localDensity) { 100.dp.toPx() } },
-                    animationSpec = tween(),
+                    snapAnimationSpec = tween(),
+                    decayAnimationSpec = decayAnimationSpec
                 )
             }
 

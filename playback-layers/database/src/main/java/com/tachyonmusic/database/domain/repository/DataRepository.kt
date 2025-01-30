@@ -23,6 +23,7 @@ interface DataRepository {
     suspend fun update(
         recentlyPlayed: RecentlyPlayed? = null,
         maxRemixCount: Int? = null,
-        repeatMode: RepeatMode? = null
+        repeatMode: RepeatMode? = null,
+        onboardingCompleted: Boolean? = null
     )
 }

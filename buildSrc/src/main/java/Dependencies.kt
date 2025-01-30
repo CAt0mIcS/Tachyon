@@ -135,6 +135,7 @@ fun DependencyHandler.compose() {
 
     implementation(Dependency.Compose.COMPOSE_SLIDERS)
     implementation(Dependency.Compose.PAGING)
+    implementation("mx.platacard:compose-pager-indicator:0.0.8")
 
     implementation(Dependency.Compose.UI)
     implementation(Dependency.Compose.COMPOSE_MATERIAL)

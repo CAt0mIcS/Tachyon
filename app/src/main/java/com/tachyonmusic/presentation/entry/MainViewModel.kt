@@ -1,6 +1,8 @@
 package com.tachyonmusic.presentation.entry
 
 import android.net.Uri
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.domain.repository.StateRepository
@@ -14,6 +16,8 @@ import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
+import com.tachyonmusic.presentation.home.HomeScreen
+import com.tachyonmusic.presentation.onboarding.OnboardingScreen
 import com.tachyonmusic.presentation.theme.ComposeSettings
 import com.tachyonmusic.util.domain.EventChannel
 import com.tachyonmusic.util.sec
@@ -24,6 +28,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -56,6 +62,9 @@ class MainViewModel @Inject constructor(
     private val _composeSettings = MutableStateFlow(ComposeSettings())
     val composeSettings = _composeSettings.asStateFlow()
 
+    private val _onboardingCompleted = MutableStateFlow(false)
+    val onboardingCompleted = _onboardingCompleted.asStateFlow()
+
     private val _requiredMusicDirectoriesAfterDatabaseImport = MutableStateFlow(emptyList<String>())
     val requiredMusicDirectoriesAfterDatabaseImport =
         _requiredMusicDirectoriesAfterDatabaseImport.asStateFlow()
@@ -73,6 +82,12 @@ class MainViewModel @Inject constructor(
 
     init {
         log.debug("Initializing MainViewModel")
+
+        dataRepository.observe().onEach { data ->
+//            _startDestination.update {
+//                if (data.onboardingCompleted) HomeScreen.route() else OnboardingScreen.route()
+//            }
+        }.launchIn(viewModelScope)
 
         viewModelScope.launch {
             // Make sure browser repeat mode is up to date with saved one
