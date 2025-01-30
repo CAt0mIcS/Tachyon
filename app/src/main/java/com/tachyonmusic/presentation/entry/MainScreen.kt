@@ -54,6 +54,7 @@ import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.tachyonmusic.app.R
 import com.tachyonmusic.database.data.data_source.Database
 import com.tachyonmusic.presentation.core_components.UriPermissionDialog
+import com.tachyonmusic.presentation.entry.component.LoadingBox
 import com.tachyonmusic.presentation.onboarding.OnboardingScreen
 import com.tachyonmusic.presentation.player.PlayerLayout
 import com.tachyonmusic.presentation.profile.component.OpenDocumentDialog
@@ -103,85 +104,13 @@ fun MainScreen(
             }
 
             if (isLoading) {
-                Dialog(
-                    onDismissRequest = { },
-                    DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .clip(Theme.shapes.large)
-                            .background(
-                                MaterialTheme.colorScheme.background,
-                                Theme.shapes.large
-                            )
-                            .border(
-                                BorderStroke(2.dp, MaterialTheme.colorScheme.surfaceContainer),
-                                Theme.shapes.large
-                            )
-                    ) {
-                        Column {
-                            CircularProgressIndicator(
-                                modifier = Modifier
-                                    .padding(Theme.padding.medium)
-                                    .align(Alignment.CenterHorizontally)
-                            )
-
-                            Text(
-                                stringResource(R.string.loading),
-                                modifier = Modifier
-                                    .padding(
-                                        start = 80.dp,
-                                        end = 80.dp,
-                                        bottom = Theme.padding.medium
-                                    ),
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
+                LoadingBox()
             }
 
-//            if (requiresMusicPathSelection) {
-//                Column(
-//                    modifier = Modifier
-//                        .fillMaxSize()
-//                        .padding(Theme.padding.medium),
-//                    verticalArrangement = Arrangement.Center,
-//                    horizontalAlignment = Alignment.CenterHorizontally
-//                ) {
-//
-//                    Text("Please select a directory with all your music to continue")
-//
-//                    if (requiredMusicPathsAfterDatabaseImport.isNotEmpty()) {
-//                        Text("The following directories are required by the imported database")
-//                        for (dir in requiredMusicPathsAfterDatabaseImport)
-//                            Text(dir)
-//                    }
-//
-//                    Button(onClick = { showUriPermissionDialog = true }) {
-//                        Text("Select...")
-//                    }
-//
-//                    if (!databaseImported)
-//                        Button(onClick = { showImportDbDialog = true }) {
-//                            Text("Import Database")
-//                        }
-//                }
-//
-//                UriPermissionDialog(showUriPermissionDialog) {
-//                    viewModel.setNewMusicDirectory(it)
-//                    showUriPermissionDialog = false
-//                }
-//
-//                OpenDocumentDialog(showImportDbDialog, Database.JSON_MIME_TYPE) {
-//                    viewModel.onImportDatabase(it)
-//                    databaseImported = it != null
-//                    showImportDbDialog = false
-//                }
-//
-//                return@Surface
-//            }
+            if(!onboardingCompleted) {
+                OnboardingScreen()
+                return@Surface
+            }
 
             if (updateReadyToInstall) {
                 val appRestartQuestionStr = stringResource(R.string.request_app_restart_for_update)
@@ -196,11 +125,6 @@ fun MainScreen(
 
                     updateSnackbarResult(result == SnackbarResult.ActionPerformed)
                 }
-            }
-
-            if(!onboardingCompleted) {
-                OnboardingScreen()
-                return@Surface
             }
 
             var miniPlayerHeight by remember { mutableStateOf(0.dp) }
