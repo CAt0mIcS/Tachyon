@@ -62,25 +62,12 @@ class MainViewModel @Inject constructor(
     private val _composeSettings = MutableStateFlow(ComposeSettings())
     val composeSettings = _composeSettings.asStateFlow()
 
-    private val _onboardingCompleted = MutableStateFlow(false)
-    val onboardingCompleted = _onboardingCompleted.asStateFlow()
-
     private var cachedMusicDirectories = emptyList<Uri>()
-
-    val requiresMusicPathSelection = settingsRepository.observe().map { settings ->
-        settings.musicDirectories.isEmpty()
-    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), false)
 
     val eventChannel = eventChannel.listen()
 
     init {
         log.debug("Initializing MainViewModel")
-
-        dataRepository.observe().onEach { data ->
-//            _startDestination.update {
-//                if (data.onboardingCompleted) HomeScreen.route() else OnboardingScreen.route()
-//            }
-        }.launchIn(viewModelScope)
 
         viewModelScope.launch {
             // Make sure browser repeat mode is up to date with saved one

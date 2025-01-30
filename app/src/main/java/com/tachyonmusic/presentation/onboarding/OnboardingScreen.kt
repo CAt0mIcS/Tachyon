@@ -45,16 +45,16 @@ interface OnboardingPage {
 
 object OnboardingScreen {
 
+    val pages = listOf(
+        FirstOnboardingPage(0),
+        ImportMusicOnboardingPage(1),
+        LastOnboardingPage(2)
+    )
+
     @Composable
     operator fun invoke(
         viewModel: OnboardingViewModel = hiltViewModel()
     ) {
-        val pages = listOf<OnboardingPage>(
-            FirstOnboardingPage(0),
-            ImportMusicOnboardingPage(1),
-            LastOnboardingPage(2)
-        )
-
         val userScrollEnabledState = remember { MutableStateFlow(true) }
         val userScrollEnabled by userScrollEnabledState.collectAsState()
 

@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -19,6 +20,7 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.tachyonmusic.app.R
+import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.home.LoadUUIDForSongEntity
@@ -27,6 +29,8 @@ import com.tachyonmusic.media.util.isGoogleCastAvailable
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
@@ -53,16 +57,22 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     @Inject
     lateinit var loadUUIDForSongEntity: LoadUUIDForSongEntity
 
+    @Inject
+    lateinit var dataRepository: DataRepository
+
     private var castContext: CastContext? = null
     private lateinit var appUpdateManager: AppUpdateManager
 
     private var updateReadyToInstall = MutableStateFlow(false)
     private var miniplayerSnapPosition = MutableStateFlow<SwipingStates?>(null)
 
+    private val onboardingCompleted = MutableStateFlow(false)
+
     private val installStateListener = InstallStateUpdatedListener {
         if (it.installStatus() == InstallStatus.DOWNLOADED)
             updateReadyToInstall.update { true }
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,6 +86,10 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
         // created in the AppBar
         if (isGoogleCastAvailable(this))
             castContext = CastContext.getSharedInstance(this)
+
+        dataRepository.observe().onEach { data ->
+            onboardingCompleted.update { data.onboardingCompleted }
+        }.launchIn(lifecycleScope)
 
         volumeControlStream = AudioManager.STREAM_MUSIC
         mediaBrowser.registerLifecycle(lifecycle)
@@ -134,6 +148,7 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
         setContent {
             val shouldInstallUpdate by updateReadyToInstall.collectAsState()
             val miniplayerSnapPos by miniplayerSnapPosition.collectAsState()
+            val onboardingDone by onboardingCompleted.collectAsState()
             MainScreen(
                 shouldInstallUpdate,
                 updateSnackbarResult = { shouldRestart ->
@@ -142,7 +157,8 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
                     updateReadyToInstall.update { false }
                 },
                 miniplayerSnapPosition = miniplayerSnapPos,
-                onMiniplayerSnapCompleted = { miniplayerSnapPosition.update { null } }
+                onMiniplayerSnapCompleted = { miniplayerSnapPosition.update { null } },
+                onboardingCompleted = onboardingDone
             )
         }
     }

@@ -73,11 +73,10 @@ fun MainScreen(
     updateSnackbarResult: (Boolean) -> Unit,
     miniplayerSnapPosition: SwipingStates?,
     onMiniplayerSnapCompleted: () -> Unit,
+    onboardingCompleted: Boolean,
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val settings by viewModel.composeSettings.collectAsState()
-    val onboardingCompleted by viewModel.onboardingCompleted.collectAsState()
-    val requiresMusicPathSelection by viewModel.requiresMusicPathSelection.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     TachyonTheme(settings = settings) {
