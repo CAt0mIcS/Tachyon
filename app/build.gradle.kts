@@ -48,6 +48,7 @@ android {
 //            isDebuggable = false
 //            isShrinkResources = true
             isMinifyEnabled = false
+            isShrinkResources = false
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -85,17 +86,21 @@ android {
         kotlinCompilerExtensionVersion = Index.COMPOSE_COMPILER
     }
 
-    packagingOptions {
+    packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "META-INF/LICENSE.md"
             excludes += "META-INF/LICENSE-notice.md"
         }
     }
+
+    lint {
+        abortOnError = false
+    }
 }
 
 dependencies {
-    implementation("com.google.firebase:firebase-crashlytics:19.2.0")
+    firebaseAnalytics()
     googleCast()
     googlePlay()
     json()
@@ -107,6 +112,7 @@ dependencies {
     dagger()
     implementation(Dependency.DaggerHilt.NAVIGATION_COMPOSE)
     ads()
+    eAlvaBrainz()
 
     implementation(Dependency.Media3.MEDIA_SESSION)
     implementation(Dependency.Media3.CAST)
@@ -115,11 +121,13 @@ dependencies {
     implementation(Dependency.JSON.GSON)
 
     projectCore()
+    projectNativeTemplates()
     projectMedia()
     projectPlaybackLayers()
     projectPlaybackLayerDatabase()
     projectUtil()
     projectLogger()
+    projectMetadataApi()
 
     unitTest()
     androidTest()

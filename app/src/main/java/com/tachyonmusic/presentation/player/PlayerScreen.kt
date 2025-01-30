@@ -129,6 +129,7 @@ fun PlayerScreen(
                 .padding(Theme.padding.small)
                 .aspectRatio(1f)
                 .shadow(Theme.shadow.small, shape = Theme.shapes.large)
+                .background(MaterialTheme.colorScheme.background, shape = Theme.shapes.large)
 
             playback.artwork?.Image(modifier = artworkModifier, contentDescription = null)
                 ?: Spacer(
@@ -441,7 +442,6 @@ fun PlayerScreen(
                         .fillMaxWidth()
                         .padding(
                             start = Theme.padding.medium,
-                            top = Theme.padding.medium,
                             end = Theme.padding.medium,
                             bottom = Theme.padding.extraSmall
                         )

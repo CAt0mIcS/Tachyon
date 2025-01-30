@@ -27,17 +27,30 @@ import com.tachyonmusic.playback_layers.toPlayback
 import com.tachyonmusic.util.EventSeverity
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.domain.EventChannel
+import com.tachyonmusic.util.maxAsyncChunked
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.net.URI
+import kotlin.math.ceil
 
 class PlaybackRepositoryImpl(
     private val songRepository: SongRepository,
@@ -56,88 +69,104 @@ class PlaybackRepositoryImpl(
     private var cacheLock = Any()
     private val permissionCache = mutableMapOf<Uri, Boolean>()
 
+    private val _sortingPreferences = MutableStateFlow(SortingPreferences())
+    override val sortingPreferences = _sortingPreferences.asStateFlow()
+
+    private val flowRecompute = MutableStateFlow(false)
+
     init {
         // Invalidate the isPlayable cache every time the permissions change
         uriPermissionRepository.permissions.onEach {
             synchronized(cacheLock) {
                 permissionCache.clear()
             }
+
+            flowRecompute.update { !flowRecompute.value }
         }.launchIn(ioScope)
     }
 
-    private val _sortingPreferences = MutableStateFlow(SortingPreferences())
-    override val sortingPreferences = _sortingPreferences.asStateFlow()
-
     override val songFlow =
-        combine(songRepository.observe(), sortingPreferences) { songEntities, sorting ->
+        combine(
+            songRepository.observe().distinctUntilChanged(),
+            sortingPreferences,
+            flowRecompute
+        ) { songEntities, sorting, _ ->
             transformSongs(songEntities, sorting)
-        }
+        }.shareIn(ioScope, SharingStarted.Eagerly, replay = 1)
 
     override val remixFlow =
         combine(
-            remixRepository.observe(),
+            remixRepository.observe().distinctUntilChanged(),
             songFlow,
             sortingPreferences
         ) { remixEntities, songs, sorting ->
             transformRemixes(remixEntities, songs, sorting)
-        }
+        }.shareIn(ioScope, SharingStarted.Eagerly, replay = 1)
 
     override val playlistFlow = combine(
-        playlistRepository.observe(),
+        playlistRepository.observe().distinctUntilChanged(),
         songFlow,
         remixFlow,
         sortingPreferences
     ) { playlistEntities, songs, remixes, sorting ->
         transformPlaylists(playlistEntities, songs, remixes, sorting)
-    }
+    }.shareIn(ioScope, SharingStarted.Eagerly, replay = 1)
 
     override val historyFlow = combine(
-        historyRepository.observe(),
+        historyRepository.observe().distinctUntilChanged(),
         songFlow,
         remixFlow
     ) { historyEntities, songs, remixes ->
         transformHistory(historyEntities, songs, remixes)
-    }
+    }.shareIn(ioScope, SharingStarted.Eagerly, replay = 1)
 
-    override suspend fun getSongs() =
-        transformSongs(songRepository.getSongs(), sortingPreferences.value)
+    override val songs: List<Playback>
+        get() = songFlow.replayCache.first()
 
-    override suspend fun getRemixes() =
-        transformRemixes(
-            remixRepository.getRemixes(),
-            getSongs(),
-            sortingPreferences.value
-        )
+    override val remixes: List<Playback>
+        get() = remixFlow.replayCache.first()
 
-    override suspend fun getPlaylists() =
-        transformPlaylists(
-            playlistRepository.getPlaylists(),
-            getSongs(),
-            getRemixes(),
-            sortingPreferences.value
-        )
+    override val playlists: List<Playlist>
+        get() = playlistFlow.replayCache.first()
 
-    override suspend fun getHistory() =
-        transformHistory(historyRepository.getHistory(), getSongs(), getRemixes())
+    override val history: List<Playback>
+        get() = historyFlow.replayCache.first()
+
 
     override fun setSortingPreferences(sortPrefs: SortingPreferences) {
         _sortingPreferences.update { sortPrefs }
     }
 
-    private fun transformSongs(entities: List<SongEntity>, sorting: SortingPreferences) =
-        entities.map { entity ->
-            if (entity.mediaId.isLocalSong) {
-                entity.toPlayback(
-                    when (entity.artworkType) {
-                        ArtworkType.REMOTE -> RemoteArtwork(URI(entity.artworkUrl))
-                        ArtworkType.EMBEDDED -> EmbeddedArtwork(null, entity.mediaId.uri!!)
-                        else -> null
-                    },
-                    entity.checkIfPlayable(context)
-                )
-            } else
-                TODO("Invalid media id ${entity.mediaId}")
-        }.sortedBy(sorting)
+    private suspend fun transformSongs(
+        entities: List<SongEntity>,
+        sorting: SortingPreferences
+    ): List<Playback> = withContext(Dispatchers.IO) {
+        val playbacks = mutableListOf<Deferred<List<Playback>>>()
+
+        if (entities.isEmpty())
+            return@withContext emptyList()
+
+        for (entityChunk in entities.maxAsyncChunked()) {
+            playbacks += async {
+                entityChunk.map { entity ->
+                    if (entity.mediaId.isLocalSong) {
+                        entity.toPlayback(
+                            when (entity.artworkType) {
+                                ArtworkType.REMOTE -> RemoteArtwork(URI(entity.artworkUrl))
+                                ArtworkType.EMBEDDED -> EmbeddedArtwork(null, entity.mediaId.uri!!)
+                                else -> null
+                            },
+                            entity.checkIfPlayable(context) // This takes long
+                        )
+                    } else
+                        TODO("Invalid media id ${entity.mediaId}")
+                }
+            }
+        }
+
+        playbacks.awaitAll().flatten().sortedBy(sorting)
+    }
+
 
     private fun transformRemixes(
         entities: List<RemixEntity>,
@@ -222,6 +251,8 @@ class PlaybackRepositoryImpl(
         assert(songs.all { it.isSong })
         assert(remixes.all { it.isRemix })
 
+        // TODO: If remixes get loaded before songs then there will be many [items == null] and eventChannel calls
+
         return entities.mapNotNull { historyItem ->
             val item = songs.find { historyItem.mediaId == it.mediaId }
                 ?: remixes.find { historyItem.mediaId == it.mediaId }
@@ -256,10 +287,15 @@ class PlaybackRepositoryImpl(
     private fun SinglePlaybackEntity.checkIfPlayable(context: Context): Boolean {
         val key = mediaId.uri ?: return false
 
+        var isPlayable = synchronized(cacheLock) { permissionCache[key] }
+        if (isPlayable != null)
+            return isPlayable
+
+        isPlayable = key.isPlayable(context)
+
         return synchronized(cacheLock) {
-            permissionCache.getOrPut(key) {
-                key.isPlayable(context)
-            }
+            permissionCache[key] = isPlayable
+            isPlayable
         }
     }
 }

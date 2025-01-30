@@ -42,4 +42,6 @@
     <string name="database_export_success">The database was exported successfully</string>
     <string name="unknown_media_title">Unknown Title</string>
     <string name="unknown_media_artist">Unknown Artist</string>
+    <string name="request_app_restart_for_update">Restart to update</string>
+    <string name="restart">Restart</string>
 </resources>

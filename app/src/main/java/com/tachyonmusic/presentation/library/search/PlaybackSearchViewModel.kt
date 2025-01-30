@@ -96,7 +96,7 @@ class PlaybackSearchViewModel @Inject constructor(
     }
 
     fun onItemClicked(entity: LibraryEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             if (entity.playbackType is PlaybackType.Playlist)
                 playPlayback(entity.toPlaylist())
             else
@@ -107,20 +107,16 @@ class PlaybackSearchViewModel @Inject constructor(
         }
     }
 
-    private suspend fun LibraryEntity.toPlayback() = withContext(Dispatchers.IO) {
-        when (playbackType) {
-            is PlaybackType.Song -> playbackRepository.getSongs().find { it.mediaId == mediaId }
-            is PlaybackType.Remix -> playbackRepository.getRemixes().find { it.mediaId == mediaId }
-            is PlaybackType.Ad -> error("Cannot find ad from playback type")
-            is PlaybackType.Playlist -> error("Invalid function for Playlist")
-        }
+    private fun LibraryEntity.toPlayback() = when (playbackType) {
+        is PlaybackType.Song -> playbackRepository.songs.find { it.mediaId == mediaId }
+        is PlaybackType.Remix -> playbackRepository.remixes.find { it.mediaId == mediaId }
+        is PlaybackType.Ad -> error("Cannot find ad from playback type")
+        is PlaybackType.Playlist -> error("Invalid function for Playlist")
     }
 
-    private suspend fun LibraryEntity.toPlaylist(): Playlist? {
+    private fun LibraryEntity.toPlaylist(): Playlist? {
         assert(playbackType is PlaybackType.Playlist)
-        return withContext(Dispatchers.IO) {
-            playbackRepository.getPlaylists().find { it.mediaId == mediaId }
-        }
+        return playbackRepository.playlists.find { it.mediaId == mediaId }
     }
 
     private fun loadArtwork(

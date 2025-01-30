@@ -16,8 +16,8 @@ interface SettingsRepository {
 
     suspend fun update(
         ignoreAudioFocus: Boolean? = null,
-        autoDownloadAlbumArtwork: Boolean? = null,
-        autoDownloadAlbumArtworkWifiOnly: Boolean? = null,
+        autoDownloadSongMetadata: Boolean? = null,
+        autoDownloadSongMetadataWifiOnly: Boolean? = null,
         combineDifferentPlaybackTypes: Boolean? = null,
         dynamicColors: Boolean? = null,
         audioUpdateInterval: Duration? = null,

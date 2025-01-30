@@ -1,0 +1,12 @@
+<resources>
+    <string name="encoder_error_no_arguments">MetadataAPI: The url encoder received no arguments</string>
+    <string name="unknown_encoder_error">MetadataAPI: Unknown exception occurred while encoding url \"%1$s\"</string>
+    <string name="artwork_api_invalid_json">MetadataAPI: Invalid JSON returned from Artwork API: \"%1$s\"</string>
+    <string name="invalid_image_size">MetadataAPI: The provided image size (%1$s) is invalid</string>
+    <string name="invalid_media_metadata">MetadataAPI: The provided query (%1$s) is invalid</string>
+    <string name="request_to_url_failed">MetadataAPI: Request to URL \"%1$s\" failed.</string>
+    <string name="no_artwork">MetadataAPI: No artwork found at URL \"%1$s\".</string>
+    <string name="src_set_parsing_failed">MetadataAPI: Failed to parse source set \"%1$s\" loaded from URL \"%2$s\"".</string>
+    <string name="invalid_mbid">MetadataAPI: MBID \"%1$s\" is invalid</string>
+    <string name="album_not_found">MetadataAPI: MBID for album \"%1$s\" could not be found</string>
+</resources>

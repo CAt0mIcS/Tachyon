@@ -7,18 +7,19 @@ buildscript {
         mavenCentral()
 
         maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
     }
 
     dependencies {
         classpath("com.google.gms:google-services:4.4.2")
-        classpath("com.google.dagger:hilt-android-gradle-plugin:2.50")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:${Index.DAGGER_HILT}")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Index.KOTLIN}")
     }
 }
 
 plugins {
-    id("com.android.application") version "8.3.0" apply false
-    id("com.android.library") version "8.3.0" apply false
+    id("com.android.application") version "8.5.2" apply false
+    id("com.android.library") version "8.5.2" apply false
     id("org.jetbrains.kotlin.android") version Index.KOTLIN apply false
 
     kotlin("jvm") version "1.9.22"

@@ -7,7 +7,6 @@ import com.tachyonmusic.domain.repository.StateRepository
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
-import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.profile.ExportDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
@@ -62,15 +61,15 @@ class ProfileViewModel @Inject constructor(
         // TODO: Audio in Android Auto won't play if audio focus is not requested
     }
 
-    fun autoDownloadAlbumArtworkChanged(autoDownload: Boolean) {
+    fun autoDownloadSongMetadataChanged(autoDownload: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            settingsRepository.update(autoDownloadAlbumArtwork = autoDownload)
+            settingsRepository.update(autoDownloadSongMetadata = autoDownload)
         }
     }
 
-    fun autoDownloadAlbumArtworkWifiOnly(downloadWifiOnly: Boolean) {
+    fun autoDownloadSongMetadataWifiOnly(downloadWifiOnly: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
-            settingsRepository.update(autoDownloadAlbumArtworkWifiOnly = downloadWifiOnly)
+            settingsRepository.update(autoDownloadSongMetadataWifiOnly = downloadWifiOnly)
         }
     }
 

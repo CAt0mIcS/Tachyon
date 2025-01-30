@@ -1,6 +1,7 @@
 package com.tachyonmusic.domain.use_case.home
 
 import android.content.Context
+import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.ArtworkType
@@ -14,11 +15,11 @@ import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
-import com.tachyonmusic.playback_layers.domain.events.InvalidPlaylistItemEvent
 import com.tachyonmusic.playback_layers.domain.events.PlaybackNotFoundEvent
 import com.tachyonmusic.util.EventSeverity
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.domain.EventChannel
+import com.tachyonmusic.util.maxAsyncChunked
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +41,7 @@ class UpdateSongDatabase(
     private val artworkCodex: ArtworkCodex,
     private val assignArtworkToPlayback: AssignArtworkToPlayback,
     private val stateRepository: StateRepository,
+    private val loadUUIDForSongEntity: LoadUUIDForSongEntity,
     private val log: Logger,
     private val eventChannel: EventChannel
 ) {
@@ -47,20 +49,24 @@ class UpdateSongDatabase(
         // TODO: Support more extensions
         stateRepository.queueLoadingTask("UpdateSongDatabase::loadingNewSongs")
 
+        val startTime = System.nanoTime()
+
         val songsToAddToDatabase = fileRepository.getFilesInDirectoriesWithExtensions(
             settings.musicDirectories,
             listOf("mp3")
         ).toMutableList()
 
+        log.debug("Found ${songsToAddToDatabase.size} files")
 
         /**
          * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
+         * TODO: Where do we even need to do this?
          */
         val songsInRepository = songRepo.getSongs()
-        songsInRepository.filter { it.isHidden }.forEach {
-            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
-                songRepo.updateIsHidden(it.mediaId, false)
-        }
+//        songsInRepository.filter { it.isHidden }.forEach {
+//            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
+//                songRepo.updateIsHidden(it.mediaId, false)
+//        }
 
         /**
          * Filter songs that are already in database
@@ -70,17 +76,14 @@ class UpdateSongDatabase(
             mediaIdsInSongRepository.contains(MediaId.ofLocalSong(it.uri))
         }
 
-        // TODO: Better async song loading?
-        // TODO: Is chunked loading faster than creating a lot of async tasks
         if (songsToAddToDatabase.isNotEmpty()) {
             log.debug("Loading ${songsToAddToDatabase.size} songs...")
 
             val songs = mutableListOf<Deferred<List<SongEntity>>>()
-            val chunkSize = ceil(songsToAddToDatabase.size * .05f).toInt()
-            for (pathChunks in songsToAddToDatabase.chunked(chunkSize)) {
+            for (pathChunks in songsToAddToDatabase.maxAsyncChunked()) {
                 songs += async(Dispatchers.IO) {
                     pathChunks.mapNotNull { path ->
-                        val newEntity = loadMetadata(path, settings)
+                        val newEntity = loadMetadata(path)
                         if (newEntity == null) {
                             eventChannel.push(
                                 PlaybackNotFoundEvent(
@@ -102,40 +105,13 @@ class UpdateSongDatabase(
             log.debug("Loaded ${songsToAddToDatabase.size} songs")
         }
 
-
-        /**
-         * FIND MISSING ARTWORK
-         */
-        if (settings.autoDownloadAlbumArtwork) {
-            val songsWithUnknownArtwork =
-                songRepo.getSongs().filter { it.artworkType == ArtworkType.UNKNOWN }
-            log.debug("Trying to find artwork for ${songsWithUnknownArtwork.size} unknowns...")
-            if (songsWithUnknownArtwork.isNotEmpty()) {
-                /**
-                 * Load new artwork for newly found [entity]
-                 */
-
-                val chunkSize = ceil(songsWithUnknownArtwork.size * .05f).toInt()
-                songsWithUnknownArtwork.chunked(chunkSize).map { entityChunk ->
-                    async {
-                        entityChunk.map { entity ->
-                            loadArtworkForEntity(entity) { entityToUpdate ->
-                                assignArtworkToPlayback(
-                                    entityToUpdate.mediaId,
-                                    entityToUpdate.artworkType,
-                                    entityToUpdate.artworkUrl
-                                )
-                            }
-                        }
-                    }
-                }.awaitAll()
-            }
-        }
+        val endTime = System.nanoTime()
+        log.debug("UpdateSongDatabase took ${(endTime - startTime).toFloat() / 1000000f} ms")
 
         stateRepository.finishLoadingTask("UpdateSongDatabase::loadingNewSongs")
     }
 
-    private suspend fun loadMetadata(path: DocumentFile, settings: SettingsEntity) =
+    private suspend fun loadMetadata(path: DocumentFile) =
         withContext(Dispatchers.IO) {
             val metadata = metadataExtractor.loadMetadata(path.uri)
 
@@ -150,11 +126,12 @@ class UpdateSongDatabase(
                     album = metadata.album
                 )
 
-                if (settings.autoDownloadAlbumArtwork) {
-                    loadArtworkForEntity(entity) { toUpdate ->
-                        entity.artworkType = toUpdate.artworkType
-                        entity.artworkUrl = toUpdate.artworkUrl
-                    }
+                loadArtworkForEntity(
+                    entity,
+                    fetchOnline = false
+                ) { toUpdate ->
+                    if (toUpdate.artworkType == ArtworkType.EMBEDDED)
+                        entity.artworkType = ArtworkType.EMBEDDED
                 }
                 entity
             }
@@ -162,9 +139,10 @@ class UpdateSongDatabase(
 
     private suspend fun loadArtworkForEntity(
         entity: SongEntity,
+        fetchOnline: Boolean,
         onArtworkUpdate: suspend (SongEntity) -> Unit
     ) = withContext(Dispatchers.IO) {
-        artworkCodex.awaitOrLoad(entity).onEach {
+        artworkCodex.awaitOrLoad(entity, fetchOnline).onEach {
             val entityToUpdate = it.data?.entityToUpdate
             if (entityToUpdate != null) {
                 onArtworkUpdate(entityToUpdate)

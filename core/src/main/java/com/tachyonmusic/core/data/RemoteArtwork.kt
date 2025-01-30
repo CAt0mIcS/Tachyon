@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import com.bumptech.glide.request.RequestOptions
 import com.skydoves.landscapist.ImageOptions
 import com.skydoves.landscapist.glide.GlideImage
+import com.skydoves.landscapist.glide.LocalGlideRequestBuilder
+import com.skydoves.landscapist.glide.LocalGlideRequestOptions
 import com.tachyonmusic.core.data.constants.ArtworkLoadingIndicator
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.domain.Artwork
@@ -24,12 +27,19 @@ class RemoteArtwork(
     override val isLoaded = true
 
     @Composable
-    override fun Image(contentDescription: String?, modifier: Modifier, contentScale: ContentScale) {
+    override fun Image(
+        contentDescription: String?,
+        modifier: Modifier,
+        contentScale: ContentScale
+    ) {
         val url = try {
             uri.toURL().toString()
         } catch (e: java.lang.IllegalArgumentException) {
             TODO("Invalid Uri: $uri: ${e.localizedMessage}")
         }
+
+        val requestOptions = (LocalGlideRequestOptions.current ?: RequestOptions())
+            .timeout(10_000)
 
         Box(modifier) {
             GlideImage(
@@ -39,6 +49,9 @@ class RemoteArtwork(
                     contentDescription = contentDescription,
                     contentScale = contentScale
                 ),
+                requestOptions = {
+                    requestOptions
+                },
                 failure = {
                     PlaceholderArtwork(contentDescription, modifier, contentScale)
                 },

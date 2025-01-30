@@ -1,7 +1,7 @@
 package com.tachyonmusic.playback_layers.data
 
 import android.net.Uri
-import com.tachyonmusic.artworkfetcher.ArtworkFetcher
+import com.tachyonmusic.metadata_api.ArtworkFetcher
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
@@ -10,6 +10,8 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.metadata_api.di.brainzModule
+import com.tachyonmusic.metadata_api.domain.model.SearchInfo
 import com.tachyonmusic.playback_layers.R
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.playback_layers.domain.ArtworkLoader
@@ -122,7 +124,8 @@ internal class ArtworkLoaderImpl(
     ) = channelFlow {
         send(tryFindEmbeddedArtwork(mediaId.uri))
 
-        artworkFetcher.query(query, 1000, pageSize).onEach { res ->
+        // TODO: Currently using workaround of setting album=query to search for query in all sources (except MusicBrainz)
+        artworkFetcher.query(SearchInfo(album = query), 1000, pageSize).onEach { res ->
             if (res is Resource.Success)
                 send(Resource.Success<Artwork>(RemoteArtwork(URI(res.data))))
             else if (res is Resource.Error)
@@ -149,7 +152,7 @@ internal class ArtworkLoaderImpl(
         var ret: Resource<Artwork> =
             Resource.Error(UiText.StringResource(R.string.unknown_error))
 
-        artworkFetcher.query("${entity.artist} ${entity.title}", 1000)
+        artworkFetcher.query(SearchInfo(entity.title, entity.artist, entity.album), 1000)
             .onEach { res ->
                 if (res is Resource.Success) {
                     ret = Resource.Success(RemoteArtwork(URI(res.data!!)))

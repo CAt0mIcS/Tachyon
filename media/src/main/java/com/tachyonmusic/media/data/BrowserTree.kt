@@ -38,9 +38,8 @@ class BrowserTree(
             }.build())
         }.build()
 
-    suspend fun get(parentId: String, page: Int, pageSize: Int): ImmutableList<MediaItem>? =
-        withContext(Dispatchers.IO) {
-            when (parentId) {
+    fun get(parentId: String, page: Int, pageSize: Int): ImmutableList<MediaItem>? {
+            return when (parentId) {
                 ROOT -> {
                     ImmutableList.of(
                         MediaItem.Builder().apply {
@@ -85,9 +84,9 @@ class BrowserTree(
                     val mediaId = MediaId.deserializeIfValid(parentId)
                     if (mediaId != null) {
                         val playback =
-                            playbackRepository.getPlaylists().find { it.mediaId == mediaId }
+                            playbackRepository.playlists.find { it.mediaId == mediaId }
                         if (playback != null)
-                            return@withContext constraintItems(
+                            return constraintItems(
                                 playback.playbacks.map { it.toMediaItem() },
                                 page,
                                 pageSize
@@ -109,11 +108,11 @@ class BrowserTree(
 
 
     // TODO: Nullable?
-    private suspend fun getSongs() = playbackRepository.getSongs().map { it.toMediaItem() }
-    private suspend fun getRemixes() =
-        playbackRepository.getRemixes().map { it.toMediaItem() }
+    private fun getSongs() = playbackRepository.songs.map { it.toMediaItem() }
+    private fun getRemixes() =
+        playbackRepository.remixes.map { it.toMediaItem() }
 
-    private suspend fun getPlaylists() = playbackRepository.getPlaylists().map { it.toMediaItem() }
+    private fun getPlaylists() = playbackRepository.playlists.map { it.toMediaItem() }
 
     private fun constraintItems(
         playbacks: List<MediaItem>,

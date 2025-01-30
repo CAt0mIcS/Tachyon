@@ -2,22 +2,53 @@ package com.tachyonmusic.presentation.library
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.animateTo
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,7 +58,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -41,11 +74,14 @@ import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.library.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.util.AdmobBanner
+import com.tachyonmusic.presentation.util.AdmobNativeAppInstallAd
 import com.tachyonmusic.presentation.util.asString
+import com.tachyonmusic.util.cycle
+import com.tachyonmusic.util.debounce
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.sec
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 object LibraryScreen :
@@ -57,28 +93,21 @@ object LibraryScreen :
         navController: NavController,
         viewModel: LibraryViewModel = hiltViewModel()
     ) {
-        var sortOptionsExpanded by rememberSaveable { mutableStateOf(false) }
-
         val scope = rememberCoroutineScope()
-
-        val filterPlaybackType by viewModel.filterType.collectAsState()
-        val availableSortTypes by viewModel.availableSortTypes.collectAsState()
         val playbackItems by viewModel.items.collectAsState()
 
         val listState = rememberLazyListState()
-        LaunchedEffect(remember { derivedStateOf { listState.firstVisibleItemIndex } }) { // TODO: Optimize
-            /**
-             * If [listState.firstVisibleItemIndex] changes the coroutine will get cancelled and
-             * relaunched. If it changes too fast we don't want to always load artwork, waiting for
-             * the value to stay the same before updating artwork
-             */
-            delay(200.ms)
-            viewModel.loadArtwork(
-                kotlin.math.max(
-                    listState.firstVisibleItemIndex - 2,
-                    0
-                )..listState.firstVisibleItemIndex + listState.layoutInfo.visibleItemsInfo.size + 4
-            )
+        LaunchedEffect(listState) {
+            snapshotFlow { listState.firstVisibleItemIndex }
+                .distinctUntilChanged()
+                .debounce(200.ms)
+                .collect { firstVisibleIndex ->
+                    viewModel.loadArtwork(
+                        kotlin.math.max(
+                            firstVisibleIndex - (listState.layoutInfo.visibleItemsInfo.size + 8), 0
+                        )..firstVisibleIndex + listState.layoutInfo.visibleItemsInfo.size + 8
+                    )
+                }
         }
 
         LazyColumn(
@@ -91,8 +120,8 @@ object LibraryScreen :
                     end = Theme.padding.medium
                 ), contentPadding = PaddingValues(bottom = Theme.padding.small)
         ) {
-
             item {
+                val filterPlaybackType by viewModel.filterType.collectAsState()
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -137,8 +166,10 @@ object LibraryScreen :
             }
 
             item {
+                val filterPlaybackType by viewModel.filterType.collectAsState()
+                val availableSortTypes by viewModel.availableSortTypes.collectAsState()
+                var sortOptionsExpanded by rememberSaveable { mutableStateOf(false) }
                 var rowSize by remember { mutableStateOf(Size.Zero) }
-
                 val interactionSource = remember { MutableInteractionSource() }
 
                 Row(modifier = Modifier
@@ -219,163 +250,176 @@ object LibraryScreen :
                 }
             }
 
+
             items(playbackItems, key = { it.mediaId.toString() }) { playback ->
-                val updatedPlayback by rememberUpdatedState(playback)
-                var showArtworkSelectionDialog by remember { mutableStateOf(false) }
-                var showMetadataDialog by remember { mutableStateOf(false) }
-                var showDropDownMenu by remember { mutableStateOf(false) }
 
-                SwipeDelete(
-                    shape = Theme.shapes.medium,
-                    modifier = Modifier
+                val contentModifier =
+                    Modifier
                         .fillMaxWidth()
-                        .padding(bottom = Theme.padding.extraSmall),
-                    onClick = {
-                        viewModel.excludePlayback(updatedPlayback)
-                    }
-                ) {
-                    HorizontalPlaybackView(
-                        playback.displayTitle,
-                        playback.displaySubtitle,
-                        playback.artwork ?: PlaceholderArtwork,
-                        isEnabled = playback.isPlayable,
-                        dropDownMenuExpanded = showDropDownMenu,
-                        onOptionsMenuClicked = {
-                            showDropDownMenu = !showDropDownMenu
-                        },
-                        dropDownMenuContent = {
-                            DropdownMenuItem(
-                                text = { Text("Set Metadata") },
-                                onClick = {
-                                    showMetadataDialog = true
-                                    showDropDownMenu = false
-                                }
-                            )
+                        .padding(bottom = Theme.padding.extraSmall)
+                val nativeAds by viewModel.nativeAppInstallAdCache.collectAsState()
 
-                            DropdownMenuItem(
-                                text = { Text("Select Artwork") },
-                                onClick = {
-                                    viewModel.queryArtwork(playback)
-                                    showArtworkSelectionDialog = true
-                                    showDropDownMenu = false
-                                }
-                            )
-                        },
+                if (playback.playbackType is PlaybackType.Ad.NativeAppInstall && nativeAds.isNotEmpty()) {
+                    AdmobNativeAppInstallAd(
+                        contentModifier,
+                        nativeAds.cycle(playback.mediaId.source.toIntOrNull() ?: 0)
+                    )
+                } else {
+                    val updatedPlayback by rememberUpdatedState(playback)
+                    var showArtworkSelectionDialog by remember { mutableStateOf(false) }
+                    var showMetadataDialog by remember { mutableStateOf(false) }
+                    var showDropDownMenu by remember { mutableStateOf(false) }
+
+                    SwipeDelete(
+                        shape = Theme.shapes.medium,
+                        modifier = contentModifier,
                         onClick = {
-                            if (playback.isPlayable) {
-                                viewModel.onItemClicked(playback)
-                                scope.launch {
-                                    draggable.animateTo(SwipingStates.EXPANDED)
-                                }
-                            }
-                        })
-                }
-
-                if (showArtworkSelectionDialog) {
-                    Dialog(
-                        onDismissRequest = { showArtworkSelectionDialog = false }
+                            viewModel.excludePlayback(updatedPlayback)
+                        }
                     ) {
-                        val artworks by viewModel.queriedArtwork.collectAsState()
-                        val error by viewModel.artworkLoadingError.collectAsState()
-
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(Theme.shapes.extraLarge)
-                        ) {
-                            Column {
-                                var searchQuery by remember { mutableStateOf(playback.albumArtworkSearchQuery) }
-
-                                LaunchedEffect(searchQuery) {
-                                    delay(2.sec) // TODO: Proper delay option/...
-                                    viewModel.queryArtwork(playback, searchQuery)
-                                }
-
-                                Text(
-                                    "Select artwork to assign to playback",
-                                    modifier = Modifier.padding(Theme.padding.medium)
+                        HorizontalPlaybackView(
+                            playback.displayTitle,
+                            playback.displaySubtitle,
+                            playback.artwork ?: PlaceholderArtwork,
+                            isEnabled = playback.isPlayable,
+                            dropDownMenuExpanded = showDropDownMenu,
+                            onOptionsMenuClicked = {
+                                showDropDownMenu = !showDropDownMenu
+                            },
+                            dropDownMenuContent = {
+                                DropdownMenuItem(
+                                    text = { Text("Set Metadata") },
+                                    onClick = {
+                                        showMetadataDialog = true
+                                        showDropDownMenu = false
+                                    }
                                 )
 
-                                Text("Search Query")
-                                TextField(
-                                    value = searchQuery,
-                                    onValueChange = { searchQuery = it })
+                                DropdownMenuItem(
+                                    text = { Text("Select Artwork") },
+                                    onClick = {
+                                        viewModel.queryArtwork(playback)
+                                        showArtworkSelectionDialog = true
+                                        showDropDownMenu = false
+                                    }
+                                )
+                            },
+                            onClick = {
+                                if (playback.isPlayable) {
+                                    viewModel.onItemClicked(playback)
+                                    scope.launch {
+                                        draggable.animateTo(SwipingStates.EXPANDED)
+                                    }
+                                }
+                            })
+                    }
 
-                                if (error != null) {
+                    if (showArtworkSelectionDialog) {
+                        Dialog(
+                            onDismissRequest = { showArtworkSelectionDialog = false }
+                        ) {
+                            val artworks by viewModel.queriedArtwork.collectAsState()
+                            val error by viewModel.artworkLoadingError.collectAsState()
+
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(Theme.shapes.extraLarge)
+                            ) {
+                                Column {
+                                    var searchQuery by remember { mutableStateOf(playback.albumArtworkSearchQuery) }
+
+                                    LaunchedEffect(searchQuery) {
+                                        delay(2.sec) // TODO: Proper delay option/...
+                                        viewModel.queryArtwork(playback, searchQuery)
+                                    }
+
                                     Text(
-                                        error?.asString() ?: "Unknown error occurred",
+                                        "Select artwork to assign to playback",
                                         modifier = Modifier.padding(Theme.padding.medium)
                                     )
-                                }
 
-                                LazyVerticalGrid(
-                                    modifier = Modifier.padding(Theme.padding.medium),
-                                    columns = GridCells.Adaptive(100.dp),
-                                    contentPadding = PaddingValues(Theme.padding.small)
-                                ) {
-                                    items(artworks) { artwork ->
-                                        artwork(null,
-                                            Modifier
-                                                .size(100.dp)
-                                                .clickable {
-                                                    showArtworkSelectionDialog = false
-                                                    viewModel.assignArtworkToPlayback(
-                                                        artwork,
-                                                        playback
-                                                    )
-                                                })
+                                    Text("Search Query")
+                                    TextField(
+                                        value = searchQuery,
+                                        onValueChange = { searchQuery = it })
+
+                                    if (error != null) {
+                                        Text(
+                                            error?.asString() ?: "Unknown error occurred",
+                                            modifier = Modifier.padding(Theme.padding.medium)
+                                        )
+                                    }
+
+                                    LazyVerticalGrid(
+                                        modifier = Modifier.padding(Theme.padding.medium),
+                                        columns = GridCells.Adaptive(100.dp),
+                                        contentPadding = PaddingValues(Theme.padding.small)
+                                    ) {
+                                        items(artworks) { artwork ->
+                                            artwork(null,
+                                                Modifier
+                                                    .size(100.dp)
+                                                    .clickable {
+                                                        showArtworkSelectionDialog = false
+                                                        viewModel.assignArtworkToPlayback(
+                                                            artwork,
+                                                            playback
+                                                        )
+                                                    })
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-                if (showMetadataDialog) {
-                    Dialog(
-                        onDismissRequest = { showMetadataDialog = false }
-                    ) {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(Theme.shapes.extraLarge)
+                    if (showMetadataDialog) {
+                        Dialog(
+                            onDismissRequest = { showMetadataDialog = false }
                         ) {
-                            Column(modifier = Modifier.fillMaxSize()) {
-                                var title by remember { mutableStateOf(playback.title) }
-                                var artist by remember { mutableStateOf(playback.artist) }
-                                var name by remember { mutableStateOf(playback.displayTitle) }
-                                var album by remember { mutableStateOf(playback.album) }
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(Theme.shapes.extraLarge)
+                            ) {
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    var title by remember { mutableStateOf(playback.title) }
+                                    var artist by remember { mutableStateOf(playback.artist) }
+                                    var name by remember { mutableStateOf(playback.displayTitle) }
+                                    var album by remember { mutableStateOf(playback.album) }
 
-                                val playbackType = playback.mediaId.playbackType
+                                    val playbackType = playback.mediaId.playbackType
 
-                                if (playbackType !is PlaybackType.Playlist) {
-                                    Text("Title")
-                                    TextField(value = title, onValueChange = { title = it })
+                                    if (playbackType !is PlaybackType.Playlist) {
+                                        Text("Title")
+                                        TextField(value = title, onValueChange = { title = it })
 
-                                    Text("Artist")
-                                    TextField(value = artist, onValueChange = { artist = it })
+                                        Text("Artist")
+                                        TextField(value = artist, onValueChange = { artist = it })
 
-                                    Text("Album")
-                                    TextField(value = album, onValueChange = { album = it })
-                                }
-                                if (playbackType is PlaybackType.Remix || playbackType is PlaybackType.Playlist) {
-                                    Text("Name")
-                                    TextField(value = name, onValueChange = { name = it })
-                                }
-
-                                Button(
-                                    onClick = {
-                                        showMetadataDialog = false
-                                        viewModel.updateMetadata(
-                                            playback,
-                                            title,
-                                            artist,
-                                            name,
-                                            album
-                                        )
+                                        Text("Album")
+                                        TextField(value = album, onValueChange = { album = it })
                                     }
-                                ) {
-                                    Text("Confirm")
+                                    if (playbackType is PlaybackType.Remix || playbackType is PlaybackType.Playlist) {
+                                        Text("Name")
+                                        TextField(value = name, onValueChange = { name = it })
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            showMetadataDialog = false
+                                            viewModel.updateMetadata(
+                                                playback,
+                                                title,
+                                                artist,
+                                                name,
+                                                album
+                                            )
+                                        }
+                                    ) {
+                                        Text("Confirm")
+                                    }
                                 }
                             }
                         }

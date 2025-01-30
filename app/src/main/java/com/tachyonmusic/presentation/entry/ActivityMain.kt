@@ -1,13 +1,14 @@
 package com.tachyonmusic.presentation.entry
 
+import android.content.Intent
 import android.media.AudioManager
 import android.os.Bundle
 import android.view.Menu
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.RequestConfiguration
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.play.core.appupdate.AppUpdateManager
@@ -20,14 +21,22 @@ import com.google.android.play.core.install.model.UpdateAvailability
 import com.tachyonmusic.app.R
 import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.home.LoadUUIDForSongEntity
 import com.tachyonmusic.logger.domain.Logger
+import com.tachyonmusic.media.util.isGoogleCastAvailable
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
+
+    companion object {
+        const val INTENT_ACTION_SHOW_PLAYER = "com.tachyonmusic.ACTION_SHOW_PLAYER"
+    }
 
     @Inject
     lateinit var log: Logger
@@ -41,17 +50,32 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     @Inject
     lateinit var adInterface: AdInterface
 
+    @Inject
+    lateinit var loadUUIDForSongEntity: LoadUUIDForSongEntity
+
     private var castContext: CastContext? = null
     private lateinit var appUpdateManager: AppUpdateManager
 
+    private var updateReadyToInstall = MutableStateFlow(false)
+    private var miniplayerSnapPosition = MutableStateFlow<SwipingStates?>(null)
+
+    private val installStateListener = InstallStateUpdatedListener {
+        if (it.installStatus() == InstallStatus.DOWNLOADED)
+            updateReadyToInstall.update { true }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         adInterface.initialize(this)
 
+        // TODO: Load ads only when they might be necessary
+        adInterface.loadNativeInstallAds(this)
+        adInterface.loadRewardAd(this)
+
         // Initialize the Cast context. This is required so that the media route button can be
         // created in the AppBar
-        castContext = CastContext.getSharedInstance(this)
+        if (isGoogleCastAvailable(this))
+            castContext = CastContext.getSharedInstance(this)
 
         volumeControlStream = AudioManager.STREAM_MUSIC
         mediaBrowser.registerLifecycle(lifecycle)
@@ -70,7 +94,7 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
             .appUpdateInfo
             .addOnSuccessListener { appUpdateInfo ->
                 if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
-                    appUpdateManager.completeUpdate() // TODO: Request permission from user to restart app
+                    updateReadyToInstall.update { true }
                 }
             }
     }
@@ -78,6 +102,14 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     override fun onDestroy() {
         super.onDestroy()
         adInterface.release()
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent?.action == INTENT_ACTION_SHOW_PLAYER) {
+            // TODO: Not working
+            miniplayerSnapPosition.update { SwipingStates.EXPANDED }
+        }
     }
 
     override fun onConnected() {
@@ -100,28 +132,34 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
     private fun setupUi() {
         setContent {
-            MainScreen()
+            val shouldInstallUpdate by updateReadyToInstall.collectAsState()
+            val miniplayerSnapPos by miniplayerSnapPosition.collectAsState()
+            MainScreen(
+                shouldInstallUpdate,
+                updateSnackbarResult = { shouldRestart ->
+                    if (shouldRestart)
+                        appUpdateManager.completeUpdate()
+                    updateReadyToInstall.update { false }
+                },
+                miniplayerSnapPosition = miniplayerSnapPos,
+                onMiniplayerSnapCompleted = { miniplayerSnapPosition.update { null } }
+            )
         }
     }
- 
+
     // https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#kotlin
     private fun performUpdateCheck() {
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
 
-        val listener = InstallStateUpdatedListener {
-            if(it.installStatus() == InstallStatus.DOWNLOADED)
-                appUpdateManager.completeUpdate() // TODO: Request permission from user to restart app
-        }
-
         val onUpdateResultLauncher =
             registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-                if(it.resultCode != RESULT_OK)
+                if (it.resultCode != RESULT_OK)
                     log.warning("Update flow failed! Result ${it.resultCode}")
 
-                appUpdateManager.unregisterListener(listener)
+                appUpdateManager.unregisterListener(installStateListener)
             }
 
-        appUpdateManager.registerListener(listener)
+        appUpdateManager.registerListener(installStateListener)
         appUpdateInfoTask.addOnSuccessListener {
             if (it.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
                 it.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)

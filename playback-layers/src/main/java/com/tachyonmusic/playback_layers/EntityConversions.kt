@@ -30,7 +30,7 @@ fun RemixEntity.toPlayback(song: Playback?) =
         songTitle,
         songArtist,
         songDuration,
-        isPlayable = song != null,
+        isPlayable = song != null && song.isPlayable,
         song?.album,
         song?.artwork,
         song?.isArtworkLoading ?: false,

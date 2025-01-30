@@ -2,10 +2,12 @@ package com.tachyonmusic.presentation.library
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.android.gms.ads.nativead.NativeAd
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
-import com.tachyonmusic.core.domain.playback.Playback
+import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.domain.use_case.DeletePlayback
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
@@ -15,6 +17,7 @@ import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.domain.use_case.library.QueryArtworkForPlayback
 import com.tachyonmusic.domain.use_case.library.UpdatePlaybackMetadata
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.SortType
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.presentation.library.model.LibraryEntity
@@ -27,6 +30,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
@@ -39,6 +43,8 @@ import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
+// TODO: Move
+const val AD_INSERT_INTERVAL = 15
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
@@ -54,7 +60,10 @@ class LibraryViewModel @Inject constructor(
     private val queryArtworkForPlayback: QueryArtworkForPlayback,
     private val assignArtworkToPlayback: AssignArtworkToPlayback,
 
-    private val updatePlaybackMetadata: UpdatePlaybackMetadata
+    private val updatePlaybackMetadata: UpdatePlaybackMetadata,
+    private val log: Logger,
+
+    adInterface: AdInterface
 ) : ViewModel() {
 
     val sortParams = playbackRepository.sortingPreferences
@@ -104,6 +113,13 @@ class LibraryViewModel @Inject constructor(
     private var _artworkLoadingError = MutableStateFlow<UiText?>(null)
     val artworkLoadingError = _artworkLoadingError.asStateFlow()
 
+    val nativeAppInstallAdCache: StateFlow<List<NativeAd>> =
+        adInterface.nativeAppInstallAdCache.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            emptyList()
+        )
+
     private val artworkLoadingRange = MutableStateFlow(0..10)
 
     val items =
@@ -115,6 +131,7 @@ class LibraryViewModel @Inject constructor(
             artworkLoadingRange
         ) { songs, remixes, playlists, filterType, itemsToLoad ->
             val quality = 50
+
             when (filterType) {
                 is PlaybackType.Song -> loadArtworkForPlayback(songs, itemsToLoad, quality).map {
                     it.toLibraryEntity()
@@ -137,13 +154,17 @@ class LibraryViewModel @Inject constructor(
                 }
 
                 else -> emptyList()
+            }.insertBeforeEvery(AD_INSERT_INTERVAL) {
+                LibraryEntity(
+                    mediaId = MediaId("${it / AD_INSERT_INTERVAL}"),
+                    playbackType = PlaybackType.Ad.NativeAppInstall()
+                )
             }
         }.stateIn(
             viewModelScope + Dispatchers.IO,
             SharingStarted.WhileSubscribed(),
             emptyList()
         )
-
 
     fun onFilterSongs() {
         _filterType.value = PlaybackType.Song.Local()
@@ -188,7 +209,7 @@ class LibraryViewModel @Inject constructor(
                     else {
                         browser.stop()
                         val newPlayback = withContext(Dispatchers.IO) {
-                            playbackRepository.getHistory().findAndSkip(skip = 1) { it.isPlayable }
+                            playbackRepository.history.findAndSkip(skip = 1) { it.isPlayable }
                         }
                         browser.updatePlayback { newPlayback }
                     }
@@ -198,7 +219,8 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun loadArtwork(range: IntRange) {
-        artworkLoadingRange.update { range }
+        val rangeToUpdate = removeAdIndices(range)
+        artworkLoadingRange.update { rangeToUpdate }
     }
 
     /**
@@ -256,5 +278,24 @@ class LibraryViewModel @Inject constructor(
     private fun LibraryEntity.toPlaylist(): Playlist? {
         assert(playbackType is PlaybackType.Playlist)
         return playlists.value.find { it.mediaId == mediaId }
+    }
+
+    private fun <E> List<E>.insertBeforeEvery(insertBeforeIdx: Int, elem: (i: Int) -> E): List<E> {
+        val result = mutableListOf<E>()
+        for (i in indices) {
+            if (i % insertBeforeIdx == 0)
+                result.add(elem(i))
+            result.add(this[i])
+        }
+        return result
+    }
+
+    /**
+     * The range received from the UI includes all ad indices which we don't need for ranged
+     * loading of playback artwork. Function removes these unwanted indices
+     */
+    private fun removeAdIndices(range: IntRange): IntRange {
+        val numAds = range.last / AD_INSERT_INTERVAL + 1
+        return (range.first - numAds)..(range.last - numAds)
     }
 }

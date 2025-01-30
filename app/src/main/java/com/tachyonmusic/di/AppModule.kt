@@ -2,6 +2,8 @@ package com.tachyonmusic.di
 
 import android.app.Application
 import android.content.Context
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
 import com.tachyonmusic.TachyonApplication
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.data.model.InterstitialRewardAd
@@ -27,6 +29,7 @@ import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
+import com.tachyonmusic.domain.use_case.home.LoadUUIDForSongEntity
 import com.tachyonmusic.domain.use_case.home.NormalizeCurrentPosition
 import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
 import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
@@ -51,6 +54,7 @@ import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
+import com.tachyonmusic.metadata_api.di.brainzModule
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.playback_layers.domain.ArtworkLoader
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
@@ -87,6 +91,7 @@ object AppUseCaseModule {
         artworkCodex: ArtworkCodex,
         assignArtworkToPlayback: AssignArtworkToPlayback,
         stateRepository: StateRepository,
+        loadUUIDForSongEntity: LoadUUIDForSongEntity,
         logger: Logger,
         eventChannel: EventChannel
     ) = UpdateSongDatabase(
@@ -97,9 +102,14 @@ object AppUseCaseModule {
         artworkCodex,
         assignArtworkToPlayback,
         stateRepository,
+        loadUUIDForSongEntity,
         logger,
         eventChannel
     )
+
+    @Provides
+    @Singleton
+    fun provideFetchMetadataForEntity() = LoadUUIDForSongEntity(brainzModule)
 
     @Provides
     @Singleton
@@ -318,6 +328,7 @@ object AppRepositoryModule {
     @Singleton
     fun provideStateRepository(logger: Logger): StateRepository = StateRepositoryImpl(logger)
 
+    @OptIn(UnstableApi::class)
     @Provides
     @Singleton
     fun provideMediaBrowserController(

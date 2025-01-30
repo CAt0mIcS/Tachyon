@@ -17,7 +17,7 @@ class SavePlaybackToPlaylist(
         if (playback == null)
             return@withContext
 
-        val playlist = playbackRepository.getPlaylists().getOrNull(playlistIndex)
+        val playlist = playbackRepository.playlists.getOrNull(playlistIndex)
         if (playlist == null || playlist.hasPlayback(playback))
             return@withContext
 

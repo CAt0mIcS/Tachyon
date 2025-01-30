@@ -54,14 +54,16 @@ object Dependency {
 
     object DaggerHilt {
         const val NAVIGATION_COMPOSE = "androidx.hilt:hilt-navigation-compose:1.0.0"
-        const val HILT_ANDROID = "com.google.dagger:hilt-android:2.50"
-        const val COMPILER = "com.google.dagger:hilt-compiler:2.50"
+        const val HILT_ANDROID = "com.google.dagger:hilt-android:${Index.DAGGER_HILT}"
+        const val COMPILER = "com.google.dagger:hilt-compiler:${Index.DAGGER_HILT}"
     }
 
     object Google {
         const val CAST_FRAMEWORK = "com.google.android.gms:play-services-cast-framework:21.2.0"
         const val PLAY_UPDATE = "com.google.android.play:app-update:2.1.0"
         const val PLAY_UPDATE_KTX = "com.google.android.play:app-update-ktx:2.1.0"
+        const val BILLING = "com.android.billingclient:billing:7.1.1"
+        const val BILLING_KTX = "com.android.billingclient:billing-ktx:7.1.1"
     }
 
     object JSON {
@@ -114,21 +116,16 @@ object Dependency {
     }
 
     object Ads {
-        const val ADMOB = "com.google.android.gms:play-services-ads:23.1.0"
+        const val ADMOB = "com.google.android.gms:play-services-ads:23.6.0"
     }
 }
 
-fun DependencyHandler.firebase() {
-    implementation(platform(Dependency.Firebase.BOM))
-    implementation(Dependency.Firebase.CORE)
-    implementation(Dependency.Firebase.AUTH)
-    implementation(Dependency.Firebase.FIRESTORE)
-}
-
 fun DependencyHandler.firebaseAnalytics() {
-    implementation(Dependency.Firebase.ANALYTICS)
-    implementation(Dependency.Firebase.CRASHLYTICS)
-    implementation(Dependency.Firebase.PERFORMANCE)
+    implementation(platform(Dependency.Firebase.BOM))
+
+    releaseImplementation(Dependency.Firebase.ANALYTICS)
+    releaseImplementation(Dependency.Firebase.CRASHLYTICS)
+    releaseImplementation(Dependency.Firebase.PERFORMANCE)
 }
 
 fun DependencyHandler.compose() {
@@ -214,6 +211,8 @@ fun DependencyHandler.googleCast() {
 fun DependencyHandler.googlePlay() {
     implementation(Dependency.Google.PLAY_UPDATE)
     implementation(Dependency.Google.PLAY_UPDATE_KTX)
+    implementation(Dependency.Google.BILLING)
+    implementation(Dependency.Google.BILLING_KTX)
 }
 
 fun DependencyHandler.ads() {
@@ -229,6 +228,16 @@ fun DependencyHandler.jsoup() {
     implementation(Dependency.Jsoup.JSOUP)
 }
 
+fun DependencyHandler.eAlvaBrainz() {
+    implementation("com.ealva:ealvabrainz-service:0.10.3-0")
+    implementation("com.ealva:ealvabrainz:0.10.3-0")
+    implementation("com.github.bumptech.glide:glide:4.13.0")
+    implementation("com.github.bumptech.glide:okhttp3-integration:4.13.0")
+    implementation("com.michael-bull.kotlin-result:kotlin-result:1.1.14")
+    implementation("com.ealva:ealvalog:0.5.6-SNAPSHOT")
+    implementation("com.ealva:ealvalog-core:0.5.6-SNAPSHOT")
+}
+
 fun DependencyHandler.landscapistGlide() {
     implementation(Dependency.Landscapist.GLIDE)
 }
@@ -241,8 +250,12 @@ fun DependencyHandler.projectCore() {
     implementation(project(":core"))
 }
 
-fun DependencyHandler.projectArtworkFetcher() {
-    implementation(project(":artworkFetcher"))
+fun DependencyHandler.projectNativeTemplates() {
+    implementation(project(":nativetemplates"))
+}
+
+fun DependencyHandler.projectMetadataApi() {
+    implementation(project(":metadata-api"))
 }
 
 fun DependencyHandler.projectLogger() {
@@ -277,10 +290,11 @@ fun DependencyHandler.unitTest(
 
 fun DependencyHandler.androidTest(
     configName: String = "androidTestImplementation",
-    addTestUtilsProject: Boolean = true
+    addTestUtilsProject: Boolean = true,
+    di: Boolean = true
 ) {
-
-    kaptAndroidTest(Dependency.Test.DAGGER_TEST_COMPILER)
+    if (di)
+        kaptAndroidTest(Dependency.Test.DAGGER_TEST_COMPILER)
 
     add(configName, Dependency.Test.JUNIT)
     add(configName, Dependency.Test.COMPOSE_TEST)
@@ -317,6 +331,10 @@ fun DependencyHandler.implementation(dep: org.gradle.api.artifacts.Dependency) {
 
 private fun DependencyHandler.debugImplementation(depName: String) {
     add("debugImplementation", depName)
+}
+
+private fun DependencyHandler.releaseImplementation(depName: String) {
+    add("releaseImplementation", depName)
 }
 
 private fun DependencyHandler.kapt(depName: String) {

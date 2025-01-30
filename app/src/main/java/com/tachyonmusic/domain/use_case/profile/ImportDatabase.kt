@@ -48,7 +48,7 @@ class ImportDatabase(
                  * Make sure the [MediaBrowserController] is up to date with a possible new
                  * history item that was loaded in (TODO: Should happen automatically)
                  */
-                val latest = playbackRepository.getHistory().find { it.isPlayable }
+                val latest = playbackRepository.history.find { it.isPlayable }
                 runOnUiThreadAsync {
                     mediaBrowser.updatePlayback { latest }
                 }

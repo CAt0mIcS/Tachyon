@@ -20,7 +20,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled = false
 
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -51,5 +51,5 @@ dependencies {
     projectUtil()
     projectLogger()
     projectPlaybackLayerDatabase()
-    projectArtworkFetcher()
+    projectMetadataApi()
 }

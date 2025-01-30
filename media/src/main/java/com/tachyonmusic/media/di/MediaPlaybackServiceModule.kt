@@ -19,6 +19,7 @@ import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
+import com.tachyonmusic.media.util.isGoogleCastAvailable
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import dagger.Module
 import dagger.Provides
@@ -37,7 +38,7 @@ class MediaPlaybackServiceRepositoryModule {
     @ServiceScoped
     @Nullable
     fun provideCastContext(service: Service): CastContext? =
-        if (isCastApiAvailable(service)) CastContext.getSharedInstance(service) else null
+        if (isGoogleCastAvailable(service)) CastContext.getSharedInstance(service) else null
 
     @Provides
     @ServiceScoped
@@ -76,23 +77,4 @@ class MediaPlaybackRepositoryModule {
     @Provides
     @Singleton
     fun provideAudioEffectController(): AudioEffectController = AndroidAudioEffectController()
-}
-
-
-fun isCastApiAvailable(context: Context): Boolean {
-    val isCastApiAvailable = isCurrentDevicePhone(context)
-            && GoogleApiAvailability.getInstance()
-        .isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS
-    try {
-        CastContext.getSharedInstance(context)
-    } catch (e: Exception) {
-        // track non-fatal
-        return false
-    }
-    return isCastApiAvailable
-}
-
-fun isCurrentDevicePhone(context: Context): Boolean {
-    val uiModeManager = context.getSystemService(UI_MODE_SERVICE) as UiModeManager
-    return uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_NORMAL
 }

@@ -64,7 +64,7 @@ class SearchStoredPlaybacks(
     ): List<PlaybackSearchResult> {
         if (query.isBlank()) return emptyList()
 
-        var songs = playbackRepository.getSongs()
+        var songs = playbackRepository.songs
         var guaranteedResults = 0.0f
 
         val results = mutableListOf<PlaybackSearchResult>()
@@ -114,7 +114,7 @@ class SearchStoredPlaybacks(
     ): List<PlaybackSearchResult> {
         if (query.isBlank()) return emptyList()
 
-        var remixes = playbackRepository.getRemixes()
+        var remixes = playbackRepository.remixes
         var guaranteedResults = 0.0f
         val results = mutableListOf<PlaybackSearchResult>()
 
@@ -173,7 +173,7 @@ class SearchStoredPlaybacks(
     ): List<PlaybackSearchResult> {
         if (query.isBlank()) return emptyList()
 
-        var playlists = playbackRepository.getPlaylists()
+        var playlists = playbackRepository.playlists
         var guaranteedResults = 0.0f
         val results = mutableListOf<PlaybackSearchResult>()
 
