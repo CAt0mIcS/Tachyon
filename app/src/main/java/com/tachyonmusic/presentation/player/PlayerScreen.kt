@@ -377,7 +377,7 @@ fun PlayerScreen(
             item {
                 Text(
                     modifier = Modifier.padding(
-                        start = Theme.padding.small,
+                        start = Theme.padding.medium,
                         top = Theme.padding.medium,
                         end = Theme.padding.medium,
                         bottom = Theme.padding.extraSmall
@@ -425,7 +425,7 @@ fun PlayerScreen(
             item {
                 Text(
                     modifier = Modifier.padding(
-                        start = Theme.padding.small,
+                        start = Theme.padding.medium,
                         top = Theme.padding.medium,
                         end = Theme.padding.medium,
                         bottom = Theme.padding.extraSmall
