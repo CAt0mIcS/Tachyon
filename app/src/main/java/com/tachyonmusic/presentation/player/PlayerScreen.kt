@@ -436,7 +436,7 @@ fun PlayerScreen(
                 )
             }
 
-            items(recommendedItems, key = { it.mediaId.toString() }) { item ->
+            items(recommendedItems) { item ->
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

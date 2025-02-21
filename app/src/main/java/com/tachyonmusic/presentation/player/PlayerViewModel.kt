@@ -144,7 +144,7 @@ class PlayerViewModel @Inject constructor(
 
                 val songEntity = songRepository.findByMediaId(pb.mediaId) ?: return@onEach
                 // Already searched artwork for playback before -> Ignore it
-                if(songEntity.artworkType == ArtworkType.NO_ARTWORK)
+                if (songEntity.artworkType == ArtworkType.NO_ARTWORK)
                     return@onEach
 
                 log.info("[PlayerViewModel] Trying to find artwork for ${songEntity.mediaId}...")
@@ -275,7 +275,10 @@ class PlayerViewModel @Inject constructor(
                 is PlaybackType.Remix -> {
                     val song = songs.find { it.mediaId == currentPlayback?.songMediaId }
                         ?: return@combine emptyList()
-                    listOf(loadArtworkForPlayback(song).toPlayerEntity())
+                    remixes.filter { it.mediaId.underlyingMediaId == song.mediaId }
+                        .map { loadArtworkForPlayback(it).toPlayerEntity() }.toMutableList().apply {
+                            add(0, loadArtworkForPlayback(song).toPlayerEntity())
+                        }
                 }
 
                 else -> emptyList()
