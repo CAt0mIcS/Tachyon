@@ -365,11 +365,7 @@ fun PlayerScreen(
             item {
                 HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
 
-                EqualizerEditor(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = Theme.padding.medium)
-                )
+                EqualizerEditor()
             }
         }
 

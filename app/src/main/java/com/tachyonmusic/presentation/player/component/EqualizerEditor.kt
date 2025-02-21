@@ -3,10 +3,13 @@ package com.tachyonmusic.presentation.player.component
 import androidx.annotation.StringRes
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
@@ -39,7 +42,6 @@ import com.tachyonmusic.presentation.theme.Theme
 
 @Composable
 fun EqualizerEditor(
-    modifier: Modifier = Modifier,
     viewModel: EqualizerViewModel = hiltViewModel()
 ) {
     val bass by viewModel.bass.collectAsState()
@@ -53,7 +55,11 @@ fun EqualizerEditor(
     val equalizerEnabled by viewModel.equalizerEnabled.collectAsState()
     val reverbEnabled by viewModel.reverbEnabled.collectAsState()
 
-    Column(modifier = modifier) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Theme.padding.medium)
+    ) {
 
         CheckboxText(
             checked = bassEnabled,
@@ -79,9 +85,11 @@ fun EqualizerEditor(
         HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
         if (bassEnabled) {
-            Text(text = "Bass")
+            Text(text = "Bass", modifier = Modifier.padding(horizontal = Theme.padding.small))
             Slider(
-                modifier = Modifier.systemGestureExclusion(),
+                modifier = Modifier
+                    .systemGestureExclusion()
+                    .padding(horizontal = Theme.padding.small),
                 value = bass.toFloat(),
                 onValueChange = { viewModel.setBass(it.toInt()) },
                 valueRange = 0f..1000f,
@@ -91,9 +99,14 @@ fun EqualizerEditor(
         }
 
         if (virtualizerEnabled) {
-            Text(text = "Virtualizer Strength")
+            Text(
+                text = "Virtualizer Strength",
+                modifier = Modifier.padding(horizontal = Theme.padding.small)
+            )
             Slider(
-                modifier = Modifier.systemGestureExclusion(),
+                modifier = Modifier
+                    .systemGestureExclusion()
+                    .padding(horizontal = Theme.padding.small),
                 value = virtualizer.toFloat(),
                 onValueChange = { viewModel.setVirtualizerStrength(it.toInt()) },
                 valueRange = 0f..1000f,
@@ -114,21 +127,15 @@ fun EqualizerEditor(
             text = "Precise Speed and Pitch Input"
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Theme.padding.medium),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = "Speed")
-
-            val floatSpeed = playbackParams.speed.toFloatOrNull()
-            val text = if (floatSpeed == null)
+        val floatSpeed = playbackParams.speed.toFloatOrNull()
+        TextValueRow(
+            "Speed",
+            value = if (floatSpeed == null)
                 playbackParams.speed
-            else "%.1f ".format(floatSpeed * 100f) + "%"
-
-            Text(text)
-        }
+            else "%.1f ".format(floatSpeed * 100f),
+            "%",
+            modifier = Modifier.padding(horizontal = Theme.padding.medium)
+        )
         if (preciseInput) {
             TextField(
                 value = playbackParams.speed,
@@ -143,21 +150,15 @@ fun EqualizerEditor(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Theme.padding.medium),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = "Pitch")
-
-                val floatPitch = playbackParams.pitch.toFloatOrNull()
-                val text = if (floatPitch == null)
+            val floatPitch = playbackParams.pitch.toFloatOrNull()
+            TextValueRow(
+                "Pitch",
+                value = if (floatPitch == null)
                     playbackParams.pitch
-                else "%.1f ".format(floatPitch * 100f) + "%"
-
-                Text(text)
-            }
+                else "%.1f ".format(floatPitch * 100f),
+                "%",
+                modifier = Modifier.padding(horizontal = Theme.padding.medium)
+            )
             TextField(
                 value = playbackParams.pitch,
                 onValueChange = {
@@ -187,21 +188,16 @@ fun EqualizerEditor(
                 valueRange = minValue..maxValue
             )
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Theme.padding.medium),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = "Pitch")
-
-                val floatPitch = playbackParams.pitch.toFloatOrNull()
-                val text = if (floatPitch == null)
+            val floatPitch = playbackParams.pitch.toFloatOrNull()
+            TextValueRow(
+                "Pitch",
+                value = if (floatPitch == null)
                     playbackParams.pitch
-                else "%.1f ".format(floatPitch * 100f) + "%"
+                else "%.1f ".format(floatPitch * 100f),
+                "%",
+                modifier = Modifier.padding(horizontal = Theme.padding.medium)
+            )
 
-                Text(text)
-            }
             Slider(
                 modifier = Modifier
                     .systemGestureExclusion()
@@ -235,6 +231,7 @@ fun EqualizerEditor(
                 ExposedDropdownMenuBox(
                     expanded = equalizerPresetMenuExpanded,
                     onExpandedChange = { equalizerPresetMenuExpanded = it },
+                    modifier = Modifier.padding(horizontal = Theme.padding.small)
                 ) {
 
                     TextField(
@@ -278,7 +275,7 @@ fun EqualizerEditor(
                     Text("${band.lowerBandFrequency.inWholeHz} Hz")
 
                     Column(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(.75f),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text("${band.centerFrequency.inWholeHz} Hz")
@@ -311,6 +308,7 @@ fun EqualizerEditor(
             ExposedDropdownMenuBox(
                 expanded = reverbPresetMenuExpanded,
                 onExpandedChange = { reverbPresetMenuExpanded = it },
+                modifier = Modifier.padding(horizontal = Theme.padding.small)
             ) {
 
                 TextField(
@@ -479,105 +477,112 @@ fun EqualizerEditor(
                 }
             }
 
-            Text("roomLevel")
-            Slider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = reverb.roomLevel.toFloat(),
-                onValueChange = {
-                    viewModel.setReverb(reverb.copy(roomLevel = it.toInt().toShort()))
-                },
-                valueRange = ReverbConfig.ROOM_LEVEL_MIN.toFloat()..ReverbConfig.ROOM_LEVEL_MAX.toFloat(),
-            )
+            Column(modifier = Modifier.padding(horizontal = Theme.padding.small)) {
+                TextValueRow(
+                    "Room Level",
+                    reverb.roomLevel,
+                    "mB",
+                    modifier = Modifier.padding(top = Theme.padding.medium)
+                )
+                Slider(
+                    modifier = Modifier.systemGestureExclusion(),
+                    value = reverb.roomLevel.toFloat(),
+                    onValueChange = {
+                        viewModel.setReverb(reverb.copy(roomLevel = it.toInt().toShort()))
+                    },
+                    valueRange = ReverbConfig.ROOM_LEVEL_MIN.toFloat()..ReverbConfig.ROOM_LEVEL_MAX.toFloat(),
+                )
 
-            Text("roomHFLevel")
-            Slider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = reverb.roomHFLevel.toFloat(),
-                onValueChange = {
-                    viewModel.setReverb(reverb.copy(roomHFLevel = it.toInt().toShort()))
-                },
-                valueRange = ReverbConfig.ROOM_HF_LEVEL_MIN.toFloat()..ReverbConfig.ROOM_HF_LEVEL_MAX.toFloat(),
-            )
+                TextValueRow("Room HF-Level", reverb.roomHFLevel, "mB")
+                Slider(
+                    modifier = Modifier.systemGestureExclusion(),
+                    value = reverb.roomHFLevel.toFloat(),
+                    onValueChange = {
+                        viewModel.setReverb(reverb.copy(roomHFLevel = it.toInt().toShort()))
+                    },
+                    valueRange = ReverbConfig.ROOM_HF_LEVEL_MIN.toFloat()..ReverbConfig.ROOM_HF_LEVEL_MAX.toFloat(),
+                )
 
-            Text("decayTime")
-            Slider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = reverb.decayTime.toFloat(),
-                onValueChange = {
-                    viewModel.setReverb(reverb.copy(decayTime = it.toInt()))
-                },
-                valueRange = ReverbConfig.DECAY_TIME_MIN.toFloat()..ReverbConfig.DECAY_TIME_MAX.toFloat(),
-            )
+                TextValueRow("Decay Time", reverb.decayTime, "ms")
+                Slider(
+                    modifier = Modifier.systemGestureExclusion(),
+                    value = reverb.decayTime.toFloat(),
+                    onValueChange = {
+                        viewModel.setReverb(reverb.copy(decayTime = it.toInt()))
+                    },
+                    valueRange = ReverbConfig.DECAY_TIME_MIN.toFloat()..ReverbConfig.DECAY_TIME_MAX.toFloat(),
+                )
 
-            Text("decayHFRatio")
-            Slider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = reverb.decayHFRatio.toFloat(),
-                onValueChange = {
-                    viewModel.setReverb(reverb.copy(decayHFRatio = it.toInt().toShort()))
-                },
-                valueRange = ReverbConfig.DECAY_HF_RATIO_MIN.toFloat()..ReverbConfig.DECAY_HF_RATIO_MAX.toFloat(),
-            )
+                TextValueRow("Decay HF-Ratio", reverb.decayHFRatio, "‰")
+                Slider(
+                    modifier = Modifier.systemGestureExclusion(),
+                    value = reverb.decayHFRatio.toFloat(),
+                    onValueChange = {
+                        viewModel.setReverb(reverb.copy(decayHFRatio = it.toInt().toShort()))
+                    },
+                    valueRange = ReverbConfig.DECAY_HF_RATIO_MIN.toFloat()..ReverbConfig.DECAY_HF_RATIO_MAX.toFloat(),
+                )
 
-            Text("reflectionsLevel")
-            Slider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = reverb.reflectionsLevel.toFloat(),
-                onValueChange = {
-                    viewModel.setReverb(reverb.copy(reflectionsLevel = it.toInt().toShort()))
-                },
-                valueRange = ReverbConfig.REFLECTIONS_LEVEL_MIN.toFloat()..ReverbConfig.REFLECTIONS_LEVEL_MAX.toFloat(),
-            )
+                TextValueRow("Reflections Level", reverb.reflectionsLevel, "mB")
+                Slider(
+                    modifier = Modifier.systemGestureExclusion(),
+                    value = reverb.reflectionsLevel.toFloat(),
+                    onValueChange = {
+                        viewModel.setReverb(reverb.copy(reflectionsLevel = it.toInt().toShort()))
+                    },
+                    valueRange = ReverbConfig.REFLECTIONS_LEVEL_MIN.toFloat()..ReverbConfig.REFLECTIONS_LEVEL_MAX.toFloat(),
+                )
 
-            Text("reflectionsDelay")
-            Slider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = reverb.reflectionsDelay.toFloat(),
-                onValueChange = {
-                    viewModel.setReverb(reverb.copy(reflectionsDelay = it.toInt()))
-                },
-                valueRange = ReverbConfig.REFLECTIONS_DELAY_MIN.toFloat()..ReverbConfig.REFLECTIONS_DELAY_MAX.toFloat(),
-            )
+                TextValueRow("Reflections Delay", reverb.reflectionsDelay, "ms")
+                Slider(
+                    modifier = Modifier.systemGestureExclusion(),
+                    value = reverb.reflectionsDelay.toFloat(),
+                    onValueChange = {
+                        viewModel.setReverb(reverb.copy(reflectionsDelay = it.toInt()))
+                    },
+                    valueRange = ReverbConfig.REFLECTIONS_DELAY_MIN.toFloat()..ReverbConfig.REFLECTIONS_DELAY_MAX.toFloat(),
+                )
 
-            Text("reverbLevel")
-            Slider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = reverb.reverbLevel.toFloat(),
-                onValueChange = {
-                    viewModel.setReverb(reverb.copy(reverbLevel = it.toInt().toShort()))
-                },
-                valueRange = ReverbConfig.REVERB_LEVEL_MIN.toFloat()..ReverbConfig.REVERB_LEVEL_MAX.toFloat(),
-            )
+                TextValueRow("Reverb Level", reverb.reverbLevel, "mB")
+                Slider(
+                    modifier = Modifier.systemGestureExclusion(),
+                    value = reverb.reverbLevel.toFloat(),
+                    onValueChange = {
+                        viewModel.setReverb(reverb.copy(reverbLevel = it.toInt().toShort()))
+                    },
+                    valueRange = ReverbConfig.REVERB_LEVEL_MIN.toFloat()..ReverbConfig.REVERB_LEVEL_MAX.toFloat(),
+                )
 
-            Text("reverbDelay")
-            Slider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = reverb.reverbDelay.toFloat(),
-                onValueChange = {
-                    viewModel.setReverb(reverb.copy(reverbDelay = it.toInt()))
-                },
-                valueRange = ReverbConfig.REVERB_DELAY_MIN.toFloat()..ReverbConfig.REVERB_DELAY_MAX.toFloat(),
-            )
+                TextValueRow("Reverb Delay", reverb.reverbDelay, "ms")
+                Slider(
+                    modifier = Modifier.systemGestureExclusion(),
+                    value = reverb.reverbDelay.toFloat(),
+                    onValueChange = {
+                        viewModel.setReverb(reverb.copy(reverbDelay = it.toInt()))
+                    },
+                    valueRange = ReverbConfig.REVERB_DELAY_MIN.toFloat()..ReverbConfig.REVERB_DELAY_MAX.toFloat(),
+                )
 
-            Text("diffusion")
-            Slider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = reverb.diffusion.toFloat(),
-                onValueChange = {
-                    viewModel.setReverb(reverb.copy(diffusion = it.toInt().toShort()))
-                },
-                valueRange = ReverbConfig.DIFFUSION_MIN.toFloat()..ReverbConfig.DIFFUSION_MAX.toFloat(),
-            )
+                TextValueRow("Diffusion", reverb.diffusion, "‰")
+                Slider(
+                    modifier = Modifier.systemGestureExclusion(),
+                    value = reverb.diffusion.toFloat(),
+                    onValueChange = {
+                        viewModel.setReverb(reverb.copy(diffusion = it.toInt().toShort()))
+                    },
+                    valueRange = ReverbConfig.DIFFUSION_MIN.toFloat()..ReverbConfig.DIFFUSION_MAX.toFloat(),
+                )
 
-            Text("density")
-            Slider(
-                modifier = Modifier.systemGestureExclusion(),
-                value = reverb.density.toFloat(),
-                onValueChange = {
-                    viewModel.setReverb(reverb.copy(density = it.toInt().toShort()))
-                },
-                valueRange = ReverbConfig.DENSITY_MIN.toFloat()..ReverbConfig.DENSITY_MAX.toFloat(),
-            )
+                TextValueRow("Density", reverb.density, "‰")
+                Slider(
+                    modifier = Modifier.systemGestureExclusion(),
+                    value = reverb.density.toFloat(),
+                    onValueChange = {
+                        viewModel.setReverb(reverb.copy(density = it.toInt().toShort()))
+                    },
+                    valueRange = ReverbConfig.DENSITY_MIN.toFloat()..ReverbConfig.DENSITY_MAX.toFloat(),
+                )
+            }
         }
     }
 }
@@ -605,3 +610,19 @@ private fun ReverbPresetDropdownMenuItem(@StringRes name: Int, onClick: () -> Un
         onClick = onClick
     )
 }
+
+@Composable
+fun TextValueRow(settingName: String, value: String, unit: String, modifier: Modifier = Modifier) {
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Text(settingName)
+        Text("$value $unit")
+    }
+}
+
+@Composable
+fun TextValueRow(settingName: String, value: Int, unit: String, modifier: Modifier = Modifier) =
+    TextValueRow(settingName, value.toString(), unit, modifier)
+
+@Composable
+fun TextValueRow(settingName: String, value: Short, unit: String, modifier: Modifier = Modifier) =
+    TextValueRow(settingName, value.toString(), unit, modifier)
