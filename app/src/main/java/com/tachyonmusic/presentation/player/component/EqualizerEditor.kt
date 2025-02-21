@@ -114,7 +114,21 @@ fun EqualizerEditor(
             text = "Precise Speed and Pitch Input"
         )
 
-        Text(text = "Speed", modifier = Modifier.padding(horizontal = Theme.padding.medium))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = Theme.padding.medium),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = "Speed")
+
+            val floatSpeed = playbackParams.speed.toFloatOrNull()
+            val text = if (floatSpeed == null)
+                playbackParams.speed
+            else "%.1f ".format(floatSpeed * 100f) + "%"
+
+            Text(text)
+        }
         if (preciseInput) {
             TextField(
                 value = playbackParams.speed,
@@ -129,7 +143,21 @@ fun EqualizerEditor(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
-            Text(text = "Pitch")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Theme.padding.medium),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "Pitch")
+
+                val floatPitch = playbackParams.pitch.toFloatOrNull()
+                val text = if (floatPitch == null)
+                    playbackParams.pitch
+                else "%.1f ".format(floatPitch * 100f) + "%"
+
+                Text(text)
+            }
             TextField(
                 value = playbackParams.pitch,
                 onValueChange = {
@@ -159,7 +187,21 @@ fun EqualizerEditor(
                 valueRange = minValue..maxValue
             )
 
-            Text(text = "Pitch")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Theme.padding.medium),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "Pitch")
+
+                val floatPitch = playbackParams.pitch.toFloatOrNull()
+                val text = if (floatPitch == null)
+                    playbackParams.pitch
+                else "%.1f ".format(floatPitch * 100f) + "%"
+
+                Text(text)
+            }
             Slider(
                 modifier = Modifier
                     .systemGestureExclusion()
