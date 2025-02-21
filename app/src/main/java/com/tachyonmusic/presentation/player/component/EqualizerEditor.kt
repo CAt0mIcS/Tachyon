@@ -21,6 +21,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -32,6 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -127,16 +129,8 @@ fun EqualizerEditor(
             text = "Precise Speed and Pitch Input"
         )
 
-        val floatSpeed = playbackParams.speed.toFloatOrNull()
-        TextValueRow(
-            "Speed",
-            value = if (floatSpeed == null)
-                playbackParams.speed
-            else "%.1f ".format(floatSpeed * 100f),
-            "%",
-            modifier = Modifier.padding(horizontal = Theme.padding.medium)
-        )
         if (preciseInput) {
+            Text("Speed", modifier = Modifier.padding(horizontal = Theme.padding.medium))
             TextField(
                 value = playbackParams.speed,
                 onValueChange = {
@@ -150,15 +144,7 @@ fun EqualizerEditor(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
 
-            val floatPitch = playbackParams.pitch.toFloatOrNull()
-            TextValueRow(
-                "Pitch",
-                value = if (floatPitch == null)
-                    playbackParams.pitch
-                else "%.1f ".format(floatPitch * 100f),
-                "%",
-                modifier = Modifier.padding(horizontal = Theme.padding.medium)
-            )
+            Text("Pitch", modifier = Modifier.padding(horizontal = Theme.padding.medium))
             TextField(
                 value = playbackParams.pitch,
                 onValueChange = {
@@ -173,8 +159,17 @@ fun EqualizerEditor(
             )
         } else {
             val minValue = .3f // TODO: Setting?
-            val maxValue = 2.5f // TODO: Setting?
+            val maxValue = 2f // TODO: Setting?
 
+            val floatSpeed = playbackParams.speed.toFloatOrNull()
+            TextValueRow(
+                "Speed",
+                value = if (floatSpeed == null)
+                    playbackParams.speed
+                else "%.1f ".format(floatSpeed * 100f),
+                "%",
+                modifier = Modifier.padding(horizontal = Theme.padding.medium)
+            )
             Slider(
                 modifier = Modifier
                     .systemGestureExclusion()
@@ -185,7 +180,12 @@ fun EqualizerEditor(
                     if (syncSpeedPitch)
                         viewModel.setPitch(it.toString())
                 },
-                valueRange = minValue..maxValue
+                valueRange = minValue..maxValue,
+                steps = ((maxValue - minValue) * 200f).toInt() - 1,
+                colors = SliderDefaults.colors(
+                    activeTickColor = Color.Transparent,
+                    inactiveTickColor = Color.Transparent
+                )
             )
 
             val floatPitch = playbackParams.pitch.toFloatOrNull()
@@ -208,7 +208,12 @@ fun EqualizerEditor(
                     if (syncSpeedPitch)
                         viewModel.setSpeed(it.toString())
                 },
-                valueRange = minValue..maxValue
+                valueRange = minValue..maxValue,
+                steps = ((maxValue - minValue) * 200f).toInt() - 1,
+                colors = SliderDefaults.colors(
+                    activeTickColor = Color.Transparent,
+                    inactiveTickColor = Color.Transparent
+                )
             )
         }
 
