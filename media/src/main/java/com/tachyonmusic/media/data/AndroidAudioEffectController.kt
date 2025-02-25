@@ -44,13 +44,13 @@ class AndroidAudioEffectController : AudioEffectController {
     override val reverbEnabled = _reverbEnabled.asStateFlow()
 
     override val bassValue: Int?
-        get() = if(bassEnabled.value) bass.value else null
+        get() = if (bassEnabled.value) bass.value else null
     override val virtualizerValue: Int?
-        get() = if(virtualizerEnabled.value) virtualizerStrength.value else null
+        get() = if (virtualizerEnabled.value) virtualizerStrength.value else null
     override val reverbValue: ReverbConfig?
-        get() = if(reverbEnabled.value) reverb.value else null
+        get() = if (reverbEnabled.value) reverb.value else null
     override val equalizerBandValues: List<EqualizerBand>?
-        get() = if(equalizerEnabled.value) bands.value else null
+        get() = if (equalizerEnabled.value) bands.value else null
 
     /**************************************************************************
      ********** Bass
@@ -170,10 +170,14 @@ class AndroidAudioEffectController : AudioEffectController {
     // TODO: Release audio effects
 
     override fun updateAudioSessionId(audioSessionId: Int) {
-        equalizer = Equalizer(Int.MAX_VALUE, audioSessionId)
-        virtualizer = Virtualizer(Int.MAX_VALUE, audioSessionId)
-        bassBoost = BassBoost(Int.MAX_VALUE, audioSessionId)
-        environmentalReverb = EnvironmentalReverb(0, 0)
+        try {
+            equalizer = Equalizer(Int.MAX_VALUE, audioSessionId)
+            virtualizer = Virtualizer(Int.MAX_VALUE, audioSessionId)
+            bassBoost = BassBoost(Int.MAX_VALUE, audioSessionId)
+            environmentalReverb = EnvironmentalReverb(0, 0)
+        } catch (e: RuntimeException) {
+            e.printStackTrace()
+        }
     }
 
     override fun release() {
