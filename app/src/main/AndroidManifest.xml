@@ -50,6 +50,21 @@
                 <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
             </intent-filter>
 
+<!--            Show app in 'Open with' Dialog-->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Support file URIs -->
+                <data android:scheme="file" />
+                <!-- Support content URIs -->
+                <data android:scheme="content" />
+                <!-- Handle all audio file types -->
+                <data android:mimeType="audio/*" />
+            </intent-filter>
+
         </activity>
 
 

@@ -23,6 +23,7 @@ import com.tachyonmusic.app.R
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.home.LoadUUIDForSongEntity
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.util.isGoogleCastAvailable
@@ -63,6 +64,9 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     @Inject
     lateinit var dataRepository: DataRepository
 
+    @Inject
+    lateinit var registerNewUriPermission: RegisterNewUriPermission
+
     private var castContext: CastContext? = null
     private lateinit var appUpdateManager: AppUpdateManager
 
@@ -79,6 +83,11 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val uri = intent.data
+        if (uri != null) {
+            // TODO: Handle non-persistent URI permission when user clicks on audio file and 'Open with Tachyon'
+        }
 
         dataRepository.observe().onEach { data ->
             onboardingCompleted.update { data.onboardingCompleted }
