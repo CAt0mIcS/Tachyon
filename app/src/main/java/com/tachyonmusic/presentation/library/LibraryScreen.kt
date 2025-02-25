@@ -194,7 +194,9 @@ object LibraryScreen :
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             TextField(
-                                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                                modifier = Modifier
+                                    .menuAnchor()
+                                    .fillMaxWidth(),
                                 value = sortParams.type.asString(filterPlaybackType),
                                 textStyle = LocalTextStyle.current.copy(fontSize = 15.sp),
                                 colors = TextFieldDefaults.colors(
@@ -306,6 +308,14 @@ object LibraryScreen :
                         modifier = contentModifier,
                         onClick = {
                             viewModel.excludePlayback(updatedPlayback)
+                        },
+                        expandedColor = when (playback.playbackType) {
+                            is PlaybackType.Song -> MaterialTheme.colorScheme.tertiary
+                            else -> MaterialTheme.colorScheme.error
+                        },
+                        primaryBackgroundColor = when (playback.playbackType) {
+                            is PlaybackType.Song -> MaterialTheme.colorScheme.tertiary.copy(alpha = .7f)
+                            else -> MaterialTheme.colorScheme.primary
                         }
                     ) {
                         HorizontalPlaybackView(
