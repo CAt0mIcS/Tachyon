@@ -27,3 +27,6 @@ sealed class UiText {
     }
 }
 
+val String.dyn: UiText.DynamicString
+    get() = UiText.DynamicString(this)
+

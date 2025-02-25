@@ -7,13 +7,13 @@ import com.ealva.ealvabrainz.brainz.data.ReleaseMbid
 import com.ealva.ealvabrainz.common.AlbumTitle
 import com.ealva.ealvabrainz.common.ArtistName
 import com.github.michaelbull.result.get
-import com.github.michaelbull.result.getOrElse
 import com.tachyonmusic.metadata_api.R
 import com.tachyonmusic.metadata_api.di.brainzModule
 import com.tachyonmusic.metadata_api.domain.artwork_source.ArtworkSource
 import com.tachyonmusic.metadata_api.domain.model.SearchInfo
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.dyn
 
 class CoverArtArchiveArtworkSource : ArtworkSource() {
     companion object {
@@ -52,6 +52,6 @@ class CoverArtArchiveArtworkSource : ArtworkSource() {
         front = artworks?.images?.find { it.front }
         if (front != null)
             return Resource.Success(front.image)
-        return Resource.Error(UiText.DynamicString(result.getErrorString()))
+        return Resource.Error(result.getErrorString().dyn)
     }
 }

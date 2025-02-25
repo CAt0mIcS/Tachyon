@@ -5,6 +5,7 @@ sealed class PlaybackType(val value: Int) {
 
     sealed class Song(value: Int) : Playback(value) {
         class Local : Song(0)
+        class LocalTemporary: Song(5)
     }
 
     sealed class Remix(value: Int) : Playback(value) {
@@ -28,6 +29,7 @@ sealed class PlaybackType(val value: Int) {
                 "*2*" -> Playlist.Local()
                 "*3*" -> Ad.Banner()
                 "*4*" -> Ad.NativeAppInstall()
+                "*5*" -> Song.LocalTemporary()
                 else -> TODO("Unsupported value $value for playback type")
             }
         }

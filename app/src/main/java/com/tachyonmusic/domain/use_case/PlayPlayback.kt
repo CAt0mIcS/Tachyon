@@ -7,7 +7,6 @@ import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
-import com.tachyonmusic.playback_layers.domain.events.PlaybackNotFoundEvent
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.EventSeverity
 import com.tachyonmusic.util.UiText
@@ -36,10 +35,8 @@ class PlayPlayback(
     ) = runOnUiThread {
         if (playback == null) {
             eventChannel.push(
-                PlaybackNotFoundEvent(
-                    UiText.StringResource(R.string.invalid_playback, "null"),
-                    EventSeverity.Error
-                )
+                UiText.StringResource(R.string.invalid_playback, "null"),
+                EventSeverity.Error
             )
             return@runOnUiThread
         }

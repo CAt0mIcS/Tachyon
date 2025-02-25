@@ -1,6 +1,8 @@
 package com.tachyonmusic.util.data
 
 import com.tachyonmusic.util.ChannelEvent
+import com.tachyonmusic.util.EventSeverity
+import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.domain.EventChannel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,4 +21,7 @@ class EventChannelImpl : EventChannel {
     override fun push(event: ChannelEvent) {
         assert(flow.tryEmit(event)) { "EventChannel flow was unable to emit" }
     }
+
+    override fun push(message: UiText, severity: EventSeverity) =
+        push(ChannelEvent(message, severity))
 }

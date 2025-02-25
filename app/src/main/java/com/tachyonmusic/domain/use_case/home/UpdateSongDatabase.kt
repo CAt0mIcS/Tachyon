@@ -15,7 +15,6 @@ import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
-import com.tachyonmusic.playback_layers.domain.events.PlaybackNotFoundEvent
 import com.tachyonmusic.util.EventSeverity
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.domain.EventChannel
@@ -85,13 +84,11 @@ class UpdateSongDatabase(
                         val newEntity = loadMetadata(path)
                         if (newEntity == null) {
                             eventChannel.push(
-                                PlaybackNotFoundEvent(
-                                    UiText.StringResource(
-                                        R.string.invalid_playback,
-                                        path.name ?: "null"
-                                    ),
-                                    EventSeverity.Warning
-                                )
+                                UiText.StringResource(
+                                    R.string.invalid_playback,
+                                    path.name ?: "null"
+                                ),
+                                EventSeverity.Warning
                             )
                         }
                         newEntity

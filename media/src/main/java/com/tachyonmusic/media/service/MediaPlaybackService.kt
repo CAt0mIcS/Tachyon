@@ -50,10 +50,10 @@ import com.tachyonmusic.media.util.*
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
-import com.tachyonmusic.playback_layers.domain.events.PlayerMessageEvent
 import com.tachyonmusic.util.EventSeverity
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.domain.EventChannel
+import com.tachyonmusic.util.dyn
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -505,20 +505,16 @@ open class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             || error.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
         ) {
             eventChannel.push(
-                PlayerMessageEvent(
-                    UiText.StringResource(
-                        R.string.error_media_not_found,
-                        currentPlayback?.title ?: "Unknown"
-                    ),
-                    EventSeverity.Error
-                )
+                UiText.StringResource(
+                    R.string.error_media_not_found,
+                    currentPlayback?.title ?: "Unknown"
+                ),
+                EventSeverity.Error
             )
         } else {
             eventChannel.push(
-                PlayerMessageEvent(
-                    UiText.DynamicString(errorStr),
-                    EventSeverity.Error
-                )
+                errorStr.dyn,
+                EventSeverity.Error
             )
         }
     }

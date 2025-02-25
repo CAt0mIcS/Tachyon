@@ -6,6 +6,7 @@ import android.net.Uri
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.database.domain.model.HistoryEntity
@@ -68,13 +69,16 @@ class PlaybackRepositoryImpl(
 
     private val flowRecompute = MutableStateFlow(false)
 
+    private val temporaryPlaybacks = MutableStateFlow<List<SongEntity>>(emptyList())
+
     override val songFlow =
         combine(
             songRepository.observe().distinctUntilChanged(),
             sortingPreferences,
+            temporaryPlaybacks,
             flowRecompute
-        ) { songEntities, sorting, _ ->
-            transformSongs(songEntities, sorting)
+        ) { songEntities, sorting, tempPlaybacks, _ ->
+            transformSongs(songEntities + tempPlaybacks, sorting)
         }.shareIn(ioScope, SharingStarted.Eagerly, replay = 1)
 
     override val remixFlow =
@@ -126,6 +130,10 @@ class PlaybackRepositoryImpl(
 
     override fun setSortingPreferences(sortPrefs: SortingPreferences) {
         _sortingPreferences.update { sortPrefs }
+    }
+
+    override fun addTemporaryPlayback(entity: SongEntity) {
+        temporaryPlaybacks.update { (it + entity).toList() }
     }
 
     private suspend fun transformSongs(
@@ -265,6 +273,9 @@ class PlaybackRepositoryImpl(
     }
 
     private fun SinglePlaybackEntity.checkIfPlayable(): Boolean {
+        if(mediaId.playbackType is PlaybackType.Song.LocalTemporary)
+            return true
+
         val key = mediaId.uri ?: return false
 
         var isPlayable = synchronized(cacheLock) { permissionCache[key] }

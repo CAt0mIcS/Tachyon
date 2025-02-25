@@ -1,11 +1,13 @@
 package com.tachyonmusic.core.domain
 
 import android.net.Uri
+import android.provider.MediaStore.Audio.Media
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.core.domain.playback.Playback
 
 data class MediaId(
     val source: String,
@@ -31,6 +33,9 @@ data class MediaId(
         fun ofLocalSong(uri: Uri) =
             MediaId(PlaybackType.Song.Local().toString() + uri.toString())
 
+        fun ofLocalTemporarySong(uri: Uri) =
+            MediaId(PlaybackType.Song.LocalTemporary().toString() + uri.toString())
+
         fun ofLocalRemix(name: String, songMediaId: MediaId) =
             MediaId(PlaybackType.Remix.Local().toString() + name, songMediaId)
 
@@ -42,13 +47,17 @@ data class MediaId(
 
     val playbackType: PlaybackType
         get() =
-            if (isLocalSong) PlaybackType.Song.Local()
+            if (source.contains(PlaybackType.Song.Local().toString()))
+                PlaybackType.Song.Local()
             else if (isLocalRemix) PlaybackType.Remix.Local()
             else if (isLocalPlaylist) PlaybackType.Playlist.Local()
+            else if (source.contains(PlaybackType.Song.LocalTemporary().toString()))
+                PlaybackType.Song.LocalTemporary()
             else TODO("Invalid media id ${toString()}")
 
     val isLocalSong: Boolean
-        get() = source.contains(PlaybackType.Song.Local().toString())
+        get() = source.contains(PlaybackType.Song.Local().toString()) ||
+                source.contains(PlaybackType.Song.LocalTemporary().toString())
 
     val isLocalRemix: Boolean
         get() = source.contains(
@@ -63,6 +72,7 @@ data class MediaId(
             if (isLocalSong)
                 return Uri.parse(
                     source.replaceFirst(PlaybackType.Song.Local().toString(), "")
+                        .replaceFirst(PlaybackType.Song.LocalTemporary().toString(), "")
                 )
             return underlyingMediaId?.uri
         }
