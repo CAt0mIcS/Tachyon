@@ -1,7 +1,9 @@
 package com.tachyonmusic.database.util
 
 import android.content.Context
+import android.content.UriPermission
 import android.net.Uri
+import android.provider.DocumentsContract
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.RemoteArtwork
 import com.tachyonmusic.core.domain.playback.Playback
@@ -53,12 +55,16 @@ fun Playlist.toEntity() = PlaylistEntity(
     timestampCreatedAddedEdited
 )
 
-fun Uri.isPlayable(context: Context) = try {
-    context.contentResolver.openInputStream(this)?.close() ?: false
-    true
-} catch (e: Exception) {
-    when (e) {
-        is FileNotFoundException, is IllegalArgumentException, is SecurityException -> false
-        else -> throw e
-    }
+//fun Uri.isPlayable(context: Context) = try {
+//    context.contentResolver.openInputStream(this)?.close() ?: false
+//    true
+//} catch (e: Exception) {
+//    when (e) {
+//        is FileNotFoundException, is IllegalArgumentException, is SecurityException -> false
+//        else -> throw e
+//    }
+//}
+
+fun Uri.isPlayable(persistentUris: List<UriPermission>): Boolean {
+    return persistentUris.any { toString().startsWith(it.uri.toString()) }
 }
