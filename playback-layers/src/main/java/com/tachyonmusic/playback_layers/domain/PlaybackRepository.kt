@@ -2,6 +2,7 @@ package com.tachyonmusic.playback_layers.domain
 
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.playback_layers.SortingPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharedFlow
@@ -22,4 +23,6 @@ interface PlaybackRepository {
 
     val sortingPreferences: StateFlow<SortingPreferences>
     fun setSortingPreferences(sortPrefs: SortingPreferences)
+
+    fun addTemporaryPlayback(entity: SongEntity)
 }

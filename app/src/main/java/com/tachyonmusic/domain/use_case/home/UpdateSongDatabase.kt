@@ -15,7 +15,6 @@ import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
-import com.tachyonmusic.playback_layers.domain.events.PlaybackNotFoundEvent
 import com.tachyonmusic.util.EventSeverity
 import com.tachyonmusic.util.UiText
 import com.tachyonmusic.util.domain.EventChannel
@@ -60,13 +59,12 @@ class UpdateSongDatabase(
 
         /**
          * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
-         * TODO: Where do we even need to do this?
          */
         val songsInRepository = songRepo.getSongs()
-//        songsInRepository.filter { it.isHidden }.forEach {
-//            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
-//                songRepo.updateIsHidden(it.mediaId, false)
-//        }
+        songsInRepository.filter { it.isHidden }.forEach {
+            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
+                songRepo.updateIsHidden(it.mediaId, false)
+        }
 
         /**
          * Filter songs that are already in database
@@ -86,13 +84,11 @@ class UpdateSongDatabase(
                         val newEntity = loadMetadata(path)
                         if (newEntity == null) {
                             eventChannel.push(
-                                PlaybackNotFoundEvent(
-                                    UiText.StringResource(
-                                        R.string.invalid_playback,
-                                        path.name ?: "null"
-                                    ),
-                                    EventSeverity.Warning
-                                )
+                                UiText.StringResource(
+                                    R.string.invalid_playback,
+                                    path.name ?: "null"
+                                ),
+                                EventSeverity.Warning
                             )
                         }
                         newEntity

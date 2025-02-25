@@ -3,6 +3,7 @@ package com.tachyonmusic.presentation.entry
 import android.content.Intent
 import android.media.AudioManager
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,6 +24,8 @@ import com.tachyonmusic.app.R
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
+import com.tachyonmusic.domain.use_case.RegisterTemporaryPlayback
 import com.tachyonmusic.domain.use_case.home.LoadUUIDForSongEntity
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.util.isGoogleCastAvailable
@@ -62,6 +65,9 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
     @Inject
     lateinit var dataRepository: DataRepository
+
+    @Inject
+    lateinit var registerTemporaryPlayback: RegisterTemporaryPlayback
 
     private var castContext: CastContext? = null
     private lateinit var appUpdateManager: AppUpdateManager
@@ -138,9 +144,21 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        if (intent?.action == INTENT_ACTION_SHOW_PLAYER) {
-            // TODO: Not working
-            miniplayerSnapPosition.update { SwipingStates.EXPANDED }
+        when(intent?.action) {
+            INTENT_ACTION_SHOW_PLAYER -> {
+                // TODO: Not working
+                miniplayerSnapPosition.update { SwipingStates.EXPANDED }
+            }
+            Intent.ACTION_VIEW -> {
+                // User clicked on audio file and chose to open with Tachyon
+                val uri = intent.data
+                if (uri != null) {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        if(registerTemporaryPlayback(uri))
+                            miniplayerSnapPosition.update { SwipingStates.EXPANDED }
+                    }
+                }
+            }
         }
     }
 
@@ -159,6 +177,16 @@ class ActivityMain : AppCompatActivity(), MediaBrowserController.EventListener {
     }
 
     override fun onConnected() {
+        val uri = intent.data
+        if (uri != null && intent.action == Intent.ACTION_VIEW) {
+            // User clicked on audio file and chose to open with Tachyon
+            lifecycleScope.launch(Dispatchers.IO) {
+                if (registerTemporaryPlayback(uri)) {
+                    miniplayerSnapPosition.update { SwipingStates.EXPANDED }
+                }
+            }
+        }
+
         setupUi()
     }
 

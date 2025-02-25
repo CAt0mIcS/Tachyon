@@ -61,13 +61,17 @@ object PlaybackLayerRepositoryModule {
         remixRepository: RemixRepository,
         playlistRepository: PlaylistRepository,
         historyRepository: HistoryRepository,
-        eventChannel: EventChannel
+        eventChannel: EventChannel,
+        permissionRepository: UriPermissionRepository,
+        @ApplicationContext context: Context
     ): PlaybackRepository = PlaybackRepositoryImpl(
         songRepository,
         remixRepository,
         playlistRepository,
         historyRepository,
-        eventChannel
+        eventChannel,
+        permissionRepository,
+        context
     )
 
     @Provides

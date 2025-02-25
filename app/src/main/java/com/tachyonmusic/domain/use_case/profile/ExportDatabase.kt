@@ -12,9 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
-class ExportDatabaseEvent(override val message: UiText, override val severity: EventSeverity) :
-    ChannelEvent
-
 
 class ExportDatabase(
     private val database: Database,
@@ -24,10 +21,8 @@ class ExportDatabase(
     suspend operator fun invoke(destination: Uri?) = withContext(Dispatchers.IO) {
         if (destination == null) {
             eventChannel.push(
-                ExportDatabaseEvent(
-                    UiText.StringResource(R.string.database_export_destination_empty),
-                    EventSeverity.Warning
-                )
+                UiText.StringResource(R.string.database_export_destination_empty),
+                EventSeverity.Warning
             )
             return@withContext
         }
@@ -41,22 +36,17 @@ class ExportDatabase(
             outputStream.close()
 
             eventChannel.push(
-                ExportDatabaseEvent(
-                    UiText.StringResource(R.string.database_export_success),
-                    EventSeverity.Info
-                )
+                UiText.StringResource(R.string.database_export_success),
+                EventSeverity.Info
             )
 
         } catch (e: IOException) {
             e.printStackTrace()
             eventChannel.push(
-                ExportDatabaseEvent(
-                    UiText.StringResource(
-                        R.string.database_export_error,
-                        e.localizedMessage ?: "Unknown"
-                    ),
-                    EventSeverity.Error
-                )
+                UiText.StringResource(
+                    R.string.database_export_error,
+                    e.localizedMessage ?: "Unknown"
+                ), EventSeverity.Error
             )
         }
     }

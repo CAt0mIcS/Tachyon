@@ -1,24 +1,33 @@
 package com.tachyonmusic.playback_layers.data
 
+import android.content.Context
+import android.content.UriPermission
+import android.net.Uri
 import com.tachyonmusic.core.ArtworkType
 import com.tachyonmusic.core.data.EmbeddedArtwork
 import com.tachyonmusic.core.data.RemoteArtwork
+import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.database.domain.model.HistoryEntity
+import com.tachyonmusic.database.domain.model.PlaybackEntity
 import com.tachyonmusic.database.domain.model.PlaylistEntity
 import com.tachyonmusic.database.domain.model.RemixEntity
+import com.tachyonmusic.database.domain.model.SinglePlaybackEntity
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.HistoryRepository
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.database.domain.repository.RemixRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.database.util.isPlayable
 import com.tachyonmusic.playback_layers.SortingPreferences
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import com.tachyonmusic.playback_layers.sortedBy
 import com.tachyonmusic.playback_layers.toPlayback
 import com.tachyonmusic.util.domain.EventChannel
 import com.tachyonmusic.util.maxAsyncChunked
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -30,6 +39,8 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
@@ -41,8 +52,14 @@ class PlaybackRepositoryImpl(
     playlistRepository: PlaylistRepository,
     historyRepository: HistoryRepository,
 
-    private val eventChannel: EventChannel
+    private val eventChannel: EventChannel,
+    private val uriPermissionRepository: UriPermissionRepository,
+    @ApplicationContext private val context: Context
 ) : PlaybackRepository {
+
+    private var cacheLock = Any()
+    private val permissionCache = mutableMapOf<Uri, Boolean>()
+    private var persistedUriPermissions: List<UriPermission> = emptyList()
 
     // PlaybackRepository is alive until the end of the program, so it doesn't need to be cancelled
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -52,13 +69,16 @@ class PlaybackRepositoryImpl(
 
     private val flowRecompute = MutableStateFlow(false)
 
+    private val temporaryPlaybacks = MutableStateFlow<List<SongEntity>>(emptyList())
+
     override val songFlow =
         combine(
             songRepository.observe().distinctUntilChanged(),
             sortingPreferences,
+            temporaryPlaybacks,
             flowRecompute
-        ) { songEntities, sorting, _ ->
-            transformSongs(songEntities, sorting)
+        ) { songEntities, sorting, tempPlaybacks, _ ->
+            transformSongs(songEntities + tempPlaybacks, sorting)
         }.shareIn(ioScope, SharingStarted.Eagerly, replay = 1)
 
     override val remixFlow =
@@ -99,9 +119,21 @@ class PlaybackRepositoryImpl(
     override val history: List<Playback>
         get() = historyFlow.replayCache.first()
 
+    init {
+        uriPermissionRepository.permissions.onEach {
+            synchronized(cacheLock) {
+                permissionCache.clear()
+                persistedUriPermissions = context.contentResolver.persistedUriPermissions
+            }
+        }.launchIn(ioScope)
+    }
 
     override fun setSortingPreferences(sortPrefs: SortingPreferences) {
         _sortingPreferences.update { sortPrefs }
+    }
+
+    override fun addTemporaryPlayback(entity: SongEntity) {
+        temporaryPlaybacks.update { (it + entity).toList() }
     }
 
     private suspend fun transformSongs(
@@ -123,13 +155,7 @@ class PlaybackRepositoryImpl(
                                 ArtworkType.EMBEDDED -> EmbeddedArtwork(null, entity.mediaId.uri!!)
                                 else -> null
                             },
-                            /**
-                             * TODO: This takes too long, especially on older devices.
-                             *  For now: Checking isPlayable status when pressing play ([PlayPlayback])
-                             *      and not updating UI depending on playability status
-                             */
-//                            entity.checkIfPlayable(context)
-                            true
+                            entity.checkIfPlayable()
                         )
                     } else
                         TODO("Invalid media id ${entity.mediaId}")
@@ -243,6 +269,24 @@ class PlaybackRepositoryImpl(
 //            }
 
             item
+        }
+    }
+
+    private fun SinglePlaybackEntity.checkIfPlayable(): Boolean {
+        if(mediaId.playbackType is PlaybackType.Song.LocalTemporary)
+            return true
+
+        val key = mediaId.uri ?: return false
+
+        var isPlayable = synchronized(cacheLock) { permissionCache[key] }
+        if (isPlayable != null)
+            return isPlayable
+
+        isPlayable = key.isPlayable(persistedUriPermissions)
+
+        return synchronized(cacheLock) {
+            permissionCache[key] = isPlayable
+            isPlayable
         }
     }
 }

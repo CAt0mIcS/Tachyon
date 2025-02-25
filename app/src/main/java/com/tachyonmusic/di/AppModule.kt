@@ -27,6 +27,7 @@ import com.tachyonmusic.domain.use_case.GetRecentlyPlayed
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
+import com.tachyonmusic.domain.use_case.RegisterTemporaryPlayback
 import com.tachyonmusic.domain.use_case.authentication.RegisterUser
 import com.tachyonmusic.domain.use_case.authentication.SignInUser
 import com.tachyonmusic.domain.use_case.home.LoadUUIDForSongEntity
@@ -280,17 +281,13 @@ object AppUseCaseModule {
         getPlaylistForPlayback: GetPlaylistForPlayback,
         addNewPlaybackToHistory: AddNewPlaybackToHistory,
         logger: Logger,
-        eventChannel: EventChannel,
-        @ApplicationContext context: Context,
-        uriPermissionRepository: UriPermissionRepository
+        eventChannel: EventChannel
     ) = PlayPlayback(
         browser,
         getPlaylistForPlayback,
         addNewPlaybackToHistory,
         logger,
-        eventChannel,
-        context,
-        uriPermissionRepository
+        eventChannel
     )
 
     @Provides
@@ -310,13 +307,33 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideQueryArtworkForPlayback(artworkLoader: ArtworkLoader) =
+    fun provideQueryArtworkForPlaybackUseCase(artworkLoader: ArtworkLoader) =
         QueryArtworkForPlayback(artworkLoader)
 
     @Provides
     @Singleton
-    fun provideAssignArtworkToPlayback(songRepository: SongRepository) =
+    fun provideAssignArtworkToPlaybackUseCase(songRepository: SongRepository) =
         AssignArtworkToPlayback(songRepository)
+
+    @Provides
+    @Singleton
+    fun provideRegisterTemporaryPlaybackUseCase(
+        @ApplicationContext context: Context,
+        metadataExtractor: SongMetadataExtractor,
+        playbackRepository: PlaybackRepository,
+        artworkCodex: ArtworkCodex,
+        log: Logger,
+        eventChannel: EventChannel,
+        playPlayback: PlayPlayback
+    ) = RegisterTemporaryPlayback(
+        context,
+        metadataExtractor,
+        playbackRepository,
+        artworkCodex,
+        log,
+        eventChannel,
+        playPlayback
+    )
 }
 
 

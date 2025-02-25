@@ -1,8 +1,6 @@
 package com.tachyonmusic.presentation.core_components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.AnimationSpec
-import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.rememberSplineBasedDecay
@@ -58,6 +56,7 @@ fun SwipeDelete(
     shape: Shape = RectangleShape,
     onClick: () -> Unit,
     fractionalThreshold: Float = .35f,
+    expandedColor: Color = MaterialTheme.colorScheme.error,
     content: @Composable RowScope.() -> Unit
 ) {
     val density = LocalDensity.current
@@ -91,7 +90,7 @@ fun SwipeDelete(
             val color by animateColorAsState(
                 when (state.targetValue) {
                     SwipeState.COLLAPSED -> primaryBackgroundColor
-                    else -> Color.Red
+                    else -> expandedColor
                 },
                 animationSpec = tween(Theme.animation.long)
             )
