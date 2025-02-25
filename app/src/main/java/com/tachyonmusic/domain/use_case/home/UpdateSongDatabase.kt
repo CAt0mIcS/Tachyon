@@ -60,13 +60,12 @@ class UpdateSongDatabase(
 
         /**
          * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
-         * TODO: Where do we even need to do this?
          */
         val songsInRepository = songRepo.getSongs()
-//        songsInRepository.filter { it.isHidden }.forEach {
-//            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
-//                songRepo.updateIsHidden(it.mediaId, false)
-//        }
+        songsInRepository.filter { it.isHidden }.forEach {
+            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
+                songRepo.updateIsHidden(it.mediaId, false)
+        }
 
         /**
          * Filter songs that are already in database
