@@ -68,6 +68,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
 import javax.inject.Singleton
 
 
@@ -347,7 +348,8 @@ object AppRepositoryModule {
 
     @Provides
     @Singleton
-    fun provideStateRepository(logger: Logger): StateRepository = StateRepositoryImpl(logger)
+    fun provideStateRepository(coroutineScope: CoroutineScope, logger: Logger): StateRepository =
+        StateRepositoryImpl(coroutineScope, logger)
 
     @OptIn(UnstableApi::class)
     @Provides

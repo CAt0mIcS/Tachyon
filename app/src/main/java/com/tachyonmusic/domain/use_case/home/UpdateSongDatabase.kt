@@ -46,7 +46,7 @@ class UpdateSongDatabase(
 ) {
     suspend operator fun invoke(settings: SettingsEntity) = withContext(Dispatchers.IO) {
         // TODO: Support more extensions
-        stateRepository.queueLoadingTask("UpdateSongDatabase::loadingNewSongs")
+        stateRepository.queueLoadingTask(TASK)
 
         val startTime = System.nanoTime()
 
@@ -104,7 +104,7 @@ class UpdateSongDatabase(
         val endTime = System.nanoTime()
         log.debug("UpdateSongDatabase took ${(endTime - startTime).toFloat() / 1000000f} ms")
 
-        stateRepository.finishLoadingTask("UpdateSongDatabase::loadingNewSongs")
+        stateRepository.finishLoadingTask(TASK)
     }
 
     private suspend fun loadMetadata(path: DocumentFile) =
@@ -149,5 +149,9 @@ class UpdateSongDatabase(
                 message = it.message ?: return@onEach
             )
         }.collect()
+    }
+
+    companion object {
+        const val TASK = "UpdateSongDatabase::loadingNewSongs"
     }
 }

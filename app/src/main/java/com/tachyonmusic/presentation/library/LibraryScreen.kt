@@ -74,6 +74,7 @@ import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.library.component.FilterItemRow
+import com.tachyonmusic.presentation.library.component.PullToRefreshLazyColumn
 import com.tachyonmusic.presentation.library.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.AdmobNativeAppInstallAd
@@ -113,7 +114,12 @@ object LibraryScreen :
                 }
         }
 
-        LazyColumn(
+        val isRefreshing by viewModel.isRefreshing.collectAsState()
+        PullToRefreshLazyColumn(
+            isRefreshing,
+            onRefresh = {
+                viewModel.refreshLibrary()
+            },
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
@@ -121,7 +127,8 @@ object LibraryScreen :
                     start = Theme.padding.medium,
                     top = Theme.padding.medium,
                     end = Theme.padding.medium
-                ), contentPadding = PaddingValues(bottom = Theme.padding.small)
+                ),
+            contentPadding = PaddingValues(bottom = Theme.padding.small)
         ) {
             item {
                 val filterPlaybackType by viewModel.filterType.collectAsState()

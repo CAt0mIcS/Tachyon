@@ -8,12 +8,16 @@ import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.Artwork
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.repository.MediaBrowserController
+import com.tachyonmusic.domain.repository.StateRepository
 import com.tachyonmusic.domain.use_case.DeletePlayback
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
+import com.tachyonmusic.domain.use_case.home.UpdateSettingsDatabase
+import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.domain.use_case.library.AddSongToExcludedSongs
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.domain.use_case.library.QueryArtworkForPlayback
@@ -64,7 +68,12 @@ class LibraryViewModel @Inject constructor(
     private val updatePlaybackMetadata: UpdatePlaybackMetadata,
     private val log: Logger,
 
-    adInterface: AdInterface
+    private val updateSongDatabase: UpdateSongDatabase,
+    private val updateSettingsDatabase: UpdateSettingsDatabase,
+    private val settingsRepository: SettingsRepository,
+
+    adInterface: AdInterface,
+    stateRepository: StateRepository
 ) : ViewModel() {
 
     val sortParams = playbackRepository.sortingPreferences
@@ -166,6 +175,9 @@ class LibraryViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(),
             emptyList()
         )
+
+    val isRefreshing = stateRepository.listenToTask(UpdateSongDatabase.TASK)
+        .stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), false)
 
     fun onFilterSongs() {
         _filterType.value = PlaybackType.Song.Local()
@@ -270,6 +282,13 @@ class LibraryViewModel @Inject constructor(
 
     fun flipSortOrder() {
         playbackRepository.setSortingPreferences(sortParams.value.copy(order = !sortParams.value.order))
+    }
+
+    fun refreshLibrary() {
+        viewModelScope.launch(Dispatchers.IO) {
+            updateSettingsDatabase()
+            updateSongDatabase(settingsRepository.getSettings())
+        }
     }
 
     private fun LibraryEntity.toPlayback() =

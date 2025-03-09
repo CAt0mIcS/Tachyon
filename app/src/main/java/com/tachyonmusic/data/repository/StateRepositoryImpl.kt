@@ -4,16 +4,21 @@ import com.tachyonmusic.domain.repository.StateRepository
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.delay
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 
 const val STATE_LOADING_TASK_STARTUP = "Startup"
 
 class StateRepositoryImpl(
+    val scope: CoroutineScope,
     private val log: Logger
 ) : StateRepository {
     /**
@@ -21,20 +26,20 @@ class StateRepositoryImpl(
      * [LoadingTask.STARTUP] needs to be finished using [finishLoadingTask] since we always want to
      * show the popup when starting the app
      */
-    private var _isLoading = MutableStateFlow(true)
-    override val isLoading = _isLoading.asStateFlow()
-    private val tasks = mutableListOf(STATE_LOADING_TASK_STARTUP)
+    val tasks = MutableStateFlow(listOf(STATE_LOADING_TASK_STARTUP))
+    override val isLoading = tasks.map {
+        it.isNotEmpty()
+    }.stateIn(scope + Dispatchers.IO, SharingStarted.Lazily, true)
     private val taskLock = Any()
 
     override fun queueLoadingTask(name: String): Boolean {
         log.debug("Queueing task $name with isLoading = ${isLoading.value}...")
         val ret = synchronized(taskLock) {
-            if (tasks.contains(name)) {
+            if (tasks.value.contains(name)) {
                 log.debug("Task $name is already queued")
                 return@synchronized false
             }
-            tasks += name
-            _isLoading.update { true }
+            tasks.update { it + name }
             return@synchronized true
         }
 
@@ -45,14 +50,12 @@ class StateRepositoryImpl(
     override fun finishLoadingTask(name: String): Boolean {
         log.debug("Finishing task $name with isLoading = ${isLoading.value}...")
         val ret = synchronized(taskLock) {
-            if (!tasks.remove(name)) {
+            if (!tasks.value.contains(name)) {
                 log.debug("Task $name does not exist")
                 return@synchronized false
             }
 
-            if (tasks.isEmpty())
-                _isLoading.update { false }
-
+            tasks.update { it - name }
             return@synchronized true
         }
 
@@ -72,6 +75,10 @@ class StateRepositoryImpl(
         }
 
     override fun isLoadingTaskRunning(name: String) = synchronized(taskLock) {
-        tasks.contains(name)
+        tasks.value.contains(name)
+    }
+
+    override fun listenToTask(name: String) = tasks.map {
+        it.contains(name)
     }
 }

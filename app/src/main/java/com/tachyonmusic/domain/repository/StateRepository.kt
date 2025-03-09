@@ -1,7 +1,9 @@
 package com.tachyonmusic.domain.repository
 
 import com.tachyonmusic.util.Duration
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import java.lang.Thread.State
 
 interface StateRepository {
     val isLoading: StateFlow<Boolean>
@@ -27,4 +29,10 @@ interface StateRepository {
     suspend fun finishLoadingTask(name: String, timeout: Duration): Boolean
 
     fun isLoadingTaskRunning(name: String): Boolean
+
+    /**
+     * Listens to changes in the task with [name]
+     * @return A flow which emits the current state of the task with [name]
+     */
+    fun listenToTask(name: String): Flow<Boolean>
 }
