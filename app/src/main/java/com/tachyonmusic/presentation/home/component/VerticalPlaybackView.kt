@@ -20,7 +20,8 @@ fun VerticalPlaybackView(
     displayTitle: String,
     displaySubtitle: String,
     artwork: Artwork,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isPlayable: Boolean = true
 ) {
     Column(
         modifier = modifier
@@ -40,7 +41,8 @@ fun VerticalPlaybackView(
             text = displayTitle,
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
-            gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            gradientEnabled = isPlayable
         )
 
         AnimatedText(
@@ -52,7 +54,8 @@ fun VerticalPlaybackView(
                 ),
             text = displaySubtitle,
             fontSize = 12.sp,
-            gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainerHigh
+            gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            gradientEnabled = isPlayable
         )
     }
 }

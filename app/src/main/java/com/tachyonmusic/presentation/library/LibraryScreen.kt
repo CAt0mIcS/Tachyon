@@ -3,28 +3,23 @@ package com.tachyonmusic.presentation.library
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.animateTo
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
@@ -52,14 +47,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.consumeDownChange
@@ -81,7 +73,6 @@ import com.tachyonmusic.presentation.BottomNavigationItem
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.entry.SwipingStates
-import com.tachyonmusic.presentation.library.component.FilterItem
 import com.tachyonmusic.presentation.library.component.FilterItemRow
 import com.tachyonmusic.presentation.library.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.theme.Theme
@@ -322,7 +313,7 @@ object LibraryScreen :
                             updatedPlayback.displayTitle,
                             updatedPlayback.displaySubtitle,
                             updatedPlayback.artwork ?: PlaceholderArtwork,
-                            isEnabled = updatedPlayback.isPlayable,
+                            isPlayable = updatedPlayback.isPlayable,
                             dropDownMenuExpanded = showDropDownMenu,
                             onOptionsMenuClicked = {
                                 showDropDownMenu = !showDropDownMenu

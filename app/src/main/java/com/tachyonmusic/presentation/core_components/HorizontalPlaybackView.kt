@@ -33,7 +33,7 @@ fun HorizontalPlaybackView(
     displaySubtitle: String,
     artwork: Artwork,
     modifier: Modifier = Modifier,
-    isEnabled: Boolean = true,
+    isPlayable: Boolean = true,
     dropDownMenuExpanded: Boolean = false,
     onOptionsMenuClicked: () -> Unit = {},
     dropDownMenuContent: (@Composable ColumnScope.() -> Unit)? = null,
@@ -43,7 +43,7 @@ fun HorizontalPlaybackView(
         modifier = modifier
             .shadow(Theme.shadow.extraSmall, shape = Theme.shapes.medium)
             .background(
-                if (isEnabled) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainerLowest,
+                if (isPlayable) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surfaceContainerLowest,
                 shape = Theme.shapes.medium
             )
 //            .border(BorderStroke(1.dp, Theme.colors.border), shape = Theme.shapes.medium)
@@ -71,7 +71,8 @@ fun HorizontalPlaybackView(
                     text = displayTitle,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
-                    gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer
+                    gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer,
+                    gradientEnabled = isPlayable
                 )
 
                 AnimatedText(
@@ -82,7 +83,8 @@ fun HorizontalPlaybackView(
                         ),
                     text = displaySubtitle,
                     fontSize = 14.sp,
-                    gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer
+                    gradientEdgeColor = MaterialTheme.colorScheme.surfaceContainer,
+                    gradientEnabled = isPlayable
                 )
             }
         }

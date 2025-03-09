@@ -170,6 +170,7 @@ private fun LazyListScope.playbacksView(
                     Theme.shapes.medium
                 ),
             artwork = playback.artwork ?: PlaceholderArtwork,
+            isPlayable = playback.isPlayable
         )
     }
 }

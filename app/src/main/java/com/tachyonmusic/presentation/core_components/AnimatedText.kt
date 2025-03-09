@@ -46,6 +46,7 @@ fun AnimatedText(
     modifier: Modifier = Modifier,
     gradientEdgeColor: Color = MaterialTheme.colorScheme.background,
     gradientWidth: Dp = 12.dp,
+    gradientEnabled: Boolean = true,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
     fontStyle: FontStyle? = null,
@@ -79,7 +80,8 @@ fun AnimatedText(
             maxLines,
             minLines,
             onTextLayout,
-            style
+            style,
+            gradientEnabled
         )
     else
         Text(
@@ -122,6 +124,7 @@ private fun MarqueeTextInternal(
     minLines: Int,
     onTextLayout: (TextLayoutResult) -> Unit,
     style: TextStyle,
+    enableGradient: Boolean
 ) {
     var gradientHeight by remember { mutableStateOf<Dp?>(null) }
 
@@ -169,7 +172,8 @@ private fun MarqueeTextInternal(
     if (gradientHeight != null) {
         Box(modifier) {
             createText(Modifier.basicMarquee(Int.MAX_VALUE))
-            Gradient(gradientHeight ?: return@Box, gradientEdgeColor, gradientWidth)
+            if (enableGradient)
+                Gradient(gradientHeight ?: return@Box, gradientEdgeColor, gradientWidth)
         }
     } else
         createText(modifier)

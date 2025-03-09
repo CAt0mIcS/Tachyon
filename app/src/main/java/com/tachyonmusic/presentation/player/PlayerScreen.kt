@@ -48,7 +48,6 @@ import com.github.krottv.compose.sliders.SliderValueHorizontal
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.data.constants.PlaceholderArtwork
 import com.tachyonmusic.core.data.constants.PlaybackType
-import com.tachyonmusic.database.domain.model.PlaybackEntity
 import com.tachyonmusic.domain.use_case.PlaybackLocation
 import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.ErrorDialog
@@ -466,6 +465,6 @@ private fun SubPlaybackView(
                 playbackLocation
             )
         },
-        isEnabled = playback.isPlayable
+        isPlayable = playback.isPlayable
     )
 }
