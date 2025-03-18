@@ -275,7 +275,7 @@ class PlayerViewModel @Inject constructor(
                 is PlaybackType.Remix -> {
                     val song = songs.find { it.mediaId == currentPlayback?.songMediaId }
                         ?: return@combine emptyList()
-                    remixes.filter { it.mediaId.underlyingMediaId == song.mediaId }
+                    remixes.filter { it.mediaId.underlyingMediaId == song.mediaId && it.mediaId != currentPlayback?.mediaId }
                         .map { loadArtworkForPlayback(it).toPlayerEntity() }.toMutableList().apply {
                             add(0, loadArtworkForPlayback(song).toPlayerEntity())
                         }
