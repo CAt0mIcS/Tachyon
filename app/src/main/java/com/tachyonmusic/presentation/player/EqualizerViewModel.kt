@@ -11,7 +11,10 @@ import com.tachyonmusic.core.domain.model.mDb
 import com.tachyonmusic.core.domain.model.mHz
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.domain.AudioEffectController
+import com.tachyonmusic.util.delay
+import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +25,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -128,14 +132,19 @@ class EqualizerViewModel @Inject constructor(
         }
     }
 
+    private var setPlaybackJob: Job? = null
     fun setPlaybackParams(speed: String, pitch: String) {
         _playbackParameters.update { it.copy(speed = speed, pitch = pitch) }
 
-        val speedNum = speed.toFloatOrNull() ?: return
-        val pitchNum = pitch.toFloatOrNull() ?: return
-        if (speedNum > 0f && pitchNum > 0f) {
-            mediaBrowser.updatePlayback {
-                it?.copy(playbackParameters = it.playbackParameters.copy(speedNum, pitchNum))
+        setPlaybackJob?.cancel()
+        setPlaybackJob = viewModelScope.launch {
+            delay(300.ms)
+            val speedNum = speed.toFloatOrNull() ?: return@launch
+            val pitchNum = pitch.toFloatOrNull() ?: return@launch
+            if (speedNum > 0f && pitchNum > 0f) {
+                mediaBrowser.updatePlayback {
+                    it?.copy(playbackParameters = it.playbackParameters.copy(speedNum, pitchNum))
+                }
             }
         }
     }
