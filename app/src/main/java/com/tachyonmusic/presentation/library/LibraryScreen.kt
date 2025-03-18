@@ -125,7 +125,6 @@ object LibraryScreen :
                 .fillMaxSize()
                 .padding(
                     start = Theme.padding.medium,
-                    top = Theme.padding.medium,
                     end = Theme.padding.medium
                 ),
             contentPadding = PaddingValues(bottom = Theme.padding.small)

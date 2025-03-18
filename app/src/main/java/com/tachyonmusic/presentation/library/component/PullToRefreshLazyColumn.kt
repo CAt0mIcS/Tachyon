@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -17,7 +18,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
+import com.tachyonmusic.presentation.theme.Theme
 
 @Composable
 fun PullToRefreshLazyColumn(
@@ -38,7 +41,9 @@ fun PullToRefreshLazyColumn(
 
     Box(modifier = modifier.nestedScroll(pullToRefreshState.nestedScrollConnection)) {
         LazyColumn(
-            Modifier.fillMaxSize(),
+            Modifier
+                .fillMaxSize()
+                .padding(top = Theme.padding.medium),
             state,
             contentPadding,
             reverseLayout,
@@ -49,14 +54,14 @@ fun PullToRefreshLazyColumn(
             content
         )
 
-        if(pullToRefreshState.isRefreshing) {
+        if (pullToRefreshState.isRefreshing) {
             LaunchedEffect(true) {
                 onRefresh()
             }
         }
 
         LaunchedEffect(isRefreshing) {
-            if(isRefreshing)
+            if (isRefreshing)
                 pullToRefreshState.startRefresh()
             else
                 pullToRefreshState.endRefresh()
