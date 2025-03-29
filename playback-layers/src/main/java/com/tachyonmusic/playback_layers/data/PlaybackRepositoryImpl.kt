@@ -122,8 +122,7 @@ class PlaybackRepositoryImpl(
     init {
         uriPermissionRepository.permissions.onEach {
             synchronized(cacheLock) {
-                permissionCache.clear()
-                persistedUriPermissions = context.contentResolver.persistedUriPermissions
+                clearPermissionCache()
             }
         }.launchIn(ioScope)
     }
@@ -134,6 +133,14 @@ class PlaybackRepositoryImpl(
 
     override fun addTemporaryPlayback(entity: SongEntity) {
         temporaryPlaybacks.update { (it + entity).toList() }
+    }
+
+    override fun clearPermissionCache() {
+        synchronized(cacheLock){
+            permissionCache.clear()
+            persistedUriPermissions = context.contentResolver.persistedUriPermissions
+        }
+        flowRecompute.update { !it }
     }
 
     private suspend fun transformSongs(

@@ -25,4 +25,6 @@ interface PlaybackRepository {
     fun setSortingPreferences(sortPrefs: SortingPreferences)
 
     fun addTemporaryPlayback(entity: SongEntity)
+
+    fun clearPermissionCache()
 }

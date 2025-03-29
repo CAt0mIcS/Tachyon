@@ -288,6 +288,7 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             updateSettingsDatabase()
             updateSongDatabase(settingsRepository.getSettings())
+            playbackRepository.clearPermissionCache()
         }
     }
 
