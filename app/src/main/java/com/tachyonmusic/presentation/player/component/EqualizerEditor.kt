@@ -176,9 +176,10 @@ fun EqualizerEditor(
                     .padding(horizontal = Theme.padding.medium),
                 value = playbackParams.speed.toFloat(),
                 onValueChange = {
-                    viewModel.setSpeed(it.toString())
                     if (syncSpeedPitch)
-                        viewModel.setPitch(it.toString())
+                        viewModel.setPlaybackParams(it.toString(), it.toString())
+                    else
+                        viewModel.setSpeed(it.toString())
                 },
                 valueRange = minValue..maxValue,
                 steps = ((maxValue - minValue) * 200f).toInt() - 1,
@@ -204,9 +205,10 @@ fun EqualizerEditor(
                     .padding(horizontal = Theme.padding.medium),
                 value = playbackParams.pitch.toFloat(),
                 onValueChange = {
-                    viewModel.setPitch(it.toString())
                     if (syncSpeedPitch)
-                        viewModel.setSpeed(it.toString())
+                        viewModel.setPlaybackParams(it.toString(), it.toString())
+                    else
+                        viewModel.setPitch(it.toString())
                 },
                 valueRange = minValue..maxValue,
                 steps = ((maxValue - minValue) * 200f).toInt() - 1,

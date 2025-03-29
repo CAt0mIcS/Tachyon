@@ -34,6 +34,7 @@ import com.tachyonmusic.playback_layers.isPredefined
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
+import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -115,6 +116,18 @@ class MediaPlaybackServiceMediaBrowserController(
         val newPlayback = action(currentPlayback.value)
         _currentPlayback.update { newPlayback }
         browser?.dispatchMediaEvent(PlaybackUpdateEvent(newPlayback, currentPlaylist.value))
+    }
+
+    private var updatePlaybackDebouncedJob: Job? = null
+    override suspend fun updatePlaybackDebounced(
+        debounce: Duration,
+        action: (Playback?) -> Playback?
+    ) = withContext(Dispatchers.Main) {
+        updatePlaybackDebouncedJob?.cancel()
+        updatePlaybackDebouncedJob = launch {
+            delay(debounce)
+            updatePlayback(action)
+        }
     }
 
     override val currentPosition: Duration?

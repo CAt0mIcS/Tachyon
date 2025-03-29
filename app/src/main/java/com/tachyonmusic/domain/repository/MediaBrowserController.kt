@@ -8,6 +8,7 @@ import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
+import com.tachyonmusic.util.ms
 import kotlinx.coroutines.flow.StateFlow
 
 
@@ -33,6 +34,11 @@ interface MediaBrowserController : DefaultLifecycleObserver,
      * with new information (like new timing data, playback parameters, audio effects, ...)
      */
     fun updatePlayback(action: (Playback?) -> Playback?)
+    /**
+     * Update the currently playing playback after [debounce] duration (given as argument in [action])
+     * with new information (like new timing data, playback parameters, audio effects, ...)
+     */
+    suspend fun updatePlaybackDebounced(debounce: Duration = 300.ms, action: (Playback?) -> Playback?)
 
     val currentPosition: Duration?
     val canPrepare: Boolean
