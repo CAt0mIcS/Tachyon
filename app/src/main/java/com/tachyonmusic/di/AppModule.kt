@@ -55,6 +55,7 @@ import com.tachyonmusic.logger.data.ConsoleUiTextLogger
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
+import com.tachyonmusic.media.domain.use_case.SyncPlaybackAudioEffects
 import com.tachyonmusic.metadata_api.di.brainzModule
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.playback_layers.domain.ArtworkLoader
@@ -357,12 +358,14 @@ object AppRepositoryModule {
     fun provideMediaBrowserController(
         getPlaylistForPlayback: GetPlaylistForPlayback,
         logger: Logger,
-        playbackRepository: PlaybackRepository
+        playbackRepository: PlaybackRepository,
+        syncPlaybackAudioEffects: SyncPlaybackAudioEffects
     ): MediaBrowserController =
         MediaPlaybackServiceMediaBrowserController(
             getPlaylistForPlayback,
             logger,
-            playbackRepository
+            playbackRepository,
+            syncPlaybackAudioEffects
         )
 
     @Provides

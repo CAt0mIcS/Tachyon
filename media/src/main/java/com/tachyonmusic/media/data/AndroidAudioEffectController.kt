@@ -188,18 +188,27 @@ class AndroidAudioEffectController : AudioEffectController {
     }
 
     override fun setBassEnabled(enabled: Boolean): Boolean {
+        if (bassBoost?.enabled == enabled)
+            return enabled
+
         bassBoost?.enabled = enabled
         _bassEnabled.update { bassBoost?.enabled == true && bassBoost?.hasControl() == true }
         return bassEnabled.value
     }
 
     override fun setVirtualizerEnabled(enabled: Boolean): Boolean {
+        if (virtualizer?.enabled == enabled)
+            return enabled
+
         virtualizer?.enabled = enabled
         _virtualizerEnabled.update { virtualizer?.enabled == true && virtualizer?.hasControl() == true && virtualizer?.strengthSupported == true }
         return virtualizerEnabled.value
     }
 
     override fun setEqualizerEnabled(enabled: Boolean): Boolean {
+        if (equalizer?.enabled == enabled)
+            return enabled
+
         equalizer?.enabled = enabled
         _equalizerEnabled.update { equalizer?.enabled == true && equalizer?.hasControl() == true }
 
@@ -210,6 +219,9 @@ class AndroidAudioEffectController : AudioEffectController {
     }
 
     override fun setReverbEnabled(enabled: Boolean): Boolean {
+        if (environmentalReverb?.enabled == enabled)
+            return enabled
+
         environmentalReverb?.enabled = enabled
         _reverbEnabled.update { environmentalReverb?.enabled == true && environmentalReverb?.hasControl() == true }
         return reverbEnabled.value

@@ -32,13 +32,9 @@ interface MediaBrowserController : DefaultLifecycleObserver,
     /**
      * Update the currently playing playback (given as argument in [action])
      * with new information (like new timing data, playback parameters, audio effects, ...)
+     * @param currentPlaylist Specify a updated playlist to send to the MediaService. Only required if there are playlist changes
      */
-    fun updatePlayback(action: (Playback?) -> Playback?)
-    /**
-     * Update the currently playing playback after [debounce] duration (given as argument in [action])
-     * with new information (like new timing data, playback parameters, audio effects, ...)
-     */
-    suspend fun updatePlaybackDebounced(debounce: Duration = 300.ms, action: (Playback?) -> Playback?)
+    fun updatePlayback(currentPlaylist: Playlist? = null, action: (Playback?) -> Playback?)
 
     val currentPosition: Duration?
     val canPrepare: Boolean

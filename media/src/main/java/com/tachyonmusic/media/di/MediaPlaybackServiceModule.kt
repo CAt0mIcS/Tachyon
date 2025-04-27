@@ -19,6 +19,7 @@ import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.media.domain.CastWebServerController
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
+import com.tachyonmusic.media.domain.use_case.SyncPlaybackAudioEffects
 import com.tachyonmusic.media.util.isGoogleCastAvailable
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import dagger.Module
@@ -69,6 +70,11 @@ class MediaPlaybackUseCaseModule {
     @Singleton
     fun provideSaveRecentlyPlayedUseCase(dataRepository: DataRepository) =
         SaveRecentlyPlayed(dataRepository)
+
+    @Provides
+    @Singleton
+    fun provideSyncPlaybackAudioEffects(audioEffectController: AudioEffectController) =
+        SyncPlaybackAudioEffects(audioEffectController)
 }
 
 @Module

@@ -108,7 +108,7 @@ class EqualizerViewModel @Inject constructor(
 
     fun setBass(bass: Int?) {
         viewModelScope.launch {
-            mediaBrowser.updatePlaybackDebounced {
+            mediaBrowser.updatePlayback {
                 it?.copy(bassBoost = bass ?: 0)
             }
         }
@@ -117,7 +117,7 @@ class EqualizerViewModel @Inject constructor(
 
     fun setVirtualizerStrength(strength: Int?) {
         viewModelScope.launch {
-            mediaBrowser.updatePlaybackDebounced {
+            mediaBrowser.updatePlayback {
                 it?.copy(virtualizerStrength = strength ?: 0)
             }
         }
@@ -130,7 +130,7 @@ class EqualizerViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            mediaBrowser.updatePlaybackDebounced {
+            mediaBrowser.updatePlayback {
                 it?.copy(
                     equalizerBands = newBands,
                     equalizerPreset = null
@@ -153,7 +153,7 @@ class EqualizerViewModel @Inject constructor(
 
         if (speedNum > 0f && pitchNum > 0f) {
             viewModelScope.launch {
-                mediaBrowser.updatePlaybackDebounced {
+                mediaBrowser.updatePlayback {
                     it?.copy(playbackParameters = it.playbackParameters.copy(speedNum, pitchNum))
                 }
             }
@@ -166,7 +166,7 @@ class EqualizerViewModel @Inject constructor(
         val num = speed.toFloatOrNull() ?: return
         if (num > 0f) {
             viewModelScope.launch {
-                mediaBrowser.updatePlaybackDebounced {
+                mediaBrowser.updatePlayback {
                     it?.copy(playbackParameters = it.playbackParameters.copy(speed = num))
                 }
             }
@@ -179,7 +179,7 @@ class EqualizerViewModel @Inject constructor(
         val num = pitch.toFloatOrNull() ?: return
         if (num > 0f) {
             viewModelScope.launch {
-                mediaBrowser.updatePlaybackDebounced {
+                mediaBrowser.updatePlayback {
                     it?.copy(playbackParameters = it.playbackParameters.copy(pitch = num))
                 }
             }
@@ -188,7 +188,7 @@ class EqualizerViewModel @Inject constructor(
 
     fun setReverb(reverbConfig: ReverbConfig?) {
         viewModelScope.launch {
-            mediaBrowser.updatePlaybackDebounced {
+            mediaBrowser.updatePlayback {
                 it?.copy(reverb = reverbConfig)
             }
         }
@@ -206,18 +206,19 @@ class EqualizerViewModel @Inject constructor(
     fun setEqualizerEnabled(enabled: Boolean) {
         viewModelScope.launch {
             if (audioEffectController.setEqualizerEnabled(enabled))
-                mediaBrowser.updatePlaybackDebounced {
+                mediaBrowser.updatePlayback {
                     it?.copy(equalizerBands = audioEffectController.bands.value)
                 }
             else
-                mediaBrowser.updatePlaybackDebounced {
+                mediaBrowser.updatePlayback {
                     it?.copy(equalizerBands = null)
                 }
         }
     }
 
     fun setReverbEnabled(enabled: Boolean) {
-        audioEffectController.setReverbEnabled(enabled)
+        val enabledSuccessfully = audioEffectController.setReverbEnabled(enabled)
+        mediaBrowser.updatePlayback { it?.copy(reverbEnabled = enabledSuccessfully) }
     }
 
     private fun PlaybackParameters.toUiState() = PlaybackParametersState(

@@ -27,6 +27,7 @@ import com.tachyonmusic.media.core.SessionSyncEvent
 import com.tachyonmusic.media.core.SetRepeatModeEvent
 import com.tachyonmusic.media.core.dispatchMediaEvent
 import com.tachyonmusic.media.core.toMediaSessionEvent
+import com.tachyonmusic.media.domain.use_case.SyncPlaybackAudioEffects
 import com.tachyonmusic.media.util.fromMedia
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
@@ -34,7 +35,6 @@ import com.tachyonmusic.playback_layers.isPredefined
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
-import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -54,7 +54,8 @@ import kotlinx.coroutines.withContext
 class MediaPlaybackServiceMediaBrowserController(
     private val getPlaylistForPlayback: GetPlaylistForPlayback,
     private val log: Logger,
-    private val playbackRepository: PlaybackRepository
+    private val playbackRepository: PlaybackRepository,
+    private val syncPlaybackAudioEffects: SyncPlaybackAudioEffects
 ) : MediaBrowserController, Player.Listener,
     MediaBrowser.Listener, IListenable<MediaBrowserController.EventListener> by Listenable() {
 
@@ -109,24 +110,17 @@ class MediaPlaybackServiceMediaBrowserController(
             position?.inWholeMilliseconds ?: 0
         )
         _currentPlaylist.update { playlist }
-        updatePlayback { playlist.current }
+        updatePlayback(currentPlaylist.value) { playlist.current }
     }
 
-    override fun updatePlayback(action: (Playback?) -> Playback?) {
+    override fun updatePlayback(playlist: Playlist?, action: (Playback?) -> Playback?) {
         val newPlayback = action(currentPlayback.value)
         _currentPlayback.update { newPlayback }
-        browser?.dispatchMediaEvent(PlaybackUpdateEvent(newPlayback, currentPlaylist.value))
-    }
-
-    private var updatePlaybackDebouncedJob: Job? = null
-    override suspend fun updatePlaybackDebounced(
-        debounce: Duration,
-        action: (Playback?) -> Playback?
-    ) = withContext(Dispatchers.Main) {
-        updatePlaybackDebouncedJob?.cancel()
-        updatePlaybackDebouncedJob = launch {
-            delay(debounce)
-            updatePlayback(action)
+        browser?.dispatchMediaEvent(PlaybackUpdateEvent(newPlayback, playlist))
+        browser?.let {
+            syncPlaybackAudioEffects(newPlayback ?: return@let, it)?.let { equalizerPlayback ->
+                updatePlayback(playlist) { equalizerPlayback }
+            }
         }
     }
 
@@ -286,7 +280,7 @@ class MediaPlaybackServiceMediaBrowserController(
                 _currentPlaylist.update { event.currentPlaylist }
                 _isPlaying.update { event.playWhenReady }
 
-                runOnUiThread { updatePlayback { newPlayback } }
+                runOnUiThread { updatePlayback(currentPlaylist.value) { newPlayback } }
             }
 
             is AudioSessionIdChangedEvent -> {

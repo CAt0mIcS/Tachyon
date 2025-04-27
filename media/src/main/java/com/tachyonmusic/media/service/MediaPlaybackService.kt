@@ -46,6 +46,7 @@ import com.tachyonmusic.media.domain.CustomPlayer
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SaveRecentlyPlayed
 import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
+import com.tachyonmusic.media.domain.use_case.SyncPlaybackAudioEffects
 import com.tachyonmusic.media.util.*
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
@@ -118,6 +119,9 @@ open class MediaPlaybackService : MediaLibraryService(), Player.Listener {
 
     @Inject
     lateinit var eventChannel: EventChannel
+
+    @Inject
+    lateinit var syncPlaybackAudioEffects: SyncPlaybackAudioEffects
 
     private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -437,10 +441,9 @@ open class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         }
 
         private fun handlePlaybackUpdateEvent(event: PlaybackUpdateEvent) {
-            currentPlayback = event.currentPlayback
-            currentPlaylist = event.currentPlaylist
-            setPlaybackAudioEffects(event.currentPlayback ?: return)
-            currentPlayer.updateTimingDataOfCurrentPlayback(event.currentPlayback.timingData)
+            currentPlayback = event.currentPlayback ?: currentPlayback
+            currentPlaylist = event.currentPlaylist ?: currentPlaylist
+            currentPlayer.updateTimingDataOfCurrentPlayback(event.currentPlayback?.timingData)
         }
     }
 
@@ -465,7 +468,9 @@ open class MediaPlaybackService : MediaLibraryService(), Player.Listener {
      *************************************************************************/
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val playback = mediaItem?.let { Playback.fromMediaItem(it) } ?: return
-        setPlaybackAudioEffects(playback)
+        syncPlaybackAudioEffects(playback, currentPlayer)?.let {
+            currentPlayback = it
+        }
 
         if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) {
             ioScope.launch {
@@ -601,42 +606,6 @@ open class MediaPlaybackService : MediaLibraryService(), Player.Listener {
             setEnabled(true)
         }.build()
     )
-
-    private fun setPlaybackAudioEffects(playback: Playback) {
-        if (audioEffectController.setBassEnabled(playback.bassBoostEnabled))
-            audioEffectController.setBass(playback.bassBoost)
-        if (audioEffectController.setVirtualizerEnabled(playback.virtualizerEnabled))
-            audioEffectController.setVirtualizerStrength(playback.virtualizerStrength)
-        if (audioEffectController.setReverbEnabled(playback.reverbEnabled))
-            audioEffectController.setReverb(playback.reverb!!)
-
-        playback.playbackParameters.let { params ->
-            currentPlayer.playbackParameters = PlaybackParameters(params.speed, params.pitch)
-            currentPlayer.volume = params.volume // TODO: Volume boosting (higher than 1)
-        }
-
-        if (audioEffectController.setEqualizerEnabled(playback.equalizerEnabled)) {
-
-            if (playback.equalizerPreset != null && audioEffectController.currentPreset != playback.equalizerPreset) {
-                audioEffectController.setEqualizerPreset(playback.equalizerPreset!!)
-                updatePlayback {
-                    playback.copy(equalizerBands = audioEffectController.bands.value)
-                }
-                return
-            }
-
-            playback.equalizerBands?.forEach { equalizerBand ->
-                // TODO: Do we need all this information to differentiate different bands?
-                audioEffectController.getEqualizerBandIndex(
-                    equalizerBand.lowerBandFrequency,
-                    equalizerBand.upperBandFrequency,
-                    equalizerBand.centerFrequency
-                )?.let { band ->
-                    audioEffectController.setEqualizerBandLevel(band, equalizerBand.level)
-                }
-            }
-        }
-    }
 
     private fun updatePlayback(action: () -> Playback) {
         val newPlayback = action()
