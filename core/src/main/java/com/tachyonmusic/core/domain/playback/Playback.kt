@@ -45,15 +45,6 @@ data class Playback(
     val timestampCreatedAddedEdited: Long = System.currentTimeMillis()
 ) {
 
-    val bassBoostEnabled: Boolean
-        get() = bassBoost != 0
-    val virtualizerEnabled: Boolean
-        get() = virtualizerStrength != 0
-    val equalizerEnabled: Boolean
-        get() = !equalizerBands.isNullOrEmpty()
-    val reverbEnabled: Boolean
-        get() = reverb != null
-
     val playbackType: PlaybackType
         get() = mediaId.playbackType
     val isRemix: Boolean

@@ -10,19 +10,21 @@ class SyncPlaybackAudioEffects(
     private val audioEffectController: AudioEffectController
 ) {
     operator fun invoke(playback: Playback, currentPlayer: Player): Playback? {
-        if (audioEffectController.setBassEnabled(playback.bassBoostEnabled))
+        if (audioEffectController.setBassEnabled(playback.bassBoost != 0))
             audioEffectController.setBass(playback.bassBoost)
-        if (audioEffectController.setVirtualizerEnabled(playback.virtualizerEnabled))
+        if (audioEffectController.setVirtualizerEnabled(playback.virtualizerStrength != 0))
             audioEffectController.setVirtualizerStrength(playback.virtualizerStrength)
-        if (audioEffectController.setReverbEnabled(playback.reverbEnabled))
-            audioEffectController.setReverb(playback.reverb ?: ReverbConfig())
+        if (audioEffectController.reverbEnabled.value)
+            audioEffectController.setReverb(
+                playback.reverb ?: audioEffectController.reverbValue ?: ReverbConfig()
+            )
 
         playback.playbackParameters.let { params ->
             currentPlayer.playbackParameters = PlaybackParameters(params.speed, params.pitch)
             currentPlayer.volume = params.volume // TODO: Volume boosting (higher than 1)
         }
 
-        if (audioEffectController.setEqualizerEnabled(playback.equalizerEnabled)) {
+        if (playback.equalizerBands?.isNotEmpty() == true && audioEffectController.equalizerEnabled.value) {
 
             if (playback.equalizerPreset != null && audioEffectController.currentPreset != playback.equalizerPreset) {
                 audioEffectController.setEqualizerPreset(playback.equalizerPreset!!)

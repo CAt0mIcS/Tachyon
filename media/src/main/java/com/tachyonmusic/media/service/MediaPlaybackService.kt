@@ -468,6 +468,9 @@ open class MediaPlaybackService : MediaLibraryService(), Player.Listener {
      *************************************************************************/
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val playback = mediaItem?.let { Playback.fromMediaItem(it) } ?: return
+
+        audioEffectController.setReverbEnabled(playback.reverb != null)
+        audioEffectController.setEqualizerEnabled(playback.equalizerBands?.isNotEmpty() == true)
         syncPlaybackAudioEffects(playback, currentPlayer)?.let {
             currentPlayback = it
         }

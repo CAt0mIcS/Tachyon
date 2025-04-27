@@ -102,7 +102,9 @@ class EqualizerViewModel @Inject constructor(
                     audioEffectController.presets
                 )
             }
-            _reverb.update { playback?.reverb ?: ReverbConfig() }
+            _reverb.update {
+                playback?.reverb ?: audioEffectController.reverbValue ?: ReverbConfig()
+            }
         }.launchIn(viewModelScope)
     }
 
@@ -217,8 +219,8 @@ class EqualizerViewModel @Inject constructor(
     }
 
     fun setReverbEnabled(enabled: Boolean) {
-        val enabledSuccessfully = audioEffectController.setReverbEnabled(enabled)
-        mediaBrowser.updatePlayback { it?.copy(reverbEnabled = enabledSuccessfully) }
+        audioEffectController.setReverbEnabled(enabled)
+        mediaBrowser.updatePlayback { it }
     }
 
     private fun PlaybackParameters.toUiState() = PlaybackParametersState(
