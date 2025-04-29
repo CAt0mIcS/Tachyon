@@ -57,13 +57,19 @@ class PlaybackSearchViewModel @Inject constructor(
     val filterPlaybackType = _filterPlaybackType.asStateFlow()
 
     val searchResults =
-        combine(searchQuery, searchLocation, itemDisplayRange, filterPlaybackType) { query, location, itemRange, playbackType ->
+        combine(
+            searchQuery,
+            searchLocation,
+            itemDisplayRange,
+            filterPlaybackType
+        ) { query, location, itemRange, playbackType ->
             when (location) {
                 SearchLocation.Local -> {
                     loadArtwork(
                         searchStoredPlaybacks(query, playbackType, itemRange),
                         0..Int.MAX_VALUE,
-                        Config.SEARCH_ARTWORK_LOAD_QUALITY
+                        Config.SEARCH_ARTWORK_LOAD_QUALITY,
+                        playbackType
                     ).mapNotNull {
                         SearchResultUiEntity(
                             it.playback?.toLibraryEntity() ?: return@mapNotNull null,
@@ -134,9 +140,30 @@ class PlaybackSearchViewModel @Inject constructor(
     private fun loadArtwork(
         searches: List<PlaybackSearchResult>,
         range: IntRange,
-        quality: Int
+        quality: Int,
+        playbackType: PlaybackType
     ): List<PlaybackSearchResult> {
-        return searches
-        // TODO: Artwork loading when searching
+        // TODO: Optimize
+
+        val loadedItems = searches.toMutableList()
+        if (playbackType is PlaybackType.Playlist) {
+            loadArtworkForPlayback(
+                searches.mapNotNull { it.playlist },
+                range,
+                quality
+            ).mapIndexed { i, playlist ->
+                loadedItems[i] = loadedItems[i].copy(playlist = playlist)
+            }
+        } else {
+            loadArtworkForPlayback(
+                searches.mapNotNull { it.playback },
+                range,
+                quality
+            ).mapIndexed { i, playback ->
+                loadedItems[i] = loadedItems[i].copy(playback = playback)
+            }
+        }
+
+        return loadedItems
     }
 }
