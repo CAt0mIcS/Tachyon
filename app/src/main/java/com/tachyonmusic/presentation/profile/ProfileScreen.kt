@@ -291,6 +291,12 @@ object ProfileScreen :
                 )
             }
 
+            Setting(
+                text = "Restart Playback Tutorial"
+            ) {
+                Button(onClick = viewModel::restartPlaybackTutorial) { }
+            }
+
 
             /**
              * Database

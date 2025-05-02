@@ -6,11 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.ColorScheme
 import com.tachyonmusic.domain.repository.StateRepository
 import com.tachyonmusic.database.domain.model.SettingsEntity
+import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.player.PauseResumePlayback
 import com.tachyonmusic.domain.use_case.profile.ExportDatabase
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
+import com.tachyonmusic.presentation.player.data.TutorialStep
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.sec
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
+    private val dataRepository: DataRepository,
     private val registerNewUriPermission: RegisterNewUriPermission,
     private val stateRepository: StateRepository,
     private val exportDatabase: ExportDatabase,
@@ -95,6 +98,12 @@ class ProfileViewModel @Inject constructor(
     fun playNewlyCreatedRemix(playNewly: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             settingsRepository.update(playNewlyCreatedRemix = playNewly)
+        }
+    }
+
+    fun restartPlaybackTutorial() {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataRepository.update(tutorialStep = TutorialStep.first.toString())
         }
     }
 
