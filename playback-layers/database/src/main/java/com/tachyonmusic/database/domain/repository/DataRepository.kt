@@ -24,6 +24,7 @@ interface DataRepository {
         recentlyPlayed: RecentlyPlayed? = null,
         maxRemixCount: Int? = null,
         repeatMode: RepeatMode? = null,
-        onboardingCompleted: Boolean? = null
+        onboardingCompleted: Boolean? = null,
+        tutorialStep: String? = null
     )
 }

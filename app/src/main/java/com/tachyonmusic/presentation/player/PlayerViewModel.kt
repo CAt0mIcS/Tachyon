@@ -7,7 +7,6 @@ import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
@@ -55,7 +54,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -65,7 +63,7 @@ class PlayerViewModel @Inject constructor(
     playbackRepository: PlaybackRepository,
     loadArtworkForPlayback: LoadArtworkForPlayback,
     settingsRepository: SettingsRepository,
-    dataRepository: DataRepository,
+    private val dataRepository: DataRepository,
     songRepository: SongRepository,
     artworkCodex: ArtworkCodex,
     assignArtworkToPlayback: AssignArtworkToPlayback,
@@ -125,6 +123,25 @@ class PlayerViewModel @Inject constructor(
         SharingStarted.Eagerly,
         NetworkMonitor.NetworkInfo(connectionStatus = NetworkMonitor.ConnectionStatus.Disconnected)
     )
+
+    fun previousTutorialStep() {
+        _tutorialStep.update { it.previous ?: TutorialStep.first }
+    }
+
+    fun skipTutorial() {
+        _tutorialStep.update { TutorialStep.Finished }
+        viewModelScope.launch(Dispatchers.IO) {
+            dataRepository.update(tutorialStep = TutorialStep.Finished.toString())
+        }
+    }
+
+    fun advanceTutorial() {
+        _tutorialStep.update { it.next ?: TutorialStep.Finished }
+        if (tutorialStep.value is TutorialStep.Finished)
+            viewModelScope.launch(Dispatchers.IO) {
+                dataRepository.update(tutorialStep = TutorialStep.Finished.toString())
+            }
+    }
 
     init {
         settingsRepository.observe().onEach {

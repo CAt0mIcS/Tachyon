@@ -26,7 +26,8 @@ class RoomDataRepository(
         recentlyPlayed: RecentlyPlayed?,
         maxRemixCount: Int?,
         repeatMode: RepeatMode?,
-        onboardingCompleted: Boolean?
+        onboardingCompleted: Boolean?,
+        tutorialStep: String?
     ) {
         if (recentlyPlayed != null)
             dao.setRecentlyPlayed(
@@ -45,5 +46,8 @@ class RoomDataRepository(
 
         if(onboardingCompleted != null)
             dao.setOnboarding(onboardingCompleted)
+
+        if(tutorialStep != null)
+            dao.setTutorialStep(tutorialStep)
     }
 }

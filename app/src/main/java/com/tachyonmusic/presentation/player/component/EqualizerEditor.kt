@@ -44,6 +44,7 @@ import com.tachyonmusic.presentation.theme.Theme
 
 @Composable
 fun EqualizerEditor(
+    modifier: Modifier = Modifier,
     viewModel: EqualizerViewModel = hiltViewModel()
 ) {
     val bass by viewModel.bass.collectAsState()
@@ -58,7 +59,7 @@ fun EqualizerEditor(
     val reverbEnabled by viewModel.reverbEnabled.collectAsState()
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = Theme.padding.medium)
     ) {
