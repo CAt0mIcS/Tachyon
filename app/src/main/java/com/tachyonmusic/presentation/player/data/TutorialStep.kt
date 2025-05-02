@@ -77,18 +77,24 @@ sealed class TutorialStep(val name: String) {
         override val next = null
         override val previous = SpeedPitchSliders
 
-        override val title = R.string.restart
-        override val description = R.string.request_app_restart_for_update
+        override val title = R.string.tutorial_finished
+        override val description = R.string.tutorial_finished_desc
     }
 
     companion object {
         fun fromString(str: String) = when (str) {
-            PlaybackControls.name -> PlaybackControls
-            RemixButton.name -> RemixButton
-            RemixInterface.name -> RemixInterface
-            SoundEffectButton.name -> SoundEffectButton
-            SoundEffectCheckboxes.name -> SoundEffectCheckboxes
-            Finished.name -> Finished
+            PlaybackControls.toString() -> PlaybackControls
+
+            RemixButton.toString() -> RemixButton
+            RemixInterface.toString() -> RemixInterface
+            RemixButtons.toString() -> RemixButtons
+            SaveRemixButton.toString() -> SaveRemixButton
+
+            SoundEffectButton.toString() -> SoundEffectButton
+            SoundEffectCheckboxes.toString() -> SoundEffectCheckboxes
+            SpeedPitchSliders.toString() -> SpeedPitchSliders
+
+            Finished.toString() -> Finished
             else -> throw IllegalArgumentException("Invalid TutorialStep name '$str'")
         }
 

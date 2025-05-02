@@ -73,4 +73,6 @@
     <string name="tutorial_sound_effect_checkboxes_desc">Here you can enable which sound effects you\'d like to add to your remix. Enabling the Checkbox will expand a customization window for your sound effect.</string>
     <string name="tutorial_speed_pitch_sliders">Change Speed and Pitch</string>
     <string name="tutorial_speed_pitch_sliders_desc">Here you can also change the speed and pitch of your remix, creating either slowed or sped up (nightcore) audio.</string>
+    <string name="tutorial_finished">Tutorial Finished</string>
+    <string name="tutorial_finished_desc">You\'ve completed the tutorial! You can restart it anytime from the settings screen (bottom right).</string>
 </resources>
