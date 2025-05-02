@@ -19,6 +19,7 @@ import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.playback.Playback
 import com.tachyonmusic.core.domain.playback.Playlist
+import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.core.AudioSessionIdChangedEvent
@@ -52,6 +53,7 @@ import kotlinx.coroutines.withContext
 
 @UnstableApi
 class MediaPlaybackServiceMediaBrowserController(
+    private val dataRepository: DataRepository,
     private val getPlaylistForPlayback: GetPlaylistForPlayback,
     private val log: Logger,
     private val playbackRepository: PlaybackRepository,
@@ -78,6 +80,11 @@ class MediaPlaybackServiceMediaBrowserController(
         )
 
         owner.lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                val repeatMode = dataRepository.getData().repeatMode
+                _repeatMode.update { repeatMode }
+            }
+
             browser = MediaBrowser.Builder(owner, sessionToken)
                 .setListener(this@MediaPlaybackServiceMediaBrowserController)
                 .buildAsync().await()
