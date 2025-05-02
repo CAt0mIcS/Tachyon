@@ -31,9 +31,24 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.drawscope.DrawStyle
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,6 +56,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.github.krottv.compose.sliders.DefaultThumb
 import com.github.krottv.compose.sliders.DefaultTrack
@@ -53,12 +69,15 @@ import com.tachyonmusic.presentation.core_components.AnimatedText
 import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
+import com.tachyonmusic.presentation.core_components.highlight
 import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
 import com.tachyonmusic.presentation.player.component.SaveToPlaylistDialog
 import com.tachyonmusic.presentation.player.component.RemixEditor
+import com.tachyonmusic.presentation.player.data.TutorialStep
 import com.tachyonmusic.presentation.player.model.PlayerEntity
+import com.tachyonmusic.presentation.theme.Padding
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.util.delay
@@ -77,6 +96,7 @@ fun PlayerScreen(
         return
 
     val playback by viewModel.playback.collectAsState()
+    val tutorialStep by viewModel.tutorialStep.collectAsState()
     var currentPosition by remember { mutableStateOf(0.ms) }
 
     var isSeeking by remember { mutableStateOf(false) }
@@ -115,333 +135,357 @@ fun PlayerScreen(
     val recommendedItems by viewModel.recommendedItems.collectAsState()
     val playbackType by viewModel.playbackType.collectAsState()
 
-    LazyColumn(
+    var rootOffset by remember { mutableStateOf(Offset.Zero) }
+    var targetRect by remember { mutableStateOf<Rect?>(null) }
+
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = miniPlayerHeight * (1f - motionLayoutProgress))
-            .graphicsLayer(alpha = motionLayoutProgress + .25f),
-        contentPadding = PaddingValues(bottom = Theme.padding.small)
+            .onGloballyPositioned {
+                rootOffset = it.localToWindow(Offset.Zero)
+            }
+            .highlight(if (tutorialStep is TutorialStep.Finished) null else targetRect)
     ) {
-        item {
-            val artworkModifier = Modifier
-                .fillMaxWidth()
-                .padding(Theme.padding.small)
-                .aspectRatio(1f)
-                .shadow(Theme.shadow.small, shape = Theme.shapes.large)
-                .background(MaterialTheme.colorScheme.background, shape = Theme.shapes.large)
-
-            playback.artwork?.Image(modifier = artworkModifier, contentDescription = null)
-                ?: Spacer(
-                    modifier = Modifier.height(24.dp)
-                )
-        }
-
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                Column(modifier = Modifier.weight(1f)) {
-                    AnimatedText(
-                        modifier = Modifier
-                            .padding(
-                                start = Theme.padding.medium,
-                                top = Theme.padding.medium,
-                                end = Theme.padding.medium
-                            ),
-                        text = playback.displayTitle,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    AnimatedText(
-                        modifier = Modifier
-                            .padding(
-                                start = Theme.padding.medium * 2,
-                                end = Theme.padding.medium
-                            ),
-                        text = playback.displaySubtitle,
-                        fontSize = 18.sp
-                    )
-                }
-
-                IconButton(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .padding(Theme.padding.medium),
-                    onClick = { showSaveToPlaylistDialog = true }) {
-                    Icon(
-                        painterResource(R.drawable.ic_add_circle),
-                        null,
-                        modifier = Modifier.scale(1.7f)
-                    )
-                }
-            }
-        }
-
-        item {
-            Row(
-                modifier = Modifier
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = miniPlayerHeight * (1f - motionLayoutProgress))
+                .graphicsLayer(alpha = motionLayoutProgress + .25f),
+            contentPadding = PaddingValues(bottom = Theme.padding.small)
+        ) {
+            item {
+                val artworkModifier = Modifier
                     .fillMaxWidth()
-                    .padding(
-                        start = Theme.padding.medium,
-                        end = Theme.padding.medium
-                    ),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = currentPosition.toReadableString(viewModel.showMillisecondsInPositionText),
-                    fontSize = 16.sp
-                )
+                    .padding(Theme.padding.small)
+                    .aspectRatio(1f)
+                    .shadow(Theme.shadow.small, shape = Theme.shapes.large)
+                    .background(MaterialTheme.colorScheme.background, shape = Theme.shapes.large)
 
-                Text(
-                    text = playback.duration.toReadableString(viewModel.showMillisecondsInPositionText),
-                    fontSize = 16.sp
-                )
+                playback.artwork?.Image(modifier = artworkModifier, contentDescription = null)
+                    ?: Spacer(
+                        modifier = Modifier.height(24.dp)
+                    )
             }
-        }
 
-        item {
-            SliderValueHorizontal(
-                modifier = Modifier
-                    .padding(
-                        start = Theme.padding.small,
-                        bottom = Theme.padding.medium,
-                        end = Theme.padding.small
-                    )
-                    .systemGestureExclusion(),
-                value = currentPosition.inWholeMilliseconds.toFloat(),
-                onValueChange = {
-                    isSeeking = true
-                    currentPosition = it.ms
-                },
-                onValueChangeFinished = {
-                    viewModel.seekTo(currentPosition)
-                    isSeeking = false
-                },
-                valueRange = 0f..playback.duration.inWholeMilliseconds.toFloat(),
-                thumbSizeInDp = DpSize(16.dp, 16.dp),
-                track = { modifier, fraction, interactionSource, tickFractions, enabled ->
-                    DefaultTrack(
-                        modifier,
-                        fraction,
-                        interactionSource,
-                        tickFractions,
-                        enabled,
-                        colorTrack = MaterialTheme.colorScheme.surfaceVariant,
-                        colorProgress = MaterialTheme.colorScheme.primary
-                    )
-                },
-
-                thumb = { modifier, offset, interactionSource, enabled, thumbSize ->
-                    DefaultThumb(
-                        modifier,
-                        offset,
-                        interactionSource,
-                        enabled,
-                        thumbSize,
-                        color = MaterialTheme.colorScheme.primary,
-                        scaleOnPress = 1.2f
-                    )
-                }
-            )
-        }
-
-
-        /**
-         * Media Controls
-         */
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                val buttonScale = 1.2f
-                val iconScale = 1.2f
-
-                // TODO: Decide if icons should seek e.g. 15s back/forward or seek to previous/next item
-                // TODO: Adjust icons if needed
-
-                val seekIncrements by viewModel.seekIncrements.collectAsState()
-                IconButton(
-                    modifier = Modifier.scale(buttonScale),
-                    onClick = viewModel::seekBack
-                ) {
-                    IconRewind(
-                        timeSeconds = seekIncrements.back.inWholeSeconds,
-                        modifier = Modifier.scale(iconScale)
-                    )
-                }
-
-                val isPlaying by viewModel.isPlaying.collectAsState()
-
-                // TODO: IconToggleButton?
-                IconButton(
-                    modifier = Modifier.scale(buttonScale),
-                    onClick = viewModel::pauseResume
-                ) {
-                    Icon(
-                        painterResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
-                        contentDescription = null,
-                        modifier = Modifier.scale(iconScale)
-                    )
-                }
-
-                IconButton(
-                    modifier = Modifier.scale(buttonScale),
-                    onClick = viewModel::seekForward
-                ) {
-                    IconForward(
-                        timeSeconds = seekIncrements.forward.inWholeSeconds,
-                        modifier = Modifier.scale(iconScale)
-                    )
-                }
-            }
-        }
-
-        ////////////////////////////////////////////////////////////////////////////////////
-        // Second Row
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = Theme.padding.extraSmall),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                val buttonScale = 1.15f
-                val iconScale = 1.15f
-
-                IconButton(
-                    modifier = Modifier.scale(buttonScale),
-                    onClick = viewModel::nextRepeatMode
-                ) {
-                    val repeatMode by viewModel.repeatMode.collectAsState()
-                    Icon(
-                        painterResource(repeatMode.icon),
-                        contentDescription = null,
-                        modifier = Modifier.scale(iconScale)
-                    )
-                }
-
-                IconButton(
-                    modifier = Modifier.scale(buttonScale),
-                    onClick = { isEditingEqualizer = !isEditingEqualizer }
-                ) {
-                    Icon(
-                        painterResource(R.drawable.ic_equalizer),
-                        contentDescription = null,
-                        modifier = Modifier.scale(iconScale)
-                    )
-                }
-
-                IconButton(
-                    modifier = Modifier.scale(buttonScale),
-                    onClick = { isEditingTimingData = !isEditingTimingData }
-                ) {
-                    Icon(
-                        painterResource(R.drawable.ic_remix),
-                        contentDescription = null,
-                        modifier = Modifier.scale(iconScale)
-                    )
-                }
-            }
-        }
-
-        if (isEditingTimingData) {
             item {
-                HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
 
-                RemixEditor(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = Theme.padding.medium)
-                )
+                    Column(modifier = Modifier.weight(1f)) {
+                        AnimatedText(
+                            modifier = Modifier
+                                .padding(
+                                    start = Theme.padding.medium,
+                                    top = Theme.padding.medium,
+                                    end = Theme.padding.medium
+                                ),
+                            text = playback.displayTitle,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        AnimatedText(
+                            modifier = Modifier
+                                .padding(
+                                    start = Theme.padding.medium * 2,
+                                    end = Theme.padding.medium
+                                ),
+                            text = playback.displaySubtitle,
+                            fontSize = 18.sp
+                        )
+                    }
+
+                    IconButton(
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(Theme.padding.medium)
+                            .onHighlightPositioned(
+                                rootOffset,
+                                tutorialStep is TutorialStep.AddToPlaylistButton
+                            ) { targetRect = it },
+                        onClick = { showSaveToPlaylistDialog = true }) {
+                        Icon(
+                            painterResource(R.drawable.ic_add_circle),
+                            null,
+                            modifier = Modifier.scale(1.7f)
+                        )
+                    }
+                }
             }
-        }
 
-        if (isEditingEqualizer) {
             item {
-                HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
-
-                EqualizerEditor()
-            }
-        }
-
-        if (subPlaybackItems.isNotEmpty()) {
-            item {
-                Text(
-                    modifier = Modifier.padding(
-                        start = Theme.padding.medium,
-                        top = Theme.padding.medium,
-                        end = Theme.padding.medium,
-                        bottom = Theme.padding.extraSmall
-                    ),
-                    text = if (playbackType !is PlaybackType.Playlist) "Up Next" else "Playlist",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            items(subPlaybackItems, key = { it.mediaId.toString() }) { playback ->
-                val updatedPlayback by rememberUpdatedState(playback)
-
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
                             start = Theme.padding.medium,
+                            end = Theme.padding.medium
+                        ),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = currentPosition.toReadableString(viewModel.showMillisecondsInPositionText),
+                        fontSize = 16.sp
+                    )
+
+                    Text(
+                        text = playback.duration.toReadableString(viewModel.showMillisecondsInPositionText),
+                        fontSize = 16.sp
+                    )
+                }
+            }
+
+            item {
+                SliderValueHorizontal(
+                    modifier = Modifier
+                        .padding(
+                            start = Theme.padding.small,
+                            bottom = Theme.padding.medium,
+                            end = Theme.padding.small
+                        )
+                        .systemGestureExclusion(),
+                    value = currentPosition.inWholeMilliseconds.toFloat(),
+                    onValueChange = {
+                        isSeeking = true
+                        currentPosition = it.ms
+                    },
+                    onValueChangeFinished = {
+                        viewModel.seekTo(currentPosition)
+                        isSeeking = false
+                    },
+                    valueRange = 0f..playback.duration.inWholeMilliseconds.toFloat(),
+                    thumbSizeInDp = DpSize(16.dp, 16.dp),
+                    track = { modifier, fraction, interactionSource, tickFractions, enabled ->
+                        DefaultTrack(
+                            modifier,
+                            fraction,
+                            interactionSource,
+                            tickFractions,
+                            enabled,
+                            colorTrack = MaterialTheme.colorScheme.surfaceVariant,
+                            colorProgress = MaterialTheme.colorScheme.primary
+                        )
+                    },
+
+                    thumb = { modifier, offset, interactionSource, enabled, thumbSize ->
+                        DefaultThumb(
+                            modifier,
+                            offset,
+                            interactionSource,
+                            enabled,
+                            thumbSize,
+                            color = MaterialTheme.colorScheme.primary,
+                            scaleOnPress = 1.2f
+                        )
+                    }
+                )
+            }
+
+
+            /**
+             * Media Controls
+             */
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    val buttonScale = 1.2f
+                    val iconScale = 1.2f
+
+                    // TODO: Decide if icons should seek e.g. 15s back/forward or seek to previous/next item
+                    // TODO: Adjust icons if needed
+
+                    val seekIncrements by viewModel.seekIncrements.collectAsState()
+                    IconButton(
+                        modifier = Modifier.scale(buttonScale),
+                        onClick = viewModel::seekBack
+                    ) {
+                        IconRewind(
+                            timeSeconds = seekIncrements.back.inWholeSeconds,
+                            modifier = Modifier.scale(iconScale)
+                        )
+                    }
+
+                    val isPlaying by viewModel.isPlaying.collectAsState()
+
+                    // TODO: IconToggleButton?
+                    IconButton(
+                        modifier = Modifier.scale(buttonScale),
+                        onClick = viewModel::pauseResume
+                    ) {
+                        Icon(
+                            painterResource(if (isPlaying) R.drawable.ic_pause else R.drawable.ic_play),
+                            contentDescription = null,
+                            modifier = Modifier.scale(iconScale)
+                        )
+                    }
+
+                    IconButton(
+                        modifier = Modifier.scale(buttonScale),
+                        onClick = viewModel::seekForward
+                    ) {
+                        IconForward(
+                            timeSeconds = seekIncrements.forward.inWholeSeconds,
+                            modifier = Modifier.scale(iconScale)
+                        )
+                    }
+                }
+            }
+
+            ////////////////////////////////////////////////////////////////////////////////////
+            // Second Row
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = Theme.padding.extraSmall),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    val buttonScale = 1.15f
+                    val iconScale = 1.15f
+
+                    IconButton(
+                        modifier = Modifier.scale(buttonScale),
+                        onClick = viewModel::nextRepeatMode
+                    ) {
+                        val repeatMode by viewModel.repeatMode.collectAsState()
+                        Icon(
+                            painterResource(repeatMode.icon),
+                            contentDescription = null,
+                            modifier = Modifier.scale(iconScale)
+                        )
+                    }
+
+                    IconButton(
+                        modifier = Modifier.scale(buttonScale),
+                        onClick = { isEditingEqualizer = !isEditingEqualizer }
+                    ) {
+                        Icon(
+                            painterResource(R.drawable.ic_equalizer),
+                            contentDescription = null,
+                            modifier = Modifier.scale(iconScale)
+                        )
+                    }
+
+                    IconButton(
+                        modifier = Modifier.scale(buttonScale),
+                        onClick = { isEditingTimingData = !isEditingTimingData }
+                    ) {
+                        Icon(
+                            painterResource(R.drawable.ic_remix),
+                            contentDescription = null,
+                            modifier = Modifier.scale(iconScale)
+                        )
+                    }
+                }
+            }
+
+            if (isEditingTimingData) {
+                item {
+                    HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+
+                    RemixEditor(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = Theme.padding.medium)
+                    )
+                }
+            }
+
+            if (isEditingEqualizer) {
+                item {
+                    HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+
+                    EqualizerEditor()
+                }
+            }
+
+            if (subPlaybackItems.isNotEmpty()) {
+                item {
+                    Text(
+                        modifier = Modifier.padding(
+                            start = Theme.padding.medium,
+                            top = Theme.padding.medium,
                             end = Theme.padding.medium,
                             bottom = Theme.padding.extraSmall
-                        )
-                ) {
-                    if (playbackType !is PlaybackType.Playlist) {
-                        SubPlaybackView(viewModel, playback, PlaybackLocation.PREDEFINED_PLAYLIST)
-                    } else {
-                        SwipeDelete(
-                            shape = Theme.shapes.medium,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    MaterialTheme.colorScheme.tertiaryContainer,
-                                    Theme.shapes.medium
-                                ),
-                            onClick = { viewModel.removeFromCurrentPlaylist(updatedPlayback) }
-                        ) {
-                            SubPlaybackView(viewModel, playback, PlaybackLocation.CUSTOM_PLAYLIST)
+                        ),
+                        text = if (playbackType !is PlaybackType.Playlist) "Up Next" else "Playlist",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                items(subPlaybackItems, key = { it.mediaId.toString() }) { playback ->
+                    val updatedPlayback by rememberUpdatedState(playback)
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = Theme.padding.medium,
+                                end = Theme.padding.medium,
+                                bottom = Theme.padding.extraSmall
+                            )
+                    ) {
+                        if (playbackType !is PlaybackType.Playlist) {
+                            SubPlaybackView(
+                                viewModel,
+                                playback,
+                                PlaybackLocation.PREDEFINED_PLAYLIST
+                            )
+                        } else {
+                            SwipeDelete(
+                                shape = Theme.shapes.medium,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        MaterialTheme.colorScheme.tertiaryContainer,
+                                        Theme.shapes.medium
+                                    ),
+                                onClick = { viewModel.removeFromCurrentPlaylist(updatedPlayback) }
+                            ) {
+                                SubPlaybackView(
+                                    viewModel,
+                                    playback,
+                                    PlaybackLocation.CUSTOM_PLAYLIST
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
 
 
-        if(recommendedItems.isNotEmpty()) {
-            item {
-                Text(
-                    modifier = Modifier.padding(
-                        start = Theme.padding.medium,
-                        top = Theme.padding.medium,
-                        end = Theme.padding.medium,
-                        bottom = Theme.padding.extraSmall
-                    ),
-                    text = "Similar Items",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            items(recommendedItems) { item ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
+            if (recommendedItems.isNotEmpty()) {
+                item {
+                    Text(
+                        modifier = Modifier.padding(
                             start = Theme.padding.medium,
+                            top = Theme.padding.medium,
                             end = Theme.padding.medium,
                             bottom = Theme.padding.extraSmall
-                        )
-                ) {
-                    SubPlaybackView(viewModel, item, PlaybackLocation.PREDEFINED_PLAYLIST)
+                        ),
+                        text = "Similar Items",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                items(recommendedItems) { item ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = Theme.padding.medium,
+                                end = Theme.padding.medium,
+                                bottom = Theme.padding.extraSmall
+                            )
+                    ) {
+                        SubPlaybackView(viewModel, item, PlaybackLocation.PREDEFINED_PLAYLIST)
+                    }
                 }
             }
         }
@@ -468,3 +512,22 @@ private fun SubPlaybackView(
         isPlayable = playback.isPlayable
     )
 }
+
+
+private fun Modifier.onHighlightPositioned(
+    rootOffset: Offset,
+    condition: Boolean,
+    onHighlightPositioned: (Rect) -> Unit
+) = then(
+    Modifier.onGloballyPositioned {
+        if (condition) {
+            // get the child’s window position...
+            val childWindowPos = it.localToWindow(Offset.Zero)
+            // ...then subtract the root’s window offset to get a position
+            // relative to the Box canvas:
+            val topLeft = childWindowPos - rootOffset
+            val size = it.size.toSize()
+            onHighlightPositioned(Rect(topLeft, size))
+        }
+    }
+)
