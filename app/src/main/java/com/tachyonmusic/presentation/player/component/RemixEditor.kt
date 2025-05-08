@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,9 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.systemGestureExclusion
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -27,7 +28,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,10 +41,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -51,6 +58,7 @@ import com.tachyonmusic.app.R
 import com.tachyonmusic.domain.model.RewardAd
 import com.tachyonmusic.domain.use_case.player.SaveRemixToDatabase
 import com.tachyonmusic.presentation.core_components.ErrorDialog
+import com.tachyonmusic.presentation.core_components.SaveDialog
 import com.tachyonmusic.presentation.player.RemixEditorViewModel
 import com.tachyonmusic.presentation.theme.Theme
 import com.tachyonmusic.presentation.util.asString
@@ -319,28 +327,58 @@ fun RemixEditor(
         val activity = LocalContext.current as? ComponentActivity
         if (openRemixSaveDialog) {
             // TODO: Show error
-
-            BasicAlertDialog(
-                onDismissRequest = { openRemixSaveDialog = false },
-            ) {
-                Column {
-                    TextField(
+            SaveDialog(
+                onDismiss = { openRemixSaveDialog = false },
+                headlineText = "Save New Remix",
+                onConfirm = {
+                    viewModel.saveNewRemix(remixName, ignoreMaxRemixCount = activity == null)
+                    openRemixSaveDialog = false
+                },
+                onCancel = { openRemixSaveDialog = false },
+                confirmButtonEnabled = remixName.isNotEmpty(),
+                textFieldContent = {
+                    BasicTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = Theme.padding.small)
+                            .shadow(Theme.shadow.medium, shape = Theme.shapes.medium)
+                            .clip(Theme.shapes.medium),
                         value = remixName,
                         onValueChange = { remixName = it },
-                        singleLine = true)
-                    Button(
-                        onClick = {
-                            viewModel.saveNewRemix(
-                                remixName,
-                                ignoreMaxRemixCount = activity == null
-                            )
-                            openRemixSaveDialog = false
-                        }
-                    ) {
-                        Text("Save")
+                        textStyle = TextStyle.Default.copy(
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
+                        cursorBrush = SolidColor(MaterialTheme.colorScheme.onPrimaryContainer),
+                        singleLine = true
+                    ) { innerTextField ->
+                        TextFieldDefaults.DecorationBox(
+                            value = remixName,
+                            innerTextField = innerTextField,
+                            enabled = true,
+                            singleLine = true,
+                            visualTransformation = VisualTransformation.None,
+                            isError = false,
+                            colors = TextFieldDefaults.colors().copy(
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+
+                                focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                            ),
+                            placeholder = {
+                                Text(
+                                    text = "Name your Remix...",
+                                    fontSize = 18.sp
+                                )
+                            },
+                            contentPadding = PaddingValues(12.dp),
+                            interactionSource = remember { MutableInteractionSource() }
+                        )
                     }
                 }
-            }
+            )
         }
 
         if (remixError?.code == SaveRemixToDatabase.ERROR_NEEDS_TO_SHOW_AD) {
@@ -373,7 +411,11 @@ fun RemixEditor(
                                 if (type.amount == 1)
                                     stringResource(R.string.watch_reward_ad_for_one_remix)
                                 else
-                                    stringResource(R.string.watch_reward_ad_for_more_remixes, type.amount)
+                                    stringResource(
+                                        R.string.watch_reward_ad_for_more_remixes,
+                                        type.amount
+                                    )
+
                             else -> {
                                 // No reward ad available, ignore max remix count (TODO: Should be checked in ViewModel)
                                 LaunchedEffect(Unit) {
