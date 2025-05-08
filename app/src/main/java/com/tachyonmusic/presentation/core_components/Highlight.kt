@@ -3,12 +3,15 @@ package com.tachyonmusic.presentation.core_components
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.toSize
 
 fun Modifier.highlight(holeBounds: Rect?) =
     then(
@@ -31,6 +34,24 @@ fun Modifier.highlight(holeBounds: Rect?) =
             }
         }
     )
+
+fun Modifier.onHighlightPositioned(
+    rootOffset: Offset,
+    condition: Boolean,
+    onHighlightPositioned: (Rect, Int) -> Unit
+) = then(
+    Modifier.onGloballyPositioned {
+        if (condition) {
+            // get the child’s window position...
+            val childWindowPos = it.localToWindow(Offset.Zero)
+            // ...then subtract the root’s window offset to get a position
+            // relative to the Box canvas:
+            val topLeft = childWindowPos - rootOffset
+            val size = it.size.toSize()
+            onHighlightPositioned(Rect(topLeft, size), it.size.height)
+        }
+    }
+)
 
 private fun Rect.toRoundRect(radius: CornerRadius, padding: Float = 0f) =
     RoundRect(left + padding, top + padding, right + padding, bottom + padding, radius)

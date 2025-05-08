@@ -83,6 +83,7 @@ import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.core_components.highlight
+import com.tachyonmusic.presentation.core_components.onHighlightPositioned
 import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
 import com.tachyonmusic.presentation.player.component.IconRewind
@@ -327,29 +328,28 @@ fun PlayerScreen(
                  * Media Controls
                  */
                 item {
-                    Column(modifier = Modifier
-                        .fillMaxWidth()
-                        .onHighlightPositioned(
-                            rootOffset,
-                            tutorialStep is TutorialStep.PlaybackControls
-                        ) { target, height ->
-                            targetHeightPx = height
-                            targetRect = target
-                            targetIndex = 4
-                        }) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onHighlightPositioned(
+                                rootOffset,
+                                tutorialStep is TutorialStep.PlaybackControls
+                            ) { target, height ->
+                                targetHeightPx = height
+                                targetRect = target
+                                targetIndex = 4
+                            }) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceAround
                         ) {
-                            val buttonScale = 1.2f
-                            val iconScale = 1.2f
+                            val iconScale = 1.4f
 
                             // TODO: Decide if icons should seek e.g. 15s back/forward or seek to previous/next item
                             // TODO: Adjust icons if needed
 
                             val seekIncrements by viewModel.seekIncrements.collectAsState()
                             IconButton(
-                                modifier = Modifier.scale(buttonScale),
                                 onClick = viewModel::seekBack
                             ) {
                                 IconRewind(
@@ -362,7 +362,6 @@ fun PlayerScreen(
 
                             // TODO: IconToggleButton?
                             IconButton(
-                                modifier = Modifier.scale(buttonScale),
                                 onClick = viewModel::pauseResume
                             ) {
                                 Icon(
@@ -373,7 +372,6 @@ fun PlayerScreen(
                             }
 
                             IconButton(
-                                modifier = Modifier.scale(buttonScale),
                                 onClick = viewModel::seekForward
                             ) {
                                 IconForward(
@@ -389,11 +387,9 @@ fun PlayerScreen(
                                 .padding(top = Theme.padding.extraSmall),
                             horizontalArrangement = Arrangement.SpaceAround
                         ) {
-                            val buttonScale = 1.15f
-                            val iconScale = 1.15f
+                            val iconScale = 1.3f
 
                             IconButton(
-                                modifier = Modifier.scale(buttonScale),
                                 onClick = viewModel::nextRepeatMode
                             ) {
                                 val repeatMode by viewModel.repeatMode.collectAsState()
@@ -406,7 +402,6 @@ fun PlayerScreen(
 
                             IconButton(
                                 modifier = Modifier
-                                    .scale(buttonScale)
                                     .onHighlightPositioned(
                                         rootOffset,
                                         tutorialStep is TutorialStep.SoundEffectButton
@@ -420,13 +415,12 @@ fun PlayerScreen(
                                 Icon(
                                     painterResource(R.drawable.ic_equalizer),
                                     contentDescription = "Edit Sound Effects",
-                                    modifier = Modifier.scale(iconScale)
+                                    modifier = Modifier.scale(1.4f)
                                 )
                             }
 
                             IconButton(
                                 modifier = Modifier
-                                    .scale(buttonScale)
                                     .onHighlightPositioned(
                                         rootOffset,
                                         tutorialStep is TutorialStep.RemixButton
@@ -462,7 +456,7 @@ fun PlayerScreen(
                                             tutorialStep is TutorialStep.SaveRemixButton
                                 ) { target, height ->
                                     targetHeightPx = height
-                                    targetRect = target
+                                    targetRect = target.inflate(with(density) { 16.dp.toPx() })
                                     targetIndex = 5
                                 }
                         )
@@ -473,15 +467,16 @@ fun PlayerScreen(
                     item {
                         HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
 
-                        EqualizerEditor(modifier = Modifier.onHighlightPositioned(
-                            rootOffset,
-                            tutorialStep is TutorialStep.SoundEffectCheckboxes ||
-                                    tutorialStep is TutorialStep.SpeedPitchSliders
-                        ) { target, height ->
-                            targetHeightPx = height
-                            targetRect = target
-                            targetIndex = 6
-                        })
+                        EqualizerEditor(
+                            modifier = Modifier.onHighlightPositioned(
+                                rootOffset,
+                                tutorialStep is TutorialStep.SoundEffectCheckboxes ||
+                                        tutorialStep is TutorialStep.SpeedPitchSliders
+                            ) { target, height ->
+                                targetHeightPx = height
+                                targetRect = target
+                                targetIndex = 6
+                            })
                     }
                 }
 
@@ -601,7 +596,7 @@ fun PlayerScreen(
                             else -> viewModel.advanceTutorial()
                         }
                     }) {
-                        Text(if(tutorialStep is TutorialStep.SpeedPitchSliders) "Finish" else "Next")
+                        Text(if (tutorialStep is TutorialStep.SpeedPitchSliders) "Finish" else "Next")
                     }
                 }
             )
@@ -710,22 +705,3 @@ private fun SubPlaybackView(
         isPlayable = playback.isPlayable
     )
 }
-
-
-private fun Modifier.onHighlightPositioned(
-    rootOffset: Offset,
-    condition: Boolean,
-    onHighlightPositioned: (Rect, Int) -> Unit
-) = then(
-    Modifier.onGloballyPositioned {
-        if (condition) {
-            // get the child’s window position...
-            val childWindowPos = it.localToWindow(Offset.Zero)
-            // ...then subtract the root’s window offset to get a position
-            // relative to the Box canvas:
-            val topLeft = childWindowPos - rootOffset
-            val size = it.size.toSize()
-            onHighlightPositioned(Rect(topLeft, size), it.size.height)
-        }
-    }
-)
