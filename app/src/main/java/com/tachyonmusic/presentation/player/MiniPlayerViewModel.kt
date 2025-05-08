@@ -47,7 +47,7 @@ class MiniPlayerViewModel @Inject constructor(
 
     val playback = combine(_playback, uriPermissionRepository.permissions) { playback, _ ->
         loadArtworkForPlayback(playback ?: return@combine null).toPlayerEntity()
-    }.stateIn(viewModelScope, SharingStarted.Lazily, null)
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Lazily, null)
 
     val isPlaying = mediaBrowser.isPlaying
 

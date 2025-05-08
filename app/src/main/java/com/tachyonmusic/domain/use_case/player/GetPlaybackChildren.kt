@@ -11,6 +11,9 @@ import com.tachyonmusic.playback_layers.predefinedRemixPlaylistMediaId
 import com.tachyonmusic.playback_layers.predefinedSongPlaylistMediaId
 import com.tachyonmusic.util.cycle
 import com.tachyonmusic.util.indexOf
+import com.tachyonmusic.util.runOnUiThread
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class GetPlaybackChildren(
     private val browser: MediaBrowserController,
@@ -18,7 +21,7 @@ class GetPlaybackChildren(
     private val log: Logger
 ) {
     @JvmName("invokePlayback")
-    operator fun invoke(
+    suspend operator fun invoke(
         playback: Playback?,
         repeatMode: RepeatMode,
         currentPlaylistMediaId: MediaId?
@@ -54,8 +57,9 @@ class GetPlaybackChildren(
             TODO("Invalid playback type ${playback.javaClass.name}")
     }
 
-    private fun getPlaylistShuffle() =
+    private suspend fun getPlaylistShuffle() = withContext(Dispatchers.Main) {
         if (browser.nextPlayback != null) listOf(browser.nextPlayback!!) else emptyList()
+    }
 
     private fun getPlaylistOff(
         playback: Playback,

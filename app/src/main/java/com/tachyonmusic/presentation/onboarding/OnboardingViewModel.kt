@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,7 +39,7 @@ class OnboardingViewModel @Inject constructor(
         requiredMusicDirectoriesAfterDatabaseImport
     ) { settings, requiredDirs ->
         settings.musicDirectories.isNotEmpty() && requiredDirs.isEmpty()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), false)
 
     fun saveOnboardingState(completed: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {

@@ -147,7 +147,7 @@ class PlayerViewModel @Inject constructor(
         settingsRepository.observe().onEach {
             showMillisecondsInPositionText = it.shouldMillisecondsBeShown
             audioUpdateInterval = it.audioUpdateInterval
-        }.launchIn(viewModelScope)
+        }.launchIn(viewModelScope + Dispatchers.IO)
 
         viewModelScope.launch(Dispatchers.IO) {
             val data = dataRepository.getData()
@@ -202,11 +202,10 @@ class PlayerViewModel @Inject constructor(
      *************************************************************************/
     val seekIncrements = settingsRepository.observe().map {
         SeekIncrements(it.seekForwardIncrement, it.seekBackIncrement)
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), SeekIncrements())
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), SeekIncrements())
 
     val isPlaying = mediaBrowser.isPlaying
     val repeatMode = mediaBrowser.repeatMode
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), RepeatMode.All)
 
     private var recentlyPlayedPos: Duration? = null
 
@@ -233,9 +232,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun nextRepeatMode() {
-        viewModelScope.launch {
-            mediaBrowser.setRepeatMode(repeatMode.value.next)
-        }
+        mediaBrowser.setRepeatMode(repeatMode.value.next)
     }
 
     fun play(entity: PlayerEntity, playbackLocation: PlaybackLocation? = null) {
@@ -291,7 +288,7 @@ class PlayerViewModel @Inject constructor(
         children?.map {
             loadArtworkForPlayback(it).toPlayerEntity()
         } ?: emptyList()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
     val recommendedItems =
         combine(
@@ -315,7 +312,7 @@ class PlayerViewModel @Inject constructor(
 
                 else -> emptyList()
             }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+        }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
 
 
     /**************************************************************************
@@ -329,7 +326,7 @@ class PlayerViewModel @Inject constructor(
             playlists.map { playlist ->
                 PlaylistInfo(playlist.name, playlist.hasPlayback(currentPlayback))
             }
-        }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Lazily, emptyList())
 
     fun editPlaylist(i: Int, shouldAdd: Boolean) {
         viewModelScope.launch {
