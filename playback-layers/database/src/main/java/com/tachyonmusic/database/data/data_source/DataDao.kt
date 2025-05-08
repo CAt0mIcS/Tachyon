@@ -49,4 +49,7 @@ interface DataDao {
 
     @Query("UPDATE $DATA_DATABASE_TABLE_NAME SET onboardingCompleted=:completed")
     suspend fun setOnboarding(completed: Boolean)
+
+    @Query("UPDATE $DATA_DATABASE_TABLE_NAME SET tutorialStep=:tutorialStep")
+    suspend fun setTutorialStep(tutorialStep: String)
 }

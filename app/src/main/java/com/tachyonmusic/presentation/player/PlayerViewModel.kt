@@ -7,7 +7,7 @@ import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.database.domain.model.SettingsEntity
-import com.tachyonmusic.database.domain.model.SongEntity
+import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
 import com.tachyonmusic.database.domain.repository.SongRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
@@ -31,6 +31,7 @@ import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.isPredefined
 import com.tachyonmusic.presentation.player.data.PlaylistInfo
 import com.tachyonmusic.presentation.player.data.SeekIncrements
+import com.tachyonmusic.presentation.player.data.TutorialStep
 import com.tachyonmusic.presentation.player.model.PlayerEntity
 import com.tachyonmusic.presentation.player.model.toPlayerEntity
 import com.tachyonmusic.util.Duration
@@ -43,6 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
@@ -52,7 +54,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -62,6 +63,7 @@ class PlayerViewModel @Inject constructor(
     playbackRepository: PlaybackRepository,
     loadArtworkForPlayback: LoadArtworkForPlayback,
     settingsRepository: SettingsRepository,
+    private val dataRepository: DataRepository,
     songRepository: SongRepository,
     artworkCodex: ArtworkCodex,
     assignArtworkToPlayback: AssignArtworkToPlayback,
@@ -113,11 +115,33 @@ class PlayerViewModel @Inject constructor(
     private val _error = MutableStateFlow<UiText?>(null)
     val error: StateFlow<UiText?> = _error
 
+    private val _tutorialStep = MutableStateFlow<TutorialStep>(TutorialStep.Finished)
+    val tutorialStep = _tutorialStep.asStateFlow()
+
     private val networkInfo = networkMonitor.networkConnectionState.stateIn(
         viewModelScope,
         SharingStarted.Eagerly,
         NetworkMonitor.NetworkInfo(connectionStatus = NetworkMonitor.ConnectionStatus.Disconnected)
     )
+
+    fun previousTutorialStep() {
+        _tutorialStep.update { it.previous ?: TutorialStep.first }
+    }
+
+    fun skipTutorial() {
+        _tutorialStep.update { TutorialStep.Finished }
+        viewModelScope.launch(Dispatchers.IO) {
+            dataRepository.update(tutorialStep = TutorialStep.Finished.toString())
+        }
+    }
+
+    fun advanceTutorial() {
+        _tutorialStep.update { it.next ?: TutorialStep.Finished }
+        if (tutorialStep.value is TutorialStep.Finished)
+            viewModelScope.launch(Dispatchers.IO) {
+                dataRepository.update(tutorialStep = TutorialStep.Finished.toString())
+            }
+    }
 
     init {
         settingsRepository.observe().onEach {
@@ -125,8 +149,16 @@ class PlayerViewModel @Inject constructor(
             audioUpdateInterval = it.audioUpdateInterval
         }.launchIn(viewModelScope)
 
-
         viewModelScope.launch(Dispatchers.IO) {
+            val data = dataRepository.getData()
+            _tutorialStep.update {
+                try {
+                    TutorialStep.fromString(data.tutorialStep)
+                } catch (_: IllegalArgumentException) {
+                    TutorialStep.first
+                }
+            }
+
             recentlyPlayedPos = getRecentlyPlayed()?.position
 
             _playback.onEach { pb ->

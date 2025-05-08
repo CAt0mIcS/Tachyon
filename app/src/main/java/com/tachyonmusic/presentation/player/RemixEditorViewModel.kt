@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tachyonmusic.app.R
 import com.tachyonmusic.core.domain.TimingData
 import com.tachyonmusic.core.domain.TimingDataController
 import com.tachyonmusic.core.domain.isNullOrEmpty

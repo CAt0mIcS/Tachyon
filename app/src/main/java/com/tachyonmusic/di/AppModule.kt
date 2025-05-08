@@ -356,12 +356,14 @@ object AppRepositoryModule {
     @Provides
     @Singleton
     fun provideMediaBrowserController(
+        dataRepository: DataRepository,
         getPlaylistForPlayback: GetPlaylistForPlayback,
         logger: Logger,
         playbackRepository: PlaybackRepository,
         syncPlaybackAudioEffects: SyncPlaybackAudioEffects
     ): MediaBrowserController =
         MediaPlaybackServiceMediaBrowserController(
+            dataRepository,
             getPlaylistForPlayback,
             logger,
             playbackRepository,

@@ -56,4 +56,23 @@
     <string name="no_items">No Items</string>
     <string name="could_not_open_playback">Could not open playback \"%1$s\"</string>
     <string name="no_reward_ad_available">No Reward Ad available! Reward granted automatically!</string>
+
+    <string name="tutorial_playback_controls">Playback Controls</string>
+    <string name="tutorial_playback_controls_desc">Here you can control the playback, like pausing, skipping a few seconds ahead, or changing the repeat mode.</string>
+    <string name="tutorial_remix_button">Remix</string>
+    <string name="tutorial_remix_button_desc">Pressing this button allows you to edit intervals that should be repeated. Press it to continue…</string>
+    <string name="tutorial_remix_interface">Here you can change your intervals</string>
+    <string name="tutorial_remix_interface_desc">The slider allows you to select an interval which should be played. Everything outside the slider values will not be played.</string>
+    <string name="tutorial_remix_buttons">Fine Control</string>
+    <string name="tutorial_remix_buttons_desc">The buttons give you fine control over the exact interval. You can also add more intervals using the settings button.</string>
+    <string name="tutorial_save_remix_button">Save your Remix</string>
+    <string name="tutorial_save_remix_button_desc">The \"Save\" button allows you to give your remix a name and save it. When playing the remix the intervals as well as any sound effects will be applied. We\'ll get into the sound effects next…</string>
+    <string name="tutorial_sound_effect_button">Sound Effects</string>
+    <string name="tutorial_sound_effect_button_desc">Pressing this button allows you to add sound effects like reverb or equalizer to your remix. Press it to continue…</string>
+    <string name="tutorial_sound_effect_checkboxes">Add your sound effects</string>
+    <string name="tutorial_sound_effect_checkboxes_desc">Here you can enable which sound effects you\'d like to add to your remix. Enabling the Checkbox will expand a customization window for your sound effect.</string>
+    <string name="tutorial_speed_pitch_sliders">Change Speed and Pitch</string>
+    <string name="tutorial_speed_pitch_sliders_desc">Here you can also change the speed and pitch of your remix, creating either slowed or sped up (nightcore) audio.</string>
+    <string name="tutorial_finished">Tutorial Finished</string>
+    <string name="tutorial_finished_desc">You\'ve completed the tutorial! You can restart it anytime from the settings screen (bottom right).</string>
 </resources>
