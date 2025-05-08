@@ -61,6 +61,10 @@ fun SaveDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    TextButton(onClick = onCancel) {
+                        Text("Cancel")
+                    }
+
                     Button(
                         onClick = onConfirm,
                         enabled = confirmButtonEnabled,
@@ -70,10 +74,6 @@ fun SaveDialog(
                         )
                     ) {
                         Text("Save")
-                    }
-
-                    TextButton(onClick = onCancel) {
-                        Text("Cancel")
                     }
                 }
             }

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
@@ -28,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RangeSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -350,7 +353,8 @@ fun RemixEditor(
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         ),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.onPrimaryContainer),
-                        singleLine = true
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
                     ) { innerTextField ->
                         TextFieldDefaults.DecorationBox(
                             value = remixName,
@@ -430,8 +434,12 @@ fun RemixEditor(
                             modifier = Modifier
                                 .padding(top = Theme.padding.medium)
                                 .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceAround
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
+                            TextButton(onClick = { viewModel.clearRemixError() }) {
+                                Text("Cancel")
+                            }
+
                             Button(onClick = {
                                 scope.launch {
                                     viewModel.playAd(activity)
@@ -442,10 +450,6 @@ fun RemixEditor(
                                 }
                             }) {
                                 Text("Watch Ad")
-                            }
-
-                            Button(onClick = { viewModel.clearRemixError() }) {
-                                Text("Cancel")
                             }
                         }
                     }
@@ -484,8 +488,12 @@ fun RemixEditor(
                             modifier = Modifier
                                 .padding(top = Theme.padding.medium)
                                 .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceAround
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
+                            TextButton(onClick = { viewModel.clearRemixError() }) {
+                                Text("Cancel")
+                            }
+
                             Button(onClick = {
                                 viewModel.saveNewRemix(
                                     remixName,
@@ -493,10 +501,6 @@ fun RemixEditor(
                                 )
                             }) {
                                 Text("Replace")
-                            }
-
-                            Button(onClick = { viewModel.clearRemixError() }) {
-                                Text("Cancel")
                             }
                         }
                     }
