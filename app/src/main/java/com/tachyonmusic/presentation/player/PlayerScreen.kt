@@ -83,6 +83,7 @@ import com.tachyonmusic.presentation.core_components.ErrorDialog
 import com.tachyonmusic.presentation.core_components.HorizontalPlaybackView
 import com.tachyonmusic.presentation.core_components.SwipeDelete
 import com.tachyonmusic.presentation.core_components.highlight
+import com.tachyonmusic.presentation.core_components.inflate
 import com.tachyonmusic.presentation.core_components.onHighlightPositioned
 import com.tachyonmusic.presentation.player.component.EqualizerEditor
 import com.tachyonmusic.presentation.player.component.IconForward
@@ -444,6 +445,8 @@ fun PlayerScreen(
                 if (isEditingTimingData) {
                     item {
                         HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
+                        val mediumPadding = Theme.padding.medium
+                        val smallPadding = Theme.padding.small
 
                         RemixEditor(
                             modifier = Modifier
@@ -456,7 +459,10 @@ fun PlayerScreen(
                                             tutorialStep is TutorialStep.SaveRemixButton
                                 ) { target, height ->
                                     targetHeightPx = height
-                                    targetRect = target.inflate(with(density) { 16.dp.toPx() })
+                                    targetRect = target.inflate(
+                                        horizontalPx = with(density) { mediumPadding.toPx() },
+                                        verticalPx = with(density) { smallPadding.toPx() }
+                                    )
                                     targetIndex = 5
                                 }
                         )
@@ -466,15 +472,12 @@ fun PlayerScreen(
                 if (isEditingEqualizer) {
                     item {
                         HorizontalDivider(modifier = Modifier.padding(Theme.padding.medium))
-
                         EqualizerEditor(
-                            modifier = Modifier.onHighlightPositioned(
-                                rootOffset,
-                                tutorialStep is TutorialStep.SoundEffectCheckboxes ||
-                                        tutorialStep is TutorialStep.SpeedPitchSliders
-                            ) { target, height ->
+                            tutorialStep,
+                            rootOffset,
+                            onHighlightPositioned = { height, rect ->
                                 targetHeightPx = height
-                                targetRect = target
+                                targetRect = rect
                                 targetIndex = 6
                             })
                     }

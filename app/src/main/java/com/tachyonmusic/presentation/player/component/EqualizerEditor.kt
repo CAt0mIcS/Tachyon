@@ -3,13 +3,10 @@ package com.tachyonmusic.presentation.player.component
 import androidx.annotation.StringRes
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
@@ -33,18 +30,26 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.model.mDb
+import com.tachyonmusic.presentation.core_components.inflate
+import com.tachyonmusic.presentation.core_components.onHighlightPositioned
 import com.tachyonmusic.presentation.player.EqualizerViewModel
+import com.tachyonmusic.presentation.player.data.TutorialStep
 import com.tachyonmusic.presentation.theme.Theme
 
 @Composable
 fun EqualizerEditor(
-    modifier: Modifier = Modifier,
+    tutorialStep: TutorialStep,
+    rootOffset: Offset,
+    onHighlightPositioned: (Int, Rect) -> Unit,
     viewModel: EqualizerViewModel = hiltViewModel()
 ) {
     val bass by viewModel.bass.collectAsState()
@@ -58,32 +63,50 @@ fun EqualizerEditor(
     val equalizerEnabled by viewModel.equalizerEnabled.collectAsState()
     val reverbEnabled by viewModel.reverbEnabled.collectAsState()
 
+    val columnPadding = Theme.padding.medium
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = Theme.padding.medium)
+            .padding(horizontal = columnPadding)
     ) {
+        val density = LocalDensity.current
 
-        CheckboxText(
-            checked = bassEnabled,
-            onCheckedChange = viewModel::setBassBoostEnabled,
-            text = "Bass"
-        )
-        CheckboxText(
-            checked = virtualizerEnabled,
-            onCheckedChange = viewModel::setVirtualizerEnabled,
-            text = "Virtualizer"
-        )
-        CheckboxText(
-            checked = equalizerEnabled && equalizer.bands.isNotEmpty(),
-            onCheckedChange = viewModel::setEqualizerEnabled,
-            text = "Equalizer"
-        )
-        CheckboxText(
-            checked = reverbEnabled,
-            onCheckedChange = viewModel::setReverbEnabled,
-            text = "Reverb"
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .onHighlightPositioned(
+                    rootOffset,
+                    tutorialStep is TutorialStep.SoundEffectCheckboxes
+                ) { target, height ->
+                    onHighlightPositioned(
+                        height,
+                        target.inflate(horizontalPx = with(density) { columnPadding.toPx() })
+                    )
+                }
+        ) {
+            CheckboxText(
+                checked = bassEnabled,
+                onCheckedChange = viewModel::setBassBoostEnabled,
+                text = "Bass"
+            )
+            CheckboxText(
+                checked = virtualizerEnabled,
+                onCheckedChange = viewModel::setVirtualizerEnabled,
+                text = "Virtualizer"
+            )
+            CheckboxText(
+                checked = equalizerEnabled && equalizer.bands.isNotEmpty(),
+                onCheckedChange = viewModel::setEqualizerEnabled,
+                text = "Equalizer"
+            )
+            CheckboxText(
+                checked = reverbEnabled,
+                onCheckedChange = viewModel::setReverbEnabled,
+                text = "Reverb"
+            )
+        }
+
+
 
         HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
 
@@ -118,113 +141,127 @@ fun EqualizerEditor(
             HorizontalDivider(modifier = Modifier.padding(vertical = Theme.padding.medium))
         }
 
-        // TODO: Worth storing over multiple UI recreations? E.g. should be saved as setting in db?
-        var syncSpeedPitch by rememberSaveable {
-            mutableStateOf(playbackParams.speed == playbackParams.pitch)
-        }
-        var preciseInput by rememberSaveable { mutableStateOf(false) }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .onHighlightPositioned(
+                    rootOffset,
+                    tutorialStep is TutorialStep.SpeedPitchSliders
+                ) { target, height ->
+                    onHighlightPositioned(
+                        height,
+                        target.inflate(horizontalPx = with(density) { columnPadding.toPx() })
+                    )
+                }
+        ) {
+            // TODO: Worth storing over multiple UI recreations? E.g. should be saved as setting in db?
+            var syncSpeedPitch by rememberSaveable {
+                mutableStateOf(playbackParams.speed == playbackParams.pitch)
+            }
+            var preciseInput by rememberSaveable { mutableStateOf(false) }
 
-        CheckboxText(
-            checked = preciseInput,
-            onCheckedChange = { preciseInput = it },
-            text = "Precise Speed and Pitch Input"
-        )
-
-        if (preciseInput) {
-            Text("Speed", modifier = Modifier.padding(horizontal = Theme.padding.medium))
-            TextField(
-                value = playbackParams.speed,
-                onValueChange = {
-                    if (syncSpeedPitch)
-                        viewModel.setPlaybackParams(it, it)
-                    else
-                        viewModel.setSpeed(it)
-                },
-                modifier = Modifier.padding(horizontal = Theme.padding.medium),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            CheckboxText(
+                checked = preciseInput,
+                onCheckedChange = { preciseInput = it },
+                text = "Precise Speed and Pitch Input"
             )
 
-            Text("Pitch", modifier = Modifier.padding(horizontal = Theme.padding.medium))
-            TextField(
-                value = playbackParams.pitch,
-                onValueChange = {
-                    if (syncSpeedPitch)
-                        viewModel.setPlaybackParams(it, it)
-                    else
-                        viewModel.setPitch(it)
-                },
-                modifier = Modifier.padding(horizontal = Theme.padding.medium),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-        } else {
-            val minValue = .3f // TODO: Setting?
-            val maxValue = 2f // TODO: Setting?
-
-            val floatSpeed = playbackParams.speed.toFloatOrNull()
-            TextValueRow(
-                "Speed",
-                value = if (floatSpeed == null)
-                    playbackParams.speed
-                else "%.1f ".format(floatSpeed * 100f),
-                "%",
-                modifier = Modifier.padding(horizontal = Theme.padding.medium)
-            )
-            Slider(
-                modifier = Modifier
-                    .systemGestureExclusion()
-                    .padding(horizontal = Theme.padding.medium),
-                value = playbackParams.speed.toFloat(),
-                onValueChange = {
-                    if (syncSpeedPitch)
-                        viewModel.setPlaybackParams(it.toString(), it.toString())
-                    else
-                        viewModel.setSpeed(it.toString())
-                },
-                valueRange = minValue..maxValue,
-                steps = ((maxValue - minValue) * 200f).toInt() - 1,
-                colors = SliderDefaults.colors(
-                    activeTickColor = Color.Transparent,
-                    inactiveTickColor = Color.Transparent
+            if (preciseInput) {
+                Text("Speed", modifier = Modifier.padding(horizontal = Theme.padding.medium))
+                TextField(
+                    value = playbackParams.speed,
+                    onValueChange = {
+                        if (syncSpeedPitch)
+                            viewModel.setPlaybackParams(it, it)
+                        else
+                            viewModel.setSpeed(it)
+                    },
+                    modifier = Modifier.padding(horizontal = Theme.padding.medium),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
-            )
 
-            val floatPitch = playbackParams.pitch.toFloatOrNull()
-            TextValueRow(
-                "Pitch",
-                value = if (floatPitch == null)
-                    playbackParams.pitch
-                else "%.1f ".format(floatPitch * 100f),
-                "%",
-                modifier = Modifier.padding(horizontal = Theme.padding.medium)
-            )
-
-            Slider(
-                modifier = Modifier
-                    .systemGestureExclusion()
-                    .padding(horizontal = Theme.padding.medium),
-                value = playbackParams.pitch.toFloat(),
-                onValueChange = {
-                    if (syncSpeedPitch)
-                        viewModel.setPlaybackParams(it.toString(), it.toString())
-                    else
-                        viewModel.setPitch(it.toString())
-                },
-                valueRange = minValue..maxValue,
-                steps = ((maxValue - minValue) * 200f).toInt() - 1,
-                colors = SliderDefaults.colors(
-                    activeTickColor = Color.Transparent,
-                    inactiveTickColor = Color.Transparent
+                Text("Pitch", modifier = Modifier.padding(horizontal = Theme.padding.medium))
+                TextField(
+                    value = playbackParams.pitch,
+                    onValueChange = {
+                        if (syncSpeedPitch)
+                            viewModel.setPlaybackParams(it, it)
+                        else
+                            viewModel.setPitch(it)
+                    },
+                    modifier = Modifier.padding(horizontal = Theme.padding.medium),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
+            } else {
+                val minValue = .3f // TODO: Setting?
+                val maxValue = 2f // TODO: Setting?
+
+                val floatSpeed = playbackParams.speed.toFloatOrNull()
+                TextValueRow(
+                    "Speed",
+                    value = if (floatSpeed == null)
+                        playbackParams.speed
+                    else "%.1f ".format(floatSpeed * 100f),
+                    "%",
+                    modifier = Modifier.padding(horizontal = Theme.padding.medium)
+                )
+                Slider(
+                    modifier = Modifier
+                        .systemGestureExclusion()
+                        .padding(horizontal = Theme.padding.medium),
+                    value = playbackParams.speed.toFloat(),
+                    onValueChange = {
+                        if (syncSpeedPitch)
+                            viewModel.setPlaybackParams(it.toString(), it.toString())
+                        else
+                            viewModel.setSpeed(it.toString())
+                    },
+                    valueRange = minValue..maxValue,
+                    steps = ((maxValue - minValue) * 200f).toInt() - 1,
+                    colors = SliderDefaults.colors(
+                        activeTickColor = Color.Transparent,
+                        inactiveTickColor = Color.Transparent
+                    )
+                )
+
+                val floatPitch = playbackParams.pitch.toFloatOrNull()
+                TextValueRow(
+                    "Pitch",
+                    value = if (floatPitch == null)
+                        playbackParams.pitch
+                    else "%.1f ".format(floatPitch * 100f),
+                    "%",
+                    modifier = Modifier.padding(horizontal = Theme.padding.medium)
+                )
+
+                Slider(
+                    modifier = Modifier
+                        .systemGestureExclusion()
+                        .padding(horizontal = Theme.padding.medium),
+                    value = playbackParams.pitch.toFloat(),
+                    onValueChange = {
+                        if (syncSpeedPitch)
+                            viewModel.setPlaybackParams(it.toString(), it.toString())
+                        else
+                            viewModel.setPitch(it.toString())
+                    },
+                    valueRange = minValue..maxValue,
+                    steps = ((maxValue - minValue) * 200f).toInt() - 1,
+                    colors = SliderDefaults.colors(
+                        activeTickColor = Color.Transparent,
+                        inactiveTickColor = Color.Transparent
+                    )
+                )
+            }
+
+            CheckboxText(
+                checked = syncSpeedPitch,
+                onCheckedChange = { syncSpeedPitch = it },
+                text = "Sync Speed and Pitch"
             )
         }
-
-        CheckboxText(
-            checked = syncSpeedPitch,
-            onCheckedChange = { syncSpeedPitch = it },
-            text = "Sync Speed and Pitch"
-        )
 
 
         if (equalizerEnabled) {
@@ -620,7 +657,12 @@ private fun ReverbPresetDropdownMenuItem(@StringRes name: Int, onClick: () -> Un
 }
 
 @Composable
-fun TextValueRow(settingName: String, value: String, unit: String, modifier: Modifier = Modifier) {
+private fun TextValueRow(
+    settingName: String,
+    value: String,
+    unit: String,
+    modifier: Modifier = Modifier
+) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(settingName)
         Text("$value $unit")
@@ -628,9 +670,19 @@ fun TextValueRow(settingName: String, value: String, unit: String, modifier: Mod
 }
 
 @Composable
-fun TextValueRow(settingName: String, value: Int, unit: String, modifier: Modifier = Modifier) =
+private fun TextValueRow(
+    settingName: String,
+    value: Int,
+    unit: String,
+    modifier: Modifier = Modifier
+) =
     TextValueRow(settingName, value.toString(), unit, modifier)
 
 @Composable
-fun TextValueRow(settingName: String, value: Short, unit: String, modifier: Modifier = Modifier) =
+private fun TextValueRow(
+    settingName: String,
+    value: Short,
+    unit: String,
+    modifier: Modifier = Modifier
+) =
     TextValueRow(settingName, value.toString(), unit, modifier)

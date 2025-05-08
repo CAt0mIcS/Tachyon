@@ -53,5 +53,12 @@ fun Modifier.onHighlightPositioned(
     }
 )
 
+fun Rect.inflate(horizontalPx: Float = 0f, verticalPx: Float = 0f) = copy(
+    left = left - horizontalPx,
+    top = top - verticalPx,
+    bottom = bottom + verticalPx,
+    right = right + horizontalPx
+)
+
 private fun Rect.toRoundRect(radius: CornerRadius, padding: Float = 0f) =
     RoundRect(left + padding, top + padding, right + padding, bottom + padding, radius)
