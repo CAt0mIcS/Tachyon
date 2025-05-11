@@ -124,9 +124,15 @@ class MediaPlaybackServiceMediaBrowserController(
         val newPlayback = action(currentPlayback.value)
         _currentPlayback.update { newPlayback }
         browser?.dispatchMediaEvent(PlaybackUpdateEvent(newPlayback, playlist))
-        browser?.let {
-            syncPlaybackAudioEffects(newPlayback ?: return@let, it)?.let { equalizerPlayback ->
-                updatePlayback(playlist) { equalizerPlayback }
+        /**
+         * [audioSessionId] could still be null here, so we update the
+         * call [syncPlaybackAudioEffects] in [onAudioSessionIdChanged] as well
+         */
+        if (audioSessionId != null) {
+            browser?.let {
+                syncPlaybackAudioEffects(newPlayback ?: return@let, it)?.let { equalizerPlayback ->
+                    updatePlayback(playlist) { equalizerPlayback }
+                }
             }
         }
     }
@@ -302,8 +308,22 @@ class MediaPlaybackServiceMediaBrowserController(
 
     // TODO: Not working, currently using custom command
     override fun onAudioSessionIdChanged(audioSessionId: Int) {
+        val syncAudioEffects = this.audioSessionId == null
+
         this.audioSessionId = audioSessionId
         invokeEvent { it.onAudioSessionIdChanged(audioSessionId) }
+
+        // sync audio effects in case [audioSessionId] was still null in [updatePlayback]
+        if (syncAudioEffects) {
+            browser?.let {
+                syncPlaybackAudioEffects(
+                    currentPlayback.value ?: return@let,
+                    it
+                )?.let { equalizerPlayback ->
+                    updatePlayback { equalizerPlayback }
+                }
+            }
+        }
     }
 }
 

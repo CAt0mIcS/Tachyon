@@ -184,9 +184,13 @@ class AndroidAudioEffectController : AudioEffectController {
 
     override fun release() {
         equalizer?.release()
+        equalizer = null
         virtualizer?.release()
+        virtualizer = null
         bassBoost?.release()
+        bassBoost = null
         environmentalReverb?.release()
+        environmentalReverb = null
     }
 
     override fun setBassEnabled(enabled: Boolean): Boolean {
