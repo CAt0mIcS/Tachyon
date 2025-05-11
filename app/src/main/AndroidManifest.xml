@@ -9,16 +9,16 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="com.android.vending.BILLING" />
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
 
     <application
         android:name="com.tachyonmusic.TachyonApplication"
         android:allowBackup="true"
+        android:appCategory="audio"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.DayNight"
-        android:icon="@mipmap/ic_launcher"
-        android:appCategory="audio">
+        android:theme="@style/Theme.AppCompat.DayNight">
 
         <!--        Android Auto support-->
         <meta-data
@@ -35,10 +35,18 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-7145716621236451~4657802755" />
 
+        <!--        Disable firebase analytics in debug-->
+        <meta-data
+            android:name="firebase_analytics_collection_deactivated"
+            android:value="${firebase_analytics_collection_deactivated}" />
+        <meta-data
+            android:name="firebase_performance_collection_enabled"
+            android:value="${firebase_performance_collection_enabled}" />
+
         <activity
             android:name="com.tachyonmusic.presentation.entry.ActivityMain"
-            android:launchMode="singleInstance"
             android:exported="true"
+            android:launchMode="singleInstance"
             android:windowSoftInputMode="adjustPan">
 
             <intent-filter>
@@ -50,7 +58,7 @@
                 <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
             </intent-filter>
 
-<!--            Show app in 'Open with' Dialog-->
+            <!--            Show app in 'Open with' Dialog-->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -83,18 +91,18 @@
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaLibraryService" />
                 <action android:name="android.media.browse.MediaBrowserService" />
-                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH"/>
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
             </intent-filter>
 
         </service>
 
-<!--        TODO: This for some reason causes the stale media notification-->
-<!--        <receiver android:name="androidx.media3.session.MediaButtonReceiver"-->
-<!--            android:exported="true">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.MEDIA_BUTTON" />-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
+        <!--        TODO: This for some reason causes the stale media notification-->
+        <!--        <receiver android:name="androidx.media3.session.MediaButtonReceiver"-->
+        <!--            android:exported="true">-->
+        <!--            <intent-filter>-->
+        <!--                <action android:name="android.intent.action.MEDIA_BUTTON" />-->
+        <!--            </intent-filter>-->
+        <!--        </receiver>-->
     </application>
 
 </manifest>

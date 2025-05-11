@@ -4,6 +4,7 @@ import android.media.audiofx.BassBoost
 import android.media.audiofx.EnvironmentalReverb
 import android.media.audiofx.Equalizer
 import android.media.audiofx.Virtualizer
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.tachyonmusic.core.PlaybackParameters
 import com.tachyonmusic.core.ReverbConfig
 import com.tachyonmusic.core.domain.model.EqualizerBand
@@ -177,6 +178,7 @@ class AndroidAudioEffectController : AudioEffectController {
             environmentalReverb = EnvironmentalReverb(0, 0)
         } catch (e: RuntimeException) {
             e.printStackTrace()
+            FirebaseCrashlytics.getInstance().recordException(e)
         }
     }
 

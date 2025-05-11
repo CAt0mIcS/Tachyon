@@ -3,7 +3,7 @@ import org.gradle.kotlin.dsl.project
 
 object Dependency {
     object Firebase {
-        const val BOM = "com.google.firebase:firebase-bom:30.3.2"
+        const val BOM = "com.google.firebase:firebase-bom:33.13.0"
         const val CORE = "com.google.firebase:firebase-core"
         const val AUTH = "com.google.firebase:firebase-auth-ktx"
         const val FIRESTORE = "com.google.firebase:firebase-firestore-ktx"
@@ -123,9 +123,9 @@ object Dependency {
 fun DependencyHandler.firebaseAnalytics() {
     implementation(platform(Dependency.Firebase.BOM))
 
-    releaseImplementation(Dependency.Firebase.ANALYTICS)
-    releaseImplementation(Dependency.Firebase.CRASHLYTICS)
-    releaseImplementation(Dependency.Firebase.PERFORMANCE)
+    implementation(Dependency.Firebase.ANALYTICS)
+    implementation(Dependency.Firebase.CRASHLYTICS)
+    implementation(Dependency.Firebase.PERFORMANCE)
 }
 
 fun DependencyHandler.compose() {

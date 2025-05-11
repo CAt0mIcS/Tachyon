@@ -54,6 +54,7 @@ android {
 }
 
 dependencies {
+    firebaseAnalytics()
     coroutines()
     media3()
     googleCast()

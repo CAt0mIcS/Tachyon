@@ -12,20 +12,24 @@ buildscript {
 
     dependencies {
         classpath("com.google.gms:google-services:4.4.2")
-        classpath("com.google.dagger:hilt-android-gradle-plugin:${Index.DAGGER_HILT}")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Index.KOTLIN}")
     }
 }
 
 plugins {
-    id("com.android.application") version "8.5.2" apply false
-    id("com.android.library") version "8.5.2" apply false
+    id("com.android.application") version "8.9.2" apply false
+    id("com.android.library") version "8.9.2" apply false
     id("org.jetbrains.kotlin.android") version Index.KOTLIN apply false
 
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.serialization") version "1.9.22"
+    // Compose Compiler Gradle plugin
+    id("org.jetbrains.kotlin.plugin.compose") version Index.KOTLIN apply false
+
+    kotlin("jvm") version Index.KOTLIN
+    kotlin("plugin.serialization") version Index.KOTLIN
     id("com.google.gms.google-services") version "4.4.2" apply false
     id("com.google.firebase.crashlytics") version "3.0.2" apply false
+
+    id("com.google.dagger.hilt.android") version Index.DAGGER_HILT apply false
 }
 
 // Show basic test information when running CI

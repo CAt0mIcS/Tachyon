@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
 
     id("kotlin-kapt")
     id("kotlin-android")
@@ -44,6 +45,20 @@ android {
     }
 
     buildTypes {
+        debug {
+            firebaseCrashlytics {
+                nativeSymbolUploadEnabled = false
+                mappingFileUploadEnabled = false
+            }
+
+            manifestPlaceholders["firebase_analytics_collection_deactivated"] = "true"
+            manifestPlaceholders["firebase_performance_collection_enabled"] = "false"
+
+//            firebasePerformance {
+//                instrumentationEnabled = false
+//            }
+        }
+
         release {
 //            isDebuggable = false
 //            isShrinkResources = true
@@ -81,10 +96,6 @@ android {
     }
 
     namespace = "com.tachyonmusic.app"
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = Index.COMPOSE_COMPILER
-    }
 
     packaging {
         resources {
