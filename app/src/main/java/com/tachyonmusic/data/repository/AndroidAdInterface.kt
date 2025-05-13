@@ -17,9 +17,11 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.min
 import com.tachyonmusic.util.runOnUiThread
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -32,20 +34,25 @@ class AndroidAdInterface(
     private val log: Logger,
     private val rewardAd: RewardAd
 ) : AdInterface {
+
+    private var smallNativeAdLoadHandler: Job? = null
+    private var _smallNativeAdCache = MutableStateFlow<List<NativeAd>>(emptyList())
+    override val smallNativeAdCache: Flow<List<NativeAd>> =
+        _smallNativeAdCache.debounce(300.milliseconds)
+    private lateinit var smallNativeAdLoader: AdLoader
+    val isLoadingSmallNativeAd: Boolean
+        get() = smallNativeAdLoader.isLoading
+
     private var rewardAdLoadHandler: Job? = null
-    private var nativeInstallAdLoadHandler: Job? = null
-
-    private var _nativeAppInstallAdCache = MutableStateFlow<List<NativeAd>>(emptyList())
-    override val nativeAppInstallAdCache: Flow<List<NativeAd>> =
-        _nativeAppInstallAdCache.debounce(300.milliseconds)
-
     override val rewardAdType: RewardAd.Type?
         get() = rewardAd.type
 
-    private lateinit var nativeAppInstallAdLoader: AdLoader
-
-    val isLoadingNativeInstallAd: Boolean
-        get() = nativeAppInstallAdLoader.isLoading
+    private var mediumNativeAdLoadHandler: Job? = null
+    private var _mediumNativeAd = MutableStateFlow<NativeAd?>(null)
+    override val mediumNativeAd = _mediumNativeAd.asStateFlow()
+    private lateinit var mediumNativeAdLoader: AdLoader
+    val isLoadingMediumNativeAd: Boolean
+        get() = mediumNativeAdLoader.isLoading
 
     override fun initialize(activity: ComponentActivity) {
         MobileAds.initialize(activity)
@@ -53,18 +60,34 @@ class AndroidAdInterface(
             RequestConfiguration.Builder().setTestDeviceIds(listOf("TEST_EMULATOR")).build()
         )
 
-        nativeAppInstallAdLoader = AdLoader.Builder(
+        mediumNativeAdLoader = AdLoader.Builder(
             activity,
-            NATIVE_INSTALL_AD_ID
+            MEDIUM_NATIVE_AD_ID
+        ).forNativeAd { nativeAd ->
+            _mediumNativeAd.update { nativeAd }
+            log.debug("[AdInterface] Native Medium Ad (HomeScreen) loaded")
+        }.withAdListener(object : AdListener() {
+            override fun onAdFailedToLoad(adError: LoadAdError) {
+                log.error("[AdInterface] Medium Native Ad failed to load: ${adError.message}")
+            }
+        }).withNativeAdOptions(
+            NativeAdOptions.Builder()
+                .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_BOTTOM_LEFT)
+                .build()
+        ).build()
+
+        smallNativeAdLoader = AdLoader.Builder(
+            activity,
+            SMALL_NATIVE_AD_ID
         ).forNativeAd { nativeAd ->
             // Ensure the ad is of type App Install Ad before displaying
 
-            _nativeAppInstallAdCache.update { it + nativeAd }
+            _smallNativeAdCache.update { it + nativeAd }
             log.debug("[AdInterface] Native Install Ad loaded")
 
         }.withAdListener(object : AdListener() {
             override fun onAdFailedToLoad(adError: LoadAdError) {
-                log.error("[AdInterface] Ad failed to load: ${adError.message}")
+                log.error("[AdInterface] Native Ad failed to load: ${adError.message}")
             }
         }).withNativeAdOptions(
             NativeAdOptions.Builder()
@@ -74,9 +97,9 @@ class AndroidAdInterface(
     }
 
     override fun release() {
-        rewardAdLoadHandler?.cancel()
-        rewardAd.unload()
-        unloadNativeInstallAds()
+        unloadRewardAd()
+        unloadSmallNativeInstallAds()
+        unloadMediumNativeInstallAd()
     }
 
     override fun <T> showRewardAd(
@@ -114,6 +137,7 @@ class AndroidAdInterface(
 
     override fun loadNativeInstallAds(lifecycleOwner: LifecycleOwner) {
         restartNativeInstallAdLoadHandler(lifecycleOwner)
+        restartMediumNativeAdLoadHandler(lifecycleOwner)
     }
 
     override fun unloadRewardAd() {
@@ -122,12 +146,19 @@ class AndroidAdInterface(
         rewardAd.unload()
     }
 
-    override fun unloadNativeInstallAds() {
-        nativeInstallAdLoadHandler?.cancel()
-        nativeInstallAdLoadHandler = null
-        _nativeAppInstallAdCache.value.forEach { it.destroy() }
-        _nativeAppInstallAdCache.update { emptyList() }
+    override fun unloadSmallNativeInstallAds() {
+        smallNativeAdLoadHandler?.cancel()
+        smallNativeAdLoadHandler = null
+        _smallNativeAdCache.value.forEach { it.destroy() }
+        _smallNativeAdCache.update { emptyList() }
         log.debug("[AdInterface] Unloaded native app install ads")
+    }
+
+    override fun unloadMediumNativeInstallAd() {
+        mediumNativeAdLoadHandler?.cancel()
+        mediumNativeAdLoadHandler = null
+        mediumNativeAd.value?.destroy()
+        _mediumNativeAd.update { null }
     }
 
 
@@ -142,25 +173,49 @@ class AndroidAdInterface(
     }
 
     private fun restartNativeInstallAdLoadHandler(lifecycleOwner: LifecycleOwner) {
-        nativeInstallAdLoadHandler?.cancel()
-        nativeInstallAdLoadHandler = lifecycleOwner.lifecycleScope.launch {
+        smallNativeAdLoadHandler?.cancel()
+        smallNativeAdLoadHandler = lifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             while (isActive) {
                 loadNativeInstallAdsInternal()
                 delay(60.min) // Ads time out after 60 minutes
+                _smallNativeAdCache.value.forEach { it.destroy() }
+                _smallNativeAdCache.update { emptyList() }
+            }
+        }
+    }
+
+    private fun restartMediumNativeAdLoadHandler(lifecycleOwner: LifecycleOwner) {
+        mediumNativeAdLoadHandler?.cancel()
+        mediumNativeAdLoadHandler = lifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            while (isActive) {
+                loadMediumNativeAdsInternal()
+                delay(60.min) // Ads time out after 60 minutes
+                mediumNativeAd.value?.destroy()
+                _mediumNativeAd.update { null }
             }
         }
     }
 
     private fun loadNativeInstallAdsInternal() {
-        if (isLoadingNativeInstallAd || _nativeAppInstallAdCache.value.size == 5)
+        if (isLoadingSmallNativeAd || _smallNativeAdCache.value.size == 5)
             return
 
         log.debug("[AdInterface] Loading 5 native install ads...")
-        nativeAppInstallAdLoader.loadAds(AdRequest.Builder().build(), 5)
+        smallNativeAdLoader.loadAds(AdRequest.Builder().build(), 5)
+    }
+
+    private fun loadMediumNativeAdsInternal() {
+        if (isLoadingMediumNativeAd)
+            return
+
+        log.debug("[AdInterface] Loading medium install ad...")
+        mediumNativeAdLoader.loadAd(AdRequest.Builder().build())
     }
 
     companion object {
-        const val NATIVE_INSTALL_AD_TEST_ID = "ca-app-pub-3940256099942544/2247696110"
-        const val NATIVE_INSTALL_AD_ID = "ca-app-pub-7145716621236451/6099968554"
+        const val SMALL_NATIVE_TEST_AD_ID = "ca-app-pub-3940256099942544/2247696110"
+        const val SMALL_NATIVE_AD_ID = "ca-app-pub-7145716621236451/6099968554"
+
+        const val MEDIUM_NATIVE_AD_ID = "ca-app-pub-7145716621236451/9365998327"
     }
 }

@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -77,7 +76,7 @@ import com.tachyonmusic.presentation.library.component.FilterItemRow
 import com.tachyonmusic.presentation.library.component.PullToRefreshLazyColumn
 import com.tachyonmusic.presentation.library.search.PlaybackSearchScreen
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.presentation.util.AdmobNativeAppInstallAd
+import com.tachyonmusic.presentation.util.AdmobSmallNativeAd
 import com.tachyonmusic.presentation.util.asString
 import com.tachyonmusic.util.cycle
 import com.tachyonmusic.util.debounce
@@ -287,10 +286,10 @@ object LibraryScreen :
                     Modifier
                         .fillMaxWidth()
                         .padding(bottom = Theme.padding.extraSmall)
-                val nativeAds by viewModel.nativeAppInstallAdCache.collectAsState()
+                val nativeAds by viewModel.smallNativeAdCache.collectAsState()
 
-                if (playback.playbackType is PlaybackType.Ad.NativeAppInstall && nativeAds.isNotEmpty()) {
-                    AdmobNativeAppInstallAd(
+                if (playback.playbackType is PlaybackType.Ad.NativeSmall && nativeAds.isNotEmpty()) {
+                    AdmobSmallNativeAd(
                         contentModifier,
                         nativeAds.cycle(playback.mediaId.source.toIntOrNull() ?: 0)
                     )

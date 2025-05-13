@@ -3,6 +3,7 @@ package com.tachyonmusic.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.repository.DataRepository
+import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
@@ -25,8 +26,9 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     playbackRepository: PlaybackRepository,
     private val loadArtworkForPlayback: LoadArtworkForPlayback,
+    private val adInterface: AdInterface,
     private val dataRepository: DataRepository,
-    private val playPlayback: PlayPlayback,
+    private val playPlayback: PlayPlayback
 ) : ViewModel() {
 
     private val historyArtworkLoadingRange = MutableStateFlow(0..0)
@@ -49,6 +51,8 @@ class HomeViewModel @Inject constructor(
         SharingStarted.Lazily,
         emptyList()
     )
+
+    val mediumNativeAd = adInterface.mediumNativeAd
 
     fun onItemClicked(entity: HomeEntity) {
         viewModelScope.launch(Dispatchers.IO) {

@@ -1,6 +1,5 @@
 package com.tachyonmusic.presentation.library
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.ads.nativead.NativeAd
@@ -123,8 +122,8 @@ class LibraryViewModel @Inject constructor(
     private var _artworkLoadingError = MutableStateFlow<UiText?>(null)
     val artworkLoadingError = _artworkLoadingError.asStateFlow()
 
-    val nativeAppInstallAdCache: StateFlow<List<NativeAd>> =
-        adInterface.nativeAppInstallAdCache.stateIn(
+    val smallNativeAdCache: StateFlow<List<NativeAd>> =
+        adInterface.smallNativeAdCache.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(),
             emptyList()
@@ -167,7 +166,7 @@ class LibraryViewModel @Inject constructor(
             }.insertBeforeEvery(AD_INSERT_INTERVAL) {
                 LibraryEntity(
                     mediaId = MediaId("${it / AD_INSERT_INTERVAL}"),
-                    playbackType = PlaybackType.Ad.NativeAppInstall()
+                    playbackType = PlaybackType.Ad.NativeSmall()
                 )
             }
         }.stateIn(
@@ -321,7 +320,7 @@ class LibraryViewModel @Inject constructor(
      */
     private fun removeAdIndices(range: IntRange, playbackItems: List<LibraryEntity>): IntRange {
         val numAds =
-            playbackItems.count { it.playbackType is PlaybackType.Ad && nativeAppInstallAdCache.value.isNotEmpty() }
+            playbackItems.count { it.playbackType is PlaybackType.Ad && smallNativeAdCache.value.isNotEmpty() }
         return (range.first - numAds)..(range.last - numAds)
     }
 }

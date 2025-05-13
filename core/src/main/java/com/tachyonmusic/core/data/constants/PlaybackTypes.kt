@@ -18,7 +18,7 @@ sealed class PlaybackType(val value: Int) {
 
     sealed class Ad(value: Int) : PlaybackType(value) {
         class Banner : Ad(3)
-        class NativeAppInstall : Ad(4)
+        class NativeSmall : Ad(4)
     }
 
     companion object {
@@ -28,7 +28,7 @@ sealed class PlaybackType(val value: Int) {
                 "*1*" -> Remix.Local()
                 "*2*" -> Playlist.Local()
                 "*3*" -> Ad.Banner()
-                "*4*" -> Ad.NativeAppInstall()
+                "*4*" -> Ad.NativeSmall()
                 "*5*" -> Song.LocalTemporary()
                 else -> TODO("Unsupported value $value for playback type")
             }

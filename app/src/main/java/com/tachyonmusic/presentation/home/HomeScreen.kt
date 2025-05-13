@@ -46,6 +46,7 @@ import com.tachyonmusic.presentation.entry.SwipingStates
 import com.tachyonmusic.presentation.home.component.VerticalPlaybackView
 import com.tachyonmusic.presentation.home.model.HomeEntity
 import com.tachyonmusic.presentation.theme.Theme
+import com.tachyonmusic.presentation.util.AdmobMediumNativeAd
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import kotlinx.coroutines.launch
@@ -62,6 +63,7 @@ object HomeScreen :
     ) {
         val history by viewModel.history.collectAsState()
         val scope = rememberCoroutineScope()
+        val nativeAd by viewModel.mediumNativeAd.collectAsState()
 
         LazyColumn(
             modifier = Modifier
@@ -135,6 +137,17 @@ object HomeScreen :
                         }
                         viewModel.onItemClicked(it)
                     }
+                }
+            }
+
+            if (nativeAd != null) {
+                item {
+                    AdmobMediumNativeAd(
+                        modifier = Modifier
+                            .padding(vertical = Theme.padding.extraLarge)
+                            .padding(start = Theme.padding.medium, end = Theme.padding.medium * 2),
+                        nativeAd
+                    )
                 }
             }
         }
