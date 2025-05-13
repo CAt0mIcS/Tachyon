@@ -49,9 +49,14 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -483,7 +488,18 @@ fun RemixEditor(
                         )
                 ) {
                     Column {
-                        Text("Remix with name $remixName already exists")
+                        Text(buildAnnotatedString {
+                            append("Remix with name ")
+                            withStyle(
+                                SpanStyle(
+                                    fontStyle = FontStyle.Italic,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            ) {
+                                append(remixName)
+                            }
+                            append(" already exists")
+                        })
                         Row(
                             modifier = Modifier
                                 .padding(top = Theme.padding.medium)
