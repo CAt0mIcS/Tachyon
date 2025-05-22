@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -53,9 +55,8 @@ interface OnboardingPage {
 object OnboardingScreen {
 
     val pages = listOf(
-        FirstOnboardingPage(0),
-        ImportMusicOnboardingPage(1),
-        LastOnboardingPage(2)
+        ImportMusicOnboardingPage(0),
+        LastOnboardingPage(1)
     )
 
     @Composable
