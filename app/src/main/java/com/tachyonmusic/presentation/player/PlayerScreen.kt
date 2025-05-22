@@ -513,7 +513,7 @@ fun PlayerScreen(
                             if (playbackType !is PlaybackType.Playlist) {
                                 SubPlaybackView(
                                     viewModel,
-                                    playback,
+                                    updatedPlayback,
                                     PlaybackLocation.PREDEFINED_PLAYLIST
                                 )
                             } else {
@@ -529,7 +529,7 @@ fun PlayerScreen(
                                 ) {
                                     SubPlaybackView(
                                         viewModel,
-                                        playback,
+                                        updatedPlayback,
                                         PlaybackLocation.CUSTOM_PLAYLIST
                                     )
                                 }

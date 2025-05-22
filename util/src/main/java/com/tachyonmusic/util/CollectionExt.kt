@@ -61,13 +61,14 @@ fun <E> List<E>.indexOf(pred: (E) -> Boolean): Int? {
  * Wraps the index around until it gets the element.
  * So for [idx] = 3 and [List.size] = 2 it will get the element at index 1 (3 - 2)
  */
-fun <E> List<E>.cycle(idx: Int): E? {
+fun <E> List<E>.cycle(idx: Int): E {
     var index = idx
     while (index >= size) {
         index -= size
     }
+    while(index < 0) {
+        index += size
+    }
 
-    if (index < 0)
-        return null
     return this[index]
 }

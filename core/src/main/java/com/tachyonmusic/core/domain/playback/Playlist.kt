@@ -8,6 +8,7 @@ import androidx.media3.common.util.UnstableApi
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.util.cycle
 
 @OptIn(UnstableApi::class)
 data class Playlist(
@@ -18,6 +19,12 @@ data class Playlist(
 ) {
     val current: Playback
         get() = playbacks[currentPlaylistIndex]
+
+    val next: Playback
+        get() = playbacks.cycle(currentPlaylistIndex + 1)
+
+    val previous: Playback
+        get() = playbacks.cycle(currentPlaylistIndex - 1)
 
     val name: String
         get() = mediaId.name!!

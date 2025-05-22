@@ -114,8 +114,8 @@ class MediaPlaybackServiceMediaBrowserController(
 
     override fun setPlaylist(playlist: Playlist, position: Duration?) {
         browser?.setMediaItems(
-            playlist.playbacks.map { it.toMediaItem() },
-            playlist.currentPlaylistIndex,
+            playlist.playbacks.filter { it.isPlayable }.map { it.toMediaItem() },
+            playlist.currentPlaylistIndex, // TODO: This needs to be corrected if some playbacks aren't playable
             position?.inWholeMilliseconds ?: 0
         )
         _currentPlaylist.update { playlist }

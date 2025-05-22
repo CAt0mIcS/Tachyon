@@ -44,8 +44,6 @@ class MainViewModel @Inject constructor(
     private val browser: MediaBrowserController,
     dataRepository: DataRepository,
 
-    private val songRepository: SongRepository,
-    private val isUriAccessible: IsUriAccessible,
     private val log: Logger
 ) : ViewModel() {
 
@@ -97,35 +95,6 @@ class MainViewModel @Inject constructor(
                         stateRepository.finishLoadingTask(STATE_LOADING_TASK_STARTUP)
                 }
             }.collect()
-        }
-
-        /**
-         * Handle playback errors thrown in the [MediaPlaybackService]
-         */
-
-        eventChannel.listen().onEach { event ->
-            when (event.eventType) {
-                is EventType.MediaPlaybackService.PlaybackIoErrorNotFound -> {
-                    handlePlaybackIoNotFoundError(
-                        (event.eventType as EventType.MediaPlaybackService.PlaybackIoErrorNotFound).mediaId
-                    )
-                }
-
-                else -> {}
-            }
-        }.launchIn(viewModelScope)
-    }
-
-    /**
-     * In case the player fails due to missing playback we want to remove that playback from the
-     * database and stop playback
-     */
-    suspend fun handlePlaybackIoNotFoundError(mediaId: MediaId?) = withContext(Dispatchers.Main) {
-        browser.removeMediaItem(mediaId ?: return@withContext)
-
-        withContext(Dispatchers.IO) {
-            if (!isUriAccessible(mediaId.uri))
-                songRepository.remove(mediaId)
         }
     }
 }

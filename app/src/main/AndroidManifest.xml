@@ -35,6 +35,11 @@
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-7145716621236451~4657802755" />
 
+        <!--        Disable Native Ad Debugging Window-->
+        <meta-data
+            android:name="com.google.android.gms.ads.flag.NATIVE_AD_DEBUGGER_ENABLED"
+            android:value="false" />
+
         <!--        Disable firebase analytics in debug-->
         <meta-data
             android:name="firebase_analytics_collection_deactivated"

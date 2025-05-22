@@ -3,9 +3,11 @@ package com.tachyonmusic.presentation.player
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.core.ArtworkType
-import com.tachyonmusic.core.RepeatMode
 import com.tachyonmusic.core.data.constants.PlaybackType
+import com.tachyonmusic.core.domain.EventChannel
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.model.EventType
+import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.database.domain.model.SettingsEntity
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
@@ -25,6 +27,8 @@ import com.tachyonmusic.domain.use_case.player.SavePlaybackToPlaylist
 import com.tachyonmusic.domain.use_case.player.SeekToPosition
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
+import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
+import com.tachyonmusic.playback_layers.domain.IsUriAccessible
 import com.tachyonmusic.playback_layers.domain.NetworkMonitor
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
@@ -37,6 +41,7 @@ import com.tachyonmusic.presentation.player.model.toPlayerEntity
 import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
+import com.tachyonmusic.util.indexOf
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThreadAsync
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -54,6 +59,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 
@@ -64,7 +70,7 @@ class PlayerViewModel @Inject constructor(
     loadArtworkForPlayback: LoadArtworkForPlayback,
     settingsRepository: SettingsRepository,
     private val dataRepository: DataRepository,
-    songRepository: SongRepository,
+    private val songRepository: SongRepository,
     artworkCodex: ArtworkCodex,
     assignArtworkToPlayback: AssignArtworkToPlayback,
     networkMonitor: NetworkMonitor,
@@ -81,6 +87,9 @@ class PlayerViewModel @Inject constructor(
     private val savePlaybackToPlaylist: SavePlaybackToPlaylist,
     private val removePlaybackFromPlaylist: RemovePlaybackFromPlaylist,
     private val createAndSaveNewPlaylist: CreateAndSaveNewPlaylist,
+
+    eventChannel: EventChannel,
+    private val isUriAccessible: IsUriAccessible,
 
     private val log: Logger
 ) : ViewModel() {
@@ -194,6 +203,21 @@ class PlayerViewModel @Inject constructor(
 
             }.collect()
         }
+
+        /**
+         * Handle playback errors thrown in the [MediaPlaybackService]
+         */
+        eventChannel.listen().onEach { event ->
+            when (event.eventType) {
+                is EventType.MediaPlaybackService.PlaybackIoErrorNotFound -> {
+                    handlePlaybackIoNotFoundError(
+                        (event.eventType as EventType.MediaPlaybackService.PlaybackIoErrorNotFound).mediaId
+                    )
+                }
+
+                else -> {}
+            }
+        }.launchIn(viewModelScope)
     }
 
 
@@ -285,7 +309,7 @@ class PlayerViewModel @Inject constructor(
         else
             getPlaybackChildren(playback, repeatMode, playback?.mediaId)
 
-        children?.map {
+        children?.filter { it.isPlayable }?.map {
             loadArtworkForPlayback(it).toPlayerEntity()
         } ?: emptyList()
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), emptyList())
@@ -352,5 +376,47 @@ class PlayerViewModel @Inject constructor(
                 currentPlaylist.value
             )
         }
+    }
+
+    /**
+     * In case the player fails due to missing playback we want to remove that playback from the
+     * database and stop playback. If we're currently playing a playlist we also need to update the
+     * [MediaBrowserController]
+     */
+    private suspend fun handlePlaybackIoNotFoundError(mediaId: MediaId?) =
+        withContext(Dispatchers.Main) {
+            if (mediaId == null)
+                return@withContext
+
+            withContext(Dispatchers.IO) {
+                if (!isUriAccessible(mediaId.uri))
+                    songRepository.remove(mediaId.underlyingMediaId ?: mediaId)
+            }
+
+            if (playbackType.value is PlaybackType.Playlist) {
+                val newPlaylist =
+                    getPlaylistWithoutMediaItemReferences(
+                        mediaId,
+                        currentPlaylist.value!!,
+                        mediaBrowser.nextPlayback?.mediaId
+                    )
+                playPlayback(newPlaylist)
+            } else {
+                playPlayback(mediaBrowser.nextPlayback)
+            }
+        }
+
+    private fun getPlaylistWithoutMediaItemReferences(
+        songMediaId: MediaId,
+        playlist: Playlist,
+        nextCurrentPlaylistItem: MediaId?
+    ): Playlist {
+        val newPlaybacks = playlist.playbacks.filter { it.mediaId != songMediaId }
+            .map { it.copy(isPlayable = it.mediaId.underlyingMediaId != songMediaId) }
+
+        return playlist.copy(
+            playbacks = newPlaybacks,
+            currentPlaylistIndex = newPlaybacks.indexOf { it.mediaId == nextCurrentPlaylistItem }
+                ?: 0)
     }
 }
