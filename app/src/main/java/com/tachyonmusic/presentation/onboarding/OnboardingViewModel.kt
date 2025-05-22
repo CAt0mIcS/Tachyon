@@ -5,9 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
+import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.StateRepository
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase
+import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import com.tachyonmusic.util.sec
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -24,13 +26,16 @@ import javax.inject.Inject
 @HiltViewModel
 class OnboardingViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
+    private val uriPermissionRepository: UriPermissionRepository,
     private val dataRepository: DataRepository,
     private val stateRepository: StateRepository,
     private val registerNewUriPermission: RegisterNewUriPermission,
     private val importDatabase: ImportDatabase
 ) : ViewModel() {
 
-    private val _requiredMusicDirectoriesAfterDatabaseImport = MutableStateFlow(emptyList<String>())
+    // Placeholder so that the screen doesn't advance when relaunching app during setup
+    // Removed in the ViewModel's init block after loading required paths
+    private val _requiredMusicDirectoriesAfterDatabaseImport = MutableStateFlow(listOf(""))
     val requiredMusicDirectoriesAfterDatabaseImport =
         _requiredMusicDirectoriesAfterDatabaseImport.asStateFlow()
 
@@ -40,6 +45,21 @@ class OnboardingViewModel @Inject constructor(
     ) { settings, requiredDirs ->
         settings.musicDirectories.isNotEmpty() && requiredDirs.isEmpty()
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.WhileSubscribed(), false)
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            val requiredDirectories = settingsRepository.getSettings().musicDirectories
+            val directoriesToAskForPermission = mutableListOf<String?>()
+            for (requiredDir in requiredDirectories) {
+                if (!uriPermissionRepository.hasPermission(requiredDir))
+                    directoriesToAskForPermission.add(requiredDir.encodedPath)
+            }
+
+            _requiredMusicDirectoriesAfterDatabaseImport.update {
+                directoriesToAskForPermission.filterNotNull()
+            }
+        }
+    }
 
     fun saveOnboardingState(completed: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -65,15 +85,14 @@ class OnboardingViewModel @Inject constructor(
     fun onImportDatabase(uri: Uri?) {
         viewModelScope.launch {
             stateRepository.queueLoadingTask("OnboardingViewModel::importDatabase")
-
             // Place dummy item in here so that [readyToAdvance] doesn't become true for
-            // some milliseconds after [importDatabase] is run
+            // some milliseconds after [importDatabase] is run or after relaunching the app during setup
             _requiredMusicDirectoriesAfterDatabaseImport.update { listOf("") }
-            val missingUri = importDatabase(uri)
+            val missingUris = importDatabase(uri)
 
             // TODO: Handle null case for missingUri ^ and it.path >
-            if (missingUri != null) {
-                _requiredMusicDirectoriesAfterDatabaseImport.update { missingUri.mapNotNull { it.encodedPath } }
+            if (missingUris != null) {
+                _requiredMusicDirectoriesAfterDatabaseImport.update { missingUris.mapNotNull { it.encodedPath } }
             } else {
                 _requiredMusicDirectoriesAfterDatabaseImport.update { emptyList() }
             }
