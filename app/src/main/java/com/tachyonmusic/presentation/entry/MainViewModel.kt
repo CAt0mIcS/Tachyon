@@ -111,12 +111,6 @@ class MainViewModel @Inject constructor(
                     )
                 }
 
-                is EventType.MediaPlaybackService.PlaybackIoErrorMissingPermission -> {
-                    handlePlaybackMissingPermissionError(
-                        (event.eventType as EventType.MediaPlaybackService.PlaybackIoErrorMissingPermission).mediaId
-                    )
-                }
-
                 else -> {}
             }
         }.launchIn(viewModelScope)
@@ -127,12 +121,11 @@ class MainViewModel @Inject constructor(
      * database and stop playback
      */
     suspend fun handlePlaybackIoNotFoundError(mediaId: MediaId?) = withContext(Dispatchers.Main) {
-        browser.seekToNext()
-        browser.play()
+        browser.removeMediaItem(mediaId ?: return@withContext)
 
         withContext(Dispatchers.IO) {
-            if (!isUriAccessible(mediaId?.uri))
-                songRepository.remove(mediaId ?: return@withContext)
+            if (!isUriAccessible(mediaId.uri))
+                songRepository.remove(mediaId)
         }
     }
 }

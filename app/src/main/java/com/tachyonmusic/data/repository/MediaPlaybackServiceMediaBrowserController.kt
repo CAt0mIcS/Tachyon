@@ -28,6 +28,7 @@ import com.tachyonmusic.media.core.SessionSyncEvent
 import com.tachyonmusic.media.core.SetRepeatModeEvent
 import com.tachyonmusic.media.core.dispatchMediaEvent
 import com.tachyonmusic.media.core.toMediaSessionEvent
+import com.tachyonmusic.media.data.mediaItems
 import com.tachyonmusic.media.domain.use_case.SyncPlaybackAudioEffects
 import com.tachyonmusic.media.util.fromMedia
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
@@ -37,6 +38,7 @@ import com.tachyonmusic.util.Duration
 import com.tachyonmusic.util.IListenable
 import com.tachyonmusic.util.Listenable
 import com.tachyonmusic.util.future
+import com.tachyonmusic.util.indexOf
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
 import kotlinx.coroutines.CompletableJob
@@ -135,6 +137,12 @@ class MediaPlaybackServiceMediaBrowserController(
                 }
             }
         }
+    }
+
+    override fun removeMediaItem(mediaId: MediaId) {
+        browser?.removeMediaItem(
+            browser?.mediaItems?.indexOf { it.mediaId == mediaId.toString() } ?: return
+        )
     }
 
     override val currentPosition: Duration?

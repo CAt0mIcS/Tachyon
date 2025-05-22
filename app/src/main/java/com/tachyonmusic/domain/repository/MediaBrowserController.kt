@@ -35,6 +35,7 @@ interface MediaBrowserController : DefaultLifecycleObserver,
      * @param currentPlaylist Specify a updated playlist to send to the MediaService. Only required if there are playlist changes
      */
     fun updatePlayback(currentPlaylist: Playlist? = null, action: (Playback?) -> Playback?)
+    fun removeMediaItem(mediaId: MediaId)
 
     val currentPosition: Duration?
     val canPrepare: Boolean

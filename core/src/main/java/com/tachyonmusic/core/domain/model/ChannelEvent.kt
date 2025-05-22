@@ -8,12 +8,11 @@ enum class EventSeverity {
 }
 
 sealed interface EventType {
-    object Unknown: EventType
+    object Unknown : EventType
     object GenericError : EventType
 
     sealed interface MediaPlaybackService : EventType {
         class PlaybackIoErrorNotFound(val mediaId: MediaId?) : EventType.MediaPlaybackService
-        class PlaybackIoErrorMissingPermission(val mediaId: MediaId?) : EventType.MediaPlaybackService
     }
 }
 
