@@ -11,9 +11,9 @@ import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
-import com.tachyonmusic.util.EventSeverity
-import com.tachyonmusic.util.domain.EventChannel
-import com.tachyonmusic.util.dyn
+import com.tachyonmusic.core.domain.model.EventSeverity
+import com.tachyonmusic.core.domain.EventChannel
+import com.tachyonmusic.util.uiTextDynamicString
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
@@ -38,16 +38,22 @@ class RegisterTemporaryPlayback(
 ) {
     suspend operator fun invoke(uri: Uri): Boolean = withContext(Dispatchers.IO) {
         val metadata = metadataExtractor.loadMetadata(uri) ?: return@withContext false.also {
-            eventChannel.push("Failed to load metadata for $uri".dyn, EventSeverity.Error)
+            eventChannel.push(
+                "Failed to load metadata for $uri".uiTextDynamicString,
+                EventSeverity.Error
+            )
         }
 
         val path = DocumentFile.fromSingleUri(context, uri) ?: return@withContext false.also {
-            eventChannel.push("Failed to create DocumentFile from $uri".dyn, EventSeverity.Error)
+            eventChannel.push(
+                "Failed to create DocumentFile from $uri".uiTextDynamicString,
+                EventSeverity.Error
+            )
         }
         if (!path.canRead())
             return@withContext false.also {
                 eventChannel.push(
-                    "Unable to read temporary playback ${path.name}".dyn,
+                    "Unable to read temporary playback ${path.name}".uiTextDynamicString,
                     EventSeverity.Error
                 )
             }

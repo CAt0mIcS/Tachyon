@@ -25,7 +25,7 @@ import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import com.tachyonmusic.playback_layers.sortedBy
 import com.tachyonmusic.playback_layers.toPlayback
-import com.tachyonmusic.util.domain.EventChannel
+import com.tachyonmusic.core.domain.EventChannel
 import com.tachyonmusic.util.maxAsyncChunked
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope

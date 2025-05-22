@@ -9,6 +9,7 @@
     <string name="invalid_arguments">Invalid arguments supplied to the service</string>
 
     <string name="error_media_not_found">Could not locate requested media (%1$s)</string>
+    <string name="error_no_permission_for_media">Missing permission to access media (%1$s)</string>
     <string name="generic_error">The application has encountered an unexpected error</string>
     <string name="notification_content_title">Playback cannot be resumed</string>
     <string name="notification_content_text">Press on the play button on the media notification if it is still present, otherwise please open the app to start the playback and re-connect the session to the controller</string>

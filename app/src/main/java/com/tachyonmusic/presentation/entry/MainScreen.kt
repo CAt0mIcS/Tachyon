@@ -49,7 +49,7 @@ import com.tachyonmusic.presentation.onboarding.OnboardingScreen
 import com.tachyonmusic.presentation.player.PlayerLayout
 import com.tachyonmusic.presentation.theme.TachyonTheme
 import com.tachyonmusic.presentation.theme.Theme
-import com.tachyonmusic.util.EventSeverity
+import com.tachyonmusic.core.domain.model.EventSeverity
 
 enum class SwipingStates {
     EXPANDED,
@@ -83,7 +83,7 @@ fun MainScreen(
                             event.message.asString(context),
                             withDismissAction = true,
                             duration = when (event.severity) {
-                                EventSeverity.Error, EventSeverity.Fatal -> SnackbarDuration.Long
+                                EventSeverity.Error, EventSeverity.Fatal -> SnackbarDuration.Indefinite
                                 else -> SnackbarDuration.Short
                             }
                         )

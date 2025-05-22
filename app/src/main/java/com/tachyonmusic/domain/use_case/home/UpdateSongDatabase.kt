@@ -1,7 +1,6 @@
 package com.tachyonmusic.domain.use_case.home
 
 import android.content.Context
-import android.net.Uri
 import androidx.documentfile.provider.DocumentFile
 import com.tachyonmusic.app.R
 import com.tachyonmusic.core.ArtworkType
@@ -15,9 +14,9 @@ import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.use_case.library.AssignArtworkToPlayback
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
-import com.tachyonmusic.util.EventSeverity
+import com.tachyonmusic.core.domain.model.EventSeverity
 import com.tachyonmusic.util.UiText
-import com.tachyonmusic.util.domain.EventChannel
+import com.tachyonmusic.core.domain.EventChannel
 import com.tachyonmusic.util.maxAsyncChunked
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Deferred
@@ -27,7 +26,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
-import kotlin.math.ceil
 
 /**
  * Checks if every song in all added directories are also saved in the database and adds missing ones

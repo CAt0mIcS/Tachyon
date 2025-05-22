@@ -8,9 +8,9 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.util.Duration
-import com.tachyonmusic.util.EventSeverity
+import com.tachyonmusic.core.domain.model.EventSeverity
 import com.tachyonmusic.util.UiText
-import com.tachyonmusic.util.domain.EventChannel
+import com.tachyonmusic.core.domain.EventChannel
 import com.tachyonmusic.util.replaceWith
 import com.tachyonmusic.util.runOnUiThread
 

@@ -63,7 +63,7 @@ import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
-import com.tachyonmusic.util.domain.EventChannel
+import com.tachyonmusic.core.domain.EventChannel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -13,13 +13,19 @@ import com.tachyonmusic.domain.use_case.home.UpdateSongDatabase
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import com.tachyonmusic.presentation.theme.ComposeSettings
-import com.tachyonmusic.util.domain.EventChannel
+import com.tachyonmusic.core.domain.EventChannel
+import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.core.domain.model.EventType
+import com.tachyonmusic.database.domain.repository.SongRepository
+import com.tachyonmusic.playback_layers.domain.IsUriAccessible
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -35,9 +41,11 @@ class MainViewModel @Inject constructor(
     updateSettingsDatabase: UpdateSettingsDatabase,
     updateSongDatabase: UpdateSongDatabase,
 
-    browser: MediaBrowserController,
+    private val browser: MediaBrowserController,
     dataRepository: DataRepository,
 
+    private val songRepository: SongRepository,
+    private val isUriAccessible: IsUriAccessible,
     private val log: Logger
 ) : ViewModel() {
 
@@ -89,6 +97,42 @@ class MainViewModel @Inject constructor(
                         stateRepository.finishLoadingTask(STATE_LOADING_TASK_STARTUP)
                 }
             }.collect()
+        }
+
+        /**
+         * Handle playback errors thrown in the [MediaPlaybackService]
+         */
+
+        eventChannel.listen().onEach { event ->
+            when (event.eventType) {
+                is EventType.MediaPlaybackService.PlaybackIoErrorNotFound -> {
+                    handlePlaybackIoNotFoundError(
+                        (event.eventType as EventType.MediaPlaybackService.PlaybackIoErrorNotFound).mediaId
+                    )
+                }
+
+                is EventType.MediaPlaybackService.PlaybackIoErrorMissingPermission -> {
+                    handlePlaybackMissingPermissionError(
+                        (event.eventType as EventType.MediaPlaybackService.PlaybackIoErrorMissingPermission).mediaId
+                    )
+                }
+
+                else -> {}
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    /**
+     * In case the player fails due to missing playback we want to remove that playback from the
+     * database and stop playback
+     */
+    suspend fun handlePlaybackIoNotFoundError(mediaId: MediaId?) = withContext(Dispatchers.Main) {
+        browser.seekToNext()
+        browser.play()
+
+        withContext(Dispatchers.IO) {
+            if (!isUriAccessible(mediaId?.uri))
+                songRepository.remove(mediaId ?: return@withContext)
         }
     }
 }

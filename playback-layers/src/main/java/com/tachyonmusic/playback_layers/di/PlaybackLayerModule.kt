@@ -22,8 +22,9 @@ import com.tachyonmusic.playback_layers.domain.NetworkMonitor
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
-import com.tachyonmusic.util.data.EventChannelImpl
-import com.tachyonmusic.util.domain.EventChannel
+import com.tachyonmusic.core.data.EventChannelImpl
+import com.tachyonmusic.core.domain.EventChannel
+import com.tachyonmusic.playback_layers.domain.IsUriAccessible
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,7 +35,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object PlaybackLayerRepositoryModule {
+object PlaybackLayerModule {
     @Provides
     @Singleton
     fun provideArtworkFetcher() = ArtworkFetcher()
@@ -104,4 +105,9 @@ object PlaybackLayerRepositoryModule {
     @Singleton
     fun provideNetworkMonitor(@ApplicationContext context: Context): NetworkMonitor =
         AndroidNetworkMonitor(context)
+
+    @Provides
+    @Singleton
+    fun provideIsUriAccessibleUseCase(@ApplicationContext context: Context) =
+        IsUriAccessible(context)
 }

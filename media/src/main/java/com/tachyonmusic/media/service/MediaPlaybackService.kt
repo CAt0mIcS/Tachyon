@@ -51,10 +51,11 @@ import com.tachyonmusic.media.util.*
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
-import com.tachyonmusic.util.EventSeverity
+import com.tachyonmusic.core.domain.model.EventSeverity
 import com.tachyonmusic.util.UiText
-import com.tachyonmusic.util.domain.EventChannel
-import com.tachyonmusic.util.dyn
+import com.tachyonmusic.core.domain.EventChannel
+import com.tachyonmusic.core.domain.model.EventType
+import com.tachyonmusic.util.uiTextDynamicString
 import com.tachyonmusic.util.future
 import com.tachyonmusic.util.ms
 import com.tachyonmusic.util.runOnUiThread
@@ -509,19 +510,26 @@ open class MediaPlaybackService : MediaLibraryService(), Player.Listener {
         val errorStr =
             "Player error: ${error.errorCodeName} (${error.errorCode}): ${error.localizedMessage}"
         log.error(errorStr)
-        if (error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS
-            || error.errorCode == PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND
-        ) {
+
+        /**
+         * [PlaybackException.ERROR_CODE_IO_UNSPECIFIED] - [PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND]
+         */
+        if (error.errorCode >= 2000 && error.errorCode <= 2005) {
             eventChannel.push(
                 UiText.StringResource(
                     R.string.error_media_not_found,
                     currentPlayback?.title ?: "Unknown"
                 ),
-                EventSeverity.Error
+                EventSeverity.Error,
+                EventType.MediaPlaybackService.PlaybackIoErrorNotFound(
+                    MediaId.deserializeIfValid(
+                        currentPlayer.currentMediaItem?.mediaId
+                    )
+                )
             )
         } else {
             eventChannel.push(
-                errorStr.dyn,
+                errorStr.uiTextDynamicString,
                 EventSeverity.Error
             )
         }

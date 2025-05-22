@@ -13,7 +13,7 @@ import com.tachyonmusic.metadata_api.domain.artwork_source.ArtworkSource
 import com.tachyonmusic.metadata_api.domain.model.SearchInfo
 import com.tachyonmusic.util.Resource
 import com.tachyonmusic.util.UiText
-import com.tachyonmusic.util.dyn
+import com.tachyonmusic.util.uiTextDynamicString
 
 class CoverArtArchiveArtworkSource : ArtworkSource() {
     companion object {
@@ -52,6 +52,6 @@ class CoverArtArchiveArtworkSource : ArtworkSource() {
         front = artworks?.images?.find { it.front }
         if (front != null)
             return Resource.Success(front.image)
-        return Resource.Error(result.getErrorString().dyn)
+        return Resource.Error(result.getErrorString().uiTextDynamicString)
     }
 }
