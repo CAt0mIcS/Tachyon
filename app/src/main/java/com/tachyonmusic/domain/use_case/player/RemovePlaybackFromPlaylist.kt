@@ -5,6 +5,7 @@ import com.tachyonmusic.core.domain.playback.Playlist
 import com.tachyonmusic.database.domain.repository.PlaylistRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
+import com.tachyonmusic.util.removeFirst
 import com.tachyonmusic.util.runOnUiThread
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -20,7 +21,8 @@ class RemovePlaybackFromPlaylist(
                 return@withContext
 
             val newPlaylist = playlist.copy(
-                playbacks = playlist.playbacks.toMutableList().apply { remove(toRemove) })
+                playbacks = playlist.playbacks.toMutableList()
+                    .apply { removeFirst { it.mediaId == toRemove.mediaId } })
             playlistRepository.setPlaybacksOfPlaylist(
                 newPlaylist.mediaId,
                 newPlaylist.playbacks.map { it.mediaId }

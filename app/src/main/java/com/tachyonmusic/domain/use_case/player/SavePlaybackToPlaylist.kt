@@ -28,8 +28,17 @@ class SavePlaybackToPlaylist(
             newPlaylist.playbacks.map { it.mediaId }
         )
 
+        /**
+         * TODO: Play normal playback, change timing data to something (don't save it as remix),
+         *  add it to playlist.
+         *  Issue: When then playing the playlist and the playback that was just added, the timingdata
+         *  is still saved in the song (not remix!!!). When reopening the app the timingdata is gone and the whole
+         *  song is played (wanted outcome).
+         *  Somehow, the TimingDataController is not copied and changed somewhere?
+         */
+
         runOnUiThread {
-            if (browser.currentPlaylist.value == playlist)
+            if (browser.currentPlaylist.value?.mediaId == playlist.mediaId)
                 browser.setPlaylist(newPlaylist) // TODO: Check if we need to re-prepare, seek to correct item, etc...
         }
     }

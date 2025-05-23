@@ -57,6 +57,8 @@ fun <E> List<E>.indexOf(pred: (E) -> Boolean): Int? {
     return null
 }
 
+fun <T> Collection<T>.contains(pred: (T) -> Boolean) = find(pred) != null
+
 /**
  * Wraps the index around until it gets the element.
  * So for [idx] = 3 and [List.size] = 2 it will get the element at index 1 (3 - 2)
@@ -66,7 +68,7 @@ fun <E> List<E>.cycle(idx: Int): E {
     while (index >= size) {
         index -= size
     }
-    while(index < 0) {
+    while (index < 0) {
         index += size
     }
 

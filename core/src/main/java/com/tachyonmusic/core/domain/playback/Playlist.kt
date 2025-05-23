@@ -8,6 +8,7 @@ import androidx.media3.common.util.UnstableApi
 import com.tachyonmusic.core.data.constants.MetadataKeys
 import com.tachyonmusic.core.data.constants.PlaybackType
 import com.tachyonmusic.core.domain.MediaId
+import com.tachyonmusic.util.contains
 import com.tachyonmusic.util.cycle
 
 @OptIn(UnstableApi::class)
@@ -31,7 +32,7 @@ data class Playlist(
 
     val playbackType = PlaybackType.Playlist.Local()
 
-    fun hasPlayback(playback: Playback) = playbacks.contains(playback)
+    fun hasPlayback(playback: Playback) = playbacks.contains { it.mediaId == playback.mediaId }
     operator fun get(i: Int): Playback = playbacks[i]
 
     fun toMediaItem() = MediaItem.Builder().apply {
@@ -62,7 +63,8 @@ data class Playlist(
 
             return Playlist(
                 MediaId.deserialize(mediaItem.mediaId),
-                extras.getParcelableArrayList<Bundle>(MetadataKeys.Playback)!!.map { Playback.fromBundle(it) },
+                extras.getParcelableArrayList<Bundle>(MetadataKeys.Playback)!!
+                    .map { Playback.fromBundle(it) },
                 extras.getInt(MetadataKeys.Index),
                 extras.getLong(MetadataKeys.TimestampCreatedAddedEdited)
             )
