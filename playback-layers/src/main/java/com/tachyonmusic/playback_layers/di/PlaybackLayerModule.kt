@@ -64,6 +64,7 @@ object PlaybackLayerModule {
         historyRepository: HistoryRepository,
         eventChannel: EventChannel,
         permissionRepository: UriPermissionRepository,
+        log: Logger,
         @ApplicationContext context: Context
     ): PlaybackRepository = PlaybackRepositoryImpl(
         songRepository,
@@ -72,6 +73,7 @@ object PlaybackLayerModule {
         historyRepository,
         eventChannel,
         permissionRepository,
+        log,
         context
     )
 

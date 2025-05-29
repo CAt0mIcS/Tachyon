@@ -55,16 +55,17 @@ fun Playlist.toEntity() = PlaylistEntity(
     timestampCreatedAddedEdited
 )
 
-//fun Uri.isPlayable(context: Context) = try {
-//    context.contentResolver.openInputStream(this)?.close() ?: false
-//    true
-//} catch (e: Exception) {
-//    when (e) {
-//        is FileNotFoundException, is IllegalArgumentException, is SecurityException -> false
-//        else -> throw e
-//    }
-//}
 
-fun Uri.isPlayable(persistentUris: List<UriPermission>): Boolean {
-    return persistentUris.any { toString().startsWith(it.uri.toString()) }
+fun Uri.isPlayable(context: Context, persistentUris: List<UriPermission>): Boolean {
+    return persistentUris.any { toString().startsWith(it.uri.toString()) } &&
+            try {
+                context.contentResolver.openInputStream(this)?.close() ?: false
+                true
+            } catch (e: Exception) {
+                when (e) {
+                    is FileNotFoundException, is IllegalArgumentException, is SecurityException -> false
+                    else -> throw e
+                }
+            }
+    // TODO: Figure out better way to check if file still exists and measure performance of this solution
 }

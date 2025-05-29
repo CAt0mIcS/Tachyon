@@ -26,6 +26,7 @@ import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import com.tachyonmusic.playback_layers.sortedBy
 import com.tachyonmusic.playback_layers.toPlayback
 import com.tachyonmusic.core.domain.EventChannel
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.maxAsyncChunked
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -54,6 +55,7 @@ class PlaybackRepositoryImpl(
 
     private val eventChannel: EventChannel,
     private val uriPermissionRepository: UriPermissionRepository,
+    private val log: Logger,
     @ApplicationContext private val context: Context
 ) : PlaybackRepository {
 
@@ -152,6 +154,7 @@ class PlaybackRepositoryImpl(
         if (entities.isEmpty())
             return@withContext emptyList()
 
+        val startTime = System.currentTimeMillis()
         for (entityChunk in entities.maxAsyncChunked()) {
             playbacks += async {
                 entityChunk.map { entity ->
@@ -170,7 +173,10 @@ class PlaybackRepositoryImpl(
             }
         }
 
-        playbacks.awaitAll().flatten().sortedBy(sorting)
+        val result = playbacks.awaitAll().flatten().sortedBy(sorting)
+        log.debug("[PlaybackRepository] transformSongs took ${System.currentTimeMillis() - startTime} ms")
+
+        result
     }
 
 
@@ -289,7 +295,7 @@ class PlaybackRepositoryImpl(
         if (isPlayable != null)
             return isPlayable
 
-        isPlayable = key.isPlayable(persistedUriPermissions)
+        isPlayable = key.isPlayable(context, persistedUriPermissions)
 
         return synchronized(cacheLock) {
             permissionCache[key] = isPlayable
