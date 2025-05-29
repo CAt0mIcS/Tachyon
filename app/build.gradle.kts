@@ -69,6 +69,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            manifestPlaceholders["firebase_analytics_collection_deactivated"] = "false"
+            manifestPlaceholders["firebase_performance_collection_enabled"] = "true"
         }
     }
 
