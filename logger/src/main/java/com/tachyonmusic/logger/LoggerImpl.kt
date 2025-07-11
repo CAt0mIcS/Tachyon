@@ -1,13 +1,10 @@
 package com.tachyonmusic.logger
 
-import com.tachyonmusic.logger.data.ConsoleLogger
 import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.util.UiText
 
 class LoggerImpl(
-    val loggers: Set<Logger> = setOf(
-        ConsoleLogger()
-    )
+    val loggers: Set<Logger>
 ) : Logger {
     override fun debug(message: String) = each { debug(message) }
     override fun info(message: String) = each { info(message) }

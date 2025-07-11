@@ -64,6 +64,7 @@ import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.playback_layers.domain.PredefinedPlaylistsRepository
 import com.tachyonmusic.playback_layers.domain.UriPermissionRepository
 import com.tachyonmusic.core.domain.EventChannel
+import com.tachyonmusic.data.repository.FirebaseLogger
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -381,7 +382,8 @@ object AppRepositoryModule {
     fun provideLogger(@ApplicationContext context: Context): Logger = LoggerImpl(
         setOf(
             ConsoleLogger(),
-            ConsoleUiTextLogger(context)
+            ConsoleUiTextLogger(context),
+            FirebaseLogger(context)
         )
     )
 

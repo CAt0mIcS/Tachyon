@@ -56,7 +56,7 @@ class PlayPlayback(
         if (playlist == null)
             return
 
-        log.info("Setting playlist to ${playlist.mediaId}")
+        log.info("[PlayPlayback::invokePlaylist] Setting playlist to ${playlist.mediaId} and playing ${playlist.current}")
         browser.setPlaylist(playlist, position)
         browser.prepare()
         addNewPlaybackToHistory(playlist.current)

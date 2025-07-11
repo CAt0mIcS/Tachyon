@@ -7,6 +7,7 @@ import com.tachyonmusic.domain.repository.AdInterface
 import com.tachyonmusic.domain.use_case.LoadArtworkForPlayback
 import com.tachyonmusic.domain.use_case.PlayPlayback
 import com.tachyonmusic.domain.use_case.PlaybackLocation
+import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.playback_layers.domain.PlaybackRepository
 import com.tachyonmusic.presentation.home.model.HomeEntity
 import com.tachyonmusic.presentation.home.model.toHomeEntity
@@ -28,7 +29,8 @@ class HomeViewModel @Inject constructor(
     private val loadArtworkForPlayback: LoadArtworkForPlayback,
     private val adInterface: AdInterface,
     private val dataRepository: DataRepository,
-    private val playPlayback: PlayPlayback
+    private val playPlayback: PlayPlayback,
+    private val log: Logger
 ) : ViewModel() {
 
     private val historyArtworkLoadingRange = MutableStateFlow(0..0)
@@ -58,6 +60,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val playback = _history.value.find { it.mediaId == entity.mediaId }
                 ?: return@launch
+            log.info("[HomeViewModel::onItemClicked] User clicked on playback $playback")
 
             playPlayback(playback, playbackLocation = PlaybackLocation.PREDEFINED_PLAYLIST)
         }
