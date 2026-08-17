@@ -40,6 +40,8 @@ data class DataEntity(
     var onboardingCompleted: Boolean = false,
     @ColumnInfo(defaultValue = "")
     var tutorialStep: String = "",
+    @ColumnInfo(defaultValue = "false")
+    var preciseSpeedPitchAdjustment: Boolean = false,
 
     @PrimaryKey var id: Int = 0,
 )
@@ -57,6 +59,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
         element<Int>("Id", isOptional = true)
         element<Boolean>("OnboardingCompleted", isOptional = true)
         element<String>("TutorialStep", isOptional = true)
+        element<Boolean>("PreciseSpeedPitchAdjustment", isOptional = true)
     }
 
     override fun deserialize(decoder: Decoder) = decoder.decodeStructure(descriptor) {
@@ -70,6 +73,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
         var id = 0
         var onboardingCompleted = false
         var tutorialStep = ""
+        var preciseSpeedPitchAdjustment = false
 
         loop@ while (true) {
             when (val index = decodeElementIndex(descriptor)) {
@@ -92,6 +96,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
                 7 -> id = decodeIntElement(descriptor, 7)
                 8 -> onboardingCompleted = decodeBooleanElement(descriptor, 8)
                 9 -> tutorialStep = decodeStringElement(descriptor, 9)
+                10 -> preciseSpeedPitchAdjustment = decodeBooleanElement(descriptor, 10)
 
                 else -> throw SerializationException("Unexpected index $index")
             }
@@ -107,6 +112,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
             maxRemixCount,
             onboardingCompleted,
             tutorialStep,
+            preciseSpeedPitchAdjustment,
             id
         )
     }
@@ -127,6 +133,7 @@ object DataEntitySerializer : KSerializer<DataEntity> {
             encodeIntElement(descriptor, 7, value.id)
             encodeBooleanElement(descriptor, 8, value.onboardingCompleted)
             encodeStringElement(descriptor, 9, value.tutorialStep)
+            encodeBooleanElement(descriptor, 10, value.preciseSpeedPitchAdjustment)
         }
     }
 }

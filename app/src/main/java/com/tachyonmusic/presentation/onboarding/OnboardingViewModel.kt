@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.database.domain.repository.SettingsRepository
-import com.tachyonmusic.domain.repository.FileRepository
 import com.tachyonmusic.domain.repository.StateRepository
 import com.tachyonmusic.domain.use_case.RegisterNewUriPermission
 import com.tachyonmusic.domain.use_case.profile.ImportDatabase

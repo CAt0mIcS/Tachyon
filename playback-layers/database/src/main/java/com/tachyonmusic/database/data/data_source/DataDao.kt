@@ -52,4 +52,7 @@ interface DataDao {
 
     @Query("UPDATE $DATA_DATABASE_TABLE_NAME SET tutorialStep=:tutorialStep")
     suspend fun setTutorialStep(tutorialStep: String)
+
+    @Query("UPDATE $DATA_DATABASE_TABLE_NAME SET preciseSpeedPitchAdjustment=:precise")
+    suspend fun setPreciseSpeedPitchAdjustment(precise: Boolean)
 }

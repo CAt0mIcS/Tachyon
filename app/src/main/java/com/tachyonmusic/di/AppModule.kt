@@ -56,7 +56,7 @@ import com.tachyonmusic.logger.domain.Logger
 import com.tachyonmusic.media.domain.use_case.AddNewPlaybackToHistory
 import com.tachyonmusic.media.domain.use_case.SearchStoredPlaybacks
 import com.tachyonmusic.media.domain.use_case.SyncPlaybackAudioEffects
-import com.tachyonmusic.metadata_api.di.brainzModule
+//import com.tachyonmusic.metadata_api.di.brainzModule
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex
 import com.tachyonmusic.playback_layers.domain.ArtworkLoader
 import com.tachyonmusic.playback_layers.domain.GetPlaylistForPlayback
@@ -113,7 +113,7 @@ object AppUseCaseModule {
 
     @Provides
     @Singleton
-    fun provideFetchMetadataForEntity() = LoadUUIDForSongEntity(brainzModule)
+    fun provideFetchMetadataForEntity() = LoadUUIDForSongEntity()
 
     @Provides
     @Singleton

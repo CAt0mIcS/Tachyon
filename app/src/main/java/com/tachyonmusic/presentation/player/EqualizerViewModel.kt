@@ -9,11 +9,13 @@ import com.tachyonmusic.core.domain.model.EqualizerBand
 import com.tachyonmusic.core.domain.model.SoundLevel
 import com.tachyonmusic.core.domain.model.mDb
 import com.tachyonmusic.core.domain.model.mHz
+import com.tachyonmusic.database.domain.repository.DataRepository
 import com.tachyonmusic.domain.repository.MediaBrowserController
 import com.tachyonmusic.media.domain.AudioEffectController
 import com.tachyonmusic.util.delay
 import com.tachyonmusic.util.ms
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -45,7 +47,8 @@ data class PlaybackParametersState(
 @HiltViewModel
 class EqualizerViewModel @Inject constructor(
     private val audioEffectController: AudioEffectController,
-    private val mediaBrowser: MediaBrowserController
+    private val mediaBrowser: MediaBrowserController,
+    private val dataRepository: DataRepository
 ) : ViewModel() {
 
     // TODO: Moving bass/virtualizer sliders to 0 disables bass/virtualizer
@@ -79,6 +82,10 @@ class EqualizerViewModel @Inject constructor(
         it?.equalizerPreset ?: audioEffectController.currentPreset
         ?: "" // TODO R.string.custom in [audioEffectController.currentPreset]
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "")
+
+    val preciseSpeedPitchAdjustment = dataRepository.observe().map {
+        it.preciseSpeedPitchAdjustment
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), false)
 
     init {
         mediaBrowser.currentPlayback.onEach { playback ->
@@ -185,6 +192,12 @@ class EqualizerViewModel @Inject constructor(
                     it?.copy(playbackParameters = it.playbackParameters.copy(pitch = num))
                 }
             }
+        }
+    }
+
+    fun setPreciseSpeedPitchAdjustment(precise: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            dataRepository.update(preciseSpeedPitchAdjustment = precise)
         }
     }
 

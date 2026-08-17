@@ -10,7 +10,6 @@ import com.tachyonmusic.core.domain.MediaId
 import com.tachyonmusic.core.domain.SongMetadataExtractor
 import com.tachyonmusic.database.domain.model.SongEntity
 import com.tachyonmusic.logger.domain.Logger
-import com.tachyonmusic.metadata_api.di.brainzModule
 import com.tachyonmusic.metadata_api.domain.model.SearchInfo
 import com.tachyonmusic.playback_layers.R
 import com.tachyonmusic.playback_layers.domain.ArtworkCodex

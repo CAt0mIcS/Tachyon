@@ -25,6 +25,7 @@ interface DataRepository {
         maxRemixCount: Int? = null,
         repeatMode: RepeatMode? = null,
         onboardingCompleted: Boolean? = null,
-        tutorialStep: String? = null
+        tutorialStep: String? = null,
+        preciseSpeedPitchAdjustment: Boolean? = null
     )
 }

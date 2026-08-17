@@ -158,11 +158,11 @@ fun EqualizerEditor(
             var syncSpeedPitch by rememberSaveable {
                 mutableStateOf(playbackParams.speed == playbackParams.pitch)
             }
-            var preciseInput by rememberSaveable { mutableStateOf(false) }
+            val preciseInput by viewModel.preciseSpeedPitchAdjustment.collectAsState()
 
             CheckboxText(
                 checked = preciseInput,
-                onCheckedChange = { preciseInput = it },
+                onCheckedChange = { viewModel.setPreciseSpeedPitchAdjustment(it) },
                 text = "Precise Speed and Pitch Input"
             )
 

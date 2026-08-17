@@ -27,7 +27,8 @@ class RoomDataRepository(
         maxRemixCount: Int?,
         repeatMode: RepeatMode?,
         onboardingCompleted: Boolean?,
-        tutorialStep: String?
+        tutorialStep: String?,
+        preciseSpeedPitchAdjustment: Boolean?
     ) {
         if (recentlyPlayed != null)
             dao.setRecentlyPlayed(
@@ -49,5 +50,8 @@ class RoomDataRepository(
 
         if(tutorialStep != null)
             dao.setTutorialStep(tutorialStep)
+
+        if(preciseSpeedPitchAdjustment != null)
+            dao.setPreciseSpeedPitchAdjustment(preciseSpeedPitchAdjustment)
     }
 }
