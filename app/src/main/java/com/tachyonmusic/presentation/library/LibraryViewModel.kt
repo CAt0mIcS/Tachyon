@@ -286,7 +286,7 @@ class LibraryViewModel @Inject constructor(
     fun refreshLibrary() {
         viewModelScope.launch(Dispatchers.IO) {
             updateSettingsDatabase()
-            updateSongDatabase(settingsRepository.getSettings())
+            updateSongDatabase(settingsRepository.getSettings(), reloadAllMetadata = true)
             playbackRepository.clearPermissionCache()
         }
     }

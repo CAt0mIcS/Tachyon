@@ -97,16 +97,32 @@ class RemixEditorViewModel @Inject constructor(
         )
 
     init {
-        mediaBrowser.currentPlayback.onEach {
-            val newTimingData = if (it == null)
+        mediaBrowser.currentPlayback.onEach { pb ->
+            var timingDataUpdated = false
+            val newTimingData = if (pb == null)
                 null
-            else if (it.timingData.isNullOrEmpty())
-                TimingDataController.default(it.duration)
-            else
-                it.timingData
+            else if (pb.timingData.isNullOrEmpty())
+                TimingDataController.default(pb.duration)
+            else {
+                // Fix timing data out of bounds due to replaced playback file
+                pb.timingData.timingData.forEachIndexed { i, timingData ->
+                    if(timingData.startTime > pb.duration) {
+                        timingData.startTime = pb.duration
+                        timingDataUpdated = true
+                    }
+                    if(timingData.endTime > pb.duration) {
+                        timingData.endTime = pb.duration
+                        timingDataUpdated = true
+                    }
+                }
+                pb.timingData
+            }
 
             timingData.update { newTimingData?.timingData ?: emptyList() }
             currentIndex = newTimingData?.currentIndex ?: 0
+
+            if(timingDataUpdated)
+                setNewTimingData()
         }.launchIn(viewModelScope)
     }
 

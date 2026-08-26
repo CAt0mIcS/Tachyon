@@ -42,70 +42,89 @@ class UpdateSongDatabase(
     private val log: Logger,
     private val eventChannel: EventChannel
 ) {
-    suspend operator fun invoke(settings: SettingsEntity) = withContext(Dispatchers.IO) {
-        // TODO: Support more extensions
-        stateRepository.queueLoadingTask(TASK)
+    suspend operator fun invoke(settings: SettingsEntity, reloadAllMetadata: Boolean = false) =
+        withContext(Dispatchers.IO) {
+            // TODO: Support more extensions
+            stateRepository.queueLoadingTask(TASK)
 
-        val startTime = System.nanoTime()
+            val startTime = System.nanoTime()
 
-        val songsToAddToDatabase = fileRepository.getFilesInDirectoriesWithExtensions(
-            settings.musicDirectories,
-            listOf("mp3")
-        ).toMutableList()
+            val songsToAddToDatabase = fileRepository.getFilesInDirectoriesWithExtensions(
+                settings.musicDirectories,
+                listOf("mp3")
+            ).toMutableList()
 
-        log.debug("Found ${songsToAddToDatabase.size} files")
+            log.debug("Found ${songsToAddToDatabase.size} files")
 
-        /**
-         * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
-         */
-        val songsInRepository = songRepo.getSongs()
-        songsInRepository.filter { it.isHidden }.forEach {
-            if (!settings.excludedSongFiles.contains(it.mediaId.uri))
-                songRepo.updateIsHidden(it.mediaId, false)
-        }
+            /**
+             * Show any songs that are not excluded by [SettingsEntity.excludedSongFiles]
+             */
+            val songsInRepository = songRepo.getSongs()
+            songsInRepository.filter { it.isHidden }.forEach {
+                if (!settings.excludedSongFiles.contains(it.mediaId.uri))
+                    songRepo.updateIsHidden(it.mediaId, false)
+            }
 
-        /**
-         * Filter songs that are already in database
-         */
-        val mediaIdsInSongRepository = songsInRepository.map { it.mediaId }
-        songsToAddToDatabase.removeAll {
-            mediaIdsInSongRepository.contains(MediaId.ofLocalSong(it.uri))
-        }
-
-        if (songsToAddToDatabase.isNotEmpty()) {
-            log.debug("Loading ${songsToAddToDatabase.size} songs...")
-
-            val songs = mutableListOf<Deferred<List<SongEntity>>>()
-            for (pathChunks in songsToAddToDatabase.maxAsyncChunked()) {
-                songs += async(Dispatchers.IO) {
-                    pathChunks.mapNotNull { path ->
-                        val newEntity = loadMetadata(path)
-                        if (newEntity == null) {
-                            eventChannel.push(
-                                UiText.StringResource(
-                                    R.string.invalid_playback,
-                                    path.name ?: "null"
-                                ),
-                                EventSeverity.Warning
-                            )
-                        }
-                        newEntity
-                    }
+            /**
+             * Filter songs that are already in database
+             */
+            if (!reloadAllMetadata) {
+                val mediaIdsInSongRepository = songsInRepository.map { it.mediaId }
+                songsToAddToDatabase.removeAll {
+                    mediaIdsInSongRepository.contains(MediaId.ofLocalSong(it.uri))
                 }
             }
 
-            // TODO: Warn user of null playback
-            songRepo.addAll(songs.awaitAll().flatten())
-            log.debug("Loaded ${songsToAddToDatabase.size} songs")
+
+            if (songsToAddToDatabase.isNotEmpty()) {
+                log.debug("Loading ${songsToAddToDatabase.size} songs...")
+
+                val songs = mutableListOf<Deferred<List<SongEntity>>>()
+                for (pathChunks in songsToAddToDatabase.maxAsyncChunked()) {
+                    songs += async(Dispatchers.IO) {
+                        pathChunks.mapNotNull { path ->
+                            val newEntity = loadMetadata(path, reloadAllMetadata)
+                            if (newEntity == null) {
+                                eventChannel.push(
+                                    UiText.StringResource(
+                                        R.string.invalid_playback,
+                                        path.name ?: "null"
+                                    ),
+                                    EventSeverity.Warning
+                                )
+                            }
+                            newEntity
+                        }
+                    }
+                }
+
+                // TODO: Warn user of null playback
+                // Copy relevant information to new songs in case of full metadata update
+                val newSongs = if (reloadAllMetadata)
+                    songs.awaitAll().flatten().map { newSong ->
+                        val containedSong = songsInRepository.find { it.mediaId == newSong.mediaId }
+                            ?: return@map newSong
+                        newSong.isHidden = containedSong.isHidden
+                        newSong.artworkUrl = containedSong.artworkUrl
+                        newSong.artworkType = containedSong.artworkType
+                        newSong.mbid = containedSong.mbid
+
+                        newSong
+                    }
+                else
+                    songs.awaitAll().flatten()
+
+                songRepo.addAll(newSongs)
+                log.debug("Loaded ${songsToAddToDatabase.size} songs")
+            }
+
+            val endTime = System.nanoTime()
+            log.debug("UpdateSongDatabase took ${(endTime - startTime).toFloat() / 1000000f} ms")
+
+            stateRepository.finishLoadingTask(TASK)
         }
 
-        val endTime = System.nanoTime()
-        log.debug("UpdateSongDatabase took ${(endTime - startTime).toFloat() / 1000000f} ms")
-
-        stateRepository.finishLoadingTask(TASK)
-    }
-
-    private suspend fun loadMetadata(path: DocumentFile) =
+    private suspend fun loadMetadata(path: DocumentFile, reloadAllMetadata: Boolean) =
         withContext(Dispatchers.IO) {
             val metadata = metadataExtractor.loadMetadata(path.uri)
 
@@ -120,13 +139,14 @@ class UpdateSongDatabase(
                     album = metadata.album
                 )
 
-                loadArtworkForEntity(
-                    entity,
-                    fetchOnline = false
-                ) { toUpdate ->
-                    if (toUpdate.artworkType == ArtworkType.EMBEDDED)
-                        entity.artworkType = ArtworkType.EMBEDDED
-                }
+                if(!reloadAllMetadata)
+                    loadArtworkForEntity(
+                        entity,
+                        fetchOnline = false
+                    ) { toUpdate ->
+                        if (toUpdate.artworkType == ArtworkType.EMBEDDED)
+                            entity.artworkType = ArtworkType.EMBEDDED
+                    }
                 entity
             }
         }
